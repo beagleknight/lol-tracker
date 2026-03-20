@@ -39,7 +39,7 @@ export default async function CoachingListPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
             Coaching Sessions
           </h1>
           <p className="text-muted-foreground">
@@ -83,11 +83,11 @@ export default async function CoachingListPage() {
 
             return (
               <Link key={session.id} href={`/coaching/${session.id}`}>
-                <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-surface-elevated transition-colors cursor-pointer hover-lift">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <GraduationCap className="h-5 w-5 text-primary shrink-0" />
+                        <GraduationCap className="h-5 w-5 text-gold shrink-0" />
                         <div>
                           <CardTitle className="text-base">
                             {session.coachName}

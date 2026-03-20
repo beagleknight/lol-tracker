@@ -72,7 +72,7 @@ function ReviewCard({
   }
 
   return (
-    <Card>
+    <Card className="surface-glow">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <div
@@ -155,7 +155,7 @@ export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Review Queue</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Review Queue</h1>
         <p className="text-muted-foreground">
           {matches.length} game{matches.length !== 1 ? "s" : ""} waiting for
           review.
@@ -164,7 +164,7 @@ export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
 
       {matches.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <CheckCircle2 className="h-8 w-8 text-green-500 mb-3" />
+          <CheckCircle2 className="h-8 w-8 text-gold mb-3" />
           <p className="text-lg font-medium">All caught up!</p>
           <p className="text-sm text-muted-foreground mt-1">
             No games waiting for review. Keep playing and syncing.

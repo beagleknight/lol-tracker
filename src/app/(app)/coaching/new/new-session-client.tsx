@@ -139,7 +139,7 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
             New Coaching Session
           </h1>
           <p className="text-muted-foreground">
@@ -149,7 +149,7 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
       </div>
 
       {/* Basic Info */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>Session Details</CardTitle>
         </CardHeader>
@@ -198,7 +198,7 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
       </Card>
 
       {/* Topics */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>Topics Covered</CardTitle>
           <CardDescription>
@@ -254,7 +254,7 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
       </Card>
 
       {/* Link Games */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>Games Reviewed</CardTitle>
           <CardDescription>
@@ -315,7 +315,7 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
       </Card>
 
       {/* Action Items */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>Action Items</CardTitle>
           <CardDescription>
@@ -326,9 +326,9 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
           {actionItems.length > 0 && (
             <div className="space-y-2">
               {actionItems.map((item, i) => (
-                <div
+                  <div
                   key={i}
-                  className="flex items-center gap-2 rounded-lg border p-2"
+                  className="flex items-center gap-2 rounded-lg border border-border/50 p-2 bg-surface-elevated"
                 >
                   <div className="flex-1">
                     <p className="text-sm">{item.description}</p>

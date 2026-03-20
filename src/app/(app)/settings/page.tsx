@@ -60,19 +60,19 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Settings</h1>
         <p className="text-muted-foreground">
           Manage your account and Riot Games integration.
         </p>
       </div>
 
       {/* Riot Account Card */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             Riot Account
             {isLinked ? (
-              <Badge variant="default" className="ml-2">
+              <Badge variant="default" className="ml-2 bg-gold/20 text-gold border border-gold/30">
                 Linked
               </Badge>
             ) : (
@@ -88,10 +88,10 @@ export default function SettingsPage() {
         <CardContent>
           {isLinked ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-4 rounded-lg border p-4">
+              <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Riot ID</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-lg font-semibold text-gold">
                     {session.user.riotGameName}#{session.user.riotTagLine}
                   </p>
                 </div>
@@ -148,7 +148,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* API Key Info Card */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>API Key Info</CardTitle>
           <CardDescription>
@@ -164,12 +164,12 @@ export default function SettingsPage() {
               href="https://developer.riotgames.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline"
+              className="text-electric underline hover:text-electric-light"
             >
               developer.riotgames.com
             </a>{" "}
-            and update the <code className="text-xs bg-muted px-1 py-0.5 rounded">RIOT_API_KEY</code> in your{" "}
-            <code className="text-xs bg-muted px-1 py-0.5 rounded">.env.local</code> file.
+            and update the <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">RIOT_API_KEY</code> in your{" "}
+            <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">.env.local</code> file.
           </p>
         </CardContent>
       </Card>

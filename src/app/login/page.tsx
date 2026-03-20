@@ -13,13 +13,15 @@ import { Swords } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-background bg-mesh">
+      <Card className="w-full max-w-md border-gold/20 surface-glow">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <Swords className="h-8 w-8 text-primary" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 glow-gold-sm">
+            <Swords className="h-8 w-8 text-gold" />
           </div>
-          <CardTitle className="text-2xl">LoL Tracker</CardTitle>
+          <CardTitle className="text-2xl text-gradient-gold">
+            LoL Tracker
+          </CardTitle>
           <CardDescription>
             Track your League of Legends games, coaching sessions, and improve
             your gameplay.
@@ -28,7 +30,7 @@ export default function LoginPage() {
         <CardContent>
           <Button
             onClick={() => signIn("discord", { callbackUrl: "/dashboard" })}
-            className="w-full"
+            className="w-full hover-lift"
             size="lg"
           >
             <svg

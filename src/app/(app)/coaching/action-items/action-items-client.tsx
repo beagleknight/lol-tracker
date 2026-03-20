@@ -78,7 +78,7 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
   }).format(item.sessionDate);
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
+    <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated">
       <button
         onClick={cycleStatus}
         disabled={isPending}
@@ -162,7 +162,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Action Items</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Action Items</h1>
         <p className="text-muted-foreground">
           {pendingCount} pending · {inProgressCount} in progress ·{" "}
           {completedCount} completed
@@ -207,8 +207,8 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
 
       {/* Items */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <ListChecks className="h-8 w-8 text-muted-foreground mb-3" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 py-16 text-center">
+          <ListChecks className="h-8 w-8 text-gold mb-3" />
           <p className="text-lg font-medium">
             {items.length === 0
               ? "No action items yet"

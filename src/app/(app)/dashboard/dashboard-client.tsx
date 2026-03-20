@@ -140,7 +140,7 @@ export function DashboardClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Dashboard</h1>
           {user.riotGameName && (
             <p className="text-muted-foreground">
               {user.riotGameName}#{user.riotTagLine}
@@ -162,7 +162,7 @@ export function DashboardClient({
       </div>
 
       {!isLinked && (
-        <div className="flex items-center gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
+        <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
             Link your Riot account in{" "}
@@ -177,16 +177,16 @@ export function DashboardClient({
       {/* Rank + Streak Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Rank Card */}
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>Current Rank</CardDescription>
           </CardHeader>
           <CardContent>
             {rankInfo ? (
               <div>
-                <p className="text-2xl font-bold">{rankInfo.display}</p>
+                <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
                 <p className="text-sm text-muted-foreground">
-                  {rankInfo.lp} LP &middot; {rankInfo.wins}W {rankInfo.losses}L
+                  <span className="text-gold/80">{rankInfo.lp} LP</span> &middot; {rankInfo.wins}W {rankInfo.losses}L
                 </p>
               </div>
             ) : (
@@ -198,7 +198,7 @@ export function DashboardClient({
         </Card>
 
         {/* Win Rate Card */}
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>Session Win Rate (Last 20)</CardDescription>
           </CardHeader>
@@ -221,7 +221,7 @@ export function DashboardClient({
         </Card>
 
         {/* Streak Card */}
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>Current Streak</CardDescription>
           </CardHeader>
@@ -244,12 +244,12 @@ export function DashboardClient({
         </Card>
 
         {/* Avg KDA Card */}
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>Avg KDA (Last 20)</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono">
+            <p className="text-2xl font-bold font-mono text-gold">
               {avgKills}/{avgDeaths}/{avgAssists}
             </p>
             <p className="text-sm text-muted-foreground">
@@ -262,7 +262,7 @@ export function DashboardClient({
       {/* Recent Games + Action Items */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Games */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 surface-glow">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Recent Games</CardTitle>
@@ -288,7 +288,7 @@ export function DashboardClient({
                   <Link
                     key={match.id}
                     href={`/matches/${match.id}`}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent transition-colors"
+                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
                   >
                     <div
                       className={`w-1 h-8 rounded-full ${
@@ -344,7 +344,7 @@ export function DashboardClient({
         {/* Right Column */}
         <div className="space-y-4">
           {/* Review Queue Card */}
-          <Card>
+          <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">Review Queue</CardTitle>
               <Link href="/review">
@@ -369,7 +369,7 @@ export function DashboardClient({
           </Card>
 
           {/* Action Items Card */}
-          <Card>
+          <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">Action Items</CardTitle>
               <Link href="/coaching/action-items">
@@ -394,7 +394,7 @@ export function DashboardClient({
                       <div
                         className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
                           item.status === "in_progress"
-                            ? "bg-yellow-500"
+                            ? "bg-gold"
                             : "bg-muted-foreground"
                         }`}
                       />
