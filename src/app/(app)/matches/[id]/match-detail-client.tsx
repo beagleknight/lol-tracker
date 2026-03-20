@@ -239,8 +239,19 @@ export function MatchDetailClient({
                     {" "}{match.runeKeystoneName}
                   </>
                 )}
-                {match.matchupChampionName &&
-                  ` vs ${match.matchupChampionName}`}
+                {match.matchupChampionName && (
+                  <>
+                    {" "}vs{" "}
+                    <Image
+                      src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                      alt={match.matchupChampionName}
+                      width={16}
+                      height={16}
+                      className="inline rounded"
+                    />
+                    {" "}{match.matchupChampionName}
+                  </>
+                )}
               </p>
             </div>
           </div>
