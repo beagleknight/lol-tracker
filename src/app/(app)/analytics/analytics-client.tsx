@@ -187,7 +187,7 @@ export function AnalyticsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Analytics</h1>
           <p className="text-muted-foreground">
             Sync some games first to see your analytics.
           </p>
@@ -206,17 +206,17 @@ export function AnalyticsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Analytics</h1>
         <p className="text-muted-foreground">
           {matches.length} games analyzed.
         </p>
       </div>
 
       {/* Win Rate Over Time */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="h-4 w-4 text-gold" />
             Win Rate Over Time (10-game rolling)
           </CardTitle>
           <CardDescription>
@@ -227,23 +227,23 @@ export function AnalyticsClient({
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={rollingWR}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
                 <XAxis
                   dataKey="date"
-                  stroke="#888"
+                  stroke="oklch(0.55 0.02 260)"
                   fontSize={12}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  stroke="#888"
+                  stroke="oklch(0.55 0.02 260)"
                   fontSize={12}
                   domain={[0, 100]}
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #333",
+                    backgroundColor: "oklch(0.18 0.03 260)",
+                    border: "1px solid oklch(0.25 0.03 260)",
                     borderRadius: "8px",
                   }}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -251,19 +251,19 @@ export function AnalyticsClient({
                 />
                 <ReferenceLine
                   y={50}
-                  stroke="#666"
+                  stroke="oklch(0.35 0.02 260)"
                   strokeDasharray="3 3"
-                  label={{ value: "50%", fill: "#888", fontSize: 11 }}
+                  label={{ value: "50%", fill: "oklch(0.55 0.02 260)", fontSize: 11 }}
                 />
                 {coachingIndices.map((c, i) => (
                   <ReferenceLine
                     key={i}
                     x={c.index}
-                    stroke="#a855f7"
+                    stroke="oklch(0.6 0.2 300)"
                     strokeDasharray="4 4"
                     label={{
                       value: c.coachName,
-                      fill: "#a855f7",
+                      fill: "oklch(0.6 0.2 300)",
                       fontSize: 10,
                       position: "top",
                     }}
@@ -272,7 +272,7 @@ export function AnalyticsClient({
                 <Line
                   type="monotone"
                   dataKey="winRate"
-                  stroke="#22c55e"
+                  stroke="oklch(0.78 0.14 80)"
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}
@@ -285,7 +285,7 @@ export function AnalyticsClient({
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Matchup Win Rates */}
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>Matchup Win Rates</CardTitle>
             <CardDescription>Top 10 most-played matchups</CardDescription>
@@ -294,25 +294,25 @@ export function AnalyticsClient({
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topMatchups} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
                   <XAxis
                     type="number"
                     domain={[0, 100]}
                     tickFormatter={(v) => `${v}%`}
-                    stroke="#888"
+                    stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
                   />
                   <YAxis
                     type="category"
                     dataKey="name"
                     width={90}
-                    stroke="#888"
+                    stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #333",
+                      backgroundColor: "oklch(0.18 0.03 260)",
+                      border: "1px solid oklch(0.25 0.03 260)",
                       borderRadius: "8px",
                     }}
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -321,12 +321,12 @@ export function AnalyticsClient({
                       "Win Rate",
                     ]}
                   />
-                  <ReferenceLine x={50} stroke="#666" strokeDasharray="3 3" />
+                  <ReferenceLine x={50} stroke="oklch(0.35 0.02 260)" strokeDasharray="3 3" />
                   <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
                     {topMatchups.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={entry.winRate >= 50 ? "#22c55e" : "#ef4444"}
+                        fill={entry.winRate >= 50 ? "oklch(0.78 0.14 80)" : "#ef4444"}
                       />
                     ))}
                   </Bar>
@@ -337,7 +337,7 @@ export function AnalyticsClient({
         </Card>
 
         {/* Rune Comparison */}
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>Rune Keystones</CardTitle>
             <CardDescription>Win rate by keystone rune</CardDescription>
@@ -387,7 +387,7 @@ export function AnalyticsClient({
       </div>
 
       {/* Champion Stats */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle>Champion Stats</CardTitle>
           <CardDescription>Performance by champion</CardDescription>

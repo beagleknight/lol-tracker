@@ -12,7 +12,7 @@ export default async function AppLayout({
 
   return (
     <SessionProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-mesh">
         <AppSidebar
           user={{
             name: user.name,

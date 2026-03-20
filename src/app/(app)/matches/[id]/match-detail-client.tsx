@@ -84,7 +84,7 @@ function ParticipantRow({
         );
 
   return (
-    <TableRow className={isUser ? "bg-primary/5" : ""}>
+    <TableRow className={isUser ? "bg-gold/5 border-l-2 border-gold/40" : ""}>
       <TableCell>
         <div className="flex items-center gap-2">
           <Image
@@ -96,7 +96,7 @@ function ParticipantRow({
           />
           <div>
             <span
-              className={`text-sm ${isUser ? "font-bold text-primary" : ""}`}
+              className={`text-sm ${isUser ? "font-bold text-gold" : ""}`}
             >
               {participant.riotIdGameName || participant.summonerName}
             </span>
@@ -201,7 +201,7 @@ export function MatchDetailClient({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold">{match.championName}</h1>
+                <h1 className="text-xl font-bold text-gradient-gold">{match.championName}</h1>
                 <Badge
                   variant={
                     match.result === "Victory" ? "default" : "destructive"
@@ -241,37 +241,37 @@ export function MatchDetailClient({
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold font-mono">
+            <p className="text-2xl font-bold font-mono text-gold">
               {match.kills}/{match.deaths}/{match.assists}
             </p>
             <p className="text-xs text-muted-foreground">KDA</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">{match.cs}</p>
+            <p className="text-2xl font-bold text-gold">{match.cs}</p>
             <p className="text-xs text-muted-foreground">
               CS ({match.csPerMin}/min)
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">
+            <p className="text-2xl font-bold text-gold">
               {((match.goldEarned || 0) / 1000).toFixed(1)}k
             </p>
             <p className="text-xs text-muted-foreground">Gold</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">{match.visionScore}</p>
+            <p className="text-2xl font-bold text-gold">{match.visionScore}</p>
             <p className="text-xs text-muted-foreground">Vision</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="text-2xl font-bold">
               {formatDuration(match.gameDurationSeconds)}
@@ -279,7 +279,7 @@ export function MatchDetailClient({
             <p className="text-xs text-muted-foreground">Duration</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="text-2xl font-bold">{match.runeKeystoneName}</p>
             <p className="text-xs text-muted-foreground">Keystone</p>
@@ -291,10 +291,10 @@ export function MatchDetailClient({
       {rawMatch && (
         <div className="space-y-4">
           {[
-            { team: blueTeam, label: "Blue Team", color: "text-blue-400" },
-            { team: redTeam, label: "Red Team", color: "text-red-400" },
+            { team: blueTeam, label: "Blue Team", color: "text-electric" },
+            { team: redTeam, label: "Red Team", color: "text-destructive" },
           ].map(({ team, label, color }) => (
-            <Card key={label}>
+            <Card key={label} className="surface-glow">
               <CardHeader className="pb-2">
                 <CardTitle className={`text-sm ${color}`}>{label}</CardTitle>
               </CardHeader>
@@ -334,7 +334,7 @@ export function MatchDetailClient({
       {/* Comment + Review Section */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Comment */}
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>Game Notes</CardTitle>
             <CardDescription>
@@ -360,7 +360,7 @@ export function MatchDetailClient({
         </Card>
 
         {/* Review */}
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>VOD Review</CardTitle>
             <CardDescription>

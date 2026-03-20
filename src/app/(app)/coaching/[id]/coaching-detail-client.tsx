@@ -81,7 +81,7 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
+    <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated">
       <button
         onClick={cycleStatus}
         disabled={isPending}
@@ -169,8 +169,8 @@ export function CoachingDetailClient({
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold">{session.coachName}</h1>
+            <GraduationCap className="h-5 w-5 text-gold" />
+            <h1 className="text-xl font-bold text-gradient-gold">{session.coachName}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             {dateStr}
@@ -211,7 +211,7 @@ export function CoachingDetailClient({
 
       {/* Notes */}
       {session.notes && (
-        <Card>
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Session Notes</CardTitle>
           </CardHeader>
@@ -223,7 +223,7 @@ export function CoachingDetailClient({
 
       {/* Linked Games */}
       {linkedMatches.length > 0 && (
-        <Card>
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Games Reviewed</CardTitle>
             <CardDescription>
@@ -236,7 +236,7 @@ export function CoachingDetailClient({
                 <Link
                   key={match.id}
                   href={`/matches/${match.id}`}
-                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent transition-colors"
+                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
                 >
                   <div
                     className={`w-1 h-8 rounded-full ${
@@ -260,7 +260,7 @@ export function CoachingDetailClient({
                       vs {match.matchupChampionName || "?"}
                     </span>
                   </div>
-                  <span className="text-sm font-mono">
+                  <span className="text-sm font-mono text-gold">
                     {match.kills}/{match.deaths}/{match.assists}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -284,7 +284,7 @@ export function CoachingDetailClient({
       <Separator />
 
       {/* Action Items */}
-      <Card>
+      <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="text-base">Action Items</CardTitle>
           <CardDescription>

@@ -291,7 +291,7 @@ export function MatchesClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Matches</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Matches</h1>
           <p className="text-muted-foreground">
             {filteredMatches.length} game{filteredMatches.length !== 1 ? "s" : ""}{" "}
             &middot; {wins}W {losses}L ({winRate}%)
@@ -312,7 +312,7 @@ export function MatchesClient({
       </div>
 
       {!isRiotLinked && (
-        <div className="flex items-center gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
+        <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
             Link your Riot account in{" "}
@@ -380,7 +380,7 @@ export function MatchesClient({
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="rounded-lg border surface-glow">
           <Table>
             <TableHeader>
               <TableRow>

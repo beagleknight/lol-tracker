@@ -66,9 +66,9 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       href={item.href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
         isActive
-          ? "bg-primary/10 text-primary font-medium"
+          ? "bg-gold/10 text-gold font-medium border-l-2 border-gold glow-gold-sm"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
@@ -86,8 +86,8 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-14 items-center gap-2 px-4 font-semibold">
-        <Swords className="h-5 w-5 text-primary" />
-        <span>LoL Tracker</span>
+        <Swords className="h-5 w-5 text-gold" />
+        <span className="text-gradient-gold">LoL Tracker</span>
       </div>
       <Separator />
 
@@ -99,7 +99,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
           Coaching
         </div>
         <div className="space-y-1">
@@ -121,16 +121,16 @@ function SidebarContent({
       <Separator />
       <div className="p-3">
         <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 ring-2 ring-gold/20">
             <AvatarImage src={user.image || undefined} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-gold/10 text-gold">
               {(user.name || "U").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user.name}</p>
             {user.riotGameName && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-gold/60 truncate">
                 {user.riotGameName}#{user.riotTagLine}
               </p>
             )}
@@ -138,7 +138,7 @@ function SidebarContent({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0"
+            className="h-8 w-8 shrink-0 hover:text-destructive"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
             <LogOut className="h-4 w-4" />
@@ -171,7 +171,7 @@ export function AppSidebar({ user }: SidebarProps) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -179,7 +179,7 @@ export function AppSidebar({ user }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen w-64 border-r bg-card transition-transform md:translate-x-0",
+          "fixed top-0 left-0 z-40 h-screen w-64 border-r border-border/50 bg-card transition-transform md:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

@@ -232,7 +232,7 @@ export default function ImportPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Import Games</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Import Games</h1>
         <p className="text-muted-foreground">
           Import your existing game data from a CSV spreadsheet.
         </p>
@@ -240,7 +240,7 @@ export default function ImportPage() {
 
       {/* Import Result */}
       {importResult && (
-        <Card className="border-green-500/50">
+        <Card className="border-green-500/50 surface-glow">
           <CardContent className="flex items-center gap-3 pt-6">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div>
@@ -255,7 +255,7 @@ export default function ImportPage() {
 
       {/* File Upload */}
       {!importResult && (
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>Upload CSV File</CardTitle>
             <CardDescription>
@@ -269,8 +269,8 @@ export default function ImportPage() {
             <div
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                 isDragOver
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                  ? "border-gold bg-gold/5 glow-gold-sm"
+                  : "border-muted-foreground/25 hover:border-gold/50"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -296,7 +296,7 @@ export default function ImportPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                  <Upload className="h-10 w-10 mx-auto text-gold" />
                   <div>
                     <p className="text-sm font-medium">
                       Drag and drop your CSV file here, or click to browse
@@ -329,7 +329,7 @@ export default function ImportPage() {
 
       {/* Parse Errors */}
       {parseErrors.length > 0 && (
-        <Card className="border-yellow-500/50">
+        <Card className="border-yellow-500/50 surface-glow">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-yellow-500">
               <AlertTriangle className="h-4 w-4" />
@@ -351,7 +351,7 @@ export default function ImportPage() {
       {/* Preview Table */}
       {rows.length > 0 && !importResult && (
         <>
-          <Card>
+          <Card className="surface-glow">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Preview ({rows.length} games)</span>
@@ -466,12 +466,12 @@ export default function ImportPage() {
 
       {/* Instructions when no file loaded and no result */}
       {rows.length === 0 && !importResult && parseErrors.length === 0 && (
-        <Card>
+        <Card className="surface-glow">
           <CardHeader>
             <CardTitle>CSV Format Example</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="text-xs font-mono bg-muted p-4 rounded-lg overflow-x-auto">
+            <pre className="text-xs font-mono bg-surface-elevated p-4 rounded-lg overflow-x-auto border border-border/50">
               {`Date,Result,Champion,Rune,Matchup,Comments,Reviewed,Review Notes
 17/01/2026,Victory,Qiyana,Electrocute,Syndra,Great roams,Yes,Good map awareness
 18/01/2026,Defeat,Qiyana,Conqueror,Zed,Died too much,No,`}
