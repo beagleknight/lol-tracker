@@ -95,7 +95,7 @@ export interface RiotMatch {
 
 // ─── API Helpers ─────────────────────────────────────────────────────────────
 
-class RiotApiError extends Error {
+export class RiotApiError extends Error {
   constructor(
     public status: number,
     message: string
@@ -118,9 +118,9 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
       return response.json();
     }
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       throw new RiotApiError(
-        403,
+        response.status,
         "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
       );
     }
@@ -273,9 +273,9 @@ export async function getActiveGame(
       return null; // Not in game — this is expected
     }
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       throw new RiotApiError(
-        403,
+        response.status,
         "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
       );
     }

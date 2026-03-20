@@ -10,6 +10,7 @@ declare module "next-auth" {
       riotGameName?: string | null;
       riotTagLine?: string | null;
       puuid?: string | null;
+      role?: string | null;
     };
   }
 }
