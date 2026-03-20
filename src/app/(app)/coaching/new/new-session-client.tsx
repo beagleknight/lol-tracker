@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { Loader2, Plus, X, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const PREDEFINED_TOPICS = [
   "Laning phase",
@@ -46,9 +47,10 @@ interface MatchSummary {
 
 interface NewSessionClientProps {
   recentMatches: MatchSummary[];
+  ddragonVersion: string;
 }
 
-export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
+export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -289,11 +291,30 @@ export function NewSessionClient({ recentMatches }: NewSessionClientProps) {
                           : "bg-red-500"
                       }`}
                     />
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium inline-flex items-center gap-1.5">
+                      <Image
+                        src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+                        alt={match.championName}
+                        width={20}
+                        height={20}
+                        className="rounded"
+                      />
                       {match.championName}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      vs {match.matchupChampionName || "?"}
+                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                      vs
+                      {match.matchupChampionName ? (
+                        <>
+                          <Image
+                            src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                            alt={match.matchupChampionName}
+                            width={16}
+                            height={16}
+                            className="rounded"
+                          />
+                          {match.matchupChampionName}
+                        </>
+                      ) : "?"}
                     </span>
                     <span className="text-xs font-mono text-muted-foreground ml-auto">
                       {match.kills}/{match.deaths}/{match.assists}

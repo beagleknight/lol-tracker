@@ -264,8 +264,20 @@ export function CoachingDetailClient({
                     <span className="text-sm font-medium">
                       {match.championName}
                     </span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      vs {match.matchupChampionName || "?"}
+                    <span className="text-xs text-muted-foreground ml-2 inline-flex items-center gap-1">
+                      vs
+                      {match.matchupChampionName ? (
+                        <>
+                          <Image
+                            src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                            alt={match.matchupChampionName}
+                            width={16}
+                            height={16}
+                            className="rounded"
+                          />
+                          {match.matchupChampionName}
+                        </>
+                      ) : "?"}
                     </span>
                   </div>
                   <span className="text-sm font-mono text-gold">

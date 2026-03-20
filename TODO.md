@@ -10,16 +10,17 @@
 - [ ] Match detail: save game notes and VOD review notes
 
 ## Polish
-- [ ] Add loading states with Suspense boundaries and skeleton components
-- [ ] Add error boundaries for graceful error handling
-- [ ] Add toast notifications (Sonner) for success/error feedback on all actions
+- [x] Add loading states with Suspense boundaries and skeleton components
+- [x] Add error boundaries for graceful error handling
+- [x] Add toast notifications (Sonner) for success/error feedback on all actions
+- [x] Add champion avatars everywhere (champion stats, matchup labels, filters, game pickers)
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
 - [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)
 - [ ] Add LP gain/loss column to matches table
-- [ ] Add LP graph to dashboard and/or analytics page
+- [x] Add LP graph to dashboard and/or analytics page
 - [ ] Show promotion/demotion markers on LP graph
 
 ## Features — Future Enhancements

@@ -487,7 +487,16 @@ export function MatchesClient({
             <SelectItem value="all">All Champions</SelectItem>
             {champions.map((c) => (
               <SelectItem key={c} value={c}>
-                {c}
+                <span className="inline-flex items-center gap-1.5">
+                  <Image
+                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${c}.png`}
+                    alt={c}
+                    width={16}
+                    height={16}
+                    className="rounded"
+                  />
+                  {c}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

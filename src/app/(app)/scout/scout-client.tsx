@@ -714,7 +714,16 @@ export function ScoutClient({
             <span className="text-electric-light font-medium">In Game!</span>{" "}
             Playing{" "}
             {liveResult.userChampionName && (
-              <span className="font-medium">{liveResult.userChampionName}</span>
+              <span className="font-medium inline-flex items-center gap-1">
+                <Image
+                  src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${liveResult.userChampionName}.png`}
+                  alt={liveResult.userChampionName}
+                  width={20}
+                  height={20}
+                  className="rounded"
+                />
+                {liveResult.userChampionName}
+              </span>
             )}
             {liveResult.gameQueueId === 420 ? (
               <span className="text-muted-foreground"> (Ranked Solo/Duo)</span>

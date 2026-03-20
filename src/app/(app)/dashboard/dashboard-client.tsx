@@ -337,8 +337,20 @@ export function DashboardClient({
                         <span className="text-sm font-medium">
                           {match.championName}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          vs {match.matchupChampionName || "?"}
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                          vs
+                          {match.matchupChampionName ? (
+                            <>
+                              <Image
+                                src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                                alt={match.matchupChampionName}
+                                width={16}
+                                height={16}
+                                className="rounded"
+                              />
+                              {match.matchupChampionName}
+                            </>
+                          ) : "?"}
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground inline-flex items-center gap-1">

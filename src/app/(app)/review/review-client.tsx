@@ -110,7 +110,19 @@ function ReviewCard({
               {formatDate(match.gameDate)} &middot;{" "}
               {match.kills}/{match.deaths}/{match.assists} &middot;{" "}
               {formatDuration(match.gameDurationSeconds)} &middot;{" "}
-              vs {match.matchupChampionName || "?"}
+              vs{" "}
+              {match.matchupChampionName ? (
+                <>
+                  <Image
+                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                    alt={match.matchupChampionName}
+                    width={16}
+                    height={16}
+                    className="rounded"
+                  />
+                  {match.matchupChampionName}
+                </>
+              ) : "?"}
               {match.runeKeystoneName && (
                 <>
                   {" "}&middot;{" "}

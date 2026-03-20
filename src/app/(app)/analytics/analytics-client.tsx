@@ -174,6 +174,7 @@ interface AnalyticsClientProps {
   matches: Match[];
   coachingSessions: CoachingSessionSummary[];
   rankSnapshots: RankSnapshot[];
+  ddragonVersion: string;
 }
 
 // Rolling win rate: for each match, calculate win rate of last N games
@@ -286,6 +287,7 @@ export function AnalyticsClient({
   matches,
   coachingSessions,
   rankSnapshots,
+  ddragonVersion,
 }: AnalyticsClientProps) {
   const rollingWR = useMemo(() => computeRollingWinRate(matches), [matches]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
@@ -632,9 +634,31 @@ export function AnalyticsClient({
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={90}
+                    width={110}
                     stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
+                    tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
+                      <g transform={`translate(${x},${y})`}>
+                        <image
+                          href={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${payload.value}.png`}
+                          x={-110}
+                          y={-10}
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: 2 }}
+                        />
+                        <text
+                          x={-86}
+                          y={0}
+                          dy={4}
+                          fill="oklch(0.55 0.02 260)"
+                          fontSize={12}
+                          textAnchor="start"
+                        >
+                          {payload.value}
+                        </text>
+                      </g>
+                    )}
                   />
                   <Tooltip
                     contentStyle={{
@@ -742,7 +766,16 @@ export function AnalyticsClient({
               {championStats.map((champ) => (
                 <TableRow key={champ.name}>
                   <TableCell className="font-medium text-sm">
-                    {champ.name}
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champ.name}.png`}
+                        alt={champ.name}
+                        width={24}
+                        height={24}
+                        className="rounded"
+                      />
+                      {champ.name}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center text-sm">
                     {champ.games}
