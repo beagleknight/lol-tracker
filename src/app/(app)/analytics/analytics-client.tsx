@@ -6,6 +6,8 @@ import {
   Line,
   BarChart,
   Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -30,8 +32,135 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, TrendingUp } from "lucide-react";
+import { BarChart3, TrendingUp, Trophy } from "lucide-react";
 import type { Match, RankSnapshot } from "@/db/schema";
+
+// ─── LP / Rank Utilities ─────────────────────────────────────────────────────
+
+const TIER_ORDER = [
+  "IRON",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "EMERALD",
+  "DIAMOND",
+  "MASTER",
+  "GRANDMASTER",
+  "CHALLENGER",
+] as const;
+
+const DIVISION_ORDER = ["IV", "III", "II", "I"] as const;
+
+// LP per division = 100, 4 divisions per tier (except Master+ which has no divisions)
+const LP_PER_DIVISION = 100;
+const DIVISIONS_PER_TIER = 4;
+const LP_PER_TIER = LP_PER_DIVISION * DIVISIONS_PER_TIER; // 400
+
+/**
+ * Convert tier + division + lp into a single cumulative LP number.
+ * Iron IV 0 LP = 0, Iron III 0 LP = 100, Bronze IV 0 LP = 400, etc.
+ * Master+ tiers have no divisions, treated as division I.
+ */
+function toCumulativeLP(
+  tier: string | null | undefined,
+  division: string | null | undefined,
+  lp: number | null | undefined
+): number | null {
+  if (!tier) return null;
+  const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase() as typeof TIER_ORDER[number]);
+  if (tierIdx === -1) return null;
+
+  // Master+ have no divisions — treat as single division
+  const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
+  const divIdx = isMasterPlus
+    ? 0
+    : DIVISION_ORDER.indexOf((division || "IV") as typeof DIVISION_ORDER[number]);
+
+  const baseLp = tierIdx * LP_PER_TIER;
+  const divLp = (divIdx < 0 ? 0 : divIdx) * LP_PER_DIVISION;
+  return baseLp + divLp + (lp || 0);
+}
+
+/** Get tier boundaries for reference lines within a given LP range */
+function getTierBoundaries(
+  minLP: number,
+  maxLP: number
+): Array<{ lp: number; label: string }> {
+  const boundaries: Array<{ lp: number; label: string }> = [];
+  for (let i = 0; i < TIER_ORDER.length; i++) {
+    const boundary = i * LP_PER_TIER;
+    if (boundary > minLP && boundary < maxLP) {
+      const tierName =
+        TIER_ORDER[i].charAt(0) + TIER_ORDER[i].slice(1).toLowerCase();
+      boundaries.push({ lp: boundary, label: tierName });
+    }
+  }
+  return boundaries;
+}
+
+/** Format cumulative LP back to human-readable rank string */
+function formatRank(cumulativeLP: number): string {
+  const tierIdx = Math.min(
+    Math.floor(cumulativeLP / LP_PER_TIER),
+    TIER_ORDER.length - 1
+  );
+  const tier = TIER_ORDER[tierIdx];
+  const tierName = tier.charAt(0) + tier.slice(1).toLowerCase();
+
+  const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
+  if (isMasterPlus) {
+    const lp = cumulativeLP - tierIdx * LP_PER_TIER;
+    return `${tierName} ${lp} LP`;
+  }
+
+  const lpInTier = cumulativeLP - tierIdx * LP_PER_TIER;
+  const divIdx = Math.min(Math.floor(lpInTier / LP_PER_DIVISION), 3);
+  const division = DIVISION_ORDER[divIdx];
+  const lp = lpInTier - divIdx * LP_PER_DIVISION;
+  return `${tierName} ${division} — ${lp} LP`;
+}
+
+/** Prepare rank snapshot data for the LP chart */
+function prepareRankChartData(snapshots: RankSnapshot[]) {
+  const data: Array<{
+    date: string;
+    cumulativeLP: number;
+    tier: string;
+    division: string;
+    lp: number;
+    wins: number;
+    losses: number;
+    timestamp: number;
+  }> = [];
+
+  for (const s of snapshots) {
+    const clp = toCumulativeLP(s.tier, s.division, s.lp);
+    if (clp === null) continue;
+
+    const dateStr = new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+    }).format(s.capturedAt);
+
+    const tierName = s.tier
+      ? s.tier.charAt(0) + s.tier.slice(1).toLowerCase()
+      : "";
+
+    data.push({
+      date: dateStr,
+      cumulativeLP: clp,
+      tier: tierName,
+      division: s.division || "",
+      lp: s.lp || 0,
+      wins: s.wins || 0,
+      losses: s.losses || 0,
+      timestamp: s.capturedAt.getTime(),
+    });
+  }
+
+  return data;
+}
 
 interface CoachingSessionSummary {
   id: number;
@@ -154,6 +283,7 @@ function computeChampionStats(matches: Match[]) {
 export function AnalyticsClient({
   matches,
   coachingSessions,
+  rankSnapshots,
 }: AnalyticsClientProps) {
   const rollingWR = useMemo(() => computeRollingWinRate(matches), [matches]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
@@ -161,6 +291,10 @@ export function AnalyticsClient({
   const championStats = useMemo(
     () => computeChampionStats(matches),
     [matches]
+  );
+  const rankChartData = useMemo(
+    () => prepareRankChartData(rankSnapshots),
+    [rankSnapshots]
   );
 
   // Coaching session indices for reference lines
@@ -182,6 +316,48 @@ export function AnalyticsClient({
 
   // Top matchup data for bar chart (top 10 by games played)
   const topMatchups = matchupStats.slice(0, 10);
+
+  // LP chart: compute boundaries and promotion/demotion markers
+  const lpChartMeta = useMemo(() => {
+    if (rankChartData.length < 2) return null;
+
+    const allLP = rankChartData.map((d) => d.cumulativeLP);
+    const minLP = Math.min(...allLP);
+    const maxLP = Math.max(...allLP);
+    // Add some padding
+    const padding = Math.max((maxLP - minLP) * 0.1, 20);
+    const yMin = Math.max(0, Math.floor((minLP - padding) / 100) * 100);
+    const yMax = Math.ceil((maxLP + padding) / 100) * 100;
+
+    const tierBoundaries = getTierBoundaries(yMin, yMax);
+
+    // Detect promotions/demotions
+    const events: Array<{
+      index: number;
+      type: "promotion" | "demotion";
+      from: string;
+      to: string;
+    }> = [];
+    for (let i = 1; i < rankChartData.length; i++) {
+      const prev = rankChartData[i - 1];
+      const curr = rankChartData[i];
+      if (prev.tier !== curr.tier) {
+        events.push({
+          index: i,
+          type: curr.cumulativeLP > prev.cumulativeLP ? "promotion" : "demotion",
+          from: `${prev.tier} ${prev.division}`,
+          to: `${curr.tier} ${curr.division}`,
+        });
+      }
+    }
+
+    // Net LP change
+    const first = rankChartData[0];
+    const last = rankChartData[rankChartData.length - 1];
+    const netChange = last.cumulativeLP - first.cumulativeLP;
+
+    return { yMin, yMax, tierBoundaries, events, netChange };
+  }, [rankChartData]);
 
   if (matches.length === 0) {
     return (
@@ -211,6 +387,155 @@ export function AnalyticsClient({
           {matches.length} games analyzed.
         </p>
       </div>
+
+      {/* LP Over Time */}
+      {rankChartData.length >= 2 && lpChartMeta && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-gold" />
+              LP Over Time
+            </CardTitle>
+            <CardDescription className="flex items-center gap-3">
+              <span>Rank progression across {rankChartData.length} snapshots</span>
+              <span
+                className={`font-mono font-semibold ${
+                  lpChartMeta.netChange >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {lpChartMeta.netChange >= 0 ? "+" : ""}
+                {lpChartMeta.netChange} LP net
+              </span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={rankChartData}>
+                  <defs>
+                    <linearGradient id="lpGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="oklch(0.78 0.14 80)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="oklch(0.78 0.14 80)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="oklch(0.55 0.02 260)"
+                    fontSize={12}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    stroke="oklch(0.55 0.02 260)"
+                    fontSize={12}
+                    domain={[lpChartMeta.yMin, lpChartMeta.yMax]}
+                    tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "oklch(0.18 0.03 260)",
+                      border: "1px solid oklch(0.25 0.03 260)",
+                      borderRadius: "8px",
+                    }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload[0]) return null;
+                      const d = payload[0].payload as (typeof rankChartData)[0];
+                      return (
+                        <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                          <p className="font-semibold text-gold">
+                            {d.tier} {d.division}
+                          </p>
+                          <p className="text-sm">
+                            <span className="text-gold/80">{d.lp} LP</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {d.wins}W {d.losses}L &middot; {d.date}
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
+                  {/* Tier boundary reference lines */}
+                  {lpChartMeta.tierBoundaries.map((b) => (
+                    <ReferenceLine
+                      key={b.label}
+                      y={b.lp}
+                      stroke="oklch(0.65 0.17 250)"
+                      strokeDasharray="6 3"
+                      label={{
+                        value: b.label,
+                        fill: "oklch(0.65 0.17 250)",
+                        fontSize: 11,
+                        position: "right",
+                      }}
+                    />
+                  ))}
+                  {/* Promotion/demotion markers */}
+                  {lpChartMeta.events.map((e, i) => (
+                    <ReferenceLine
+                      key={`event-${i}`}
+                      x={rankChartData[e.index].date}
+                      stroke={
+                        e.type === "promotion"
+                          ? "oklch(0.72 0.15 150)"
+                          : "oklch(0.65 0.22 27)"
+                      }
+                      strokeDasharray="4 4"
+                      label={{
+                        value: e.type === "promotion" ? "Promoted" : "Demoted",
+                        fill:
+                          e.type === "promotion"
+                            ? "oklch(0.72 0.15 150)"
+                            : "oklch(0.65 0.22 27)",
+                        fontSize: 10,
+                        position: "top",
+                      }}
+                    />
+                  ))}
+                  <Area
+                    type="monotone"
+                    dataKey="cumulativeLP"
+                    stroke="oklch(0.78 0.14 80)"
+                    strokeWidth={2}
+                    fill="url(#lpGradient)"
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    dot={(props: any) => {
+                      // Highlight promotion/demotion points
+                      const isEvent = lpChartMeta.events.some(
+                        (e: { index: number }) => e.index === props.index
+                      );
+                      if (isEvent) {
+                        return (
+                          <circle
+                            key={props.index}
+                            cx={props.cx}
+                            cy={props.cy}
+                            r={5}
+                            fill="oklch(0.78 0.14 80)"
+                            stroke="oklch(0.13 0.02 260)"
+                            strokeWidth={2}
+                          />
+                        );
+                      }
+                      return (
+                        <circle
+                          key={props.index}
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={2}
+                          fill="oklch(0.78 0.14 80)"
+                          opacity={0.5}
+                        />
+                      );
+                    }}
+                    activeDot={{ r: 5, fill: "oklch(0.85 0.12 80)" }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Win Rate Over Time */}
       <Card className="surface-glow">

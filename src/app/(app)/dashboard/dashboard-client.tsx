@@ -39,6 +39,7 @@ interface DashboardClientProps {
   recentMatches: Match[];
   allMatches: Match[];
   latestRank: RankSnapshot | null;
+  recentSnapshots: RankSnapshot[];
   actionItems: CoachingActionItem[];
   ddragonVersion: string;
 }
@@ -78,6 +79,7 @@ export function DashboardClient({
   recentMatches,
   allMatches,
   latestRank,
+  recentSnapshots,
   actionItems,
   ddragonVersion,
 }: DashboardClientProps) {
@@ -123,6 +125,30 @@ export function DashboardClient({
 
   // Games needing review
   const unreviewedCount = allMatches.filter((m) => !m.reviewed).length;
+
+  // LP trend: compare latest snapshot to oldest in the recent set
+  const lpTrend = (() => {
+    if (recentSnapshots.length < 2) return null;
+    // recentSnapshots are ordered desc, so [0] is newest, [last] is oldest
+    const newest = recentSnapshots[0];
+    const oldest = recentSnapshots[recentSnapshots.length - 1];
+    if (!newest.tier || !oldest.tier) return null;
+
+    const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
+    const DIV_ORDER = ["IV", "III", "II", "I"];
+
+    function toCumLP(tier: string, division: string | null, lp: number) {
+      const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase());
+      if (tierIdx === -1) return 0;
+      const isMaster = tierIdx >= TIER_ORDER.indexOf("MASTER");
+      const divIdx = isMaster ? 0 : DIV_ORDER.indexOf(division || "IV");
+      return tierIdx * 400 + (divIdx < 0 ? 0 : divIdx) * 100 + lp;
+    }
+
+    const newLP = toCumLP(newest.tier, newest.division, newest.lp || 0);
+    const oldLP = toCumLP(oldest.tier, oldest.division, oldest.lp || 0);
+    return newLP - oldLP;
+  })();
 
   function handleSync() {
     startSync(async () => {
@@ -188,6 +214,20 @@ export function DashboardClient({
                 <p className="text-sm text-muted-foreground">
                   <span className="text-gold/80">{rankInfo.lp} LP</span> &middot; {rankInfo.wins}W {rankInfo.losses}L
                 </p>
+                {lpTrend !== null && (
+                  <p
+                    className={`text-xs font-mono font-semibold mt-1 flex items-center gap-1 ${
+                      lpTrend >= 0 ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    {lpTrend >= 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    {lpTrend >= 0 ? "+" : ""}{lpTrend} LP recently
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
