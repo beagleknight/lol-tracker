@@ -26,6 +26,13 @@ export default async function DashboardPage() {
     orderBy: desc(rankSnapshots.capturedAt),
   });
 
+  // Get recent rank snapshots for LP trend (last 10)
+  const recentSnapshots = await db.query.rankSnapshots.findMany({
+    where: eq(rankSnapshots.userId, user.id),
+    orderBy: desc(rankSnapshots.capturedAt),
+    limit: 10,
+  });
+
   // Get active action items
   const activeActionItems = await db.query.coachingActionItems.findMany({
     where: and(
@@ -60,6 +67,7 @@ export default async function DashboardPage() {
       recentMatches={recentMatches}
       allMatches={allMatches}
       latestRank={latestRank ?? null}
+      recentSnapshots={recentSnapshots}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       ddragonVersion={ddragonVersion}
     />
