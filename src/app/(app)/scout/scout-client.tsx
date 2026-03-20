@@ -41,6 +41,7 @@ import {
   BarChart3,
   ScrollText,
 } from "lucide-react";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -149,14 +150,26 @@ function PostGameReviewCard({
 
   const handleSave = useCallback(() => {
     startTransition(async () => {
-      if (comment) {
-        await updateMatchComment(match.matchId, comment);
+      try {
+        if (comment) {
+          const commentResult = await updateMatchComment(match.matchId, comment);
+          if (!commentResult.success) {
+            toast.error("Failed to save comment.");
+            return;
+          }
+        }
+        if (reviewed || reviewNotes) {
+          const reviewResult = await updateMatchReview(match.matchId, reviewed, reviewNotes);
+          if (!reviewResult.success) {
+            toast.error("Failed to save review.");
+            return;
+          }
+        }
+        toast.success("Post-game review saved!");
+        setSaved(true);
+      } catch {
+        toast.error("Failed to save review.");
       }
-      if (reviewed || reviewNotes) {
-        await updateMatchReview(match.matchId, reviewed, reviewNotes);
-      }
-      toast.success("Post-game review saved!");
-      setSaved(true);
     });
   }, [match.matchId, comment, reviewed, reviewNotes]);
 
@@ -209,6 +222,12 @@ function PostGameReviewCard({
             {match.runeKeystoneName && (
               <>
                 <span>&middot;</span>
+                {(() => {
+                  const url = getKeystoneIconUrlByName(match.runeKeystoneName);
+                  return url ? (
+                    <Image src={url} alt={match.runeKeystoneName} width={16} height={16} className="inline rounded" />
+                  ) : null;
+                })()}
                 <span>{match.runeKeystoneName}</span>
               </>
             )}
@@ -343,7 +362,15 @@ function ScoutingReport({
             {runeBreakdown.map((rune) => (
               <div key={rune.keystoneName} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
-                  <span>{rune.keystoneName}</span>
+                  <span className="flex items-center gap-1.5">
+                    {(() => {
+                      const url = getKeystoneIconUrlByName(rune.keystoneName);
+                      return url ? (
+                        <Image src={url} alt={rune.keystoneName} width={18} height={18} className="rounded" />
+                      ) : null;
+                    })()}
+                    {rune.keystoneName}
+                  </span>
                   <span className="text-muted-foreground font-mono text-xs">
                     {rune.wins}W {rune.losses}L ({rune.winRate}%) &middot;{" "}
                     {rune.games} game{rune.games !== 1 ? "s" : ""}
@@ -417,6 +444,12 @@ function ScoutingReport({
                       {g.runeKeystoneName && (
                         <>
                           <span>&middot;</span>
+                          {(() => {
+                            const url = getKeystoneIconUrlByName(g.runeKeystoneName);
+                            return url ? (
+                              <Image src={url} alt={g.runeKeystoneName} width={14} height={14} className="inline rounded" />
+                            ) : null;
+                          })()}
                           <span>{g.runeKeystoneName}</span>
                         </>
                       )}
@@ -498,7 +531,13 @@ function PastGameCard({
               <span className="text-muted-foreground text-xs ml-1">({kda})</span>
             </span>
             {game.runeKeystoneName && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                {(() => {
+                  const url = getKeystoneIconUrlByName(game.runeKeystoneName);
+                  return url ? (
+                    <Image src={url} alt={game.runeKeystoneName} width={14} height={14} className="inline rounded" />
+                  ) : null;
+                })()}
                 {game.runeKeystoneName}
               </span>
             )}
@@ -567,8 +606,12 @@ export function ScoutClient({
       setSelectedMatchup(v);
       if (v) {
         startReportTransition(async () => {
-          const result = await getMatchupReport(v);
-          setReport(result);
+          try {
+            const result = await getMatchupReport(v);
+            setReport(result);
+          } catch {
+            toast.error("Failed to load matchup report.");
+          }
         });
       } else {
         setReport(null);
@@ -579,19 +622,21 @@ export function ScoutClient({
 
   const handleCheckGame = useCallback(() => {
     startCheckTransition(async () => {
-      const result = await detectLiveMatchup();
-      setLiveResult(result);
+      try {
+        const result = await detectLiveMatchup();
+        setLiveResult(result);
 
-      if (result.error) {
-        toast.error(result.error);
-      } else if (!result.inGame) {
-        toast.info("Not currently in a game.");
-      } else {
-        toast.success(
-          `In game! Playing ${result.userChampionName || "Unknown"}.`
-        );
-        // Note: Spectator API doesn't provide lane assignments,
-        // so the user still needs to manually pick the matchup.
+        if (result.error) {
+          toast.error(result.error);
+        } else if (!result.inGame) {
+          toast.info("Not currently in a game.");
+        } else {
+          toast.success(
+            `In game! Playing ${result.userChampionName || "Unknown"}.`
+          );
+        }
+      } catch {
+        toast.error("Failed to detect live game.");
       }
     });
   }, []);

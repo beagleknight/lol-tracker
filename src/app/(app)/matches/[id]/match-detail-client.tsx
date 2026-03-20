@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import type { RiotMatch, RiotMatchParticipant } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 interface MatchDetailClientProps {
   match: Match;
@@ -165,15 +166,25 @@ export function MatchDetailClient({
 
   function saveComment() {
     startSaveComment(async () => {
-      const result = await updateMatchComment(match.id, comment);
-      if (result.success) toast.success("Comment saved.");
+      try {
+        const result = await updateMatchComment(match.id, comment);
+        if (result.success) toast.success("Comment saved.");
+        else toast.error("Failed to save comment.");
+      } catch {
+        toast.error("Failed to save comment.");
+      }
     });
   }
 
   function saveReview() {
     startSaveReview(async () => {
-      const result = await updateMatchReview(match.id, reviewed, reviewNotes);
-      if (result.success) toast.success("Review saved.");
+      try {
+        const result = await updateMatchReview(match.id, reviewed, reviewNotes);
+        if (result.success) toast.success("Review saved.");
+        else toast.error("Failed to save review.");
+      } catch {
+        toast.error("Failed to save review.");
+      }
     });
   }
 
@@ -213,10 +224,21 @@ export function MatchDetailClient({
                   <Badge variant="secondary">Reviewed</Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
                 {formatDate(match.gameDate)} &middot;{" "}
-                {formatDuration(match.gameDurationSeconds)} &middot;{" "}
-                {match.runeKeystoneName}
+                {formatDuration(match.gameDurationSeconds)}
+                {match.runeKeystoneName && (
+                  <>
+                    {" "}&middot;{" "}
+                    {(() => {
+                      const url = getKeystoneIconUrlByName(match.runeKeystoneName);
+                      return url ? (
+                        <Image src={url} alt={match.runeKeystoneName} width={16} height={16} className="inline rounded" />
+                      ) : null;
+                    })()}
+                    {" "}{match.runeKeystoneName}
+                  </>
+                )}
                 {match.matchupChampionName &&
                   ` vs ${match.matchupChampionName}`}
               </p>
@@ -281,7 +303,21 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">{match.runeKeystoneName}</p>
+            <p className="text-2xl font-bold flex items-center gap-2">
+              {match.runeKeystoneName ? (
+                <>
+                  {(() => {
+                    const url = getKeystoneIconUrlByName(match.runeKeystoneName);
+                    return url ? (
+                      <Image src={url} alt={match.runeKeystoneName} width={28} height={28} className="rounded" />
+                    ) : null;
+                  })()}
+                  {match.runeKeystoneName}
+                </>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </p>
             <p className="text-xs text-muted-foreground">Keystone</p>
           </CardContent>
         </Card>

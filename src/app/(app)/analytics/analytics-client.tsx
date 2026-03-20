@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import {
   LineChart,
   Line,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/table";
 import { BarChart3, TrendingUp, Trophy } from "lucide-react";
 import type { Match, RankSnapshot } from "@/db/schema";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 // ─── LP / Rank Utilities ─────────────────────────────────────────────────────
 
@@ -684,7 +686,15 @@ export function AnalyticsClient({
                   {runeStats.map((rune) => (
                     <TableRow key={rune.name}>
                       <TableCell className="font-medium text-sm">
-                        {rune.name}
+                        <span className="flex items-center gap-1.5">
+                          {(() => {
+                            const url = getKeystoneIconUrlByName(rune.name);
+                            return url ? (
+                              <Image src={url} alt={rune.name} width={18} height={18} className="rounded" />
+                            ) : null;
+                          })()}
+                          {rune.name}
+                        </span>
                       </TableCell>
                       <TableCell className="text-center text-sm">
                         {rune.games}

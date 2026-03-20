@@ -34,6 +34,7 @@ import {
   Save,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -107,15 +108,25 @@ function MatchCard({
 
   const saveComment = useCallback(() => {
     startCommentTransition(async () => {
-      const result = await updateMatchComment(match.id, comment);
-      if (result.success) toast.success("Comment saved.");
+      try {
+        const result = await updateMatchComment(match.id, comment);
+        if (result.success) toast.success("Comment saved.");
+        else toast.error("Failed to save comment.");
+      } catch {
+        toast.error("Failed to save comment.");
+      }
     });
   }, [match.id, comment]);
 
   const saveReview = useCallback(() => {
     startReviewTransition(async () => {
-      const result = await updateMatchReview(match.id, reviewed, reviewNotes);
-      if (result.success) toast.success("Review saved.");
+      try {
+        const result = await updateMatchReview(match.id, reviewed, reviewNotes);
+        if (result.success) toast.success("Review saved.");
+        else toast.error("Failed to save review.");
+      } catch {
+        toast.error("Failed to save review.");
+      }
     });
   }, [match.id, reviewed, reviewNotes]);
 
@@ -245,7 +256,15 @@ function MatchCard({
             {match.runeKeystoneName && (
               <>
                 <span>&middot;</span>
-                <span>{match.runeKeystoneName}</span>
+                <span className="inline-flex items-center gap-1">
+                  {(() => {
+                    const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
+                    return iconUrl ? (
+                      <Image src={iconUrl} alt="" width={14} height={14} className="rounded-sm inline" />
+                    ) : null;
+                  })()}
+                  {match.runeKeystoneName}
+                </span>
               </>
             )}
             <span>&middot;</span>

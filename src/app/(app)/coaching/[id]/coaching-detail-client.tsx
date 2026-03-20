@@ -69,8 +69,12 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
       };
     const next = nextStatus[item.status];
     startTransition(async () => {
-      await updateActionItemStatus(item.id, next);
-      toast.success(`Status updated to ${next.replace("_", " ")}.`);
+      try {
+        await updateActionItemStatus(item.id, next);
+        toast.success(`Status updated to ${next.replace("_", " ")}.`);
+      } catch {
+        toast.error("Failed to update status.");
+      }
     });
   }
 
@@ -152,9 +156,13 @@ export function CoachingDetailClient({
   function handleDelete() {
     if (!confirm("Delete this coaching session? This cannot be undone.")) return;
     startDelete(async () => {
-      await deleteCoachingSession(session.id);
-      toast.success("Session deleted.");
-      router.push("/coaching");
+      try {
+        await deleteCoachingSession(session.id);
+        toast.success("Session deleted.");
+        router.push("/coaching");
+      } catch {
+        toast.error("Failed to delete session.");
+      }
     });
   }
 
