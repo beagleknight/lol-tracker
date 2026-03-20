@@ -1,13 +1,10 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import path from "path";
 
-const dbPath = path.join(process.cwd(), "data", "lol-tracker.db");
-const sqlite = new Database(dbPath);
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-// Enable WAL mode for better concurrent performance
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("foreign_keys = ON");
-
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });

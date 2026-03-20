@@ -43,7 +43,7 @@ http://localhost:3000/api/auth/callback/discord
 
 ### 4. Initialize the database
 
-The app uses SQLite via `better-sqlite3`. Create the data directory and push the schema:
+The app uses SQLite via `@libsql/client` (Turso). Create the data directory and push the schema:
 
 ```bash
 mkdir data
@@ -61,7 +61,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Important Notes
 
 - **Riot API keys expire every 24 hours.** If you get authentication errors when syncing matches, regenerate your key at [developer.riotgames.com](https://developer.riotgames.com) and update `RIOT_API_KEY` in `.env.local`.
-- The build and dev server use the `--webpack` flag because Turbopack does not support native Node.js addons (`better-sqlite3`).
+- The production build uses the `--webpack` flag because Turbopack has issues bundling `@libsql/client`.
 
 ## Scripts
 
@@ -76,7 +76,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Tech Stack
 
 - **Framework:** Next.js 16 (React 19)
-- **Database:** SQLite via better-sqlite3 + Drizzle ORM
+- **Database:** SQLite/Turso via @libsql/client + Drizzle ORM
 - **Auth:** NextAuth v5 with Discord provider
 - **UI:** shadcn/ui v4, Tailwind CSS v4
 - **API:** Riot Games API for match data

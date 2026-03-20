@@ -3,8 +3,9 @@ import { defineConfig } from "drizzle-kit";
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./drizzle",
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
-    url: "./data/lol-tracker.db",
+    url: process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db",
+    authToken: process.env.TURSO_AUTH_TOKEN,
   },
 });
