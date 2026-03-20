@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
@@ -14,27 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   RefreshCw,
@@ -42,8 +27,11 @@ import {
   MessageSquare,
   Eye,
   ChevronRight,
+  ChevronDown,
   Loader2,
   AlertCircle,
+  ExternalLink,
+  Save,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 
@@ -67,6 +55,13 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
+function formatTime(date: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function ChampionIcon({
   championName,
   version,
@@ -87,142 +82,271 @@ function ChampionIcon({
   );
 }
 
-// ─── Inline Comment Editor ──────────────────────────────────────────────────
+// ─── Match Card ─────────────────────────────────────────────────────────────
 
-function CommentEditor({
-  matchId,
-  initialComment,
+function MatchCard({
+  match,
+  ddragonVersion,
 }: {
-  matchId: string;
-  initialComment: string | null;
+  match: Match;
+  ddragonVersion: string;
 }) {
-  const [comment, setComment] = useState(initialComment || "");
-  const [isPending, startTransition] = useTransition();
-  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [comment, setComment] = useState(match.comment || "");
+  const [reviewed, setReviewed] = useState(match.reviewed);
+  const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
+  const [isSavingComment, startCommentTransition] = useTransition();
+  const [isSavingReview, startReviewTransition] = useTransition();
 
-  function save() {
-    startTransition(async () => {
-      const result = await updateMatchComment(matchId, comment);
-      if (result.success) {
-        toast.success("Comment saved.");
-        setOpen(false);
-      }
+  const isWin = match.result === "Victory";
+  const hasComment = !!match.comment;
+  const hasReviewNotes = !!match.reviewNotes;
+  const kda = match.deaths === 0
+    ? "Perfect"
+    : ((match.kills + match.assists) / match.deaths).toFixed(1);
+
+  const saveComment = useCallback(() => {
+    startCommentTransition(async () => {
+      const result = await updateMatchComment(match.id, comment);
+      if (result.success) toast.success("Comment saved.");
     });
-  }
+  }, [match.id, comment]);
+
+  const saveReview = useCallback(() => {
+    startReviewTransition(async () => {
+      const result = await updateMatchReview(match.id, reviewed, reviewNotes);
+      if (result.success) toast.success("Review saved.");
+    });
+  }, [match.id, reviewed, reviewNotes]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-xs"
-          />
-        }
+    <div
+      className={`rounded-lg border bg-card transition-all ${
+        isWin
+          ? "border-l-[3px] border-l-green-500/60"
+          : "border-l-[3px] border-l-red-500/60"
+      } ${expanded ? "surface-glow" : "hover:bg-surface-elevated/50"}`}
+    >
+      {/* Collapsed Header — always visible */}
+      <button
+        type="button"
+        className="w-full text-left"
+        onClick={() => setExpanded(!expanded)}
       >
-        <MessageSquare className="h-3 w-3" />
-        {initialComment ? "Edit" : "Add"}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Match Comment</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <Textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="What happened this game? What could you improve?"
-            rows={4}
+        <div className="flex items-center gap-3 px-4 py-3">
+          {/* Champion */}
+          <ChampionIcon
+            championName={match.championName}
+            version={ddragonVersion}
+            size={36}
           />
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={save} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-              Save
-            </Button>
+
+          {/* Main info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-medium text-sm">
+                {match.championName}
+              </span>
+              <span className="text-muted-foreground text-xs">vs</span>
+              {match.matchupChampionName ? (
+                <div className="flex items-center gap-1">
+                  <ChampionIcon
+                    championName={match.matchupChampionName}
+                    version={ddragonVersion}
+                    size={20}
+                  />
+                  <span className="text-sm">
+                    {match.matchupChampionName}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm text-muted-foreground">—</span>
+              )}
+            </div>
+
+            {/* Comment preview */}
+            {hasComment && !expanded && (
+              <p className="text-xs text-muted-foreground italic mt-0.5 truncate max-w-md">
+                &ldquo;{match.comment}&rdquo;
+              </p>
+            )}
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
-// ─── Inline Review Editor ───────────────────────────────────────────────────
+          {/* Stats */}
+          <div className="hidden sm:flex items-center gap-4 text-sm shrink-0">
+            <span className="font-mono">
+              {match.kills}/{match.deaths}/{match.assists}
+              <span className="text-muted-foreground text-xs ml-1">
+                ({kda})
+              </span>
+            </span>
+            <span className="font-mono text-muted-foreground">
+              {match.cs}cs
+            </span>
+            <span className="text-muted-foreground">
+              {formatDuration(match.gameDurationSeconds)}
+            </span>
+          </div>
 
-function ReviewEditor({
-  matchId,
-  initialReviewed,
-  initialNotes,
-}: {
-  matchId: string;
-  initialReviewed: boolean;
-  initialNotes: string | null;
-}) {
-  const [reviewed, setReviewed] = useState(initialReviewed);
-  const [notes, setNotes] = useState(initialNotes || "");
-  const [isPending, startTransition] = useTransition();
-  const [open, setOpen] = useState(false);
+          {/* Indicators */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {hasComment && (
+              <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
+            )}
+            {match.reviewed && (
+              <Eye className="h-3.5 w-3.5 text-green-500/70" />
+            )}
+            {hasReviewNotes && !match.reviewed && (
+              <Eye className="h-3.5 w-3.5 text-yellow-500/70" />
+            )}
+          </div>
 
-  function save() {
-    startTransition(async () => {
-      const result = await updateMatchReview(matchId, reviewed, notes);
-      if (result.success) {
-        toast.success("Review saved.");
-        setOpen(false);
-      }
-    });
-  }
+          {/* Result + Date */}
+          <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <Badge
+              variant={isWin ? "default" : "destructive"}
+              className="text-xs"
+            >
+              {isWin ? "W" : "L"}
+            </Badge>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {formatDate(match.gameDate)}
+            </span>
+          </div>
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-xs"
+          {/* Expand indicator */}
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform shrink-0 ${
+              expanded ? "rotate-180" : ""
+            }`}
           />
-        }
-      >
-        <Eye className="h-3 w-3" />
-        {initialReviewed ? "Reviewed" : "Review"}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Review Game</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="reviewed"
-              checked={reviewed}
-              onCheckedChange={(v) => setReviewed(!!v)}
-            />
-            <label htmlFor="reviewed" className="text-sm">
-              Mark as reviewed
+        </div>
+      </button>
+
+      {/* Expanded Content */}
+      {expanded && (
+        <div className="border-t border-border/50 px-4 pb-4 pt-3 space-y-4">
+          {/* Mobile stats row */}
+          <div className="flex items-center gap-4 text-sm sm:hidden">
+            <span className="font-mono">
+              {match.kills}/{match.deaths}/{match.assists}
+            </span>
+            <span className="font-mono text-muted-foreground">
+              {match.cs}cs ({match.csPerMin}/m)
+            </span>
+            <span className="text-muted-foreground">
+              {formatDuration(match.gameDurationSeconds)}
+            </span>
+          </div>
+
+          {/* Extra details row */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+            <span>{formatTime(match.gameDate)}</span>
+            {match.runeKeystoneName && (
+              <>
+                <span>&middot;</span>
+                <span>{match.runeKeystoneName}</span>
+              </>
+            )}
+            <span>&middot;</span>
+            <span>{match.cs}cs ({match.csPerMin}/m)</span>
+            <span>&middot;</span>
+            <span>{match.goldEarned?.toLocaleString()} gold</span>
+            <span>&middot;</span>
+            <span>Vision {match.visionScore}</span>
+          </div>
+
+          {/* Game Notes */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <MessageSquare className="h-3 w-3" />
+              Game Notes
             </label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="What happened? What could you improve?"
+              rows={2}
+              className="text-sm resize-none"
+            />
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={saveComment}
+                disabled={isSavingComment || comment === (match.comment || "")}
+                className="h-7 text-xs gap-1.5"
+              >
+                {isSavingComment ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Save className="h-3 w-3" />
+                )}
+                Save Notes
+              </Button>
+            </div>
           </div>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes from your review (takeaways, patterns noticed...)"
-            rows={4}
-          />
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={save} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-              Save
-            </Button>
+
+          {/* Review */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <Eye className="h-3 w-3" />
+              VOD Review
+            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <Checkbox
+                id={`reviewed-${match.id}`}
+                checked={reviewed}
+                onCheckedChange={(v) => setReviewed(!!v)}
+              />
+              <label
+                htmlFor={`reviewed-${match.id}`}
+                className="text-sm cursor-pointer"
+              >
+                Mark as reviewed
+              </label>
+            </div>
+            <Textarea
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              placeholder="Takeaways from review..."
+              rows={2}
+              className="text-sm resize-none"
+            />
+            <div className="flex items-center justify-between">
+              <Link href={`/matches/${match.id}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 text-gold hover:text-gold-light"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Full Details
+                </Button>
+              </Link>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={saveReview}
+                disabled={
+                  isSavingReview ||
+                  (reviewed === match.reviewed &&
+                    reviewNotes === (match.reviewNotes || ""))
+                }
+                className="h-7 text-xs gap-1.5"
+              >
+                {isSavingReview ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Save className="h-3 w-3" />
+                )}
+                Save Review
+              </Button>
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </div>
   );
 }
 
@@ -254,13 +378,15 @@ export function MatchesClient({
         return false;
       if (reviewFilter === "reviewed" && !m.reviewed) return false;
       if (reviewFilter === "unreviewed" && m.reviewed) return false;
+      if (reviewFilter === "has-notes" && !m.comment) return false;
       if (search) {
         const q = search.toLowerCase();
         const matchesSearch =
           m.championName.toLowerCase().includes(q) ||
           m.matchupChampionName?.toLowerCase().includes(q) ||
           m.runeKeystoneName?.toLowerCase().includes(q) ||
-          m.comment?.toLowerCase().includes(q);
+          m.comment?.toLowerCase().includes(q) ||
+          m.reviewNotes?.toLowerCase().includes(q);
         if (!matchesSearch) return false;
       }
       return true;
@@ -318,7 +444,7 @@ export function MatchesClient({
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search champion, matchup, rune, comment..."
+            placeholder="Search champion, matchup, notes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -348,18 +474,19 @@ export function MatchesClient({
           </SelectContent>
         </Select>
         <Select value={reviewFilter} onValueChange={(v) => setReviewFilter(v ?? "all")}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Review" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="reviewed">Reviewed</SelectItem>
             <SelectItem value="unreviewed">Not Reviewed</SelectItem>
+            <SelectItem value="has-notes">Has Notes</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* Table */}
+      {/* Match Cards */}
       {filteredMatches.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
@@ -369,113 +496,14 @@ export function MatchesClient({
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border surface-glow">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[90px]">Date</TableHead>
-                <TableHead className="w-[80px]">Result</TableHead>
-                <TableHead>Champion</TableHead>
-                <TableHead>Rune</TableHead>
-                <TableHead>Matchup</TableHead>
-                <TableHead className="text-center">KDA</TableHead>
-                <TableHead className="text-center">CS</TableHead>
-                <TableHead className="text-center">Duration</TableHead>
-                <TableHead className="w-[100px]">Notes</TableHead>
-                <TableHead className="w-[40px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMatches.map((match) => (
-                <TableRow
-                  key={match.id}
-                  className={
-                    match.result === "Victory"
-                      ? "border-l-2 border-l-green-500/50"
-                      : "border-l-2 border-l-red-500/50"
-                  }
-                >
-                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDate(match.gameDate)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        match.result === "Victory" ? "default" : "destructive"
-                      }
-                      className="text-xs"
-                    >
-                      {match.result === "Victory" ? "W" : "L"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <ChampionIcon
-                        championName={match.championName}
-                        version={ddragonVersion}
-                      />
-                      <span className="text-sm">{match.championName}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {match.runeKeystoneName || "—"}
-                  </TableCell>
-                  <TableCell>
-                    {match.matchupChampionName ? (
-                      <div className="flex items-center gap-2">
-                        <ChampionIcon
-                          championName={match.matchupChampionName}
-                          version={ddragonVersion}
-                          size={24}
-                        />
-                        <span className="text-sm">
-                          {match.matchupChampionName}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-sm font-mono">
-                      {match.kills}/{match.deaths}/{match.assists}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-sm font-mono">
-                      {match.cs}
-                      <span className="text-muted-foreground text-xs ml-1">
-                        ({match.csPerMin}/m)
-                      </span>
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center text-sm text-muted-foreground">
-                    {formatDuration(match.gameDurationSeconds)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <CommentEditor
-                        matchId={match.id}
-                        initialComment={match.comment}
-                      />
-                      <ReviewEditor
-                        matchId={match.id}
-                        initialReviewed={match.reviewed}
-                        initialNotes={match.reviewNotes}
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Link href={`/matches/${match.id}`}>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-2">
+          {filteredMatches.map((match) => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              ddragonVersion={ddragonVersion}
+            />
+          ))}
         </div>
       )}
     </div>
