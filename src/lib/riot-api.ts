@@ -463,3 +463,53 @@ const KEYSTONE_NAMES: Record<number, string> = {
 export function getKeystoneName(keystoneId: number): string {
   return KEYSTONE_NAMES[keystoneId] || `Rune ${keystoneId}`;
 }
+
+// Rune keystone icon path mapping (DDragon perk-images)
+// NOTE: Rune icons are NOT versioned — use /cdn/img/ not /cdn/{version}/img/
+const KEYSTONE_ICONS: Record<number, string> = {
+  // Precision
+  8005: "perk-images/Styles/Precision/PressTheAttack/PressTheAttack.png",
+  8008: "perk-images/Styles/Precision/LethalTempo/LethalTempoTemp.png", // Removed from game, legacy icon
+  8021: "perk-images/Styles/Precision/FleetFootwork/FleetFootwork.png",
+  8010: "perk-images/Styles/Precision/Conqueror/Conqueror.png",
+  // Domination
+  8112: "perk-images/Styles/Domination/Electrocute/Electrocute.png",
+  8124: "perk-images/Styles/Domination/Predator/Predator.png", // Removed from game, legacy icon
+  8128: "perk-images/Styles/Domination/DarkHarvest/DarkHarvest.png",
+  9923: "perk-images/Styles/Domination/HailOfBlades/HailOfBlades.png",
+  // Sorcery
+  8214: "perk-images/Styles/Sorcery/SummonAery/SummonAery.png",
+  8229: "perk-images/Styles/Sorcery/ArcaneComet/ArcaneComet.png",
+  8230: "perk-images/Styles/Sorcery/PhaseRush/PhaseRush.png",
+  // Resolve
+  8437: "perk-images/Styles/Resolve/GraspOfTheUndying/GraspOfTheUndying.png",
+  8439: "perk-images/Styles/Resolve/VeteranAftershock/VeteranAftershock.png",
+  8465: "perk-images/Styles/Resolve/Guardian/Guardian.png",
+  // Inspiration
+  8351: "perk-images/Styles/Inspiration/GlacialAugment/GlacialAugment.png",
+  8360: "perk-images/Styles/Inspiration/UnsealedSpellbook/UnsealedSpellbook.png",
+  8369: "perk-images/Styles/Inspiration/FirstStrike/FirstStrike.png",
+};
+
+/**
+ * Get the DDragon icon URL for a keystone rune.
+ * Returns null if the keystone ID is unknown.
+ */
+export function getKeystoneIconUrl(keystoneId: number): string | null {
+  const path = KEYSTONE_ICONS[keystoneId];
+  if (!path) return null;
+  return `https://ddragon.leagueoflegends.com/cdn/img/${path}`;
+}
+
+/**
+ * Get the DDragon icon URL for a keystone by name.
+ * Reverse-looks up the name in KEYSTONE_NAMES to find the ID, then gets the icon.
+ */
+export function getKeystoneIconUrlByName(keystoneName: string): string | null {
+  for (const [idStr, name] of Object.entries(KEYSTONE_NAMES)) {
+    if (name === keystoneName) {
+      return getKeystoneIconUrl(Number(idStr));
+    }
+  }
+  return null;
+}

@@ -49,10 +49,16 @@ export default function SettingsPage() {
 
   function handleUnlink() {
     startTransition(async () => {
-      const result = await unlinkRiotAccount();
-      if (result.success) {
-        toast.success("Riot account unlinked.");
-        await updateSession();
+      try {
+        const result = await unlinkRiotAccount();
+        if (result.success) {
+          toast.success("Riot account unlinked.");
+          await updateSession();
+        } else {
+          toast.error("Failed to unlink Riot account.");
+        }
+      } catch {
+        toast.error("Failed to unlink Riot account.");
       }
     });
   }

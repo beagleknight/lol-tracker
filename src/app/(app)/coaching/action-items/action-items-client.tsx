@@ -54,15 +54,23 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
       };
     const next = nextStatus[item.status];
     startTransition(async () => {
-      await updateActionItemStatus(item.id, next);
-      toast.success(`Updated to ${next.replace("_", " ")}.`);
+      try {
+        await updateActionItemStatus(item.id, next);
+        toast.success(`Updated to ${next.replace("_", " ")}.`);
+      } catch {
+        toast.error("Failed to update status.");
+      }
     });
   }
 
   function handleDelete() {
     startDelete(async () => {
-      await deleteActionItem(item.id);
-      toast.success("Action item deleted.");
+      try {
+        await deleteActionItem(item.id);
+        toast.success("Action item deleted.");
+      } catch {
+        toast.error("Failed to delete action item.");
+      }
     });
   }
 

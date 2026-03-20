@@ -26,6 +26,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 interface DashboardClientProps {
   user: {
@@ -340,8 +341,14 @@ export function DashboardClient({
                           vs {match.matchupChampionName || "?"}
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {match.runeKeystoneName} &middot;{" "}
+                      <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                        {match.runeKeystoneName && (() => {
+                          const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
+                          return iconUrl ? (
+                            <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
+                          ) : null;
+                        })()}
+                        {match.runeKeystoneName || "—"} &middot;{" "}
                         {formatDuration(match.gameDurationSeconds)}
                       </div>
                     </div>

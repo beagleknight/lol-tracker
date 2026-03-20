@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { Loader2, Save, ChevronRight, CheckCircle2 } from "lucide-react";
 import type { Match } from "@/db/schema";
+import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 interface ReviewClientProps {
   matches: Match[];
@@ -52,10 +53,16 @@ function ReviewCard({
 
   function save() {
     startTransition(async () => {
-      const result = await updateMatchReview(match.id, reviewed, notes);
-      if (result.success) {
-        toast.success("Review saved.");
-        if (reviewed) setDone(true);
+      try {
+        const result = await updateMatchReview(match.id, reviewed, notes);
+        if (result.success) {
+          toast.success("Review saved.");
+          if (reviewed) setDone(true);
+        } else {
+          toast.error("Failed to save review.");
+        }
+      } catch {
+        toast.error("Failed to save review.");
       }
     });
   }
@@ -99,12 +106,23 @@ function ReviewCard({
                 {match.result === "Victory" ? "W" : "L"}
               </Badge>
             </div>
-            <CardDescription>
+            <CardDescription className="inline-flex items-center gap-1 flex-wrap">
               {formatDate(match.gameDate)} &middot;{" "}
               {match.kills}/{match.deaths}/{match.assists} &middot;{" "}
               {formatDuration(match.gameDurationSeconds)} &middot;{" "}
-              vs {match.matchupChampionName || "?"} &middot;{" "}
-              {match.runeKeystoneName}
+              vs {match.matchupChampionName || "?"}
+              {match.runeKeystoneName && (
+                <>
+                  {" "}&middot;{" "}
+                  {(() => {
+                    const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
+                    return iconUrl ? (
+                      <Image src={iconUrl} alt="" width={14} height={14} className="rounded-sm" />
+                    ) : null;
+                  })()}
+                  {match.runeKeystoneName}
+                </>
+              )}
             </CardDescription>
           </div>
           <Link href={`/matches/${match.id}`}>
