@@ -105,32 +105,47 @@ class RiotApiError extends Error {
   }
 }
 
-async function riotFetch<T>(url: string): Promise<T> {
-  const response = await fetch(url, {
-    headers: {
-      "X-Riot-Token": RIOT_API_KEY,
-    },
-    cache: "no-store",
-  });
+async function riotFetch<T>(url: string, retries = 5): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const response = await fetch(url, {
+      headers: {
+        "X-Riot-Token": RIOT_API_KEY,
+      },
+      cache: "no-store",
+    });
 
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
+    if (response.ok) {
+      return response.json();
+    }
+
     if (response.status === 403) {
       throw new RiotApiError(
         403,
         "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
       );
     }
+
     if (response.status === 429) {
-      throw new RiotApiError(429, "Rate limited by Riot API. Please wait and try again.");
+      if (attempt === retries) {
+        throw new RiotApiError(429, "Rate limited by Riot API after multiple retries.");
+      }
+      // Use Retry-After header if available, otherwise exponential backoff
+      const retryAfter = response.headers.get("Retry-After");
+      const waitSeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, attempt + 1);
+      console.log(`Rate limited. Waiting ${waitSeconds}s before retry ${attempt + 1}/${retries}...`);
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+      continue;
     }
+
+    const body = await response.text().catch(() => "");
     throw new RiotApiError(
       response.status,
       `Riot API error ${response.status}: ${body}`
     );
   }
 
-  return response.json();
+  // Should never reach here, but TypeScript needs it
+  throw new RiotApiError(500, "Unexpected error in riotFetch");
 }
 
 // ─── Account ─────────────────────────────────────────────────────────────────

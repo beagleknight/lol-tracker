@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { matches, rankSnapshots } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
   getMatchIds,
@@ -22,37 +22,47 @@ export async function syncMatches() {
   }
 
   try {
-    // Get the most recent match date to know where to start syncing from
-    const latestMatch = await db.query.matches.findFirst({
-      where: eq(matches.userId, user.id),
-      orderBy: desc(matches.gameDate),
-    });
-
-    const startTime = latestMatch
-      ? Math.floor(latestMatch.gameDate.getTime() / 1000) + 1
-      : undefined;
-
-    // Fetch match IDs (Solo/Duo = 420)
-    const matchIds = await getMatchIds(user.puuid, {
-      queue: 420,
-      count: 20,
-      startTime,
-    });
-
-    if (matchIds.length === 0) {
-      // Still capture rank snapshot even if no new games
-      if (user.summonerId) {
-        await captureRankSnapshot(user.id, user.summonerId);
-      }
-      return { synced: 0, message: "No new matches found." };
-    }
-
     // Check which matches we already have
     const existingMatches = await db.query.matches.findMany({
       where: eq(matches.userId, user.id),
       columns: { id: true },
     });
     const existingIds = new Set(existingMatches.map((m: { id: string }) => m.id));
+
+    // Fetch all ranked match IDs via pagination (Solo/Duo = 420, max 100 per request)
+    // Only fetch from Season 2026 start (January 8, 2026)
+    const SEASON_START = Math.floor(new Date("2026-01-05T00:00:00Z").getTime() / 1000);
+    const allMatchIds: string[] = [];
+    let start = 0;
+    const PAGE_SIZE = 100;
+
+    while (true) {
+      const batch = await getMatchIds(user.puuid, {
+        queue: 420,
+        count: PAGE_SIZE,
+        start,
+        startTime: SEASON_START,
+      });
+
+      if (batch.length === 0) break;
+
+      allMatchIds.push(...batch);
+      start += batch.length;
+
+      // If we got fewer than PAGE_SIZE, there are no more results
+      if (batch.length < PAGE_SIZE) break;
+
+      // Small delay between pagination calls to respect rate limits
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    if (allMatchIds.length === 0) {
+      // Still capture rank snapshot even if no new games
+      if (user.summonerId) {
+        await captureRankSnapshot(user.id, user.summonerId);
+      }
+      return { synced: 0, message: "No new matches found." };
+    }
 
     // Get the current max odometer
     const maxOdoResult = await db.query.matches.findFirst({
@@ -63,7 +73,7 @@ export async function syncMatches() {
 
     let syncedCount = 0;
 
-    for (const matchId of matchIds) {
+    for (const matchId of allMatchIds) {
       if (existingIds.has(matchId)) continue;
 
       try {
