@@ -1,9 +1,8 @@
 "use client";
 
-import { useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { syncMatches } from "@/app/actions/sync";
+import { useSyncMatches } from "@/hooks/use-sync-matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
 import {
   RefreshCw,
   TrendingUp,
@@ -83,7 +81,7 @@ export function DashboardClient({
   actionItems,
   ddragonVersion,
 }: DashboardClientProps) {
-  const [isSyncing, startSync] = useTransition();
+  const { isSyncing, handleSync } = useSyncMatches();
 
   const isLinked = !!user.puuid;
   const streak = getStreak(recentMatches);
@@ -149,17 +147,6 @@ export function DashboardClient({
     const oldLP = toCumLP(oldest.tier, oldest.division, oldest.lp || 0);
     return newLP - oldLP;
   })();
-
-  function handleSync() {
-    startSync(async () => {
-      const result = await syncMatches();
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(result.message);
-      }
-    });
-  }
 
   return (
     <div className="space-y-6">

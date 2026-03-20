@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { syncMatches } from "@/app/actions/sync";
+import { useSyncMatches } from "@/hooks/use-sync-matches";
 import {
   updateMatchComment,
   updateMatchReview,
@@ -233,7 +233,7 @@ export function MatchesClient({
   ddragonVersion,
   isRiotLinked,
 }: MatchesClientProps) {
-  const [isSyncing, startSync] = useTransition();
+  const { isSyncing, handleSync } = useSyncMatches();
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState<string>("all");
   const [reviewFilter, setReviewFilter] = useState<string>("all");
@@ -266,17 +266,6 @@ export function MatchesClient({
       return true;
     });
   }, [initialMatches, resultFilter, championFilter, reviewFilter, search]);
-
-  function handleSync() {
-    startSync(async () => {
-      const result = await syncMatches();
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(result.message);
-      }
-    });
-  }
 
   // Stats
   const wins = filteredMatches.filter((m) => m.result === "Victory").length;

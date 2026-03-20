@@ -42,7 +42,7 @@ const coachingNav: NavItem[] = [
 ];
 
 const bottomNav: NavItem[] = [
-  { label: "Import", href: "/import", icon: Upload },
+  { label: "Merge CSV", href: "/import", icon: Upload },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

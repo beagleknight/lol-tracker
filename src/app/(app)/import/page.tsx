@@ -160,8 +160,9 @@ export default function ImportPage() {
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<{
-    imported: number;
-    skipped: number;
+    merged: number;
+    unmatched: number;
+    unmatchedDetails: string[];
     message: string;
   } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -232,22 +233,36 @@ export default function ImportPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Import Games</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Merge CSV Notes</h1>
         <p className="text-muted-foreground">
-          Import your existing game data from a CSV spreadsheet.
+          Import your CSV spreadsheet to merge comments and review notes onto
+          existing synced matches.
         </p>
       </div>
 
       {/* Import Result */}
       {importResult && (
         <Card className="border-green-500/50 surface-glow">
-          <CardContent className="flex items-center gap-3 pt-6">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <div>
+          <CardContent className="flex items-start gap-3 pt-6">
+            <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+            <div className="space-y-2">
               <p className="font-medium">{importResult.message}</p>
               <p className="text-sm text-muted-foreground">
-                Your imported games are now visible on the Matches page.
+                Your comments and review notes have been merged onto existing
+                matches.
               </p>
+              {importResult.unmatchedDetails.length > 0 && (
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-yellow-500 hover:text-yellow-400">
+                    {importResult.unmatched} unmatched row{importResult.unmatched !== 1 ? "s" : ""} (click to expand)
+                  </summary>
+                  <ul className="mt-2 space-y-1 text-muted-foreground font-mono text-xs max-h-40 overflow-y-auto">
+                    {importResult.unmatchedDetails.map((detail, i) => (
+                      <li key={i}>{detail}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -371,8 +386,9 @@ export default function ImportPage() {
                 </div>
               </CardTitle>
               <CardDescription>
-                Review your data before importing. Imported games will have
-                synthetic IDs and won&apos;t include KDA/CS stats.
+                Review your data before merging. Comments and review notes will
+                be matched to existing synced games by date, champion, matchup,
+                and result.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -447,7 +463,7 @@ export default function ImportPage() {
           {/* Import Button */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {rows.length} game{rows.length !== 1 ? "s" : ""} ready to import.
+              {rows.length} game{rows.length !== 1 ? "s" : ""} ready to merge.
             </p>
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleClear}>
@@ -457,7 +473,7 @@ export default function ImportPage() {
                 {isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Import {rows.length} Game{rows.length !== 1 ? "s" : ""}
+                Merge Notes from {rows.length} Game{rows.length !== 1 ? "s" : ""}
               </Button>
             </div>
           </div>
@@ -468,17 +484,33 @@ export default function ImportPage() {
       {rows.length === 0 && !importResult && parseErrors.length === 0 && (
         <Card className="surface-glow">
           <CardHeader>
-            <CardTitle>CSV Format Example</CardTitle>
+            <CardTitle>How It Works</CardTitle>
           </CardHeader>
-          <CardContent>
-            <pre className="text-xs font-mono bg-surface-elevated p-4 rounded-lg overflow-x-auto border border-border/50">
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>
+                Upload your CSV spreadsheet and the importer will match each row
+                to an existing synced match by <strong>date + champion + matchup + result</strong>.
+                Only <strong>Comments</strong>, <strong>Reviewed</strong>, and{" "}
+                <strong>Review Notes</strong> are merged &mdash; stats come from the Riot API.
+              </p>
+              <p>
+                When multiple games share the same date/champion/matchup/result,
+                they are matched in chronological order.
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium mb-2">CSV Format Example:</p>
+              <pre className="text-xs font-mono bg-surface-elevated p-4 rounded-lg overflow-x-auto border border-border/50">
               {`Date,Result,Champion,Rune,Matchup,Comments,Reviewed,Review Notes
 17/01/2026,Victory,Qiyana,Electrocute,Syndra,Great roams,Yes,Good map awareness
 18/01/2026,Defeat,Qiyana,Conqueror,Zed,Died too much,No,`}
             </pre>
-            <p className="text-xs text-muted-foreground mt-3">
+            </div>
+            <p className="text-xs text-muted-foreground">
               Dates can be DD/MM/YYYY or YYYY-MM-DD format. Result can be
-              Victory/Defeat or W/L. Reviewed can be Yes/No, True/False, or 1/0.
+              Victory/Defeat or W/L. Champion names are fuzzy-matched (e.g.
+              &quot;Kog&apos;Maw&quot; matches &quot;KogMaw&quot;).
             </p>
           </CardContent>
         </Card>
