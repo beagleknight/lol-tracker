@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Swords,
+  Crosshair,
   BarChart3,
   GraduationCap,
   ClipboardCheck,
@@ -32,6 +33,7 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Matches", href: "/matches", icon: Swords },
+  { label: "Matchup Scout", href: "/scout", icon: Crosshair },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Review Queue", href: "/review", icon: ClipboardCheck },
 ];

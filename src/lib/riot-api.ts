@@ -148,6 +148,47 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
   throw new RiotApiError(500, "Unexpected error in riotFetch");
 }
 
+// ─── Spectator / Active Game Types ───────────────────────────────────────────
+
+export interface CurrentGamePerks {
+  perkIds: number[];
+  perkStyle: number;
+  perkSubStyle: number;
+}
+
+export interface CurrentGameParticipant {
+  championId: number;
+  perks: CurrentGamePerks;
+  profileIconId: number;
+  bot: boolean;
+  teamId: number; // 100 = blue, 200 = red
+  puuid: string | null; // null when player is anonymous
+  spell1Id: number;
+  spell2Id: number;
+  riotId: string | null; // gameName#tagLine
+  gameCustomizationObjects: Array<{ category: string; content: string }>;
+}
+
+export interface BannedChampion {
+  pickTurn: number;
+  championId: number;
+  teamId: number;
+}
+
+export interface CurrentGameInfo {
+  gameId: number;
+  gameType: string;
+  gameStartTime: number; // epoch millis
+  mapId: number;
+  gameLength: number; // seconds elapsed
+  platformId: string;
+  gameMode: string;
+  gameQueueConfigId: number | null;
+  bannedChampions: BannedChampion[];
+  observers: { encryptionKey: string };
+  participants: CurrentGameParticipant[];
+}
+
 // ─── Account ─────────────────────────────────────────────────────────────────
 
 export async function getAccountByRiotId(
@@ -210,6 +251,81 @@ export async function getMatch(matchId: string): Promise<RiotMatch> {
   return riotFetch<RiotMatch>(
     `${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`
   );
+}
+
+// ─── Spectator / Active Game ────────────────────────────────────────────────
+
+/**
+ * Check if a player is currently in a game.
+ * Returns null if the player is not in an active game (404).
+ */
+export async function getActiveGame(
+  puuid: string
+): Promise<CurrentGameInfo | null> {
+  const url = `${PLATFORM_HOST}/lol/spectator/v5/active-games/by-summoner/${puuid}`;
+  try {
+    const response = await fetch(url, {
+      headers: { "X-Riot-Token": RIOT_API_KEY },
+      cache: "no-store",
+    });
+
+    if (response.status === 404) {
+      return null; // Not in game — this is expected
+    }
+
+    if (response.status === 403) {
+      throw new RiotApiError(
+        403,
+        "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
+      );
+    }
+
+    if (response.status === 429) {
+      throw new RiotApiError(429, "Rate limited by Riot API. Try again in a moment.");
+    }
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new RiotApiError(
+        response.status,
+        `Spectator API error ${response.status}: ${body}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof RiotApiError) throw error;
+    throw new RiotApiError(500, `Failed to check active game: ${error}`);
+  }
+}
+
+// ─── Champion ID Mapping (Data Dragon) ──────────────────────────────────────
+
+let cachedChampionMap: Map<number, string> | null = null;
+
+/**
+ * Fetch a mapping of champion ID -> champion name (Data Dragon key) from DDragon.
+ * Cached after first call.
+ */
+export async function getChampionIdMap(
+  version?: string
+): Promise<Map<number, string>> {
+  if (cachedChampionMap) return cachedChampionMap;
+
+  const ver = version || (await getLatestVersion());
+  const url = `https://ddragon.leagueoflegends.com/cdn/${ver}/data/en_US/champion.json`;
+  const data = await fetch(url).then((r) => r.json());
+
+  const map = new Map<number, string>();
+  for (const champ of Object.values(data.data) as Array<{
+    key: string;
+    id: string;
+  }>) {
+    map.set(parseInt(champ.key, 10), champ.id);
+  }
+
+  cachedChampionMap = map;
+  return map;
 }
 
 // ─── Data Extraction Helpers ─────────────────────────────────────────────────
