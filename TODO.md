@@ -8,6 +8,10 @@
 - [ ] Inline comment editing on matches page (Add Comment button in table)
 - [ ] Inline review editing on matches page (Review button in table)
 - [ ] Match detail: save game notes and VOD review notes
+- [ ] Invite system: test full flow (new user with invite code, reject without code)
+- [ ] Admin settings: generate/copy/delete invite codes
+- [ ] Admin settings: API key status check
+- [ ] Auth proxy: verify redirect-to-login flow with Auth.js wrapper
 
 ## Polish
 - [x] Add loading states with Suspense boundaries and skeleton components
@@ -23,10 +27,19 @@
 - [x] Add LP graph to dashboard and/or analytics page
 - [ ] Show promotion/demotion markers on LP graph
 
+## Features — Deployment
+- [x] Swap better-sqlite3 for @libsql/client (Turso-ready)
+- [x] Invite-only auth system (role column, invites table, invite-gated signIn)
+- [x] Auth proxy upgrade (Auth.js `auth()` wrapper replaces cookie-sniffing)
+- [x] Riot API key health check (admin settings page)
+- [x] Export RiotApiError + handle 401 alongside 403
+- [x] AUTH_TRUST_HOST in .env.example
+- [ ] Deploy to Vercel + Turso (manual step)
+- [ ] Set up Turso production database and import local data
+
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
 - [ ] Auto-sync on login or on a schedule (instead of manual "Sync Games" button)
-- [ ] Vercel deployment (swap SQLite for Turso/Libsql)
 - [ ] Game VOD link field (YouTube/Twitch clip URL per match)
 - [ ] Export data (CSV export of matches with all fields)
 - [ ] Multi-account support (track games across multiple Riot accounts)
@@ -38,3 +51,4 @@
 - Rate limits: 20 req/sec, 100 req/2min — sufficient for personal use but sync is sequential
 - Imported CSV games have synthetic match IDs (prefixed `IMPORT_`) and no raw match JSON
 - Match detail page won't show full player data for imported games
+- First user auto-promoted to admin; subsequent users need an invite code

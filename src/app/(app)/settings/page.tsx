@@ -1,8 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { linkRiotAccount, unlinkRiotAccount } from "@/app/actions/settings";
+import {
+  linkRiotAccount,
+  unlinkRiotAccount,
+  validateRiotApiKey,
+} from "@/app/actions/settings";
+import {
+  createInvite,
+  getInvites,
+  deleteInvite,
+} from "@/app/actions/invites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +24,28 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { LinkIcon, Unlink, Loader2 } from "lucide-react";
+import {
+  LinkIcon,
+  Unlink,
+  Loader2,
+  Plus,
+  Copy,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Key,
+  Ticket,
+  Shield,
+} from "lucide-react";
+
+interface InviteItem {
+  id: number;
+  code: string;
+  createdAt: Date;
+  usedBy: string | null;
+  usedByName: string | null;
+  usedAt: Date | null;
+}
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
@@ -23,10 +53,46 @@ export default function SettingsPage() {
   const [isPending, startTransition] = useTransition();
 
   const isLinked = !!session?.user?.riotGameName;
+  const isAdmin = session?.user?.role === "admin";
+
+  // ─── Invite state (admin only) ────────────────────────────────────────────
+  const [invitesList, setInvitesList] = useState<InviteItem[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+
+  // ─── API key status (admin only) ──────────────────────────────────────────
+  const [apiKeyStatus, setApiKeyStatus] = useState<{
+    valid: boolean;
+    message?: string;
+  } | null>(null);
+  const [apiKeyLoading, setApiKeyLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      // Load invites
+      setInvitesLoading(true);
+      getInvites()
+        .then(setInvitesList)
+        .catch(() => toast.error("Failed to load invites"))
+        .finally(() => setInvitesLoading(false));
+
+      // Check API key
+      setApiKeyLoading(true);
+      validateRiotApiKey()
+        .then(setApiKeyStatus)
+        .catch(() =>
+          setApiKeyStatus({ valid: false, message: "Failed to check" })
+        )
+        .finally(() => setApiKeyLoading(false));
+    }
+  }, [isAdmin]);
+
+  // ─── Riot account handlers ────────────────────────────────────────────────
 
   function handleLink() {
     if (!riotId.includes("#")) {
-      toast.error("Invalid format. Use GameName#TagLine (e.g. beagleknight#euw)");
+      toast.error(
+        "Invalid format. Use GameName#TagLine (e.g. beagleknight#euw)"
+      );
       return;
     }
 
@@ -38,9 +104,7 @@ export default function SettingsPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(
-          `Linked to ${result.gameName}#${result.tagLine}`
-        );
+        toast.success(`Linked to ${result.gameName}#${result.tagLine}`);
         setRiotId("");
         await updateSession();
       }
@@ -63,10 +127,45 @@ export default function SettingsPage() {
     });
   }
 
+  // ─── Invite handlers (admin only) ────────────────────────────────────────
+
+  function handleGenerateInvite() {
+    startTransition(async () => {
+      try {
+        const result = await createInvite();
+        toast.success(`Invite code created: ${result.code}`);
+        // Refresh invites list
+        const updated = await getInvites();
+        setInvitesList(updated);
+      } catch {
+        toast.error("Failed to generate invite code.");
+      }
+    });
+  }
+
+  function handleCopyCode(code: string) {
+    navigator.clipboard.writeText(code);
+    toast.success("Invite code copied to clipboard");
+  }
+
+  function handleDeleteInvite(id: number) {
+    startTransition(async () => {
+      try {
+        await deleteInvite(id);
+        setInvitesList((prev) => prev.filter((inv) => inv.id !== id));
+        toast.success("Invite deleted.");
+      } catch {
+        toast.error("Failed to delete invite.");
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
+          Settings
+        </h1>
         <p className="text-muted-foreground">
           Manage your account and Riot Games integration.
         </p>
@@ -78,7 +177,10 @@ export default function SettingsPage() {
           <CardTitle className="flex items-center gap-2">
             Riot Account
             {isLinked ? (
-              <Badge variant="default" className="ml-2 bg-gold/20 text-gold border border-gold/30">
+              <Badge
+                variant="default"
+                className="ml-2 bg-gold/20 text-gold border border-gold/30"
+              >
                 Linked
               </Badge>
             ) : (
@@ -88,7 +190,8 @@ export default function SettingsPage() {
             )}
           </CardTitle>
           <CardDescription>
-            Link your Riot Games account to sync your ranked games automatically.
+            Link your Riot Games account to sync your ranked games
+            automatically.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -145,40 +248,225 @@ export default function SettingsPage() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Enter your Riot ID in GameName#TagLine format.
-                This is used to fetch your ranked match data from the Riot API.
+                Enter your Riot ID in GameName#TagLine format. This is used to
+                fetch your ranked match data from the Riot API.
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* API Key Info Card */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle>API Key Info</CardTitle>
-          <CardDescription>
-            Information about the Riot Games API key configuration.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            The Riot API personal development key expires every 24 hours.
-            If you encounter authentication errors when syncing, you may need to
-            regenerate your key at{" "}
-            <a
-              href="https://developer.riotgames.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-electric underline hover:text-electric-light"
+      {/* Admin Section: API Key Status */}
+      {isAdmin && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-gold" />
+              API Key Status
+              <Badge variant="secondary" className="ml-2">
+                <Shield className="mr-1 h-3 w-3" />
+                Admin
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Check whether the Riot Games API key is currently valid.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {apiKeyLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking API key...
+              </div>
+            ) : apiKeyStatus ? (
+              <div className="flex items-center gap-3">
+                {apiKeyStatus.valid ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                    <span className="text-sm font-medium text-emerald-500">
+                      Valid
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-5 w-5 text-destructive" />
+                    <div>
+                      <span className="text-sm font-medium text-destructive">
+                        Expired / Invalid
+                      </span>
+                      {apiKeyStatus.message && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {apiKeyStatus.message}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto"
+                  disabled={apiKeyLoading}
+                  onClick={() => {
+                    setApiKeyLoading(true);
+                    validateRiotApiKey()
+                      .then(setApiKeyStatus)
+                      .catch(() =>
+                        setApiKeyStatus({
+                          valid: false,
+                          message: "Failed to check",
+                        })
+                      )
+                      .finally(() => setApiKeyLoading(false));
+                  }}
+                >
+                  Re-check
+                </Button>
+              </div>
+            ) : null}
+            <p className="text-xs text-muted-foreground mt-3">
+              Personal development keys expire every 24 hours. Regenerate at{" "}
+              <a
+                href="https://developer.riotgames.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-electric underline hover:text-electric-light"
+              >
+                developer.riotgames.com
+              </a>
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Admin Section: Invite Friends */}
+      {isAdmin && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-gold" />
+              Invite Friends
+              <Badge variant="secondary" className="ml-2">
+                <Shield className="mr-1 h-3 w-3" />
+                Admin
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Generate invite codes to let friends create accounts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={handleGenerateInvite}
+              disabled={isPending}
+              size="sm"
             >
-              developer.riotgames.com
-            </a>{" "}
-            and update the <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">RIOT_API_KEY</code> in your{" "}
-            <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">.env.local</code> file.
-          </p>
-        </CardContent>
-      </Card>
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              Generate Invite Code
+            </Button>
+
+            {invitesLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading invites...
+              </div>
+            ) : invitesList.length > 0 ? (
+              <div className="space-y-2">
+                {invitesList.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated"
+                  >
+                    <code className="text-sm font-mono font-semibold text-gold">
+                      {invite.code}
+                    </code>
+                    <div className="flex-1 min-w-0">
+                      {invite.usedBy ? (
+                        <span className="text-xs text-muted-foreground">
+                          Used by{" "}
+                          <span className="text-foreground">
+                            {invite.usedByName || "Unknown"}
+                          </span>
+                        </span>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-gold/30 text-gold"
+                        >
+                          Available
+                        </Badge>
+                      )}
+                    </div>
+                    {!invite.usedBy && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyCode(invite.code)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteInvite(invite.id)}
+                      disabled={isPending}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No invite codes yet. Generate one to share with friends.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* API Key Info Card (visible to everyone) */}
+      {!isAdmin && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle>API Key Info</CardTitle>
+            <CardDescription>
+              Information about the Riot Games API key configuration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              The Riot API personal development key expires every 24 hours. If
+              you encounter authentication errors when syncing, you may need to
+              regenerate your key at{" "}
+              <a
+                href="https://developer.riotgames.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-electric underline hover:text-electric-light"
+              >
+                developer.riotgames.com
+              </a>{" "}
+              and update the{" "}
+              <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">
+                RIOT_API_KEY
+              </code>{" "}
+              in your{" "}
+              <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">
+                .env.local
+              </code>{" "}
+              file.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

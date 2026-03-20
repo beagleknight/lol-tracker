@@ -12,6 +12,9 @@ export const users = sqliteTable("users", {
   riotTagLine: text("riot_tag_line"),
   puuid: text("puuid"),
   summonerId: text("summoner_id"),
+  role: text("role", { enum: ["admin", "user"] })
+    .notNull()
+    .default("user"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -133,6 +136,21 @@ export const coachingActionItems = sqliteTable("coaching_action_items", {
     .$defaultFn(() => new Date()),
 });
 
+// ─── Invites ─────────────────────────────────────────────────────────────────
+
+export const invites = sqliteTable("invites", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  usedBy: text("used_by").references(() => users.id, { onDelete: "set null" }),
+  usedAt: integer("used_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
@@ -144,3 +162,5 @@ export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type NewCoachingSession = typeof coachingSessions.$inferInsert;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type NewCoachingActionItem = typeof coachingActionItems.$inferInsert;
+export type Invite = typeof invites.$inferSelect;
+export type NewInvite = typeof invites.$inferInsert;
