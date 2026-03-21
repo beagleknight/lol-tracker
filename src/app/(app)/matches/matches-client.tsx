@@ -32,6 +32,7 @@ import {
   AlertCircle,
   ExternalLink,
   Save,
+  Users,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -202,6 +203,9 @@ function MatchCard({
 
           {/* Indicators */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {match.duoPartnerPuuid && (
+              <Users className="h-3.5 w-3.5 text-electric/70" />
+            )}
             {hasComment && (
               <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
             )}

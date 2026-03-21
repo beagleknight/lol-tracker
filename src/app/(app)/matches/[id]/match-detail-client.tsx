@@ -71,10 +71,12 @@ function ParticipantRow({
   participant,
   version,
   isUser,
+  isDuoPartner,
 }: {
   participant: RiotMatchParticipant;
   version: string;
   isUser: boolean;
+  isDuoPartner: boolean;
 }) {
   const cs = participant.totalMinionsKilled + participant.neutralMinionsKilled;
   const kda =
@@ -85,7 +87,15 @@ function ParticipantRow({
         );
 
   return (
-    <TableRow className={isUser ? "bg-gold/5 border-l-2 border-gold/40" : ""}>
+    <TableRow
+      className={
+        isUser
+          ? "bg-gold/5 border-l-2 border-gold/40"
+          : isDuoPartner
+            ? "bg-electric/5 border-l-2 border-electric/40"
+            : ""
+      }
+    >
       <TableCell>
         <div className="flex items-center gap-2">
           <Image
@@ -97,7 +107,7 @@ function ParticipantRow({
           />
           <div>
             <span
-              className={`text-sm ${isUser ? "font-bold text-gold" : ""}`}
+              className={`text-sm ${isUser ? "font-bold text-gold" : isDuoPartner ? "font-semibold text-electric" : ""}`}
             >
               {participant.riotIdGameName || participant.summonerName}
             </span>
@@ -366,6 +376,7 @@ export function MatchDetailClient({
                         participant={p}
                         version={ddragonVersion}
                         isUser={p.puuid === userPuuid}
+                        isDuoPartner={!!match.duoPartnerPuuid && p.puuid === match.duoPartnerPuuid}
                       />
                     ))}
                   </TableBody>
