@@ -192,7 +192,7 @@ function PostGameReviewCard({
 
   if (saved) {
     return (
-      <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-4 text-center">
+      <div className="rounded-lg border border-green-400/30 bg-green-400/5 p-4 text-center">
         <p className="text-sm text-green-400">Review saved for your latest game.</p>
       </div>
     );
@@ -201,7 +201,7 @@ function PostGameReviewCard({
   return (
     <div
       className={`rounded-lg border-2 p-4 space-y-4 surface-glow ${
-        isWin ? "border-green-500/40" : "border-red-500/40"
+        isWin ? "border-green-400/40" : "border-red-400/40"
       }`}
     >
       <div className="flex items-center gap-2 text-sm font-medium text-gold">
@@ -532,7 +532,7 @@ function ScoutingReport({
                     <span
                       className={`font-bold ${
                         pair.winRate >= 50
-                          ? "text-emerald-500"
+                          ? "text-emerald-400"
                           : "text-red-400"
                       }`}
                     >

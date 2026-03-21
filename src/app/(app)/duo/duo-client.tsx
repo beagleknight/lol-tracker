@@ -170,7 +170,7 @@ export function DuoClient({
                 </div>
                 <p
                   className={`text-2xl font-bold ${
-                    stats.winRate >= 50 ? "text-emerald-500" : "text-red-400"
+                    stats.winRate >= 50 ? "text-emerald-400" : "text-red-400"
                   }`}
                 >
                   {stats.winRate}%
@@ -190,7 +190,7 @@ export function DuoClient({
                 <p
                   className={`text-2xl font-bold ${
                     stats.soloWinRate >= 50
-                      ? "text-emerald-500"
+                      ? "text-emerald-400"
                       : "text-red-400"
                   }`}
                 >
@@ -206,7 +206,7 @@ export function DuoClient({
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                   {stats.winRate > stats.soloWinRate ? (
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    <TrendingUp className="h-4 w-4 text-emerald-400" />
                   ) : stats.winRate < stats.soloWinRate ? (
                     <TrendingDown className="h-4 w-4 text-red-400" />
                   ) : (
@@ -217,7 +217,7 @@ export function DuoClient({
                 <p
                   className={`text-2xl font-bold ${
                     stats.winRate - stats.soloWinRate > 0
-                      ? "text-emerald-500"
+                      ? "text-emerald-400"
                       : stats.winRate - stats.soloWinRate < 0
                         ? "text-red-400"
                         : ""
@@ -239,7 +239,7 @@ export function DuoClient({
               </CardHeader>
               <CardContent>
                 <p className="text-xl font-bold">
-                  <span className="text-emerald-500">{stats.avgKills}</span>
+                  <span className="text-emerald-400">{stats.avgKills}</span>
                   {" / "}
                   <span className="text-red-400">{stats.avgDeaths}</span>
                   {" / "}
@@ -256,7 +256,7 @@ export function DuoClient({
               </CardHeader>
               <CardContent>
                 <p className="text-xl font-bold">
-                  <span className="text-emerald-500">
+                  <span className="text-emerald-400">
                     {stats.partnerAvgKills}
                   </span>
                   {" / "}
@@ -320,7 +320,7 @@ export function DuoClient({
                         <span
                           className={`font-bold ${
                             s.winRate >= 50
-                              ? "text-emerald-500"
+                              ? "text-emerald-400"
                               : "text-red-400"
                           }`}
                         >
@@ -361,7 +361,7 @@ export function DuoClient({
                         }
                         className={`w-12 justify-center text-xs ${
                           game.result === "Victory"
-                            ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/30"
+                            ? "bg-emerald-400/20 text-emerald-400 border-emerald-400/30"
                             : ""
                         }`}
                       >

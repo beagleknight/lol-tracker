@@ -236,7 +236,7 @@ export function DashboardClient({
                 {lpTrend !== null && (
                   <p
                     className={`text-xs font-mono font-semibold mt-1 flex items-center gap-1 ${
-                      lpTrend >= 0 ? "text-green-500" : "text-red-500"
+                      lpTrend >= 0 ? "text-green-400" : "text-red-400"
                     }`}
                   >
                     {lpTrend >= 0 ? (
@@ -265,9 +265,9 @@ export function DashboardClient({
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold">{sessionWinRate}%</p>
               {sessionWinRate >= 50 ? (
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-green-400" />
               ) : recentMatches.length > 0 ? (
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-red-400" />
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground">

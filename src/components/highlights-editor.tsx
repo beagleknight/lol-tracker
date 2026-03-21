@@ -89,7 +89,7 @@ export function HighlightsEditor({
           return (
             <div
               key={idx}
-              className="flex items-center gap-2 rounded-md border border-green-500/20 bg-green-500/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-green-400/20 bg-green-400/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -163,7 +163,7 @@ export function HighlightsEditor({
           return (
             <div
               key={idx}
-              className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-red-400/20 bg-red-400/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -248,7 +248,7 @@ export function HighlightsDisplay({
         {highlightItems.map((item, i) => (
           <span
             key={`h-${i}`}
-            className="inline-flex items-center gap-1 rounded-md border border-green-500/20 bg-green-500/5 px-2 py-0.5 text-xs"
+            className="inline-flex items-center gap-1 rounded-md border border-green-400/20 bg-green-400/5 px-2 py-0.5 text-xs"
           >
             <ThumbsUp className="h-2.5 w-2.5 text-green-400" />
             {item.text}
@@ -262,7 +262,7 @@ export function HighlightsDisplay({
         {lowlightItems.map((item, i) => (
           <span
             key={`l-${i}`}
-            className="inline-flex items-center gap-1 rounded-md border border-red-500/20 bg-red-500/5 px-2 py-0.5 text-xs"
+            className="inline-flex items-center gap-1 rounded-md border border-red-400/20 bg-red-400/5 px-2 py-0.5 text-xs"
           >
             <ThumbsDown className="h-2.5 w-2.5 text-red-400" />
             {item.text}
@@ -288,7 +288,7 @@ export function HighlightsDisplay({
           {highlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-md border border-green-500/20 bg-green-500/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-green-400/20 bg-green-400/5 px-3 py-1.5 text-sm"
             >
               <span className="flex-1">{item.text}</span>
               {item.topic && (
@@ -309,7 +309,7 @@ export function HighlightsDisplay({
           {lowlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-red-400/20 bg-red-400/5 px-3 py-1.5 text-sm"
             >
               <span className="flex-1">{item.text}</span>
               {item.topic && (
