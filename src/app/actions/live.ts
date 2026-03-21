@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { matches, type Match } from "@/db/schema";
+import { matches } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
@@ -13,12 +13,18 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export interface EnemyChampion {
+  championId: number;
+  championName: string;
+}
+
 export interface LiveMatchupResult {
   inGame: boolean;
   userChampionId: number | null;
   userChampionName: string | null;
   opponentChampionId: number | null;
   opponentChampionName: string | null;
+  enemyTeam: EnemyChampion[];
   gameQueueId: number | null;
   error?: string;
 }
@@ -97,6 +103,7 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
       userChampionName: null,
       opponentChampionId: null,
       opponentChampionName: null,
+      enemyTeam: [],
       gameQueueId: null,
       error: "No Riot account linked. Go to Settings to link your account.",
     };
@@ -112,6 +119,7 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
         userChampionName: null,
         opponentChampionId: null,
         opponentChampionName: null,
+        enemyTeam: [],
         gameQueueId: null,
       };
     }
@@ -130,6 +138,7 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
         userChampionName: null,
         opponentChampionId: null,
         opponentChampionName: null,
+        enemyTeam: [],
         gameQueueId: game.gameQueueConfigId,
         error: "Could not find you in the active game participants.",
       };
@@ -138,18 +147,21 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
     const userChampionName =
       championMap.get(userParticipant.championId) || "Unknown";
 
-    // Spectator API does NOT provide position/lane data.
-    // We can't auto-detect the lane opponent from spectator data alone.
-    // Return the user's champion and let the UI use the manual matchup picker.
-    // The opponent would need to be guessed or manually selected.
+    // Extract enemy team champions
+    const enemyTeam: EnemyChampion[] = game.participants
+      .filter((p) => p.teamId !== userParticipant.teamId)
+      .map((p) => ({
+        championId: p.championId,
+        championName: championMap.get(p.championId) || "Unknown",
+      }));
 
-    // However, we still return the game info so the UI knows we're in game.
     return {
       inGame: true,
       userChampionId: userParticipant.championId,
       userChampionName: userChampionName,
       opponentChampionId: null,
       opponentChampionName: null,
+      enemyTeam,
       gameQueueId: game.gameQueueConfigId,
     };
   } catch (error) {
@@ -161,6 +173,7 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
       userChampionName: null,
       opponentChampionId: null,
       opponentChampionName: null,
+      enemyTeam: [],
       gameQueueId: null,
       error: message,
     };
@@ -171,23 +184,29 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
 
 /**
  * Build a full scouting report for a specific matchup champion.
+ * Optionally filter by your own champion for champion-vs-champion stats.
  * Queries all of the user's matches against that champion and aggregates stats.
  */
 export async function getMatchupReport(
-  matchupChampionName: string
+  matchupChampionName: string,
+  yourChampionName?: string
 ): Promise<MatchupReport | null> {
   const user = await requireUser();
+
+  // Build where conditions
+  const conditions = [
+    eq(matches.userId, user.id),
+    eq(matches.matchupChampionName, matchupChampionName),
+  ];
+  if (yourChampionName) {
+    conditions.push(eq(matches.championName, yourChampionName));
+  }
 
   // Get all matches against this champion, newest first
   const matchRows = await db
     .select()
     .from(matches)
-    .where(
-      and(
-        eq(matches.userId, user.id),
-        eq(matches.matchupChampionName, matchupChampionName)
-      )
-    )
+    .where(and(...conditions))
     .orderBy(desc(matches.gameDate));
 
   if (matchRows.length === 0) {
@@ -330,9 +349,9 @@ export async function getRecentUnreviewedMatch(): Promise<RecentUnreviewedMatch 
 
   if (!latestMatch) return null;
 
-  // Check if it's within 2 hours and has no comment
+  // Check if it's within 2 hours and has no comment/review
   if (latestMatch.gameDate < twoHoursAgo) return null;
-  if (latestMatch.comment) return null;
+  if (latestMatch.comment || latestMatch.reviewed) return null;
 
   // Extract items from rawMatchJson
   let items: number[] = [0, 0, 0, 0, 0, 0, 0];
@@ -382,17 +401,24 @@ export async function getRecentUnreviewedMatch(): Promise<RecentUnreviewedMatch 
 export async function getUniqueMatchupChampions(): Promise<string[]> {
   const user = await requireUser();
 
-  const allMatches = await db
-    .select({ matchupChampionName: matches.matchupChampionName })
+  const rows = await db
+    .selectDistinct({ matchupChampionName: matches.matchupChampionName })
     .from(matches)
     .where(eq(matches.userId, user.id));
 
-  const uniqueNames = new Set<string>();
-  for (const m of allMatches) {
-    if (m.matchupChampionName) {
-      uniqueNames.add(m.matchupChampionName);
-    }
-  }
+  return rows
+    .map((r) => r.matchupChampionName)
+    .filter((name): name is string => !!name)
+    .sort();
+}
 
-  return Array.from(uniqueNames).sort();
+// ─── getAllChampionNames ────────────────────────────────────────────────────
+
+/**
+ * Get a sorted list of ALL champion names from DDragon.
+ * Used to populate searchable champion comboboxes.
+ */
+export async function getAllChampionNames(): Promise<string[]> {
+  const championMap = await getChampionIdMap();
+  return Array.from(championMap.values()).sort();
 }

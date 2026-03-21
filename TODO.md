@@ -90,11 +90,13 @@
 - **Discord `prompt=consent`**: Auth.js default forces re-authorization every login. Fix: `{ authorization: { params: { prompt: "none" } } }`.
 
 ## Review — Matchup Scout
-- [ ] Review matchup scout page — not working as intended
-- [ ] Bug: live game detected correctly but matchup was NOT auto-assigned (possibly because the enemy champion had no prior games in match history — edge case with uncommon matchups?)
-- [ ] Investigate: should the scout still show the matchup even without historical data? (display the live matchup info regardless, show "no past games" instead of nothing)
-- [ ] Investigate and document what else might be broken (data fetching, display, filtering, etc.)
-- [ ] Fix identified issues
+- [x] Review matchup scout page — not working as intended
+- [x] Bug: live game detected correctly but matchup was NOT auto-assigned — fixed: now shows enemy team as quick-select buttons, auto-sets your champion
+- [x] Investigate: should the scout still show the matchup even without historical data? — fixed: shows "no past games" message with helpful hint
+- [x] Investigate and document what else might be broken (data fetching, display, filtering, etc.)
+- [x] Consider filtering by YOUR champion too (not just the enemy matchup) — added: two comboboxes, your champion filters the report
+- [x] UI: two champion selectors side by side (your champion vs enemy champion) with searchable dropdowns — implemented with cmdk combobox
+- [x] Fix identified issues — SELECT DISTINCT for matchup query, revalidatePath for scout, reviewed field check
 
 ## Known Limitations
 - Riot API personal key expires every 24h — need to refresh at https://developer.riotgames.com/

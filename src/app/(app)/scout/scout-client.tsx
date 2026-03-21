@@ -19,13 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ChampionCombobox } from "@/components/champion-combobox";
 import { toast } from "sonner";
 import {
   Crosshair,
@@ -122,7 +116,7 @@ function timeAgo(date: Date): string {
 
 interface ScoutClientProps {
   ddragonVersion: string;
-  matchupChampions: string[];
+  allChampions: string[];
   recentUnreviewed: RecentUnreviewedMatch | null;
   isRiotLinked: boolean;
 }
@@ -590,34 +584,51 @@ function PastGameCard({
 
 export function ScoutClient({
   ddragonVersion,
-  matchupChampions,
+  allChampions,
   recentUnreviewed,
   isRiotLinked,
 }: ScoutClientProps) {
-  const [selectedMatchup, setSelectedMatchup] = useState<string>("");
+  const [yourChampion, setYourChampion] = useState<string>("");
+  const [enemyChampion, setEnemyChampion] = useState<string>("");
   const [report, setReport] = useState<MatchupReport | null>(null);
   const [isLoadingReport, startReportTransition] = useTransition();
   const [isCheckingGame, startCheckTransition] = useTransition();
   const [liveResult, setLiveResult] = useState<LiveMatchupResult | null>(null);
 
-  const handleMatchupChange = useCallback(
-    (value: string | null) => {
-      const v = value ?? "";
-      setSelectedMatchup(v);
-      if (v) {
-        startReportTransition(async () => {
-          try {
-            const result = await getMatchupReport(v);
-            setReport(result);
-          } catch {
-            toast.error("Failed to load matchup report.");
-          }
-        });
-      } else {
+  const loadReport = useCallback(
+    (enemy: string, yours?: string) => {
+      if (!enemy) {
         setReport(null);
+        return;
       }
+      startReportTransition(async () => {
+        try {
+          const result = await getMatchupReport(enemy, yours || undefined);
+          setReport(result);
+        } catch {
+          toast.error("Failed to load matchup report.");
+        }
+      });
     },
     []
+  );
+
+  const handleEnemyChange = useCallback(
+    (value: string) => {
+      setEnemyChampion(value);
+      loadReport(value, yourChampion);
+    },
+    [yourChampion, loadReport]
+  );
+
+  const handleYourChampionChange = useCallback(
+    (value: string) => {
+      setYourChampion(value);
+      if (enemyChampion) {
+        loadReport(enemyChampion, value);
+      }
+    },
+    [enemyChampion, loadReport]
   );
 
   const handleCheckGame = useCallback(() => {
@@ -634,12 +645,24 @@ export function ScoutClient({
           toast.success(
             `In game! Playing ${result.userChampionName || "Unknown"}.`
           );
+          // Auto-set your champion
+          if (result.userChampionName) {
+            setYourChampion(result.userChampionName);
+          }
         }
       } catch {
         toast.error("Failed to detect live game.");
       }
     });
   }, []);
+
+  const handleEnemyQuickSelect = useCallback(
+    (championName: string) => {
+      setEnemyChampion(championName);
+      loadReport(championName, yourChampion);
+    },
+    [yourChampion, loadReport]
+  );
 
   return (
     <div className="space-y-6">
@@ -662,39 +685,36 @@ export function ScoutClient({
         />
       )}
 
-      {/* Controls: matchup picker + check game */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <Select
-          value={selectedMatchup}
-          onValueChange={handleMatchupChange}
-        >
-          <SelectTrigger className="flex-1 sm:max-w-xs">
-            <SelectValue placeholder="Select opponent champion..." />
-          </SelectTrigger>
-          <SelectContent>
-            {matchupChampions.map((name) => (
-              <SelectItem key={name} value={name}>
-                <span className="flex items-center gap-2">
-                  <Image
-                    src={getChampionIconUrl(ddragonVersion, name)}
-                    alt={name}
-                    width={20}
-                    height={20}
-                    className="rounded"
-                  />
-                  {name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Controls: two champion pickers + check game */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+        <ChampionCombobox
+          value={yourChampion}
+          onValueChange={handleYourChampionChange}
+          champions={allChampions}
+          ddragonVersion={ddragonVersion}
+          placeholder="Any champion"
+          label="Your Champion"
+          className="flex-1 sm:max-w-xs"
+        />
+        <span className="hidden sm:flex items-end pb-2 text-muted-foreground font-medium">
+          vs
+        </span>
+        <ChampionCombobox
+          value={enemyChampion}
+          onValueChange={handleEnemyChange}
+          champions={allChampions}
+          ddragonVersion={ddragonVersion}
+          placeholder="Select enemy..."
+          label="Enemy Champion"
+          className="flex-1 sm:max-w-xs"
+        />
 
         {isRiotLinked && (
           <Button
             variant="outline"
             onClick={handleCheckGame}
             disabled={isCheckingGame}
-            className="gap-2 shrink-0"
+            className="gap-2 shrink-0 sm:mb-0"
           >
             {isCheckingGame ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -708,43 +728,72 @@ export function ScoutClient({
 
       {/* Live game detection result */}
       {liveResult && liveResult.inGame && (
-        <div className="rounded-lg border border-electric/30 bg-electric/5 p-3 flex items-center gap-3 text-sm">
-          <Gamepad2 className="h-4 w-4 text-electric shrink-0" />
-          <div>
-            <span className="text-electric-light font-medium">In Game!</span>{" "}
-            Playing{" "}
-            {liveResult.userChampionName && (
-              <span className="font-medium inline-flex items-center gap-1">
-                <Image
-                  src={getChampionIconUrl(ddragonVersion, liveResult.userChampionName)}
-                  alt={liveResult.userChampionName}
-                  width={20}
-                  height={20}
-                  className="rounded"
-                />
-                {liveResult.userChampionName}
-              </span>
-            )}
-            {liveResult.gameQueueId === 420 ? (
-              <span className="text-muted-foreground"> (Ranked Solo/Duo)</span>
-            ) : (
-              <span className="text-muted-foreground">
-                {" "}
-                (Queue {liveResult.gameQueueId})
-              </span>
-            )}
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Select your lane opponent from the dropdown above to load the
-              scouting report.
-            </p>
+        <div className="rounded-lg border border-electric/30 bg-electric/5 p-4 space-y-3">
+          <div className="flex items-center gap-3 text-sm">
+            <Gamepad2 className="h-4 w-4 text-electric shrink-0" />
+            <div>
+              <span className="text-electric-light font-medium">In Game!</span>{" "}
+              Playing{" "}
+              {liveResult.userChampionName && (
+                <span className="font-medium inline-flex items-center gap-1">
+                  <Image
+                    src={getChampionIconUrl(ddragonVersion, liveResult.userChampionName)}
+                    alt={liveResult.userChampionName}
+                    width={20}
+                    height={20}
+                    className="rounded"
+                  />
+                  {liveResult.userChampionName}
+                </span>
+              )}
+              {liveResult.gameQueueId === 420 ? (
+                <span className="text-muted-foreground"> (Ranked Solo/Duo)</span>
+              ) : (
+                <span className="text-muted-foreground">
+                  {" "}
+                  (Queue {liveResult.gameQueueId})
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Enemy team quick-select */}
+          {liveResult.enemyTeam.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Select your lane opponent:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {liveResult.enemyTeam.map((enemy) => (
+                  <button
+                    key={enemy.championId}
+                    onClick={() => handleEnemyQuickSelect(enemy.championName)}
+                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors hover:bg-surface-elevated ${
+                      enemyChampion === enemy.championName
+                        ? "border-electric bg-electric/10 text-electric-light"
+                        : "border-border/50"
+                    }`}
+                  >
+                    <Image
+                      src={getChampionIconUrl(ddragonVersion, enemy.championName)}
+                      alt={enemy.championName}
+                      width={24}
+                      height={24}
+                      className="rounded"
+                    />
+                    {enemy.championName}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {liveResult && !liveResult.inGame && !liveResult.error && (
         <div className="rounded-lg border border-border/50 bg-surface/30 p-3 flex items-center gap-2 text-sm text-muted-foreground">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          Not currently in a game. Select an opponent from the dropdown to review
+          Not currently in a game. Select an opponent from the dropdowns to review
           past matchup data.
         </div>
       )}
@@ -769,22 +818,29 @@ export function ScoutClient({
         <ScoutingReport report={report} ddragonVersion={ddragonVersion} />
       )}
 
-      {/* Empty state */}
-      {!isLoadingReport && !report && selectedMatchup && (
+      {/* No historical data state */}
+      {!isLoadingReport && !report && enemyChampion && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <Swords className="h-8 w-8 text-muted-foreground mb-2" />
           <p className="text-muted-foreground">
-            No games found against {selectedMatchup}.
+            No past games found{yourChampion ? ` as ${yourChampion}` : ""} against{" "}
+            {enemyChampion}.
           </p>
+          {yourChampion && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Try clearing the &quot;Your Champion&quot; filter to see all games
+              against this matchup.
+            </p>
+          )}
         </div>
       )}
 
       {/* Initial state — no matchup selected */}
-      {!selectedMatchup && !recentUnreviewed && (
+      {!enemyChampion && !recentUnreviewed && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <Crosshair className="h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-muted-foreground">
-            Select an opponent champion above to view your scouting report,
+            Select an enemy champion above to view your scouting report,
           </p>
           <p className="text-muted-foreground text-sm mt-1">
             or click <strong>Check Game</strong> to detect a live match.
