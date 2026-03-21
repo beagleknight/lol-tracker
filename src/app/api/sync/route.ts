@@ -149,6 +149,31 @@ export async function GET() {
               visionScore: playerData.visionScore,
               queueId: playerData.queueId,
               rawMatchJson: JSON.stringify(matchData),
+            }).onConflictDoUpdate({
+              target: matches.id,
+              set: {
+                gameDate: playerData.gameDate,
+                result: playerData.result,
+                championId: playerData.championId,
+                championName: playerData.championName,
+                runeKeystoneId: playerData.runeKeystoneId,
+                runeKeystoneName: playerData.runeKeystoneId
+                  ? getKeystoneName(playerData.runeKeystoneId)
+                  : null,
+                matchupChampionId: matchup?.championId || null,
+                matchupChampionName: matchup?.championName || null,
+                kills: playerData.kills,
+                deaths: playerData.deaths,
+                assists: playerData.assists,
+                cs: playerData.cs,
+                csPerMin: playerData.csPerMin,
+                gameDurationSeconds: playerData.gameDurationSeconds,
+                goldEarned: playerData.goldEarned,
+                visionScore: playerData.visionScore,
+                queueId: playerData.queueId,
+                rawMatchJson: JSON.stringify(matchData),
+                syncedAt: new Date(),
+              },
             });
 
             syncedCount++;
