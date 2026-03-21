@@ -89,6 +89,11 @@
 - **Vercel defaults to `iad1` (US East)**: Set `"regions": ["dub1"]` in `vercel.json` to colocate with Turso in Ireland.
 - **Discord `prompt=consent`**: Auth.js default forces re-authorization every login. Fix: `{ authorization: { params: { prompt: "none" } } }`.
 
+## Review — Matchup Scout
+- [ ] Review matchup scout page — not working as intended
+- [ ] Investigate and document what's broken (data fetching, display, filtering, etc.)
+- [ ] Fix identified issues
+
 ## Known Limitations
 - Riot API personal key expires every 24h — need to refresh at https://developer.riotgames.com/
 - Rate limits: 20 req/sec, 100 req/2min — sufficient for personal use but sync is sequential

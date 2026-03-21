@@ -41,6 +41,7 @@ export async function createCoachingSession(data: {
       data.matchIds.map((matchId) => ({
         sessionId,
         matchId,
+        userId: user.id,
       }))
     );
   }
