@@ -1,17 +1,63 @@
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { ReviewClient } from "./review-client";
 
-export default async function ReviewPage() {
-  const user = await requireUser();
+const COMPLETED_PAGE_SIZE = 10;
 
-  // Fetch DDragon version + all matches that are either:
-  // 1. Not reviewed (for Post-Game and VOD Review tabs)
-  // 2. Recently reviewed (for Completed tab — last 20)
-  const [ddragonVersion, unreviewedMatches, recentReviewedMatches] =
+export default async function ReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const user = await requireUser();
+  const params = await searchParams;
+  const completedPage = Math.max(
+    1,
+    parseInt(String(params.completedPage ?? "1"), 10) || 1
+  );
+  const completedOffset = (completedPage - 1) * COMPLETED_PAGE_SIZE;
+
+  const reviewedWhere = and(
+    eq(matches.userId, user.id),
+    eq(matches.reviewed, true)
+  );
+
+  const matchColumns = {
+    id: true,
+    odometer: true,
+    userId: true,
+    gameDate: true,
+    result: true,
+    championId: true,
+    championName: true,
+    runeKeystoneId: true,
+    runeKeystoneName: true,
+    matchupChampionId: true,
+    matchupChampionName: true,
+    kills: true,
+    deaths: true,
+    assists: true,
+    cs: true,
+    csPerMin: true,
+    gameDurationSeconds: true,
+    goldEarned: true,
+    visionScore: true,
+    comment: true,
+    reviewed: true,
+    reviewNotes: true,
+    reviewSkippedReason: true,
+    vodUrl: true,
+    queueId: true,
+    syncedAt: true,
+    duoPartnerPuuid: true,
+    // rawMatchJson excluded — not needed for review list
+  } as const;
+
+  // Fetch DDragon version + unreviewed matches + paginated reviewed matches + reviewed count
+  const [ddragonVersion, unreviewedMatches, reviewedMatches, reviewedCountResult] =
     await Promise.all([
       getLatestVersion(),
       db.query.matches.findMany({
@@ -20,80 +66,28 @@ export default async function ReviewPage() {
           eq(matches.reviewed, false)
         ),
         orderBy: desc(matches.gameDate),
-        columns: {
-          id: true,
-          odometer: true,
-          userId: true,
-          gameDate: true,
-          result: true,
-          championId: true,
-          championName: true,
-          runeKeystoneId: true,
-          runeKeystoneName: true,
-          matchupChampionId: true,
-          matchupChampionName: true,
-          kills: true,
-          deaths: true,
-          assists: true,
-          cs: true,
-          csPerMin: true,
-          gameDurationSeconds: true,
-          goldEarned: true,
-          visionScore: true,
-          comment: true,
-          reviewed: true,
-          reviewNotes: true,
-          reviewSkippedReason: true,
-          vodUrl: true,
-          queueId: true,
-          syncedAt: true,
-          duoPartnerPuuid: true,
-          // rawMatchJson excluded — not needed for review list
-        },
+        columns: matchColumns,
       }) as unknown as Promise<import("@/db/schema").Match[]>,
       db.query.matches.findMany({
-        where: and(
-          eq(matches.userId, user.id),
-          eq(matches.reviewed, true)
-        ),
+        where: reviewedWhere,
         orderBy: desc(matches.gameDate),
-        limit: 20,
-        columns: {
-          id: true,
-          odometer: true,
-          userId: true,
-          gameDate: true,
-          result: true,
-          championId: true,
-          championName: true,
-          runeKeystoneId: true,
-          runeKeystoneName: true,
-          matchupChampionId: true,
-          matchupChampionName: true,
-          kills: true,
-          deaths: true,
-          assists: true,
-          cs: true,
-          csPerMin: true,
-          gameDurationSeconds: true,
-          goldEarned: true,
-          visionScore: true,
-          comment: true,
-          reviewed: true,
-          reviewNotes: true,
-          reviewSkippedReason: true,
-          vodUrl: true,
-          queueId: true,
-          syncedAt: true,
-          duoPartnerPuuid: true,
-        },
+        limit: COMPLETED_PAGE_SIZE,
+        offset: completedOffset,
+        columns: matchColumns,
       }) as unknown as Promise<import("@/db/schema").Match[]>,
+      db.select({ total: count() }).from(matches).where(reviewedWhere),
     ]);
 
-  // Fetch highlights for all matches (unreviewed + recent reviewed)
+  const completedTotal = reviewedCountResult[0]?.total ?? 0;
+  const completedTotalPages = Math.max(
+    1,
+    Math.ceil(completedTotal / COMPLETED_PAGE_SIZE)
+  );
+
+  // Fetch highlights for all matches (unreviewed + current page of reviewed)
   const allMatchIds = [
     ...unreviewedMatches.map((m) => m.id),
-    ...recentReviewedMatches.map((m) => m.id),
+    ...reviewedMatches.map((m) => m.id),
   ];
   const allHighlights =
     allMatchIds.length > 0
@@ -133,9 +127,12 @@ export default async function ReviewPage() {
   return (
     <ReviewClient
       unreviewedMatches={unreviewedMatches}
-      recentReviewedMatches={recentReviewedMatches}
+      reviewedMatches={reviewedMatches}
       highlightsByMatch={highlightsByMatch}
       ddragonVersion={ddragonVersion}
+      completedPage={Math.min(completedPage, completedTotalPages)}
+      completedTotalPages={completedTotalPages}
+      completedTotal={completedTotal}
     />
   );
 }

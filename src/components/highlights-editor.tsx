@@ -4,6 +4,12 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
 import { Plus, X, ThumbsUp, ThumbsDown } from "lucide-react";
 
@@ -244,36 +250,54 @@ export function HighlightsDisplay({
 
   if (compact) {
     return (
-      <div className="flex flex-wrap gap-1.5">
-        {highlightItems.map((item, i) => (
-          <span
-            key={`h-${i}`}
-            className="inline-flex items-center gap-1 rounded-md border border-green-400/20 bg-green-400/5 px-2 py-0.5 text-xs"
-          >
-            <ThumbsUp className="h-2.5 w-2.5 text-green-400" />
-            {item.text}
-            {item.topic && (
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 ml-1">
-                {item.topic}
-              </Badge>
-            )}
-          </span>
-        ))}
-        {lowlightItems.map((item, i) => (
-          <span
-            key={`l-${i}`}
-            className="inline-flex items-center gap-1 rounded-md border border-red-400/20 bg-red-400/5 px-2 py-0.5 text-xs"
-          >
-            <ThumbsDown className="h-2.5 w-2.5 text-red-400" />
-            {item.text}
-            {item.topic && (
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 ml-1">
-                {item.topic}
-              </Badge>
-            )}
-          </span>
-        ))}
-      </div>
+      <TooltipProvider>
+        <div className="flex flex-wrap gap-1.5">
+          {highlightItems.map((item, i) => {
+            const hasText = !!(item.text && item.topic);
+            return (
+              <Tooltip key={`h-${i}`}>
+                <TooltipTrigger
+                  className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
+                    hasText
+                      ? "bg-green-400/20 text-green-300"
+                      : "bg-green-400/10 text-green-400"
+                  }`}
+                >
+                  <ThumbsUp className="h-2.5 w-2.5" />
+                  {item.topic || item.text}
+                </TooltipTrigger>
+                {hasText && (
+                  <TooltipContent side="bottom">
+                    {item.text}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
+          {lowlightItems.map((item, i) => {
+            const hasText = !!(item.text && item.topic);
+            return (
+              <Tooltip key={`l-${i}`}>
+                <TooltipTrigger
+                  className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
+                    hasText
+                      ? "bg-red-400/20 text-red-300"
+                      : "bg-red-400/10 text-red-400"
+                  }`}
+                >
+                  <ThumbsDown className="h-2.5 w-2.5" />
+                  {item.topic || item.text}
+                </TooltipTrigger>
+                {hasText && (
+                  <TooltipContent side="bottom">
+                    {item.text}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
+        </div>
+      </TooltipProvider>
     );
   }
 
@@ -285,19 +309,26 @@ export function HighlightsDisplay({
             <ThumbsUp className="h-3 w-3 text-green-400" />
             Highlights
           </p>
-          {highlightItems.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 rounded-md border border-green-400/20 bg-green-400/5 px-3 py-1.5 text-sm"
-            >
-              <span className="flex-1">{item.text}</span>
-              {item.topic && (
-                <Badge variant="secondary" className="text-[10px]">
-                  {item.topic}
-                </Badge>
-              )}
-            </div>
-          ))}
+          {highlightItems.map((item, i) => {
+            const hasText = !!item.text;
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm ${
+                  hasText
+                    ? "border-green-400/30 bg-green-400/10"
+                    : "border-green-400/20 bg-green-400/5"
+                }`}
+              >
+                <span className="flex-1">{item.text || item.topic}</span>
+                {item.topic && item.text && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    {item.topic}
+                  </Badge>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
       {lowlightItems.length > 0 && (
@@ -306,19 +337,26 @@ export function HighlightsDisplay({
             <ThumbsDown className="h-3 w-3 text-red-400" />
             Lowlights
           </p>
-          {lowlightItems.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 rounded-md border border-red-400/20 bg-red-400/5 px-3 py-1.5 text-sm"
-            >
-              <span className="flex-1">{item.text}</span>
-              {item.topic && (
-                <Badge variant="secondary" className="text-[10px]">
-                  {item.topic}
-                </Badge>
-              )}
-            </div>
-          ))}
+          {lowlightItems.map((item, i) => {
+            const hasText = !!item.text;
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm ${
+                  hasText
+                    ? "border-red-400/30 bg-red-400/10"
+                    : "border-red-400/20 bg-red-400/5"
+                }`}
+              >
+                <span className="flex-1">{item.text || item.topic}</span>
+                {item.topic && item.text && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    {item.topic}
+                  </Badge>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

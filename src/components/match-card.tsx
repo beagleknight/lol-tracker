@@ -167,36 +167,50 @@ export function MatchCard({
             {/* Highlights preview — show topic badges with tooltip for details */}
             {hasHighlights && (
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                {highlightItems.map((item, i) => (
-                  <Tooltip key={`h-${i}`}>
-                    <TooltipTrigger
-                      className="inline-flex items-center gap-0.5 rounded-md bg-green-400/10 px-1.5 py-0.5 text-[10px] text-green-400 cursor-default"
-                    >
-                      <ThumbsUp className="h-2.5 w-2.5" />
-                      {item.topic || item.text}
-                    </TooltipTrigger>
-                    {item.text && item.topic && (
-                      <TooltipContent side="bottom">
-                        {item.text}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                ))}
-                {lowlightItems.map((item, i) => (
-                  <Tooltip key={`l-${i}`}>
-                    <TooltipTrigger
-                      className="inline-flex items-center gap-0.5 rounded-md bg-red-400/10 px-1.5 py-0.5 text-[10px] text-red-400 cursor-default"
-                    >
-                      <ThumbsDown className="h-2.5 w-2.5" />
-                      {item.topic || item.text}
-                    </TooltipTrigger>
-                    {item.text && item.topic && (
-                      <TooltipContent side="bottom">
-                        {item.text}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                ))}
+                {highlightItems.map((item, i) => {
+                  const hasText = !!(item.text && item.topic);
+                  return (
+                    <Tooltip key={`h-${i}`}>
+                      <TooltipTrigger
+                        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
+                          hasText
+                            ? "bg-green-400/20 text-green-300"
+                            : "bg-green-400/10 text-green-400"
+                        }`}
+                      >
+                        <ThumbsUp className="h-2.5 w-2.5" />
+                        {item.topic || item.text}
+                      </TooltipTrigger>
+                      {hasText && (
+                        <TooltipContent side="bottom">
+                          {item.text}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  );
+                })}
+                {lowlightItems.map((item, i) => {
+                  const hasText = !!(item.text && item.topic);
+                  return (
+                    <Tooltip key={`l-${i}`}>
+                      <TooltipTrigger
+                        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
+                          hasText
+                            ? "bg-red-400/20 text-red-300"
+                            : "bg-red-400/10 text-red-400"
+                        }`}
+                      >
+                        <ThumbsDown className="h-2.5 w-2.5" />
+                        {item.topic || item.text}
+                      </TooltipTrigger>
+                      {hasText && (
+                        <TooltipContent side="bottom">
+                          {item.text}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  );
+                })}
               </div>
             )}
 

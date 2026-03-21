@@ -26,6 +26,9 @@
 - [ ] Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon
 - [ ] Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling
 - [ ] Paginated tables: inconsistent loading states — some pages (e.g., Duo) show an ugly spinner at the bottom instead of a proper loading skeleton; use the Matches page as the reference implementation
+- [ ] Review page styling pass: improve visual design of highlight/lowlight tags (size, colors, spacing) and comment/notes display across all three tabs (Post-Game, VOD Review, Completed)
+- [ ] MatchCard tooltip styling: review tooltip content for highlights and comments — ensure readable formatting and consistent look
+- [ ] Match detail read-only display: polish how highlights, comments, and review notes are presented (typography, spacing, visual hierarchy)
 
 ## Performance
 - [x] Duo page: added composite index `(userId, duoPartnerPuuid)` — all duo queries were doing full table scans
@@ -49,6 +52,10 @@
 - [ ] Multi-account support (track games across multiple Riot accounts)
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
 - [ ] Goal setting (e.g., "reach Diamond by end of split") with progress tracking
+
+## Features — Internationalization (nice to have)
+- [ ] Date/time format preference: allow users to pick a locale-aware format (e.g., DD/MM/YYYY vs MM/DD/YYYY) — US date format is confusing for non-US users
+- [ ] Multi-language support (i18n): start with English + Spanish; translations can be AI-generated and maintained with assistance, so the burden stays low
 
 ## Features — Duo Partner Tracking & Synergy
 - [ ] Duo-specific analytics: lane proximity, shared kills/assists, how often you die together vs separately
