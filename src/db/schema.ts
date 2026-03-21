@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey, index, unique } from "drizzle-orm/sqlite-core";
 
 // ─── Users ───────────────────────────────────────────────────────────────────
 
@@ -26,8 +26,8 @@ export const users = sqliteTable("users", {
 // ─── Matches ─────────────────────────────────────────────────────────────────
 
 export const matches = sqliteTable("matches", {
-  id: text("id").primaryKey(), // Riot match ID e.g. "EUW1_7234567890"
-  odometer: integer("odometer").notNull().unique(), // Auto-incrementing sort key
+  id: text("id").notNull(), // Riot match ID e.g. "EUW1_7234567890"
+  odometer: integer("odometer").notNull(), // Per-user sort key
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -58,6 +58,8 @@ export const matches = sqliteTable("matches", {
     .$defaultFn(() => new Date()),
   rawMatchJson: text("raw_match_json"),
 }, (table) => [
+  primaryKey({ columns: [table.id, table.userId] }),
+  unique("matches_user_odometer_unq").on(table.userId, table.odometer),
   index("matches_user_game_date_idx").on(table.userId, table.gameDate),
   index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
 ]);
@@ -109,9 +111,10 @@ export const coachingSessionMatches = sqliteTable(
     sessionId: integer("session_id")
       .notNull()
       .references(() => coachingSessions.id, { onDelete: "cascade" }),
-    matchId: text("match_id")
+    matchId: text("match_id").notNull(),
+    userId: text("user_id")
       .notNull()
-      .references(() => matches.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
     primaryKey({ columns: [table.sessionId, table.matchId] }),

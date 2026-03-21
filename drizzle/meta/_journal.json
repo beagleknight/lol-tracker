@@ -15,6 +15,13 @@
       "when": 1774078800766,
       "tag": "0001_worried_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1774085105762,
+      "tag": "0002_mushy_jackpot",
+      "breakpoints": true
     }
   ]
 }

@@ -47,7 +47,10 @@ export default async function MatchDetailPage({
         coachingSessions,
         eq(coachingSessionMatches.sessionId, coachingSessions.id)
       )
-      .where(eq(coachingSessionMatches.matchId, match.id)),
+      .where(and(
+        eq(coachingSessionMatches.matchId, match.id),
+        eq(coachingSessionMatches.userId, user.id),
+      )),
   ]);
 
   return (

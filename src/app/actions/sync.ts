@@ -64,8 +64,9 @@ export async function syncMatches() {
       return { synced: 0, message: "No new matches found." };
     }
 
-    // Get the current max odometer
+    // Get the current max odometer for this user
     const maxOdoResult = await db.query.matches.findFirst({
+      where: eq(matches.userId, user.id),
       orderBy: desc(matches.odometer),
       columns: { odometer: true },
     });
@@ -109,7 +110,7 @@ export async function syncMatches() {
           queueId: playerData.queueId,
           rawMatchJson: JSON.stringify(matchData),
         }).onConflictDoUpdate({
-          target: matches.id,
+          target: [matches.id, matches.userId],
           set: {
             gameDate: playerData.gameDate,
             result: playerData.result,

@@ -47,7 +47,10 @@ export default async function CoachingDetailPage({
         gameDurationSeconds: matches.gameDurationSeconds,
       })
       .from(coachingSessionMatches)
-      .innerJoin(matches, eq(coachingSessionMatches.matchId, matches.id))
+      .innerJoin(matches, and(
+        eq(coachingSessionMatches.matchId, matches.id),
+        eq(coachingSessionMatches.userId, matches.userId),
+      ))
       .where(eq(coachingSessionMatches.sessionId, sessionId)),
     db.query.coachingActionItems.findMany({
       where: eq(coachingActionItems.sessionId, sessionId),

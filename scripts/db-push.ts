@@ -71,7 +71,7 @@ const TABLES: TableConfig[] = [
   },
   {
     name: "matches",
-    pk: ["id"],
+    pk: ["id", "user_id"],
     autoIncrement: false,
     updateCols: [
       "comment",
@@ -357,6 +357,7 @@ async function pushSessionMatches(
   for (const row of rows) {
     const localSessionId = row["session_id"] as number;
     const matchId = row["match_id"] as InValue;
+    const userId = row["user_id"] as InValue;
 
     // Remap session ID
     const remoteSessionId = sessionIdMap.get(localSessionId) ?? localSessionId;
@@ -373,8 +374,8 @@ async function pushSessionMatches(
     }
 
     await remote.execute({
-      sql: `INSERT INTO coaching_session_matches (session_id, match_id) VALUES (?, ?)`,
-      args: [remoteSessionId, matchId],
+      sql: `INSERT INTO coaching_session_matches (session_id, match_id, user_id) VALUES (?, ?, ?)`,
+      args: [remoteSessionId, matchId, userId],
     });
     inserted++;
   }

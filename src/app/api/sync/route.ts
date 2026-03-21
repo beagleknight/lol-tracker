@@ -101,8 +101,9 @@ export async function GET() {
           message: `Syncing ${newMatchIds.length} new matches (${existingIds.size} already synced)...`,
         });
 
-        // Get the current max odometer
+        // Get the current max odometer for this user
         const maxOdoResult = await db.query.matches.findFirst({
+          where: eq(matches.userId, user.id),
           orderBy: desc(matches.odometer),
           columns: { odometer: true },
         });
@@ -150,7 +151,7 @@ export async function GET() {
               queueId: playerData.queueId,
               rawMatchJson: JSON.stringify(matchData),
             }).onConflictDoUpdate({
-              target: matches.id,
+              target: [matches.id, matches.userId],
               set: {
                 gameDate: playerData.gameDate,
                 result: playerData.result,
