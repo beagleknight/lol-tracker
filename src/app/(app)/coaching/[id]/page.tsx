@@ -4,8 +4,9 @@ import {
   coachingSessionMatches,
   coachingActionItems,
   matches,
+  matchHighlights,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { notFound } from "next/navigation";
 import { getLatestVersion } from "@/lib/riot-api";
@@ -45,6 +46,7 @@ export default async function CoachingDetailPage({
         assists: matches.assists,
         runeKeystoneName: matches.runeKeystoneName,
         gameDurationSeconds: matches.gameDurationSeconds,
+        vodUrl: matches.vodUrl,
       })
       .from(coachingSessionMatches)
       .innerJoin(matches, and(
@@ -58,12 +60,46 @@ export default async function CoachingDetailPage({
     getLatestVersion(),
   ]);
 
+  // Fetch highlights for linked matches
+  const linkedMatchIds = linkedMatchRows.map((m) => m.id);
+  let highlightsByMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  > = {};
+
+  if (linkedMatchIds.length > 0) {
+    const highlights = await db
+      .select({
+        matchId: matchHighlights.matchId,
+        type: matchHighlights.type,
+        text: matchHighlights.text,
+        topic: matchHighlights.topic,
+      })
+      .from(matchHighlights)
+      .where(
+        and(
+          inArray(matchHighlights.matchId, linkedMatchIds),
+          eq(matchHighlights.userId, user.id)
+        )
+      );
+
+    for (const h of highlights) {
+      if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
+      highlightsByMatch[h.matchId].push({
+        type: h.type as "highlight" | "lowlight",
+        text: h.text,
+        topic: h.topic,
+      });
+    }
+  }
+
   return (
     <CoachingDetailClient
       session={session}
       linkedMatches={linkedMatchRows}
       actionItems={items}
       ddragonVersion={ddragonVersion}
+      highlightsByMatch={highlightsByMatch}
     />
   );
 }

@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { getChampionIconUrl } from "@/lib/riot-api";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
 import {
   ArrowLeft,
   Loader2,
@@ -29,6 +30,8 @@ import {
   CheckCircle2,
   Circle,
   Play,
+  Video,
+  ExternalLink,
 } from "lucide-react";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
@@ -43,6 +46,7 @@ interface LinkedMatch {
   assists: number;
   runeKeystoneName: string | null;
   gameDurationSeconds: number;
+  vodUrl: string | null;
 }
 
 interface CoachingDetailClientProps {
@@ -50,6 +54,10 @@ interface CoachingDetailClientProps {
   linkedMatches: LinkedMatch[];
   actionItems: CoachingActionItem[];
   ddragonVersion: string;
+  highlightsByMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  >;
 }
 
 function formatDuration(seconds: number): string {
@@ -135,6 +143,7 @@ export function CoachingDetailClient({
   linkedMatches,
   actionItems,
   ddragonVersion,
+  highlightsByMatch,
 }: CoachingDetailClientProps) {
   const router = useRouter();
   const [isDeleting, startDelete] = useTransition();
@@ -234,69 +243,104 @@ export function CoachingDetailClient({
       {linkedMatches.length > 0 && (
         <Card className="surface-glow">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Games Reviewed</CardTitle>
+            <CardTitle className="text-base">Game Reviewed</CardTitle>
             <CardDescription>
               {linkedMatches.length} game{linkedMatches.length !== 1 ? "s" : ""} discussed
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {linkedMatches.map((match) => (
-                <Link
-                  key={match.id}
-                  href={`/matches/${match.id}`}
-                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
-                >
-                  <div
-                    className={`w-1 h-8 rounded-full ${
-                      match.result === "Victory"
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                  />
-                  <Image
-                    src={getChampionIconUrl(ddragonVersion, match.championName)}
-                    alt={match.championName}
-                    width={32}
-                    height={32}
-                    className="rounded"
-                  />
-                  <div className="flex-1">
-                    <span className="text-sm font-medium">
-                      {match.championName}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-2 inline-flex items-center gap-1">
-                      vs
-                      {match.matchupChampionName ? (
-                        <>
-                          <Image
-                            src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                            alt={match.matchupChampionName}
-                            width={16}
-                            height={16}
-                            className="rounded"
-                          />
-                          {match.matchupChampionName}
-                        </>
-                      ) : "?"}
-                    </span>
+            <div className="space-y-4">
+              {linkedMatches.map((match) => {
+                const matchHL: HighlightItem[] = (
+                  highlightsByMatch[match.id] || []
+                ).map((h) => ({
+                  type: h.type,
+                  text: h.text,
+                  topic: h.topic || undefined,
+                }));
+
+                return (
+                  <div key={match.id} className="space-y-3">
+                    {/* Match row */}
+                    <Link
+                      href={`/matches/${match.id}`}
+                      className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
+                    >
+                      <div
+                        className={`w-1 h-8 rounded-full ${
+                          match.result === "Victory"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
+                      />
+                      <Image
+                        src={getChampionIconUrl(ddragonVersion, match.championName)}
+                        alt={match.championName}
+                        width={32}
+                        height={32}
+                        className="rounded"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium">
+                          {match.championName}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2 inline-flex items-center gap-1">
+                          vs
+                          {match.matchupChampionName ? (
+                            <>
+                              <Image
+                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
+                                alt={match.matchupChampionName}
+                                width={16}
+                                height={16}
+                                className="rounded"
+                              />
+                              {match.matchupChampionName}
+                            </>
+                          ) : "?"}
+                        </span>
+                      </div>
+                      <span className="text-sm font-mono text-gold">
+                        {match.kills}/{match.deaths}/{match.assists}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDuration(match.gameDurationSeconds)}
+                      </span>
+                      <Badge
+                        variant={
+                          match.result === "Victory" ? "default" : "destructive"
+                        }
+                        className="text-xs"
+                      >
+                        {match.result === "Victory" ? "W" : "L"}
+                      </Badge>
+                    </Link>
+
+                    {/* VOD link */}
+                    {match.vodUrl && (
+                      <div className="flex items-center gap-2 ml-3">
+                        <Video className="h-3.5 w-3.5 text-electric" />
+                        <a
+                          href={match.vodUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-electric hover:underline truncate inline-flex items-center gap-1"
+                        >
+                          Watch VOD
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Highlights / Lowlights */}
+                    {matchHL.length > 0 && (
+                      <div className="ml-3">
+                        <HighlightsDisplay highlights={matchHL} />
+                      </div>
+                    )}
                   </div>
-                  <span className="text-sm font-mono text-gold">
-                    {match.kills}/{match.deaths}/{match.assists}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDuration(match.gameDurationSeconds)}
-                  </span>
-                  <Badge
-                    variant={
-                      match.result === "Victory" ? "default" : "destructive"
-                    }
-                    className="text-xs"
-                  >
-                    {match.result === "Victory" ? "W" : "L"}
-                  </Badge>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

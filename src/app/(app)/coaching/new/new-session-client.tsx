@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -18,22 +17,11 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { getChampionIconUrl } from "@/lib/riot-api";
-import { Loader2, Plus, X, ArrowLeft } from "lucide-react";
+import { PREDEFINED_TOPICS } from "@/lib/topics";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { Loader2, Plus, X, ArrowLeft, Video, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-const PREDEFINED_TOPICS = [
-  "Laning phase",
-  "Wave management",
-  "Trading patterns",
-  "Roaming/map awareness",
-  "Vision control",
-  "Teamfighting",
-  "Macro/objectives",
-  "Champion-specific mechanics",
-  "Mental/tilt management",
-  "Build paths",
-];
 
 interface MatchSummary {
   id: string;
@@ -44,14 +32,23 @@ interface MatchSummary {
   kills: number;
   deaths: number;
   assists: number;
+  vodUrl: string | null;
 }
 
 interface NewSessionClientProps {
   recentMatches: MatchSummary[];
   ddragonVersion: string;
+  highlightsByMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  >;
 }
 
-export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionClientProps) {
+export function NewSessionClient({
+  recentMatches,
+  ddragonVersion,
+  highlightsByMatch,
+}: NewSessionClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -61,9 +58,7 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
   const [notes, setNotes] = useState("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [customTopic, setCustomTopic] = useState("");
-  const [selectedMatchIds, setSelectedMatchIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [actionItems, setActionItems] = useState<
     Array<{ description: string; topic: string }>
   >([]);
@@ -83,13 +78,8 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
     }
   }
 
-  function toggleMatch(id: string) {
-    setSelectedMatchIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  function selectMatch(id: string) {
+    setSelectedMatchId((prev) => (prev === id ? null : id));
   }
 
   function addActionItem() {
@@ -106,6 +96,18 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
     setActionItems((prev) => prev.filter((_, i) => i !== index));
   }
 
+  // Get selected match details for preview
+  const selectedMatch = selectedMatchId
+    ? recentMatches.find((m) => m.id === selectedMatchId)
+    : null;
+  const selectedMatchHighlights: HighlightItem[] = selectedMatchId
+    ? (highlightsByMatch[selectedMatchId] || []).map((h) => ({
+        type: h.type,
+        text: h.text,
+        topic: h.topic || undefined,
+      }))
+    : [];
+
   function handleSubmit() {
     if (!coachName.trim()) {
       toast.error("Please enter a coach name.");
@@ -120,7 +122,7 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
           durationMinutes: duration ? parseInt(duration) : undefined,
           topics: selectedTopics,
           notes: notes || undefined,
-          matchIds: Array.from(selectedMatchIds),
+          matchIds: selectedMatchId ? [selectedMatchId] : [],
           actionItems,
         });
 
@@ -223,7 +225,7 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
               </Badge>
             ))}
             {selectedTopics
-              .filter((t) => !PREDEFINED_TOPICS.includes(t))
+              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
               .map((topic) => (
                 <Badge
                   key={topic}
@@ -256,35 +258,49 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
         </CardContent>
       </Card>
 
-      {/* Link Games */}
+      {/* Link Game — Single match picker */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Games Reviewed</CardTitle>
+          <CardTitle>Game Reviewed</CardTitle>
           <CardDescription>
-            Select games that were discussed during this session.
+            Select the game that was reviewed during this coaching session.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {recentMatches.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No matches synced yet. Sync your games first.
             </p>
           ) : (
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="space-y-1 max-h-60 overflow-y-auto">
               {recentMatches.map((match) => {
+                const isSelected = selectedMatchId === match.id;
                 const dateStr = new Intl.DateTimeFormat("en-GB", {
                   day: "2-digit",
                   month: "short",
                 }).format(match.gameDate);
+                const matchHL = highlightsByMatch[match.id];
+                const hasHighlights = matchHL && matchHL.length > 0;
                 return (
-                  <label
+                  <button
                     key={match.id}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent cursor-pointer"
+                    type="button"
+                    className={`flex items-center gap-3 rounded-lg p-2 w-full text-left transition-colors ${
+                      isSelected
+                        ? "bg-gold/10 border border-gold/30"
+                        : "hover:bg-accent border border-transparent"
+                    }`}
+                    onClick={() => selectMatch(match.id)}
                   >
-                    <Checkbox
-                      checked={selectedMatchIds.has(match.id)}
-                      onCheckedChange={() => toggleMatch(match.id)}
-                    />
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? "border-gold bg-gold text-black"
+                          : "border-muted-foreground/30"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-3 w-3" />}
+                    </div>
                     <div
                       className={`w-1 h-6 rounded-full ${
                         match.result === "Victory"
@@ -317,20 +333,66 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
                         </>
                       ) : "?"}
                     </span>
-                    <span className="text-xs font-mono text-muted-foreground ml-auto">
+                    <div className="flex items-center gap-1.5 ml-auto shrink-0">
+                      {hasHighlights && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {matchHL.length} note{matchHL.length !== 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                      {match.vodUrl && (
+                        <Video className="h-3.5 w-3.5 text-electric/70" />
+                      )}
+                    </div>
+                    <span className="text-xs font-mono text-muted-foreground shrink-0">
                       {match.kills}/{match.deaths}/{match.assists}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground shrink-0">
                       {dateStr}
                     </span>
-                  </label>
+                  </button>
                 );
               })}
             </div>
           )}
-          {selectedMatchIds.size > 0 && (
-            <p className="text-xs text-muted-foreground mt-2">
-              {selectedMatchIds.size} game{selectedMatchIds.size !== 1 ? "s" : ""} selected
+
+          {/* Preview of selected match highlights + VOD */}
+          {selectedMatch && (
+            <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 space-y-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                Coaching prep for {selectedMatch.championName} vs{" "}
+                {selectedMatch.matchupChampionName || "?"} —{" "}
+                {selectedMatch.result === "Victory" ? "Win" : "Loss"}
+              </p>
+
+              {/* VOD link */}
+              {selectedMatch.vodUrl && (
+                <div className="flex items-center gap-2">
+                  <Video className="h-3.5 w-3.5 text-electric" />
+                  <a
+                    href={selectedMatch.vodUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-electric hover:underline truncate"
+                  >
+                    {selectedMatch.vodUrl}
+                  </a>
+                </div>
+              )}
+
+              {/* Highlights / Lowlights */}
+              {selectedMatchHighlights.length > 0 ? (
+                <HighlightsDisplay highlights={selectedMatchHighlights} />
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  No highlights/lowlights recorded for this game.
+                </p>
+              )}
+            </div>
+          )}
+
+          {selectedMatchId && (
+            <p className="text-xs text-muted-foreground">
+              1 game selected
             </p>
           )}
         </CardContent>

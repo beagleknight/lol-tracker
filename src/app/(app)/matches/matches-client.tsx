@@ -33,6 +33,8 @@ import {
   ExternalLink,
   Save,
   Users,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -42,6 +44,7 @@ interface MatchesClientProps {
   matches: Match[];
   ddragonVersion: string;
   isRiotLinked: boolean;
+  highlightCounts: Record<string, { highlights: number; lowlights: number }>;
 }
 
 function formatDuration(seconds: number): string {
@@ -90,9 +93,11 @@ function ChampionIcon({
 function MatchCard({
   match,
   ddragonVersion,
+  highlightCount,
 }: {
   match: Match;
   ddragonVersion: string;
+  highlightCount?: { highlights: number; lowlights: number };
 }) {
   const [expanded, setExpanded] = useState(false);
   const [comment, setComment] = useState(match.comment || "");
@@ -203,6 +208,18 @@ function MatchCard({
 
           {/* Indicators */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {highlightCount && highlightCount.highlights > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-green-400">
+                <ThumbsUp className="h-3.5 w-3.5" />
+                <span className="text-[10px]">{highlightCount.highlights}</span>
+              </span>
+            )}
+            {highlightCount && highlightCount.lowlights > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-red-400">
+                <ThumbsDown className="h-3.5 w-3.5" />
+                <span className="text-[10px]">{highlightCount.lowlights}</span>
+              </span>
+            )}
             {match.duoPartnerPuuid && (
               <Users className="h-3.5 w-3.5 text-electric/70" />
             )}
@@ -380,6 +397,7 @@ export function MatchesClient({
   matches: initialMatches,
   ddragonVersion,
   isRiotLinked,
+  highlightCounts,
 }: MatchesClientProps) {
   const { isSyncing, handleSync } = useSyncMatches();
   const [search, setSearch] = useState("");
@@ -542,6 +560,7 @@ export function MatchesClient({
                 key={match.id}
                 match={match}
                 ddragonVersion={ddragonVersion}
+                highlightCount={highlightCounts[match.id]}
               />
             ))}
           </div>

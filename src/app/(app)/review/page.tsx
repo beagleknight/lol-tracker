@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { matches } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { matches, matchHighlights } from "@/db/schema";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { ReviewClient } from "./review-client";
@@ -40,6 +40,8 @@ export default async function ReviewPage() {
         comment: true,
         reviewed: true,
         reviewNotes: true,
+        reviewSkippedReason: true,
+        vodUrl: true,
         queueId: true,
         syncedAt: true,
         // rawMatchJson excluded — not needed for review list
@@ -47,9 +49,42 @@ export default async function ReviewPage() {
     }) as unknown as Promise<import("@/db/schema").Match[]>,
   ]);
 
+  // Fetch highlights for all unreviewed matches
+  const matchIds = unreviewedMatches.map((m) => m.id);
+  const allHighlights =
+    matchIds.length > 0
+      ? await db
+          .select()
+          .from(matchHighlights)
+          .where(
+            and(
+              eq(matchHighlights.userId, user.id),
+            )
+          )
+      : [];
+
+  // Group highlights by matchId (filter to only our match IDs)
+  const highlightsByMatch: Record<
+    string,
+    Array<{ id: number; type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  > = {};
+  for (const h of allHighlights) {
+    if (!matchIds.includes(h.matchId)) continue;
+    if (!highlightsByMatch[h.matchId]) {
+      highlightsByMatch[h.matchId] = [];
+    }
+    highlightsByMatch[h.matchId].push({
+      id: h.id,
+      type: h.type as "highlight" | "lowlight",
+      text: h.text,
+      topic: h.topic,
+    });
+  }
+
   return (
     <ReviewClient
       matches={unreviewedMatches}
+      highlightsByMatch={highlightsByMatch}
       ddragonVersion={ddragonVersion}
     />
   );

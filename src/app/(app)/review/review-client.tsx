@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { updateMatchReview } from "@/app/actions/matches";
+import { savePostGameReview } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -15,14 +15,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  HighlightsEditor,
+  HighlightsDisplay,
+  type HighlightItem,
+} from "@/components/highlights-editor";
+import { SKIP_REVIEW_REASONS } from "@/lib/topics";
 import { toast } from "sonner";
-import { Loader2, Save, ChevronRight, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  ChevronRight,
+  ChevronDown,
+  CheckCircle2,
+  MessageSquare,
+  SkipForward,
+  Link as LinkIcon,
+} from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { Pagination, paginate } from "@/components/pagination";
 
 interface ReviewClientProps {
   matches: Match[];
+  highlightsByMatch: Record<
+    string,
+    Array<{ id: number; type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  >;
   ddragonVersion: string;
 }
 
@@ -42,31 +61,53 @@ function formatDate(date: Date): string {
 
 function ReviewCard({
   match,
+  existingHighlights,
   ddragonVersion,
 }: {
   match: Match;
+  existingHighlights: HighlightItem[];
   ddragonVersion: string;
 }) {
-  const [reviewed, setReviewed] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
+  const [comment, setComment] = useState(match.comment || "");
+  const [showComment, setShowComment] = useState(!!match.comment);
+  const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
+  const [reviewNotes, setReviewNotes] = useState("");
   const [isPending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
+  const [showSkipMenu, setShowSkipMenu] = useState(false);
 
-  function save() {
-    startTransition(async () => {
-      try {
-        const result = await updateMatchReview(match.id, reviewed, notes);
-        if (result.success) {
-          toast.success("Review saved.");
-          if (reviewed) setDone(true);
-        } else {
+  const hasContent = highlights.length > 0 || comment.trim() || vodUrl.trim() || reviewNotes.trim();
+
+  const handleSave = useCallback(
+    (skipReason?: string) => {
+      startTransition(async () => {
+        try {
+          const result = await savePostGameReview(match.id, {
+            highlights,
+            comment: comment || undefined,
+            vodUrl: vodUrl || undefined,
+            reviewed: !!skipReason || !!reviewNotes,
+            reviewNotes: reviewNotes || undefined,
+            reviewSkippedReason: skipReason,
+          });
+          if (result.success) {
+            toast.success(
+              skipReason
+                ? "Review saved & VOD review skipped."
+                : "Review saved."
+            );
+            if (skipReason || reviewNotes) setDone(true);
+          } else {
+            toast.error("Failed to save review.");
+          }
+        } catch {
           toast.error("Failed to save review.");
         }
-      } catch {
-        toast.error("Failed to save review.");
-      }
-    });
-  }
+      });
+    },
+    [match.id, highlights, comment, vodUrl, reviewNotes]
+  );
 
   if (done) {
     return (
@@ -144,31 +185,107 @@ function ReviewCard({
             </Button>
           </Link>
         </div>
-        {match.comment && (
-          <p className="text-sm text-muted-foreground mt-2 pl-12 italic">
-            &ldquo;{match.comment}&rdquo;
-          </p>
-        )}
       </CardHeader>
-      <CardContent className="space-y-3">
-        <Textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="What did you learn? Key mistakes? Patterns to fix?"
-          rows={3}
+      <CardContent className="space-y-4">
+        {/* Highlights / Lowlights (primary) */}
+        <HighlightsEditor
+          highlights={highlights}
+          onChange={setHighlights}
         />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id={`reviewed-${match.id}`}
-              checked={reviewed}
-              onCheckedChange={(v) => setReviewed(!!v)}
+
+        {/* Game Notes (secondary, collapsible) */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setShowComment(!showComment)}
+            className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
+          >
+            <MessageSquare className="h-3 w-3" />
+            Game Notes (optional)
+            {match.comment && !showComment && (
+              <span className="italic text-muted-foreground ml-1 truncate max-w-48">
+                &ldquo;{match.comment}&rdquo;
+              </span>
+            )}
+            <ChevronDown
+              className={`h-3 w-3 transition-transform ${
+                showComment ? "rotate-180" : ""
+              }`}
             />
-            <label htmlFor={`reviewed-${match.id}`} className="text-sm">
-              Mark as reviewed
-            </label>
+          </button>
+          {showComment && (
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Any additional notes..."
+              rows={2}
+              className="text-sm resize-none"
+            />
+          )}
+        </div>
+
+        {/* Ascent VOD Link */}
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            <LinkIcon className="h-3 w-3" />
+            Ascent VOD Link (optional)
+          </label>
+          <Input
+            value={vodUrl}
+            onChange={(e) => setVodUrl(e.target.value)}
+            placeholder="https://ascent.gg/vod/..."
+            className="text-sm h-8"
+          />
+        </div>
+
+        {/* VOD Review Notes (for actual VOD reviews) */}
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground">
+            VOD Review Notes (marks as reviewed)
+          </label>
+          <Textarea
+            value={reviewNotes}
+            onChange={(e) => setReviewNotes(e.target.value)}
+            placeholder="What did you learn from watching the VOD?"
+            rows={2}
+            className="text-sm resize-none"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2">
+          {/* Skip VOD Review */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSkipMenu(!showSkipMenu)}
+              disabled={isPending || !hasContent}
+              className="gap-1.5"
+            >
+              <SkipForward className="h-3 w-3" />
+              Save & Skip VOD
+            </Button>
+            {showSkipMenu && (
+              <div className="absolute bottom-full right-0 mb-1 w-56 rounded-md border bg-popover p-1 shadow-md z-10">
+                {SKIP_REVIEW_REASONS.map((reason) => (
+                  <button
+                    key={reason}
+                    onClick={() => {
+                      setShowSkipMenu(false);
+                      handleSave(reason);
+                    }}
+                    className="w-full text-left rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <Button size="sm" onClick={save} disabled={isPending}>
+
+          {/* Save */}
+          <Button size="sm" onClick={() => handleSave()} disabled={isPending || !hasContent}>
             {isPending ? (
               <Loader2 className="mr-2 h-3 w-3 animate-spin" />
             ) : (
@@ -182,7 +299,7 @@ function ReviewCard({
   );
 }
 
-export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
+export function ReviewClient({ matches, highlightsByMatch, ddragonVersion }: ReviewClientProps) {
   const [page, setPage] = useState(1);
   const paginatedMatches = paginate(matches, page);
 
@@ -207,13 +324,21 @@ export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
       ) : (
         <>
           <div className="space-y-4">
-            {paginatedMatches.map((match) => (
-              <ReviewCard
-                key={match.id}
-                match={match}
-                ddragonVersion={ddragonVersion}
-              />
-            ))}
+            {paginatedMatches.map((match) => {
+              const existing = (highlightsByMatch[match.id] || []).map((h) => ({
+                type: h.type,
+                text: h.text,
+                topic: h.topic || undefined,
+              }));
+              return (
+                <ReviewCard
+                  key={match.id}
+                  match={match}
+                  existingHighlights={existing}
+                  ddragonVersion={ddragonVersion}
+                />
+              );
+            })}
           </div>
           <Pagination
             currentPage={page}
