@@ -78,9 +78,16 @@ function dateKey(year: number, month: number, day: number): string {
 export async function importCsvData(rows: CsvRow[]) {
   const user = await requireUser();
 
-  // 1. Fetch all matches from the database for this user
+  // 1. Fetch all matches from the database for this user (exclude rawMatchJson — not needed for CSV matching)
   const allMatches = await db
-    .select()
+    .select({
+      id: matches.id,
+      userId: matches.userId,
+      gameDate: matches.gameDate,
+      result: matches.result,
+      championName: matches.championName,
+      matchupChampionName: matches.matchupChampionName,
+    })
     .from(matches)
     .where(eq(matches.userId, user.id))
     .orderBy(matches.gameDate);

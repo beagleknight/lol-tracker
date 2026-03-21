@@ -102,6 +102,7 @@
 - [x] Create `drizzle-schema` skill (schema management, migrations, upsert-only db-push)
 - [x] Create `riot-api` skill (Riot API client patterns, rate limits, DDragon, RSO auth)
 - [x] Create `nextjs-auth` skill (Auth.js v5 with Discord, invite-only system, env var conventions)
+- [ ] Review AGENTS.md vs skills: move turso-migration-rules (and any other reusable workflows) from AGENTS.md into proper OpenCode skills
 
 ## Discovered Pitfalls (reference)
 - **dotenvx v17 banner corruption**: Vercel runtime prepends a banner to ALL `process.env` values. Fixed with `instrumentation.ts` that strips banners at server startup.

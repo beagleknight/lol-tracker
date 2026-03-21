@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
   getActiveGame,
@@ -287,6 +287,7 @@ export async function getMatchupReport(
         .where(
           and(
             eq(matchHighlights.userId, user.id),
+            inArray(matchHighlights.matchId, matchIds),
           )
         )
     : [];
@@ -297,7 +298,6 @@ export async function getMatchupReport(
     Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
   >();
   for (const h of allHighlights) {
-    if (!matchIds.includes(h.matchId)) continue;
     const list = highlightsByMatch.get(h.matchId) || [];
     list.push({
       type: h.type as "highlight" | "lowlight",

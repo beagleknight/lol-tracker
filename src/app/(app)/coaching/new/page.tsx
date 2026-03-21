@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { NewSessionClient } from "./new-session-client";
@@ -8,7 +8,7 @@ import { NewSessionClient } from "./new-session-client";
 export default async function NewCoachingSessionPage() {
   const user = await requireUser();
 
-  const [recentMatches, allHighlights, ddragonVersion] = await Promise.all([
+  const [recentMatches, ddragonVersion] = await Promise.all([
     db.query.matches.findMany({
       where: eq(matches.userId, user.id),
       orderBy: desc(matches.gameDate),
@@ -25,17 +25,22 @@ export default async function NewCoachingSessionPage() {
         vodUrl: true,
       },
     }),
-    db.query.matchHighlights.findMany({
-      where: eq(matchHighlights.userId, user.id),
-      columns: {
-        matchId: true,
-        type: true,
-        text: true,
-        topic: true,
-      },
-    }),
     getLatestVersion(),
   ]);
+
+  // Fetch highlights only for the 50 recent matches (not all user highlights)
+  const matchIds = recentMatches.map((m) => m.id);
+  const allHighlights = matchIds.length > 0
+    ? await db.query.matchHighlights.findMany({
+        where: inArray(matchHighlights.matchId, matchIds),
+        columns: {
+          matchId: true,
+          type: true,
+          text: true,
+          topic: true,
+        },
+      })
+    : [];
 
   // Group highlights by matchId
   const highlightsByMatch: Record<

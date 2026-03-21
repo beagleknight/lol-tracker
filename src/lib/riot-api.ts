@@ -307,7 +307,7 @@ let cachedChampionMap: Map<number, string> | null = null;
 
 /**
  * Fetch a mapping of champion ID -> champion name (Data Dragon key) from DDragon.
- * Cached after first call.
+ * Cached in-memory after first call, with a 24h revalidation on the fetch.
  */
 export async function getChampionIdMap(
   version?: string
@@ -316,7 +316,7 @@ export async function getChampionIdMap(
 
   const ver = version || (await getLatestVersion());
   const url = `https://ddragon.leagueoflegends.com/cdn/${ver}/data/en_US/champion.json`;
-  const data = await fetch(url).then((r) => r.json());
+  const data = await fetch(url, { next: { revalidate: 86400 } }).then((r) => r.json());
 
   const map = new Map<number, string>();
   for (const champ of Object.values(data.data) as Array<{
@@ -433,17 +433,14 @@ export function findDuoPartner(
 
 // ─── Data Dragon ─────────────────────────────────────────────────────────────
 
-let cachedVersion: string | null = null;
-
 export async function getLatestVersion(): Promise<string> {
-  if (cachedVersion) return cachedVersion;
-
+  // Revalidate once per day — DDragon versions change infrequently
   const versions = await fetch(
-    "https://ddragon.leagueoflegends.com/api/versions.json"
+    "https://ddragon.leagueoflegends.com/api/versions.json",
+    { next: { revalidate: 86400 } }
   ).then((r) => r.json());
 
-  cachedVersion = versions[0];
-  return cachedVersion!;
+  return versions[0];
 }
 
 /**

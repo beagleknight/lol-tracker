@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { invites, users } from "@/db/schema";
-import { eq, count } from "drizzle-orm";
+import { eq, count, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
@@ -46,28 +46,29 @@ export async function getInvites() {
     orderBy: (invites, { desc }) => [desc(invites.createdAt)],
   });
 
-  // Enrich with used-by user name
-  const enriched = await Promise.all(
-    allInvites.map(async (invite) => {
-      let usedByName: string | null = null;
-      if (invite.usedBy) {
-        const usedByUser = await db.query.users.findFirst({
-          where: eq(users.id, invite.usedBy),
-        });
-        usedByName = usedByUser?.name ?? null;
-      }
-      return {
-        id: invite.id,
-        code: invite.code,
-        createdAt: invite.createdAt,
-        usedBy: invite.usedBy,
-        usedByName,
-        usedAt: invite.usedAt,
-      };
-    })
-  );
+  // Batch-fetch all users referenced by usedBy (instead of N+1 per invite)
+  const usedByIds = allInvites
+    .map((i) => i.usedBy)
+    .filter((id): id is string => !!id);
 
-  return enriched;
+  const usedByUsers =
+    usedByIds.length > 0
+      ? await db
+          .select({ id: users.id, name: users.name })
+          .from(users)
+          .where(inArray(users.id, usedByIds))
+      : [];
+
+  const userNameMap = new Map(usedByUsers.map((u) => [u.id, u.name]));
+
+  return allInvites.map((invite) => ({
+    id: invite.id,
+    code: invite.code,
+    createdAt: invite.createdAt,
+    usedBy: invite.usedBy,
+    usedByName: invite.usedBy ? userNameMap.get(invite.usedBy) ?? null : null,
+    usedAt: invite.usedAt,
+  }));
 }
 
 export async function deleteInvite(id: number) {

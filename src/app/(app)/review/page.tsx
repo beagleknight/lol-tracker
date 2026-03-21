@@ -49,7 +49,7 @@ export default async function ReviewPage() {
     }) as unknown as Promise<import("@/db/schema").Match[]>,
   ]);
 
-  // Fetch highlights for all unreviewed matches
+  // Fetch highlights for all unreviewed matches (filtered by matchId)
   const matchIds = unreviewedMatches.map((m) => m.id);
   const allHighlights =
     matchIds.length > 0
@@ -59,17 +59,17 @@ export default async function ReviewPage() {
           .where(
             and(
               eq(matchHighlights.userId, user.id),
+              inArray(matchHighlights.matchId, matchIds),
             )
           )
       : [];
 
-  // Group highlights by matchId (filter to only our match IDs)
+  // Group highlights by matchId
   const highlightsByMatch: Record<
     string,
     Array<{ id: number; type: "highlight" | "lowlight"; text: string; topic: string | null }>
   > = {};
   for (const h of allHighlights) {
-    if (!matchIds.includes(h.matchId)) continue;
     if (!highlightsByMatch[h.matchId]) {
       highlightsByMatch[h.matchId] = [];
     }
