@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Loader2, Save, ChevronRight, CheckCircle2 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { Pagination, paginate } from "@/components/pagination";
 
 interface ReviewClientProps {
   matches: Match[];
@@ -182,6 +183,9 @@ function ReviewCard({
 }
 
 export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
+  const [page, setPage] = useState(1);
+  const paginatedMatches = paginate(matches, page);
+
   return (
     <div className="space-y-6">
       <div>
@@ -201,15 +205,22 @@ export function ReviewClient({ matches, ddragonVersion }: ReviewClientProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {matches.map((match) => (
-            <ReviewCard
-              key={match.id}
-              match={match}
-              ddragonVersion={ddragonVersion}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {paginatedMatches.map((match) => (
+              <ReviewCard
+                key={match.id}
+                match={match}
+                ddragonVersion={ddragonVersion}
+              />
+            ))}
+          </div>
+          <Pagination
+            currentPage={page}
+            totalItems={matches.length}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

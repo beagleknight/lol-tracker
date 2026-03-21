@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -380,6 +381,7 @@ export function MatchesClient({
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState<string>("all");
   const [reviewFilter, setReviewFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
 
   // Unique champion names for filter
   const champions = useMemo(() => {
@@ -419,6 +421,11 @@ export function MatchesClient({
     filteredMatches.length > 0
       ? Math.round((wins / filteredMatches.length) * 100)
       : 0;
+
+  // Clamp page if filters reduce result count
+  const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedMatches = paginate(filteredMatches, safePage);
 
   return (
     <div className="space-y-6">
@@ -465,11 +472,11 @@ export function MatchesClient({
           <Input
             placeholder="Search champion, matchup, notes..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9"
           />
         </div>
-        <Select value={resultFilter} onValueChange={(v) => setResultFilter(v ?? "all")}>
+        <Select value={resultFilter} onValueChange={(v) => { setResultFilter(v ?? "all"); setPage(1); }}>
           <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Result" />
           </SelectTrigger>
@@ -479,7 +486,7 @@ export function MatchesClient({
             <SelectItem value="Defeat">Defeats</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={championFilter} onValueChange={(v) => setChampionFilter(v ?? "all")}>
+        <Select value={championFilter} onValueChange={(v) => { setChampionFilter(v ?? "all"); setPage(1); }}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Champion" />
           </SelectTrigger>
@@ -501,7 +508,7 @@ export function MatchesClient({
             ))}
           </SelectContent>
         </Select>
-        <Select value={reviewFilter} onValueChange={(v) => setReviewFilter(v ?? "all")}>
+        <Select value={reviewFilter} onValueChange={(v) => { setReviewFilter(v ?? "all"); setPage(1); }}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Review" />
           </SelectTrigger>
@@ -524,15 +531,22 @@ export function MatchesClient({
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filteredMatches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              ddragonVersion={ddragonVersion}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-2">
+            {paginatedMatches.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                ddragonVersion={ddragonVersion}
+              />
+            ))}
+          </div>
+          <Pagination
+            currentPage={safePage}
+            totalItems={filteredMatches.length}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

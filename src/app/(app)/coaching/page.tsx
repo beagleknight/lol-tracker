@@ -13,8 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, GraduationCap, ChevronRight } from "lucide-react";
+import { PaginationLinks, PAGE_SIZE } from "@/components/pagination-links";
 
-export default async function CoachingListPage() {
+export default async function CoachingListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
   const user = await requireUser();
 
   // Parallel: sessions + action items (both only need user.id)
@@ -35,6 +42,11 @@ export default async function CoachingListPage() {
     if (item.status === "completed") existing.completed++;
     actionItemsBySession.set(item.sessionId, existing);
   }
+
+  // Paginate sessions
+  const totalSessions = sessions.length;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const paginatedSessions = sessions.slice(start, start + PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -70,8 +82,9 @@ export default async function CoachingListPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
-          {sessions.map((session: CoachingSession) => {
+        <>
+          <div className="space-y-3">
+            {paginatedSessions.map((session: CoachingSession) => {
             const topics: string[] = session.topics
               ? JSON.parse(session.topics)
               : [];
@@ -121,7 +134,13 @@ export default async function CoachingListPage() {
               </Link>
             );
           })}
-        </div>
+          </div>
+          <PaginationLinks
+            currentPage={currentPage}
+            totalItems={totalSessions}
+            basePath="/coaching"
+          />
+        </>
       )}
     </div>
   );

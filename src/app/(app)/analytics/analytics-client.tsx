@@ -570,13 +570,23 @@ export function AnalyticsClient({
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: "oklch(0.18 0.03 260)",
-                    border: "1px solid oklch(0.25 0.03 260)",
-                    borderRadius: "8px",
+                  cursor={{ stroke: "oklch(0.45 0.02 260)" }}
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload[0]) return null;
+                    const d = payload[0].payload as (typeof rollingWR)[0];
+                    return (
+                      <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                        <p className="text-sm font-semibold text-foreground">{d.date}</p>
+                        <p className="text-sm">
+                          Win Rate:{" "}
+                          <span className={d.winRate >= 50 ? "text-gold" : "text-red-400"}>
+                            {d.winRate}%
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">Game #{d.index}</p>
+                      </div>
+                    );
                   }}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  formatter={(value: any) => [`${value}%`, "Win Rate"]}
                 />
                 <ReferenceLine
                   y={50}
@@ -634,24 +644,24 @@ export function AnalyticsClient({
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={110}
+                    width={120}
                     stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
                     tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
                       <g transform={`translate(${x},${y})`}>
                         <image
                           href={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${payload.value}.png`}
-                          x={-110}
+                          x={-118}
                           y={-10}
                           width={20}
                           height={20}
-                          style={{ borderRadius: 2 }}
+                          clipPath="inset(0 round 2px)"
                         />
                         <text
-                          x={-86}
+                          x={-94}
                           y={0}
                           dy={4}
-                          fill="oklch(0.55 0.02 260)"
+                          fill="oklch(0.75 0.02 260)"
                           fontSize={12}
                           textAnchor="start"
                         >
@@ -661,16 +671,25 @@ export function AnalyticsClient({
                     )}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "oklch(0.18 0.03 260)",
-                      border: "1px solid oklch(0.25 0.03 260)",
-                      borderRadius: "8px",
+                    cursor={{ fill: "oklch(0.25 0.03 260 / 0.3)" }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload[0]) return null;
+                      const d = payload[0].payload as (typeof topMatchups)[0];
+                      return (
+                        <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                          <p className="font-semibold text-foreground">{d.name}</p>
+                          <p className="text-sm">
+                            Win Rate:{" "}
+                            <span className={d.winRate >= 50 ? "text-gold" : "text-red-400"}>
+                              {d.winRate}%
+                            </span>{" "}
+                            <span className="text-muted-foreground">
+                              ({d.wins}W {d.losses}L / {d.games} games)
+                            </span>
+                          </p>
+                        </div>
+                      );
                     }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    formatter={(value: any, _: any, entry: any) => [
-                      `${value}% (${entry.payload.wins}W ${entry.payload.losses}L / ${entry.payload.games} games)`,
-                      "Win Rate",
-                    ]}
                   />
                   <ReferenceLine x={50} stroke="oklch(0.35 0.02 260)" strokeDasharray="3 3" />
                   <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
