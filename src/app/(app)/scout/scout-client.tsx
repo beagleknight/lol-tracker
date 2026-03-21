@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect } from "react";
+import { useState, useTransition, useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   detectLiveMatchup,
@@ -21,7 +21,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { ChampionCombobox } from "@/components/champion-combobox";
+import { ChampionCombobox, type ChampionRecommendations } from "@/components/champion-combobox";
+import type { ChampionPickCount } from "@/app/actions/live";
 import {
   HighlightsEditor,
   HighlightsDisplay,
@@ -132,6 +133,8 @@ interface ScoutClientProps {
   isRiotLinked: boolean;
   initialYourChampion?: string;
   initialEnemyChampion?: string;
+  mostPlayed?: ChampionPickCount[];
+  mostFaced?: ChampionPickCount[];
 }
 
 // ─── Post-Game Review Card ──────────────────────────────────────────────────
@@ -660,6 +663,8 @@ export function ScoutClient({
   isRiotLinked,
   initialYourChampion = "",
   initialEnemyChampion = "",
+  mostPlayed = [],
+  mostFaced = [],
 }: ScoutClientProps) {
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
@@ -667,6 +672,23 @@ export function ScoutClient({
   const [isLoadingReport, startReportTransition] = useTransition();
   const [isCheckingGame, startCheckTransition] = useTransition();
   const [liveResult, setLiveResult] = useState<LiveMatchupResult | null>(null);
+
+  // Build recommendation groups for comboboxes
+  const yourChampionRecs: ChampionRecommendations[] = useMemo(
+    () =>
+      mostPlayed.length > 0
+        ? [{ heading: "Most Played", champions: mostPlayed }]
+        : [],
+    [mostPlayed]
+  );
+
+  const enemyChampionRecs: ChampionRecommendations[] = useMemo(
+    () =>
+      mostFaced.length > 0
+        ? [{ heading: "Common Matchups", champions: mostFaced }]
+        : [],
+    [mostFaced]
+  );
 
   const loadReport = useCallback(
     (enemy: string, yours?: string) => {
@@ -776,6 +798,7 @@ export function ScoutClient({
           placeholder="Any champion"
           label="Your Champion"
           className="flex-1 sm:max-w-xs"
+          recommendations={yourChampionRecs}
         />
         <span className="hidden sm:flex items-end pb-2 text-muted-foreground font-medium">
           vs
@@ -788,6 +811,7 @@ export function ScoutClient({
           placeholder="Select enemy..."
           label="Enemy Champion"
           className="flex-1 sm:max-w-xs"
+          recommendations={enemyChampionRecs}
         />
 
         {isRiotLinked && (

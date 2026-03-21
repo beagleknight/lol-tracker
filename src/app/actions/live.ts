@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
   getActiveGame,
@@ -458,4 +458,62 @@ export async function getUniqueMatchupChampions(): Promise<string[]> {
 export async function getAllChampionNames(): Promise<string[]> {
   const championMap = await getChampionIdMap();
   return Array.from(championMap.values()).sort();
+}
+
+// ─── getChampionPickCounts ─────────────────────────────────────────────────
+
+export interface ChampionPickCount {
+  name: string;
+  games: number;
+}
+
+/**
+ * Get the user's most-played champions, sorted by game count descending.
+ * Returns top `limit` champions (default 10).
+ */
+export async function getMostPlayedChampions(
+  limit = 10
+): Promise<ChampionPickCount[]> {
+  const user = await requireUser();
+
+  const rows = await db
+    .select({
+      name: matches.championName,
+      games: sql<number>`count(*)`.as("games"),
+    })
+    .from(matches)
+    .where(eq(matches.userId, user.id))
+    .groupBy(matches.championName)
+    .orderBy(sql`count(*) desc`)
+    .limit(limit);
+
+  return rows;
+}
+
+/**
+ * Get the opponents the user has faced most often, sorted by game count descending.
+ * Returns top `limit` opponents (default 10).
+ */
+export async function getMostFacedOpponents(
+  limit = 10
+): Promise<ChampionPickCount[]> {
+  const user = await requireUser();
+
+  const rows = await db
+    .select({
+      name: matches.matchupChampionName,
+      games: sql<number>`count(*)`.as("games"),
+    })
+    .from(matches)
+    .where(
+      and(
+        eq(matches.userId, user.id),
+        sql`${matches.matchupChampionName} is not null`
+      )
+    )
+    .groupBy(matches.matchupChampionName)
+    .orderBy(sql`count(*) desc`)
+    .limit(limit);
+
+  return rows.filter((r): r is ChampionPickCount => !!r.name);
 }
