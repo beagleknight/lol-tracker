@@ -34,8 +34,9 @@
 - [x] Riot API key health check (admin settings page)
 - [x] Export RiotApiError + handle 401 alongside 403
 - [x] AUTH_TRUST_HOST in .env.example
-- [ ] Deploy to Vercel + Turso (manual step)
+- [x] Deploy to Vercel + Turso (manual step)
 - [ ] Set up Turso production database and import local data
+- [ ] Add smoke tests (build check, key routes return 200) and run them before auto-deploy
 
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
