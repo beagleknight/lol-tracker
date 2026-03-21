@@ -46,6 +46,16 @@
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
 - [ ] Goal setting (e.g., "reach Diamond by end of split") with progress tracking
 
+## Features — Duo Partner Tracking & Synergy
+- [ ] Add duo partners: settings page to register duo partners by Riot ID (gameName#tagLine)
+- [ ] Auto-detect duo games: parse rawMatchJson to find games where a registered duo partner was on your team
+- [ ] Per-duo dashboard: win rate together, games played, average combined KDA, best/worst champion combos
+- [ ] Champion synergy matrix: which champion pairs (yours + duo's) have the highest win rate together
+- [ ] Duo vs solo comparison: show how your stats differ when playing with each duo partner vs solo queue
+- [ ] Per-match duo indicator: tag matches in the match list with the duo partner's name/champion when detected
+- [ ] Duo-specific analytics: lane proximity, shared kills/assists, how often you die together vs separately
+- [ ] Data source: rawMatchJson already contains all 10 players per game — extract duo partner's participantId to pull their stats (champion, KDA, items, role, lane)
+
 ## Features — Ascent VOD Integration
 - [ ] Scrape user's Ascent profile to pull VOD links (no known public API — web scraping or headless browser needed)
 - [ ] Auto-match Ascent VODs to synced games by game timestamp or Riot match ID
