@@ -34,6 +34,7 @@ export interface MatchupGameDetail {
   gameDate: Date;
   result: "Victory" | "Defeat";
   championName: string;
+  matchupChampionName: string | null;
   kills: number;
   deaths: number;
   assists: number;
@@ -48,6 +49,8 @@ export interface MatchupGameDetail {
   reviewed: boolean;
   reviewNotes: string | null;
   vodUrl: string | null;
+  duoPartnerPuuid: string | null;
+  duoPartnerChampionName: string | null;
   highlights: Array<{
     type: "highlight" | "lowlight";
     text: string;
@@ -57,6 +60,15 @@ export interface MatchupGameDetail {
 
 export interface RuneBreakdown {
   keystoneName: string;
+  games: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+}
+
+export interface DuoPairStats {
+  yourChampion: string;
+  duoChampion: string;
   games: number;
   wins: number;
   losses: number;
@@ -76,6 +88,16 @@ export interface MatchupReport {
     goldEarned: number;
     visionScore: number;
   };
+  overallAvgStats: {
+    kills: number;
+    deaths: number;
+    assists: number;
+    csPerMin: number;
+    goldEarned: number;
+    visionScore: number;
+    games: number;
+  };
+  duoPairs: DuoPairStats[];
   games: MatchupGameDetail[];
 }
 
@@ -337,6 +359,7 @@ export async function getMatchupReport(
       gameDate: m.gameDate,
       result: m.result as "Victory" | "Defeat",
       championName: m.championName,
+      matchupChampionName: m.matchupChampionName ?? null,
       kills: m.kills,
       deaths: m.deaths,
       assists: m.assists,
@@ -351,9 +374,69 @@ export async function getMatchupReport(
       reviewed: m.reviewed,
       reviewNotes: m.reviewNotes,
       vodUrl: m.vodUrl ?? null,
+      duoPartnerPuuid: m.duoPartnerPuuid ?? null,
+      duoPartnerChampionName: m.duoPartnerChampionName ?? null,
       highlights: highlightsByMatch.get(m.id) || [],
     };
   });
+
+  // ─── Overall average stats (for comparison baseline) ────────────────────
+  // If yourChampionName is set, compare against all games as that champion.
+  // Otherwise, compare against all user games.
+  const overallConditions = [eq(matches.userId, user.id)];
+  if (yourChampionName) {
+    overallConditions.push(eq(matches.championName, yourChampionName));
+  }
+
+  const [overallRow] = await db
+    .select({
+      avgKills: sql<number>`ROUND(AVG(${matches.kills}), 1)`,
+      avgDeaths: sql<number>`ROUND(AVG(${matches.deaths}), 1)`,
+      avgAssists: sql<number>`ROUND(AVG(${matches.assists}), 1)`,
+      avgCsPerMin: sql<number>`ROUND(AVG(${matches.csPerMin}), 1)`,
+      avgGold: sql<number>`ROUND(AVG(${matches.goldEarned}))`,
+      avgVision: sql<number>`ROUND(AVG(${matches.visionScore}), 1)`,
+      total: sql<number>`COUNT(*)`,
+    })
+    .from(matches)
+    .where(and(...overallConditions));
+
+  const overallAvgStats = {
+    kills: overallRow?.avgKills ?? 0,
+    deaths: overallRow?.avgDeaths ?? 0,
+    assists: overallRow?.avgAssists ?? 0,
+    csPerMin: overallRow?.avgCsPerMin ?? 0,
+    goldEarned: overallRow?.avgGold ?? 0,
+    visionScore: overallRow?.avgVision ?? 0,
+    games: overallRow?.total ?? 0,
+  };
+
+  // ─── Duo pair aggregation ───────────────────────────────────────────────
+  const duoPairMap = new Map<
+    string,
+    { yourChampion: string; duoChampion: string; games: number; wins: number }
+  >();
+  for (const g of games) {
+    if (g.duoPartnerPuuid && g.duoPartnerChampionName) {
+      const key = `${g.championName}|${g.duoPartnerChampionName}`;
+      const existing = duoPairMap.get(key) || {
+        yourChampion: g.championName,
+        duoChampion: g.duoPartnerChampionName,
+        games: 0,
+        wins: 0,
+      };
+      existing.games++;
+      if (g.result === "Victory") existing.wins++;
+      duoPairMap.set(key, existing);
+    }
+  }
+  const duoPairs: DuoPairStats[] = Array.from(duoPairMap.values())
+    .map((p) => ({
+      ...p,
+      losses: p.games - p.wins,
+      winRate: Math.round((p.wins / p.games) * 100),
+    }))
+    .sort((a, b) => b.games - a.games);
 
   return {
     matchupChampionName,
@@ -361,6 +444,8 @@ export async function getMatchupReport(
     lastPlayed,
     runeBreakdown,
     avgStats,
+    overallAvgStats,
+    duoPairs,
     games,
   };
 }

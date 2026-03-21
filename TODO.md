@@ -34,13 +34,22 @@
 - [ ] Matches page: standardize button sizes, variants, and icons across all forms
 - [ ] Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields
 - [ ] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
+- [ ] Color contrast audit: fix poor text-on-background contrast throughout the app (e.g., dark text on bright blue win-row in Duo Recent Games)
+- [ ] List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).
 - [x] Scout page: add "Most Played" and "Common Matchups" grouped recommendations to champion comboboxes
+- [x] Scout page: extract MatchCard into shared component, replace PastGameCard with full expandable MatchCard (highlights, notes, VOD review inline)
+- [x] Scout page: remove redundant "Your Notes & Highlights" section (now visible in each MatchCard)
+- [x] Scout page: add stat comparison deltas (matchup avg vs overall avg, green/red arrows)
+- [x] Scout page: add "Duo Pairs in this Matchup" section showing champion pair win rates with duo partner
 - [x] Duo page: add loading.tsx skeleton (header, 4-stat grid, 2-KDA grid, synergy list, recent games)
 - [x] Review queue: add "Mark All as Reviewed" bulk action with confirmation dialog and skip reason
 - [x] Review queue: add progress indicator (X of Y reviewed)
 - [x] Review queue: remove reviewed stubs from list instead of keeping them at 50% opacity
 - [x] Review queue: replace hand-rolled skip dropdown with shadcn DropdownMenu
 - [x] Review queue: remove "Will review later" from skip reasons
+
+## Performance
+- [ ] Duo page: still feels slow despite improvements — profile loading times, investigate query performance and consider caching or incremental data fetching
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)
