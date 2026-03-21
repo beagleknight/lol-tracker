@@ -26,6 +26,7 @@
 - [ ] Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon
 - [ ] Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling
 - [ ] Paginated tables: inconsistent loading states — some pages (e.g., Duo) show an ugly spinner at the bottom instead of a proper loading skeleton; use the Matches page as the reference implementation
+- [ ] Scout page: sync selectors (your champion, enemy champion, queue) to URL query params so the page state survives reloads and is shareable — the searchParams are already parsed server-side, just need the client selectors to read from/write to the URL
 - [ ] Review page styling pass: improve visual design of highlight/lowlight tags (size, colors, spacing) and comment/notes display across all three tabs (Post-Game, VOD Review, Completed)
 - [ ] MatchCard tooltip styling: review tooltip content for highlights and comments — ensure readable formatting and consistent look
 - [ ] Match detail read-only display: polish how highlights, comments, and review notes are presented (typography, spacing, visual hierarchy)
