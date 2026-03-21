@@ -11,6 +11,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -18,6 +19,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { getChampionIconUrl } from "@/lib/riot-api";
+
+export interface ChampionRecommendation {
+  name: string;
+  games: number;
+}
+
+export interface ChampionRecommendations {
+  /** Heading for this group (e.g. "Most Played", "Common Matchups") */
+  heading: string;
+  champions: ChampionRecommendation[];
+}
 
 interface ChampionComboboxProps {
   value: string;
@@ -27,6 +39,8 @@ interface ChampionComboboxProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  /** Optional grouped recommendations shown above the full list */
+  recommendations?: ChampionRecommendations[];
 }
 
 export function ChampionCombobox({
@@ -37,8 +51,24 @@ export function ChampionCombobox({
   placeholder = "Select champion...",
   label,
   className,
+  recommendations,
 }: ChampionComboboxProps) {
   const [open, setOpen] = React.useState(false);
+
+  // Collect recommended champion names so we can exclude them from "All Champions"
+  const recommendedNames = React.useMemo(() => {
+    if (!recommendations) return new Set<string>();
+    const names = new Set<string>();
+    for (const group of recommendations) {
+      for (const c of group.champions) {
+        names.add(c.name);
+      }
+    }
+    return names;
+  }, [recommendations]);
+
+  const hasRecommendations =
+    recommendations && recommendations.some((g) => g.champions.length > 0);
 
   return (
     <div className={className}>
@@ -79,27 +109,72 @@ export function ChampionCombobox({
             <CommandInput placeholder="Search champion..." />
             <CommandList>
               <CommandEmpty>No champion found.</CommandEmpty>
-              <CommandGroup>
-                {champions.map((name) => (
-                  <CommandItem
-                    key={name}
-                    value={name}
-                    data-checked={value === name}
-                    onSelect={(currentValue) => {
-                      onValueChange(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <Image
-                      src={getChampionIconUrl(ddragonVersion, name)}
-                      alt={name}
-                      width={20}
-                      height={20}
-                      className="rounded"
-                    />
-                    {name}
-                  </CommandItem>
-                ))}
+
+              {/* Recommendation groups */}
+              {hasRecommendations &&
+                recommendations!.map(
+                  (group) =>
+                    group.champions.length > 0 && (
+                      <CommandGroup key={group.heading} heading={group.heading}>
+                        {group.champions.map((c) => (
+                          <CommandItem
+                            key={c.name}
+                            value={c.name}
+                            data-checked={value === c.name}
+                            onSelect={(currentValue) => {
+                              onValueChange(
+                                currentValue === value ? "" : currentValue
+                              );
+                              setOpen(false);
+                            }}
+                          >
+                            <Image
+                              src={getChampionIconUrl(ddragonVersion, c.name)}
+                              alt={c.name}
+                              width={20}
+                              height={20}
+                              className="rounded"
+                            />
+                            {c.name}
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              {c.games}G
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )
+                )}
+
+              {hasRecommendations && <CommandSeparator />}
+
+              {/* Full alphabetical list (excluding already-shown recommendations) */}
+              <CommandGroup
+                heading={hasRecommendations ? "All Champions" : undefined}
+              >
+                {champions
+                  .filter((name) => !hasRecommendations || !recommendedNames.has(name))
+                  .map((name) => (
+                    <CommandItem
+                      key={name}
+                      value={name}
+                      data-checked={value === name}
+                      onSelect={(currentValue) => {
+                        onValueChange(
+                          currentValue === value ? "" : currentValue
+                        );
+                        setOpen(false);
+                      }}
+                    >
+                      <Image
+                        src={getChampionIconUrl(ddragonVersion, name)}
+                        alt={name}
+                        width={20}
+                        height={20}
+                        className="rounded"
+                      />
+                      {name}
+                    </CommandItem>
+                  ))}
               </CommandGroup>
             </CommandList>
           </Command>

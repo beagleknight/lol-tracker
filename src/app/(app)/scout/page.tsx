@@ -3,6 +3,8 @@ import { getLatestVersion } from "@/lib/riot-api";
 import {
   getAllChampionNames,
   getRecentUnreviewedMatch,
+  getMostPlayedChampions,
+  getMostFacedOpponents,
 } from "@/app/actions/live";
 import { ScoutClient } from "./scout-client";
 
@@ -14,10 +16,18 @@ export default async function ScoutPage({
   const user = await requireUser();
   const params = await searchParams;
 
-  const [ddragonVersion, allChampions, recentUnreviewed] = await Promise.all([
+  const [
+    ddragonVersion,
+    allChampions,
+    recentUnreviewed,
+    mostPlayed,
+    mostFaced,
+  ] = await Promise.all([
     getLatestVersion(),
     getAllChampionNames(),
     getRecentUnreviewedMatch(),
+    getMostPlayedChampions(8),
+    getMostFacedOpponents(8),
   ]);
 
   const isRiotLinked = !!user.puuid;
@@ -30,6 +40,8 @@ export default async function ScoutPage({
       isRiotLinked={isRiotLinked}
       initialYourChampion={params.your || ""}
       initialEnemyChampion={params.enemy || ""}
+      mostPlayed={mostPlayed}
+      mostFaced={mostFaced}
     />
   );
 }
