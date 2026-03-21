@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import type { RiotMatch, RiotMatchParticipant } from "@/lib/riot-api";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 interface MatchDetailClientProps {
   match: Match;
@@ -89,7 +89,7 @@ function ParticipantRow({
       <TableCell>
         <div className="flex items-center gap-2">
           <Image
-            src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${participant.championName}.png`}
+            src={getChampionIconUrl(version, participant.championName)}
             alt={participant.championName}
             width={28}
             height={28}
@@ -204,7 +204,7 @@ export function MatchDetailClient({
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <Image
-              src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+              src={getChampionIconUrl(ddragonVersion, match.championName)}
               alt={match.championName}
               width={48}
               height={48}
@@ -243,7 +243,7 @@ export function MatchDetailClient({
                   <>
                     {" "}vs{" "}
                     <Image
-                      src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                      src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                       alt={match.matchupChampionName}
                       width={16}
                       height={16}

@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { Loader2, Save, ChevronRight, CheckCircle2 } from "lucide-react";
 import type { Match } from "@/db/schema";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { Pagination, paginate } from "@/components/pagination";
 
 interface ReviewClientProps {
@@ -89,7 +89,7 @@ function ReviewCard({
             }`}
           />
           <Image
-            src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+            src={getChampionIconUrl(ddragonVersion, match.championName)}
             alt={match.championName}
             width={40}
             height={40}
@@ -115,7 +115,7 @@ function ReviewCard({
               {match.matchupChampionName ? (
                 <>
                   <Image
-                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                    src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                     alt={match.matchupChampionName}
                     width={16}
                     height={16}

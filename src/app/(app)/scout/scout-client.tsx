@@ -41,7 +41,7 @@ import {
   BarChart3,
   ScrollText,
 } from "lucide-react";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ function ChampionIcon({
 }) {
   return (
     <Image
-      src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`}
+      src={getChampionIconUrl(version, championName)}
       alt={championName}
       width={size}
       height={size}
@@ -676,7 +676,7 @@ export function ScoutClient({
               <SelectItem key={name} value={name}>
                 <span className="flex items-center gap-2">
                   <Image
-                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${name}.png`}
+                    src={getChampionIconUrl(ddragonVersion, name)}
                     alt={name}
                     width={20}
                     height={20}
@@ -716,7 +716,7 @@ export function ScoutClient({
             {liveResult.userChampionName && (
               <span className="font-medium inline-flex items-center gap-1">
                 <Image
-                  src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${liveResult.userChampionName}.png`}
+                  src={getChampionIconUrl(ddragonVersion, liveResult.userChampionName)}
                   alt={liveResult.userChampionName}
                   width={20}
                   height={20}

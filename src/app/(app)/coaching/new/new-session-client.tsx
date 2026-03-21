@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { getChampionIconUrl } from "@/lib/riot-api";
 import { Loader2, Plus, X, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -293,7 +294,7 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
                     />
                     <span className="text-sm font-medium inline-flex items-center gap-1.5">
                       <Image
-                        src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+                        src={getChampionIconUrl(ddragonVersion, match.championName)}
                         alt={match.championName}
                         width={20}
                         height={20}
@@ -306,7 +307,7 @@ export function NewSessionClient({ recentMatches, ddragonVersion }: NewSessionCl
                       {match.matchupChampionName ? (
                         <>
                           <Image
-                            src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                            src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}
