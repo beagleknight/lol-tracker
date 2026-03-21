@@ -13,3 +13,14 @@ Steps: `npx drizzle-kit generate` -> review SQL -> apply via standalone script (
 
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 <!-- END:turso-migration-rules -->
+
+<!-- BEGIN:task-completion-rules -->
+# Task completion workflow
+
+When executing a multi-step plan (e.g., the user says "proceed" or "do it"), **always include committing and pushing as the final steps in the todo list**. The user expects code changes to be deployed — don't stop at "build passes".
+
+Final todos should be:
+1. ... (all implementation steps)
+2. Commit changes with a descriptive message
+3. Push to remote
+<!-- END:task-completion-rules -->
