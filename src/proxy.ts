@@ -5,7 +5,7 @@ export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Allow public routes
-  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
+  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth") || pathname.startsWith("/api/debug-env")) {
     return NextResponse.next();
   }
 
