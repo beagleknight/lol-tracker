@@ -23,11 +23,11 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     getLatestVersion(),
 
-    // Recent matches (last 20) — no rawMatchJson needed
+    // Recent matches (last 10) — no rawMatchJson needed
     db.query.matches.findMany({
       where: eq(matches.userId, user.id),
       orderBy: desc(matches.gameDate),
-      limit: 20,
+      limit: 10,
       columns: {
         id: true,
         gameDate: true,
