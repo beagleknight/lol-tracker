@@ -5,7 +5,7 @@ import { users, invites } from "@/db/schema";
 import { eq, count, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth(() => ({
   providers: [
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -124,4 +124,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-});
+}));

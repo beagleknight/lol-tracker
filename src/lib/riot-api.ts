@@ -1,7 +1,9 @@
 // Riot Games API service layer
 // Docs: https://developer.riotgames.com/docs/lol
 
-const RIOT_API_KEY = process.env.RIOT_API_KEY!;
+function getRiotApiKey(): string {
+  return process.env.RIOT_API_KEY!;
+}
 
 // Regional routing for account-v1 (EUW -> europe)
 const REGIONAL_HOST = "https://europe.api.riotgames.com";
@@ -109,7 +111,7 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const response = await fetch(url, {
       headers: {
-        "X-Riot-Token": RIOT_API_KEY,
+        "X-Riot-Token": getRiotApiKey(),
       },
       cache: "no-store",
     });
@@ -265,7 +267,7 @@ export async function getActiveGame(
   const url = `${PLATFORM_HOST}/lol/spectator/v5/active-games/by-summoner/${puuid}`;
   try {
     const response = await fetch(url, {
-      headers: { "X-Riot-Token": RIOT_API_KEY },
+      headers: { "X-Riot-Token": getRiotApiKey() },
       cache: "no-store",
     });
 
