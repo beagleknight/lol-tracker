@@ -11,6 +11,7 @@ import {
   extractDuoPartnerData,
   getKeystoneName,
   getSoloQueueEntry,
+  RiotApiError,
 } from "@/lib/riot-api";
 
 export const dynamic = "force-dynamic";
@@ -90,10 +91,14 @@ export async function GET() {
 
         if (newMatchIds.length === 0) {
           // Still capture rank snapshot
+          let rankWarning: string | null = null;
           if (user.summonerId) {
-            await captureRankSnapshot(user.id, user.summonerId);
+            rankWarning = await captureRankSnapshot(user.id, user.summonerId);
           }
-          send({ type: "done", synced: 0, message: "No new matches found." });
+          const msg = rankWarning
+            ? `No new matches found. ${rankWarning}`
+            : "No new matches found.";
+          send({ type: "done", synced: 0, message: msg });
           controller.close();
           return;
         }
@@ -230,13 +235,17 @@ export async function GET() {
         }
 
         // Capture rank snapshot
+        let rankWarning: string | null = null;
         if (user.summonerId) {
-          await captureRankSnapshot(user.id, user.summonerId);
+          rankWarning = await captureRankSnapshot(user.id, user.summonerId);
         }
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
         if (failedCount > 0) {
           parts.push(`(${failedCount} failed)`);
+        }
+        if (rankWarning) {
+          parts.push(rankWarning);
         }
 
         send({
@@ -264,7 +273,7 @@ export async function GET() {
   });
 }
 
-async function captureRankSnapshot(userId: string, summonerId: string) {
+async function captureRankSnapshot(userId: string, summonerId: string): Promise<string | null> {
   try {
     const entry = await getSoloQueueEntry(summonerId);
     if (entry) {
@@ -277,7 +286,12 @@ async function captureRankSnapshot(userId: string, summonerId: string) {
         losses: entry.losses,
       });
     }
+    return null;
   } catch (error) {
     console.error("Failed to capture rank snapshot:", error);
+    if (error instanceof RiotApiError && error.status === 400) {
+      return "Rank tracking failed — please re-link your Riot account in Settings.";
+    }
+    return null;
   }
 }
