@@ -123,7 +123,7 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
     if (response.status === 401 || response.status === 403) {
       throw new RiotApiError(
         response.status,
-        "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
+        "Riot API key is invalid or unauthorized"
       );
     }
 
@@ -278,7 +278,7 @@ export async function getActiveGame(
     if (response.status === 401 || response.status === 403) {
       throw new RiotApiError(
         response.status,
-        "Riot API key is invalid or expired. Regenerate it at developer.riotgames.com"
+        "Riot API key is invalid or unauthorized"
       );
     }
 
