@@ -10,7 +10,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Auth.js auto-reads AUTH_DISCORD_ID and AUTH_DISCORD_SECRET from
     // process.env at request time (via setEnvDefaults), which avoids
     // the dotenvx banner corruption that happens at module load time.
-    Discord,
+    Discord({
+      authorization: {
+        params: { prompt: "none" },
+      },
+    }),
   ],
   callbacks: {
     async signIn({ user, account }) {
