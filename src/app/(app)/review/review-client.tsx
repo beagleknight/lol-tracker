@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { savePostGameReview } from "@/app/actions/matches";
+import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,8 +16,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   HighlightsEditor,
-  HighlightsDisplay,
   type HighlightItem,
 } from "@/components/highlights-editor";
 import { SKIP_REVIEW_REASONS } from "@/lib/topics";
@@ -63,10 +79,12 @@ function ReviewCard({
   match,
   existingHighlights,
   ddragonVersion,
+  onReviewed,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
+  onReviewed: (matchId: string) => void;
 }) {
   const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
   const [comment, setComment] = useState(match.comment || "");
@@ -74,8 +92,6 @@ function ReviewCard({
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [reviewNotes, setReviewNotes] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [done, setDone] = useState(false);
-  const [showSkipMenu, setShowSkipMenu] = useState(false);
 
   const hasContent = highlights.length > 0 || comment.trim() || vodUrl.trim() || reviewNotes.trim();
 
@@ -97,7 +113,9 @@ function ReviewCard({
                 ? "Review saved & VOD review skipped."
                 : "Review saved."
             );
-            if (skipReason || reviewNotes) setDone(true);
+            if (skipReason || reviewNotes) {
+              onReviewed(match.id);
+            }
           } else {
             toast.error("Failed to save review.");
           }
@@ -106,19 +124,8 @@ function ReviewCard({
         }
       });
     },
-    [match.id, highlights, comment, vodUrl, reviewNotes]
+    [match.id, highlights, comment, vodUrl, reviewNotes, onReviewed]
   );
-
-  if (done) {
-    return (
-      <Card className="opacity-50">
-        <CardContent className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
-          <CheckCircle2 className="h-4 w-4" />
-          <span className="text-sm">Reviewed</span>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="surface-glow">
@@ -255,34 +262,31 @@ function ReviewCard({
         {/* Actions */}
         <div className="flex items-center justify-end gap-2">
           {/* Skip VOD Review */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSkipMenu(!showSkipMenu)}
+          <DropdownMenu>
+            <DropdownMenuTrigger
               disabled={isPending || !hasContent}
-              className="gap-1.5"
-            >
-              <SkipForward className="h-3 w-3" />
-              Save & Skip VOD
-            </Button>
-            {showSkipMenu && (
-              <div className="absolute bottom-full right-0 mb-1 w-56 rounded-md border bg-popover p-1 shadow-md z-10">
-                {SKIP_REVIEW_REASONS.map((reason) => (
-                  <button
-                    key={reason}
-                    onClick={() => {
-                      setShowSkipMenu(false);
-                      handleSave(reason);
-                    }}
-                    className="w-full text-left rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {reason}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  <SkipForward className="h-3 w-3" />
+                  Save & Skip VOD
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              {SKIP_REVIEW_REASONS.map((reason) => (
+                <DropdownMenuItem
+                  key={reason}
+                  onSelect={() => handleSave(reason)}
+                >
+                  {reason}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Save */}
           <Button size="sm" onClick={() => handleSave()} disabled={isPending || !hasContent}>
@@ -301,19 +305,144 @@ function ReviewCard({
 
 export function ReviewClient({ matches, highlightsByMatch, ddragonVersion }: ReviewClientProps) {
   const [page, setPage] = useState(1);
-  const paginatedMatches = paginate(matches, page);
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
+  const [isBulkPending, startBulkTransition] = useTransition();
+  const [bulkSkipReason, setBulkSkipReason] = useState<string>(SKIP_REVIEW_REASONS[0]);
+
+  const remainingMatches = useMemo(
+    () => matches.filter((m) => !reviewedIds.has(m.id)),
+    [matches, reviewedIds]
+  );
+
+  const reviewedCount = reviewedIds.size;
+  const totalCount = matches.length;
+  const remainingCount = remainingMatches.length;
+
+  const paginatedMatches = paginate(remainingMatches, page);
+
+  // Reset to page 1 if current page becomes empty after reviews
+  const totalPages = Math.ceil(remainingCount / 10);
+  if (page > totalPages && totalPages > 0) {
+    setPage(totalPages);
+  }
+
+  const handleReviewed = useCallback((matchId: string) => {
+    setReviewedIds((prev) => {
+      const next = new Set(prev);
+      next.add(matchId);
+      return next;
+    });
+  }, []);
+
+  const handleBulkMarkReviewed = useCallback(() => {
+    startBulkTransition(async () => {
+      try {
+        const result = await bulkMarkReviewed(bulkSkipReason);
+        if (result.success) {
+          toast.success(`Marked ${result.count} game${result.count !== 1 ? "s" : ""} as reviewed.`);
+          // Mark all remaining as reviewed locally
+          setReviewedIds((prev) => {
+            const next = new Set(prev);
+            for (const m of matches) next.add(m.id);
+            return next;
+          });
+        } else {
+          toast.error("Failed to mark games as reviewed.");
+        }
+      } catch {
+        toast.error("Failed to mark games as reviewed.");
+      }
+    });
+  }, [bulkSkipReason, matches]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Review Queue</h1>
-        <p className="text-muted-foreground">
-          {matches.length} game{matches.length !== 1 ? "s" : ""} waiting for
-          review.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Review Queue</h1>
+          {totalCount === 0 ? (
+            <p className="text-muted-foreground">No games waiting for review.</p>
+          ) : remainingCount === 0 ? (
+            <p className="text-muted-foreground">All {totalCount} games reviewed!</p>
+          ) : (
+            <p className="text-muted-foreground">
+              {reviewedCount > 0 && (
+                <span className="text-green-400">{reviewedCount} reviewed</span>
+              )}
+              {reviewedCount > 0 && ` · `}
+              {remainingCount} game{remainingCount !== 1 ? "s" : ""} remaining
+            </p>
+          )}
+          {/* Progress bar */}
+          {totalCount > 0 && reviewedCount > 0 && (
+            <div className="mt-2 h-1.5 w-48 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-green-500 transition-all duration-500"
+                style={{ width: `${(reviewedCount / totalCount) * 100}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bulk action */}
+        {remainingCount > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger render={
+              <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
+                <SkipForward className="h-3 w-3" />
+                Mark All Reviewed
+              </Button>
+            } />
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Mark all {remainingCount} games as reviewed?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will skip VOD review for all remaining games in the queue. This action cannot be undone from this page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="px-0">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Skip reason
+                </label>
+                <div className="flex flex-col gap-1.5">
+                  {SKIP_REVIEW_REASONS.map((reason) => (
+                    <button
+                      key={reason}
+                      type="button"
+                      onClick={() => setBulkSkipReason(reason)}
+                      className={`text-left rounded-md border px-3 py-2 text-sm transition-colors ${
+                        bulkSkipReason === reason
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                      }`}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleBulkMarkReviewed}
+                  disabled={isBulkPending}
+                >
+                  {isBulkPending ? (
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  ) : (
+                    <SkipForward className="mr-2 h-3 w-3" />
+                  )}
+                  Mark All Reviewed
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
-      {matches.length === 0 ? (
+      {remainingCount === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <CheckCircle2 className="h-8 w-8 text-gold mb-3" />
           <p className="text-lg font-medium">All caught up!</p>
@@ -336,13 +465,14 @@ export function ReviewClient({ matches, highlightsByMatch, ddragonVersion }: Rev
                   match={match}
                   existingHighlights={existing}
                   ddragonVersion={ddragonVersion}
+                  onReviewed={handleReviewed}
                 />
               );
             })}
           </div>
           <Pagination
             currentPage={page}
-            totalItems={matches.length}
+            totalItems={remainingCount}
             onPageChange={setPage}
           />
         </>

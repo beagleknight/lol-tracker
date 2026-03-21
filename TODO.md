@@ -28,6 +28,18 @@
   - Duo page: click a champion combo in synergy table to navigate to relevant Scout/Analytics views
   - Match list: click champion icons/names to navigate to filtered views
   - General: anywhere a champion name or matchup appears, it should be a link to a relevant deeper view
+- [ ] Matches page: unify expanded card into single save button (highlights + notes + review saved together)
+- [ ] Matches page: replace raw HTML `<select>` in HighlightsEditor with shadcn Select component
+- [ ] Matches page: add VOD URL field to expanded match card (consistent with ReviewCard and PostGameReviewCard)
+- [ ] Matches page: standardize button sizes, variants, and icons across all forms
+- [ ] Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields
+- [ ] Scout page: add "Most Played" and "Common Matchups" grouped recommendations to champion comboboxes
+- [ ] Duo page: add loading.tsx skeleton (header, 4-stat grid, 2-KDA grid, synergy list, recent games)
+- [ ] Review queue: add "Mark All as Reviewed" bulk action with confirmation dialog and skip reason
+- [ ] Review queue: add progress indicator (X of Y reviewed)
+- [ ] Review queue: remove reviewed stubs from list instead of keeping them at 50% opacity
+- [ ] Review queue: replace hand-rolled skip dropdown with shadcn DropdownMenu
+- [ ] Review queue: remove "Will review later" from skip reasons
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)

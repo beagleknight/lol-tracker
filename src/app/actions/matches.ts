@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
@@ -168,4 +168,26 @@ export async function savePostGameReview(
   revalidatePath("/scout");
   revalidatePath("/coaching");
   return { success: true };
+}
+
+export async function bulkMarkReviewed(skipReason: string) {
+  const user = await requireUser();
+
+  const result = await db
+    .update(matches)
+    .set({
+      reviewed: true,
+      reviewSkippedReason: skipReason,
+    })
+    .where(
+      and(eq(matches.userId, user.id), eq(matches.reviewed, false))
+    );
+
+  const count = result.rowsAffected ?? 0;
+
+  revalidatePath("/matches");
+  revalidatePath("/review");
+  revalidatePath("/scout");
+  revalidatePath("/coaching");
+  return { success: true, count };
 }

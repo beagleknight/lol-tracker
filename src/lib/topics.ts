@@ -23,7 +23,6 @@ export type Topic = (typeof PREDEFINED_TOPICS)[number];
 export const SKIP_REVIEW_REASONS = [
   "Already know what went wrong",
   "Stomp — nothing to review",
-  "Will review later",
 ] as const;
 
 export type SkipReviewReason = (typeof SKIP_REVIEW_REASONS)[number];
