@@ -52,6 +52,8 @@ export const matches = sqliteTable("matches", {
   comment: text("comment"),
   reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
   reviewNotes: text("review_notes"),
+  reviewSkippedReason: text("review_skipped_reason"), // e.g. "Already know what went wrong"
+  vodUrl: text("vod_url"), // Ascent VOD link
   // Metadata
   queueId: integer("queue_id"), // 420 = Solo/Duo
   syncedAt: integer("synced_at", { mode: "timestamp" })
@@ -163,6 +165,24 @@ export const invites = sqliteTable("invites", {
     .$defaultFn(() => new Date()),
 });
 
+// ─── Match Highlights / Lowlights ────────────────────────────────────────────
+
+export const matchHighlights = sqliteTable("match_highlights", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  matchId: text("match_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: text("type", { enum: ["highlight", "lowlight"] }).notNull(),
+  text: text("text").notNull(),
+  topic: text("topic"), // Predefined topic from PREDEFINED_TOPICS, nullable
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+}, (table) => [
+  index("match_highlights_match_user_idx").on(table.matchId, table.userId),
+]);
+
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
@@ -176,3 +196,5 @@ export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type NewCoachingActionItem = typeof coachingActionItems.$inferInsert;
 export type Invite = typeof invites.$inferSelect;
 export type NewInvite = typeof invites.$inferInsert;
+export type MatchHighlight = typeof matchHighlights.$inferSelect;
+export type NewMatchHighlight = typeof matchHighlights.$inferInsert;

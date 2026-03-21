@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { matches } from "@/db/schema";
+import { matches, matchHighlights } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
@@ -47,6 +47,12 @@ export interface MatchupGameDetail {
   comment: string | null;
   reviewed: boolean;
   reviewNotes: string | null;
+  vodUrl: string | null;
+  highlights: Array<{
+    type: "highlight" | "lowlight";
+    text: string;
+    topic: string | null;
+  }>;
 }
 
 export interface RuneBreakdown {
@@ -272,6 +278,35 @@ export async function getMatchupReport(
   };
 
   // Individual game details — extract items from rawMatchJson
+  // Also fetch highlights for all matches in one query
+  const matchIds = matchRows.map((m) => m.id);
+  const allHighlights = matchIds.length > 0
+    ? await db
+        .select()
+        .from(matchHighlights)
+        .where(
+          and(
+            eq(matchHighlights.userId, user.id),
+          )
+        )
+    : [];
+
+  // Group highlights by matchId
+  const highlightsByMatch = new Map<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  >();
+  for (const h of allHighlights) {
+    if (!matchIds.includes(h.matchId)) continue;
+    const list = highlightsByMatch.get(h.matchId) || [];
+    list.push({
+      type: h.type as "highlight" | "lowlight",
+      text: h.text,
+      topic: h.topic,
+    });
+    highlightsByMatch.set(h.matchId, list);
+  }
+
   const games: MatchupGameDetail[] = matchRows.map((m) => {
     let items: number[] = [0, 0, 0, 0, 0, 0, 0];
 
@@ -315,6 +350,8 @@ export async function getMatchupReport(
       comment: m.comment,
       reviewed: m.reviewed,
       reviewNotes: m.reviewNotes,
+      vodUrl: m.vodUrl ?? null,
+      highlights: highlightsByMatch.get(m.id) || [],
     };
   });
 

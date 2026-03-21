@@ -67,10 +67,24 @@
 ## Features — Ascent VOD Integration
 - [ ] Scrape user's Ascent profile to pull VOD links (no known public API — web scraping or headless browser needed)
 - [ ] Auto-match Ascent VODs to synced games by game timestamp or Riot match ID
-- [ ] Store VOD URL per match in the database (new column or separate table)
-- [ ] Show VOD link on match detail page and match list cards (one-click to watch)
+- [x] Store VOD URL per match in the database (`vodUrl` column on matches table)
+- [x] Show VOD link on match detail page and match list cards (one-click to watch)
 - [ ] If scraping isn't reliable, fall back to manual Ascent URL input per match
 - [ ] Investigate whether Ascent exposes any undocumented API endpoints (network tab inspection)
+
+## Features — Structured Review System (Highlights / Lowlights)
+- [x] Shared topics constant (`src/lib/topics.ts`) — `PREDEFINED_TOPICS` + `SKIP_REVIEW_REASONS`
+- [x] DB schema: `match_highlights` table + `reviewSkippedReason`/`vodUrl` columns on matches
+- [x] Migration: `drizzle/0004_abnormal_alex_wilder.sql`
+- [x] Server actions: `saveMatchHighlights`, `getMatchHighlights`, `savePostGameReview`, `updateMatchVodUrl`
+- [x] Reusable `HighlightsEditor` + `HighlightsDisplay` components
+- [x] PostGameReviewCard (Scout page) — highlights/lowlights first, collapsible notes, VOD input, skip VOD
+- [x] Scouting Report "Your Notes" — shows `HighlightsDisplay` for past matchup games
+- [x] ReviewCard (Review Queue) — highlights editor, collapsible comments, VOD link, skip VOD
+- [x] Match detail page — highlights card, VOD link with save, skip VOD button
+- [x] Matches list — highlight/lowlight count indicators on collapsed cards
+- [x] Coaching session creation — single match picker with highlight/VOD preview
+- [x] Coaching session detail — linked match highlights/lowlights + VOD link display
 
 ## Features — AI-Powered Coaching Assistant
 - [ ] AI-driven post-game analysis: summarize key mistakes and strengths from match data (KDA, CS, vision, gold, game duration, runes, matchup) and user-written notes

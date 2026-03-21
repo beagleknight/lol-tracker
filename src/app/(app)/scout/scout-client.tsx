@@ -12,14 +12,22 @@ import {
 import {
   updateMatchComment,
   updateMatchReview,
+  savePostGameReview,
 } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { ChampionCombobox } from "@/components/champion-combobox";
+import {
+  HighlightsEditor,
+  HighlightsDisplay,
+  type HighlightItem,
+} from "@/components/highlights-editor";
+import { SKIP_REVIEW_REASONS } from "@/lib/topics";
 import { toast } from "sonner";
 import {
   Crosshair,
@@ -34,6 +42,9 @@ import {
   TrendingUp,
   BarChart3,
   ScrollText,
+  SkipForward,
+  ChevronDown,
+  Link as LinkIcon,
 } from "lucide-react";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
@@ -130,11 +141,13 @@ function PostGameReviewCard({
   match: RecentUnreviewedMatch;
   ddragonVersion: string;
 }) {
+  const [highlights, setHighlights] = useState<HighlightItem[]>([]);
   const [comment, setComment] = useState("");
-  const [reviewed, setReviewed] = useState(false);
-  const [reviewNotes, setReviewNotes] = useState("");
+  const [showComment, setShowComment] = useState(false);
+  const [vodUrl, setVodUrl] = useState("");
   const [isSaving, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [showSkipMenu, setShowSkipMenu] = useState(false);
 
   const isWin = match.result === "Victory";
   const kda =
@@ -142,30 +155,37 @@ function PostGameReviewCard({
       ? "Perfect"
       : ((match.kills + match.assists) / match.deaths).toFixed(1);
 
-  const handleSave = useCallback(() => {
-    startTransition(async () => {
-      try {
-        if (comment) {
-          const commentResult = await updateMatchComment(match.matchId, comment);
-          if (!commentResult.success) {
-            toast.error("Failed to save comment.");
-            return;
-          }
-        }
-        if (reviewed || reviewNotes) {
-          const reviewResult = await updateMatchReview(match.matchId, reviewed, reviewNotes);
-          if (!reviewResult.success) {
+  const hasContent =
+    highlights.length > 0 || comment.trim() || vodUrl.trim();
+
+  const handleSave = useCallback(
+    (skipReason?: string) => {
+      startTransition(async () => {
+        try {
+          const result = await savePostGameReview(match.matchId, {
+            highlights,
+            comment: comment || undefined,
+            vodUrl: vodUrl || undefined,
+            reviewed: !!skipReason,
+            reviewSkippedReason: skipReason,
+          });
+          if (!result.success) {
             toast.error("Failed to save review.");
             return;
           }
+          toast.success(
+            skipReason
+              ? "Review saved & VOD review skipped."
+              : "Post-game review saved!"
+          );
+          setSaved(true);
+        } catch {
+          toast.error("Failed to save review.");
         }
-        toast.success("Post-game review saved!");
-        setSaved(true);
-      } catch {
-        toast.error("Failed to save review.");
-      }
-    });
-  }, [match.matchId, comment, reviewed, reviewNotes]);
+      });
+    },
+    [match.matchId, highlights, comment, vodUrl]
+  );
 
   if (saved) {
     return (
@@ -241,50 +261,88 @@ function PostGameReviewCard({
         ))}
       </div>
 
-      {/* Game Notes */}
+      {/* Highlights / Lowlights (primary) */}
+      <HighlightsEditor
+        highlights={highlights}
+        onChange={setHighlights}
+      />
+
+      {/* Game Notes (secondary, collapsible) */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setShowComment(!showComment)}
+          className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
+        >
           <MessageSquare className="h-3 w-3" />
-          Game Notes
-        </label>
-        <Textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="What happened? What could you improve?"
-          rows={2}
-          className="text-sm resize-none"
-        />
+          Game Notes (optional)
+          <ChevronDown
+            className={`h-3 w-3 transition-transform ${
+              showComment ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+        {showComment && (
+          <Textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Any additional notes..."
+            rows={2}
+            className="text-sm resize-none"
+          />
+        )}
       </div>
 
-      {/* VOD Review */}
+      {/* Ascent VOD Link */}
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <Eye className="h-3 w-3" />
-          VOD Review
+          <LinkIcon className="h-3 w-3" />
+          Ascent VOD Link (optional)
         </label>
-        <div className="flex items-center gap-2 mb-2">
-          <Checkbox
-            id="post-game-reviewed"
-            checked={reviewed}
-            onCheckedChange={(v) => setReviewed(!!v)}
-          />
-          <label htmlFor="post-game-reviewed" className="text-sm cursor-pointer">
-            Mark as reviewed
-          </label>
-        </div>
-        <Textarea
-          value={reviewNotes}
-          onChange={(e) => setReviewNotes(e.target.value)}
-          placeholder="Takeaways from review..."
-          rows={2}
-          className="text-sm resize-none"
+        <Input
+          value={vodUrl}
+          onChange={(e) => setVodUrl(e.target.value)}
+          placeholder="https://ascent.gg/vod/..."
+          className="text-sm h-8"
         />
       </div>
 
-      <div className="flex justify-end">
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-2">
+        {/* Skip VOD Review */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSkipMenu(!showSkipMenu)}
+            disabled={isSaving || !hasContent}
+            className="gap-1.5"
+          >
+            <SkipForward className="h-4 w-4" />
+            Save & Skip VOD
+          </Button>
+          {showSkipMenu && (
+            <div className="absolute bottom-full right-0 mb-1 w-56 rounded-md border bg-popover p-1 shadow-md z-10">
+              {SKIP_REVIEW_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => {
+                    setShowSkipMenu(false);
+                    handleSave(reason);
+                  }}
+                  className="w-full text-left rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Save (without marking as reviewed) */}
         <Button
-          onClick={handleSave}
-          disabled={isSaving || (!comment && !reviewed && !reviewNotes)}
+          onClick={() => handleSave()}
+          disabled={isSaving || !hasContent}
           className="gap-1.5"
         >
           {isSaving ? (
@@ -407,23 +465,23 @@ function ScoutingReport({
 
       <Separator />
 
-      {/* Notes from past games */}
-      {games.some((g) => g.comment) && (
+      {/* Notes & Highlights from past games */}
+      {games.some((g) => g.comment || g.highlights.length > 0) && (
         <>
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
               <ScrollText className="h-4 w-4 text-gold" />
-              Your Notes
+              Your Notes & Highlights
             </h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
               {games
-                .filter((g) => g.comment)
+                .filter((g) => g.comment || g.highlights.length > 0)
                 .map((g) => (
                   <div
                     key={g.matchId}
-                    className="rounded border border-border/50 bg-surface/30 p-3 text-sm"
+                    className="rounded border border-border/50 bg-surface/30 p-3 text-sm space-y-2"
                   >
-                    <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge
                         variant={g.result === "Victory" ? "default" : "destructive"}
                         className="text-[10px] px-1.5 py-0"
@@ -448,9 +506,20 @@ function ScoutingReport({
                         </>
                       )}
                     </div>
-                    <p className="text-muted-foreground italic">
-                      &ldquo;{g.comment}&rdquo;
-                    </p>
+                    {g.highlights.length > 0 && (
+                      <HighlightsDisplay
+                        highlights={g.highlights.map((h) => ({
+                          ...h,
+                          topic: h.topic || undefined,
+                        }))}
+                        compact
+                      />
+                    )}
+                    {g.comment && (
+                      <p className="text-muted-foreground italic">
+                        &ldquo;{g.comment}&rdquo;
+                      </p>
+                    )}
                   </div>
                 ))}
             </div>

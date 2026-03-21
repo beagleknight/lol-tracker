@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { matches, coachingSessionMatches, coachingSessions } from "@/db/schema";
+import { matches, matchHighlights, coachingSessionMatches, coachingSessions } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
@@ -33,8 +33,8 @@ export default async function MatchDetailPage({
     }
   }
 
-  // These two are independent — run in parallel
-  const [ddragonVersion, linkedSessions] = await Promise.all([
+  // These are independent — run in parallel
+  const [ddragonVersion, linkedSessions, highlights] = await Promise.all([
     getLatestVersion(),
     db
       .select({
@@ -51,13 +51,29 @@ export default async function MatchDetailPage({
         eq(coachingSessionMatches.matchId, match.id),
         eq(coachingSessionMatches.userId, user.id),
       )),
+    db
+      .select()
+      .from(matchHighlights)
+      .where(
+        and(
+          eq(matchHighlights.matchId, match.id),
+          eq(matchHighlights.userId, user.id),
+        )
+      ),
   ]);
+
+  const highlightItems = highlights.map((h) => ({
+    type: h.type as "highlight" | "lowlight",
+    text: h.text,
+    topic: h.topic || undefined,
+  }));
 
   return (
     <MatchDetailClient
       match={match}
       rawMatch={rawMatch}
       linkedSessions={linkedSessions}
+      highlights={highlightItems}
       ddragonVersion={ddragonVersion}
       userPuuid={user.puuid || ""}
     />
