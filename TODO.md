@@ -91,7 +91,9 @@
 
 ## Review — Matchup Scout
 - [ ] Review matchup scout page — not working as intended
-- [ ] Investigate and document what's broken (data fetching, display, filtering, etc.)
+- [ ] Bug: live game detected correctly but matchup was NOT auto-assigned (possibly because the enemy champion had no prior games in match history — edge case with uncommon matchups?)
+- [ ] Investigate: should the scout still show the matchup even without historical data? (display the live matchup info regardless, show "no past games" instead of nothing)
+- [ ] Investigate and document what else might be broken (data fetching, display, filtering, etc.)
 - [ ] Fix identified issues
 
 ## Known Limitations

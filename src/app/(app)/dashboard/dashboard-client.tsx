@@ -342,7 +342,7 @@ export function DashboardClient({
               </p>
             ) : (
               <div className="space-y-2">
-                {recentMatches.slice(0, 8).map((match) => (
+                {recentMatches.slice(0, 10).map((match) => (
                   <Link
                     key={match.id}
                     href={`/matches/${match.id}`}
