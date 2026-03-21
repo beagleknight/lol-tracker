@@ -118,7 +118,7 @@ export function DashboardClient({
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
 
-  // Session stats (last 20 games)
+  // Session stats (last 10 games)
   const sessionWins = recentMatches.filter((m) => m.result === "Victory").length;
   const sessionLosses = recentMatches.filter((m) => m.result === "Defeat").length;
   const sessionWinRate =
@@ -258,7 +258,7 @@ export function DashboardClient({
         {/* Win Rate Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Session Win Rate (Last 20)</CardDescription>
+            <CardDescription>Session Win Rate (Last 10)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export function DashboardClient({
         {/* Avg KDA Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Avg KDA (Last 20)</CardDescription>
+            <CardDescription>Avg KDA (Last 10)</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-mono text-gold">
