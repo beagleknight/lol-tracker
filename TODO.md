@@ -35,7 +35,8 @@
 - [x] Export RiotApiError + handle 401 alongside 403
 - [x] AUTH_TRUST_HOST in .env.example
 - [x] Deploy to Vercel + Turso (manual step)
-- [ ] Set up Turso production database and import local data
+- [x] Set up Turso production database and import local data (db-push/db-pull scripts)
+- [ ] Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)
 - [ ] Add smoke tests (build check, key routes return 200) and run them before auto-deploy
 
 ## Features — Future Enhancements
@@ -73,6 +74,20 @@
 - [ ] Review queue assistant: for unreviewed games, generate guided review prompts based on the match data (e.g., "You had 12 deaths this game — what fights could you have avoided?")
 - [ ] Goal tracking insights: if goals are set, provide periodic AI check-ins on progress with actionable suggestions
 - [ ] Data sources to feed the AI: match stats, raw match JSON (detailed player data), game notes, review notes, coaching session notes, action items, rank progression, champion/rune/matchup stats
+
+## Developer Experience — OpenCode Skills
+- [x] Create `vercel-turso-deploy` skill (Vercel + Turso deployment, dotenvx workarounds, region config)
+- [x] Create `drizzle-schema` skill (schema management, migrations, upsert-only db-push)
+- [x] Create `riot-api` skill (Riot API client patterns, rate limits, DDragon, RSO auth)
+- [x] Create `nextjs-auth` skill (Auth.js v5 with Discord, invite-only system, env var conventions)
+
+## Discovered Pitfalls (reference)
+- **dotenvx v17 banner corruption**: Vercel runtime prepends a banner to ALL `process.env` values. Fixed with `instrumentation.ts` that strips banners at server startup.
+- **Static `process.env` reads at module scope**: Any code reading env vars at import time gets corrupted values on Vercel. Always defer to request time.
+- **Auth.js `AUTH_<PROVIDER>_ID` convention**: Auth.js auto-reads `AUTH_DISCORD_ID` / `AUTH_DISCORD_SECRET`. Don't pass explicit `clientId`/`clientSecret`.
+- **`echo` adds trailing newlines**: Use `printf` when piping values to `npx vercel env add`.
+- **Vercel defaults to `iad1` (US East)**: Set `"regions": ["dub1"]` in `vercel.json` to colocate with Turso in Ireland.
+- **Discord `prompt=consent`**: Auth.js default forces re-authorization every login. Fix: `{ authorization: { params: { prompt: "none" } } }`.
 
 ## Known Limitations
 - Riot API personal key expires every 24h — need to refresh at https://developer.riotgames.com/
