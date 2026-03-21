@@ -39,6 +39,57 @@ export function useSyncMatches() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let receivedFinal = false;
+
+        const processMessage = (msg: string) => {
+          const dataLine = msg
+            .split("\n")
+            .find((line) => line.startsWith("data: "));
+          if (!dataLine) return;
+
+          try {
+            const data = JSON.parse(dataLine.slice(6));
+
+            switch (data.type) {
+              case "status":
+                toast.loading(data.message, { id: toastIdRef.current });
+                break;
+
+              case "progress": {
+                const pct = Math.round((data.current / data.total) * 100);
+                setProgress({
+                  current: data.current,
+                  total: data.total,
+                  synced: data.synced,
+                  failed: data.failed,
+                  message: data.message,
+                });
+                toast.loading(
+                  `${data.message} (${data.synced} synced, ${pct}%)`,
+                  { id: toastIdRef.current }
+                );
+                break;
+              }
+
+              case "done":
+                receivedFinal = true;
+                if (data.synced > 0) {
+                  toast.success(data.message, { id: toastIdRef.current });
+                } else {
+                  toast.info(data.message, { id: toastIdRef.current });
+                }
+                router.refresh();
+                break;
+
+              case "error":
+                receivedFinal = true;
+                toast.error(data.message, { id: toastIdRef.current });
+                break;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        };
 
         while (true) {
           const { done, value } = await reader.read();
@@ -54,52 +105,20 @@ export function useSyncMatches() {
           buffer = messages.pop() || "";
 
           for (const msg of messages) {
-            const dataLine = msg
-              .split("\n")
-              .find((line) => line.startsWith("data: "));
-            if (!dataLine) continue;
-
-            try {
-              const data = JSON.parse(dataLine.slice(6));
-
-              switch (data.type) {
-                case "status":
-                  toast.loading(data.message, { id: toastIdRef.current });
-                  break;
-
-                case "progress": {
-                  const pct = Math.round((data.current / data.total) * 100);
-                  setProgress({
-                    current: data.current,
-                    total: data.total,
-                    synced: data.synced,
-                    failed: data.failed,
-                    message: data.message,
-                  });
-                  toast.loading(
-                    `${data.message} (${data.synced} synced, ${pct}%)`,
-                    { id: toastIdRef.current }
-                  );
-                  break;
-                }
-
-                case "done":
-                  if (data.synced > 0) {
-                    toast.success(data.message, { id: toastIdRef.current });
-                  } else {
-                    toast.info(data.message, { id: toastIdRef.current });
-                  }
-                  router.refresh();
-                  break;
-
-                case "error":
-                  toast.error(data.message, { id: toastIdRef.current });
-                  break;
-              }
-            } catch {
-              // Ignore parse errors
-            }
+            processMessage(msg);
           }
+        }
+
+        // Process any remaining data in the buffer after stream ends.
+        // The final SSE message may not have a trailing \n\n before
+        // the server closes the stream.
+        if (buffer.trim()) {
+          processMessage(buffer);
+        }
+
+        // If the stream ended without a done/error event, dismiss the toast
+        if (!receivedFinal) {
+          toast.dismiss(toastIdRef.current);
         }
       })
       .catch((error) => {
