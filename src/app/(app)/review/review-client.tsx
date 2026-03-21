@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,8 @@ import {
   ClipboardEdit,
   Video,
   ExternalLink,
+  Pencil,
+  X,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -69,7 +72,7 @@ import { Pagination, paginate } from "@/components/pagination";
 
 interface ReviewClientProps {
   unreviewedMatches: Match[];
-  recentReviewedMatches: Match[];
+  reviewedMatches: Match[];
   highlightsByMatch: Record<
     string,
     Array<{
@@ -80,6 +83,9 @@ interface ReviewClientProps {
     }>
   >;
   ddragonVersion: string;
+  completedPage: number;
+  completedTotalPages: number;
+  completedTotal: number;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -494,21 +500,153 @@ function VodReviewCard({
 }
 
 // ─── Completed Card ─────────────────────────────────────────────────────────
-// Read-only card showing a reviewed game for reference.
+// Read-only card with inline edit toggle for reviewed games.
 
 function CompletedCard({
   match,
   existingHighlights,
   ddragonVersion,
+  onSaved,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
+  onSaved: () => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [highlights, setHighlights] =
+    useState<HighlightItem[]>(existingHighlights);
+  const [comment, setComment] = useState(match.comment || "");
+  const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
+  const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
+  const [isPending, startTransition] = useTransition();
+
+  const handleSave = useCallback(() => {
+    startTransition(async () => {
+      try {
+        const result = await savePostGameReview(match.id, {
+          highlights,
+          comment: comment || undefined,
+          vodUrl: vodUrl || undefined,
+          reviewed: true,
+          reviewNotes: reviewNotes || undefined,
+        });
+        if (result.success) {
+          toast.success("Review updated!");
+          setIsEditing(false);
+          onSaved();
+        } else {
+          toast.error("Failed to update review.");
+        }
+      } catch {
+        toast.error("Failed to update review.");
+      }
+    });
+  }, [match.id, highlights, comment, vodUrl, reviewNotes, onSaved]);
+
+  const handleCancel = useCallback(() => {
+    // Reset to original values
+    setHighlights(existingHighlights);
+    setComment(match.comment || "");
+    setVodUrl(match.vodUrl || "");
+    setReviewNotes(match.reviewNotes || "");
+    setIsEditing(false);
+  }, [existingHighlights, match.comment, match.vodUrl, match.reviewNotes]);
+
+  if (isEditing) {
+    return (
+      <Card className="surface-glow border-primary/30">
+        <CardHeader className="pb-3">
+          <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Highlights / Lowlights */}
+          <HighlightsEditor highlights={highlights} onChange={setHighlights} />
+
+          {/* Game Notes */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <MessageSquare className="h-3 w-3" />
+              Game Notes
+            </label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Any additional notes..."
+              rows={2}
+              className="text-sm resize-none"
+            />
+          </div>
+
+          {/* Ascent VOD Link */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <LinkIcon className="h-3 w-3" />
+              Ascent VOD Link
+            </label>
+            <Input
+              value={vodUrl}
+              onChange={(e) => setVodUrl(e.target.value)}
+              placeholder="https://ascent.gg/vod/..."
+              className="text-sm h-8"
+            />
+          </div>
+
+          {/* VOD Review Notes */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              VOD Review Notes
+            </label>
+            <Textarea
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              placeholder="What did you learn from watching the VOD?"
+              rows={2}
+              className="text-sm resize-none"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isPending}
+            >
+              <X className="mr-1.5 h-3 w-3" />
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-3 w-3" />
+              )}
+              Save
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="surface-glow opacity-80">
+    <Card className="surface-glow opacity-80 hover:opacity-100 transition-opacity">
       <CardHeader className="pb-3">
-        <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Highlights */}
@@ -576,14 +714,92 @@ function TabEmptyState({
   );
 }
 
+// ─── Server-side pagination for Completed tab ───────────────────────────────
+
+function CompletedPagination({
+  currentPage,
+  totalPages,
+  disabled,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  disabled?: boolean;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages: (number | "ellipsis")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - 1 && i <= currentPage + 1)
+    ) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "ellipsis") {
+      pages.push("ellipsis");
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1 pt-4">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        disabled={currentPage === 1 || disabled}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        <ChevronRight className="h-4 w-4 rotate-180" />
+      </Button>
+      {pages.map((p, i) =>
+        p === "ellipsis" ? (
+          <span
+            key={`e-${i}`}
+            className="px-1 text-xs text-muted-foreground"
+          >
+            ...
+          </span>
+        ) : (
+          <Button
+            key={p}
+            variant={p === currentPage ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 text-xs"
+            disabled={disabled}
+            onClick={() => onPageChange(p)}
+          >
+            {p}
+          </Button>
+        )
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        disabled={currentPage === totalPages || disabled}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
 // ─── Main Review Client ─────────────────────────────────────────────────────
 
 export function ReviewClient({
   unreviewedMatches,
-  recentReviewedMatches,
+  reviewedMatches,
   highlightsByMatch,
   ddragonVersion,
+  completedPage,
+  completedTotalPages,
+  completedTotal,
 }: ReviewClientProps) {
+  const router = useRouter();
+
   // Track which matches have been actioned this session (optimistic removal/movement)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
 
@@ -593,10 +809,24 @@ export function ReviewClient({
     SKIP_REVIEW_REASONS[0]
   );
 
-  // Pagination state per tab
+  // Pagination state for Post-Game and VOD Review tabs (client-side)
   const [postGamePage, setPostGamePage] = useState(1);
   const [vodReviewPage, setVodReviewPage] = useState(1);
-  const [completedPage, setCompletedPage] = useState(1);
+
+  // Server-side pagination for Completed tab
+  const [isCompletedNavigating, startCompletedTransition] = useTransition();
+
+  const navigateCompletedPage = useCallback(
+    (page: number) => {
+      const sp = new URLSearchParams();
+      if (page > 1) sp.set("completedPage", String(page));
+      const qs = sp.toString();
+      startCompletedTransition(() => {
+        router.push(`/review${qs ? `?${qs}` : ""}`, { scroll: false });
+      });
+    },
+    [router]
+  );
 
   // Partition unreviewed matches into Post-Game vs VOD Review
   const { postGameMatches, vodReviewMatches } = useMemo(() => {
@@ -618,15 +848,6 @@ export function ReviewClient({
     return { postGameMatches: postGame, vodReviewMatches: vodReview };
   }, [unreviewedMatches, actionedIds, highlightsByMatch]);
 
-  // Completed matches = server-provided reviewed + any actioned this session
-  const completedMatches = useMemo(() => {
-    // Include recently-actioned from unreviewed list
-    const actionedMatches = unreviewedMatches.filter((m) =>
-      actionedIds.has(m.id)
-    );
-    return [...actionedMatches, ...recentReviewedMatches];
-  }, [unreviewedMatches, recentReviewedMatches, actionedIds]);
-
   const handleReviewed = useCallback((matchId: string) => {
     setActionedIds((prev) => {
       const next = new Set(prev);
@@ -634,6 +855,11 @@ export function ReviewClient({
       return next;
     });
   }, []);
+
+  const handleCompletedSaved = useCallback(() => {
+    // Refresh the page to get updated data from the server
+    router.refresh();
+  }, [router]);
 
   const handleBulkMarkReviewed = useCallback(() => {
     startBulkTransition(async () => {
@@ -660,10 +886,9 @@ export function ReviewClient({
 
   const totalUnreviewed = postGameMatches.length + vodReviewMatches.length;
 
-  // Paginated data
+  // Client-side paginated data for Post-Game and VOD Review
   const paginatedPostGame = paginate(postGameMatches, postGamePage);
   const paginatedVodReview = paginate(vodReviewMatches, vodReviewPage);
-  const paginatedCompleted = paginate(completedMatches, completedPage);
 
   // Auto-correct pages when items are removed
   const postGameTotalPages = Math.ceil(postGameMatches.length / 10);
@@ -792,6 +1017,11 @@ export function ReviewClient({
           <TabsTrigger value={2}>
             <CheckCircle2 className="h-3.5 w-3.5" />
             Completed
+            {completedTotal > 0 && (
+              <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
+                {completedTotal}
+              </Badge>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -865,32 +1095,41 @@ export function ReviewClient({
 
         {/* Completed Tab */}
         <TabsContent value={2}>
-          <div className="space-y-4 pt-4">
-            {completedMatches.length === 0 ? (
+          <div className="relative space-y-4 pt-4">
+            {isCompletedNavigating && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {reviewedMatches.length === 0 && completedTotal === 0 ? (
               <TabEmptyState
                 icon={EyeOff}
                 title="No completed reviews yet"
                 description="Reviewed games will appear here for reference."
               />
             ) : (
-              <>
+              <div className={isCompletedNavigating ? "opacity-40" : ""}>
                 <p className="text-xs text-muted-foreground">
-                  Recently reviewed games for reference (last 20).
+                  {completedTotal} reviewed game{completedTotal !== 1 ? "s" : ""}.
                 </p>
-                {paginatedCompleted.map((match) => (
-                  <CompletedCard
-                    key={match.id}
-                    match={match}
-                    existingHighlights={getHighlightItems(match.id)}
-                    ddragonVersion={ddragonVersion}
-                  />
-                ))}
-                <Pagination
+                <div className="space-y-4 mt-4">
+                  {reviewedMatches.map((match) => (
+                    <CompletedCard
+                      key={match.id}
+                      match={match}
+                      existingHighlights={getHighlightItems(match.id)}
+                      ddragonVersion={ddragonVersion}
+                      onSaved={handleCompletedSaved}
+                    />
+                  ))}
+                </div>
+                <CompletedPagination
                   currentPage={completedPage}
-                  totalItems={completedMatches.length}
-                  onPageChange={setCompletedPage}
+                  totalPages={completedTotalPages}
+                  disabled={isCompletedNavigating}
+                  onPageChange={navigateCompletedPage}
                 />
-              </>
+              </div>
             )}
           </div>
         </TabsContent>
