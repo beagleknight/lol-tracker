@@ -7,10 +7,10 @@ import { cookies } from "next/headers";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
-    Discord({
-      clientId: process.env.DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-    }),
+    // Auth.js auto-reads AUTH_DISCORD_ID and AUTH_DISCORD_SECRET from
+    // process.env at request time (via setEnvDefaults), which avoids
+    // the dotenvx banner corruption that happens at module load time.
+    Discord,
   ],
   callbacks: {
     async signIn({ user, account }) {
