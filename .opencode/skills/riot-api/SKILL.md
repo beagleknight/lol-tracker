@@ -150,6 +150,18 @@ GET https://ddragon.leagueoflegends.com/api/versions.json
 Returns: string[] — use [0] for latest
 ```
 
+### Caching DDragon data
+
+DDragon version and champion data change only on game patches (~every 2 weeks). Cache with Next.js fetch:
+
+```ts
+const res = await fetch("https://ddragon.leagueoflegends.com/api/versions.json", {
+  next: { revalidate: 86400 }, // 24-hour cache
+});
+```
+
+Apply the same `{ next: { revalidate: 86400 } }` to all DDragon fetches (versions, champion JSON, etc.). This avoids redundant external API calls on every page load.
+
 ### Champion icons
 ```
 https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{championName}.png
@@ -199,9 +211,16 @@ Key status codes:
 
 ## Stored data
 
-The `rawMatchJson` column stores the full Riot match detail response (50-100KB per match). This is useful for:
+The `rawMatchJson` column stores the full Riot match detail response (50-100KB per match, avg ~75KB). This is useful for:
 - Extracting new data fields later without re-fetching from Riot
 - Duo partner detection (all 10 participants are stored)
 - Detailed post-game analysis
 
-**Performance note**: Exclude `rawMatchJson` from list page queries — only SELECT it on detail pages.
+### Performance rules for rawMatchJson
+
+1. **Never SELECT it on list pages** — use explicit `columns` in Drizzle queries to exclude it. 95 matches x 75KB = 7MB of unnecessary data transfer.
+2. **Only SELECT it on detail pages** — where you need the full participant data for a single match.
+3. **When passing to client components, extract slim data** — don't send the full 75KB JSON as a prop. Extract only the fields the client needs (e.g., participant stats, items, runes) server-side, reducing the RSC payload from ~75KB to ~2KB.
+4. **Exclude from CSV import queries** — if a feature reads matches for processing (not display), it likely doesn't need rawMatchJson either.
+
+See `nextjs-performance` skill for the full server-side data extraction pattern.

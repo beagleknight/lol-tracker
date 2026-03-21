@@ -131,3 +131,46 @@ Required env vars for this stack:
 Use `npm run db:pull` (production -> local) and `npm run db:push` (local -> production).
 
 **db:push safety**: Upsert-only. Never deletes production data. Uses `ON CONFLICT DO UPDATE` for natural-key tables and business-key matching for auto-increment tables. Always confirm before pushing.
+
+## Turso / Drizzle migration workflow
+
+When you modify `src/db/schema.ts` (add columns, create tables, change indexes, etc.), the production Turso database will NOT update automatically. **You must run the migration against production before pushing code that references new schema.**
+
+### Steps after any schema change
+
+1. Generate migration: `npx drizzle-kit generate`
+2. **Run migration against production Turso**: `npx drizzle-kit migrate` (requires `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env.local`)
+3. Verify migration succeeded before pushing code
+
+### If `drizzle-kit migrate` hangs
+
+The `drizzle-kit migrate` command sometimes hangs against remote Turso. Workaround — run the migration SQL directly with `@libsql/client`:
+
+```bash
+node --env-file=.env.local -e "
+  const { createClient } = require('@libsql/client');
+  const client = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+  client.execute('CREATE INDEX IF NOT EXISTS ...');
+"
+```
+
+### If `.env.local` doesn't have Turso credentials
+
+Pull them with:
+```bash
+npx vercel env pull .env.local
+```
+Note: env vars are scoped to **Production** on Vercel. If `vercel env pull` returns empty values, manually copy `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` from the Vercel dashboard into `.env.local`.
+
+### Why this matters
+
+The Vercel deployment auto-builds on push but does NOT run migrations. If new code references columns/tables that don't exist in production yet, every page that touches those columns will return a 500 error.
+
+### Config
+
+- `drizzle.config.ts` reads `TURSO_DATABASE_URL` (defaults to local `file:./data/lol-tracker.db` if unset) and `TURSO_AUTH_TOKEN`
+- Migrations live in `drizzle/` directory
+- Schema is at `src/db/schema.ts`
