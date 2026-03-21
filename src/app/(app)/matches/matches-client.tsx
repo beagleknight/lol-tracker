@@ -3,7 +3,7 @@
 import { useState, useRef, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
 import {
   updateMatchComment,
@@ -524,11 +524,13 @@ function MatchCard({
 function ServerPagination({
   currentPage,
   totalPages,
-  buildUrl,
+  onPageChange,
+  disabled,
 }: {
   currentPage: number;
   totalPages: number;
-  buildUrl: (page: number) => string;
+  onPageChange: (page: number) => void;
+  disabled?: boolean;
 }) {
   if (totalPages <= 1) return null;
 
@@ -548,41 +550,42 @@ function ServerPagination({
 
   return (
     <div className="flex items-center justify-center gap-1 pt-4">
-      <Link
-        href={buildUrl(currentPage - 1)}
-        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-        scroll={false}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        disabled={currentPage === 1 || disabled}
+        onClick={() => onPageChange(currentPage - 1)}
       >
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage === 1}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-      </Link>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
       {pages.map((p, i) =>
         p === "ellipsis" ? (
           <span key={`e-${i}`} className="px-1 text-xs text-muted-foreground">
             ...
           </span>
         ) : (
-          <Link key={p} href={buildUrl(p)} scroll={false}>
-            <Button
-              variant={p === currentPage ? "default" : "ghost"}
-              size="icon"
-              className="h-8 w-8 text-xs"
-            >
-              {p}
-            </Button>
-          </Link>
+          <Button
+            key={p}
+            variant={p === currentPage ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 text-xs"
+            disabled={disabled}
+            onClick={() => onPageChange(p)}
+          >
+            {p}
+          </Button>
         )
       )}
-      <Link
-        href={buildUrl(currentPage + 1)}
-        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-        scroll={false}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        disabled={currentPage === totalPages || disabled}
+        onClick={() => onPageChange(currentPage + 1)}
       >
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage === totalPages}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </Link>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
@@ -604,6 +607,7 @@ export function MatchesClient({
 }: MatchesClientProps) {
   const { isSyncing, handleSync } = useSyncMatches();
   const router = useRouter();
+  const [isNavigating, startTransition] = useTransition();
 
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
@@ -618,12 +622,18 @@ export function MatchesClient({
 
   function navigateWithFilter(key: string, value: string) {
     const url = buildMatchesUrl(currentParams, { [key]: value, page: "1" });
-    router.push(url, { scroll: false });
+    startTransition(() => {
+      router.push(url, { scroll: false });
+    });
   }
 
-  function buildPageUrl(page: number): string {
-    return buildMatchesUrl(currentParams, { page: String(page) });
+  function navigateToPage(page: number) {
+    const url = buildMatchesUrl(currentParams, { page: String(page) });
+    startTransition(() => {
+      router.push(url, { scroll: false });
+    });
   }
+
 
   // Debounced search — navigate after typing stops
   const [searchValue, setSearchValue] = useState(filters.search);
@@ -737,7 +747,7 @@ export function MatchesClient({
       </div>
 
       {/* Match Cards */}
-      {totalMatches === 0 ? (
+      {totalMatches === 0 && !isNavigating ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
             {filters.search || filters.result !== "all" || filters.champion !== "all" || filters.review !== "all"
@@ -747,20 +757,28 @@ export function MatchesClient({
         </div>
       ) : (
         <>
-          <div className="space-y-2">
-            {pageMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                ddragonVersion={ddragonVersion}
-                matchHighlights={highlightsPerMatch[match.id] || []}
-              />
-            ))}
+          <div className="relative">
+            {isNavigating && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            <div className={`space-y-2 transition-opacity duration-150 ${isNavigating ? "opacity-40" : ""}`}>
+              {pageMatches.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  ddragonVersion={ddragonVersion}
+                  matchHighlights={highlightsPerMatch[match.id] || []}
+                />
+              ))}
+            </div>
           </div>
           <ServerPagination
             currentPage={currentPage}
             totalPages={totalPages}
-            buildUrl={buildPageUrl}
+            onPageChange={navigateToPage}
+            disabled={isNavigating}
           />
         </>
       )}
