@@ -34,7 +34,7 @@ import {
   Save,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 
 interface MatchesClientProps {
@@ -75,7 +75,7 @@ function ChampionIcon({
 }) {
   return (
     <Image
-      src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`}
+      src={getChampionIconUrl(version, championName)}
       alt={championName}
       width={size}
       height={size}
@@ -496,7 +496,7 @@ export function MatchesClient({
               <SelectItem key={c} value={c}>
                 <span className="inline-flex items-center gap-1.5">
                   <Image
-                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${c}.png`}
+                    src={getChampionIconUrl(ddragonVersion, c)}
                     alt={c}
                     width={16}
                     height={16}

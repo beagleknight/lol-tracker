@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/table";
 import { BarChart3, TrendingUp, Trophy } from "lucide-react";
 import type { Match, RankSnapshot } from "@/db/schema";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 // ─── LP / Rank Utilities ─────────────────────────────────────────────────────
 
@@ -630,7 +630,7 @@ export function AnalyticsClient({
             <CardDescription>Top 10 most-played matchups</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topMatchups} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
@@ -650,7 +650,7 @@ export function AnalyticsClient({
                     tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
                       <g transform={`translate(${x},${y})`}>
                         <image
-                          href={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${payload.value}.png`}
+                          href={getChampionIconUrl(ddragonVersion, payload.value)}
                           x={-118}
                           y={-10}
                           width={20}
@@ -787,7 +787,7 @@ export function AnalyticsClient({
                   <TableCell className="font-medium text-sm">
                     <div className="flex items-center gap-2">
                       <Image
-                        src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champ.name}.png`}
+                        src={getChampionIconUrl(ddragonVersion, champ.name)}
                         alt={champ.name}
                         width={24}
                         height={24}

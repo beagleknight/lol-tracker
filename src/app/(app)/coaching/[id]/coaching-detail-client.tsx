@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { getChampionIconUrl } from "@/lib/riot-api";
 import {
   ArrowLeft,
   Loader2,
@@ -254,7 +255,7 @@ export function CoachingDetailClient({
                     }`}
                   />
                   <Image
-                    src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+                    src={getChampionIconUrl(ddragonVersion, match.championName)}
                     alt={match.championName}
                     width={32}
                     height={32}
@@ -269,7 +270,7 @@ export function CoachingDetailClient({
                       {match.matchupChampionName ? (
                         <>
                           <Image
-                            src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                            src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}

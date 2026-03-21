@@ -26,7 +26,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
-import { getKeystoneIconUrlByName } from "@/lib/riot-api";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 interface DashboardMatch {
   id: string;
@@ -356,7 +356,7 @@ export function DashboardClient({
                       }`}
                     />
                     <Image
-                      src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.championName}.png`}
+                      src={getChampionIconUrl(ddragonVersion, match.championName)}
                       alt={match.championName}
                       width={32}
                       height={32}
@@ -372,7 +372,7 @@ export function DashboardClient({
                           {match.matchupChampionName ? (
                             <>
                               <Image
-                                src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.matchupChampionName}.png`}
+                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                                 alt={match.matchupChampionName}
                                 width={16}
                                 height={16}

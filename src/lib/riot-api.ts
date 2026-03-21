@@ -427,8 +427,20 @@ export async function getLatestVersion(): Promise<string> {
   return cachedVersion!;
 }
 
+/**
+ * Normalize champion name from Riot Match API to DDragon `id` for image URLs.
+ * The Riot Match API occasionally returns names that differ from DDragon's `id` field.
+ */
+const CHAMPION_NAME_FIXES: Record<string, string> = {
+  FiddleSticks: "Fiddlesticks", // Riot API uses capital S, DDragon uses lowercase
+};
+
+export function normalizeDDragonChampionName(championName: string): string {
+  return CHAMPION_NAME_FIXES[championName] || championName;
+}
+
 export function getChampionIconUrl(version: string, championName: string) {
-  return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`;
+  return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${normalizeDDragonChampionName(championName)}.png`;
 }
 
 export function getItemIconUrl(version: string, itemId: number) {
