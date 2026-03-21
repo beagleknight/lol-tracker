@@ -431,6 +431,36 @@ export function findDuoPartner(
   return partner ? partner.puuid : null;
 }
 
+/**
+ * Extract duo partner's stats from match data.
+ * Returns champion name, kills, deaths, assists if the partner is found on the same team.
+ */
+export function extractDuoPartnerData(
+  match: RiotMatch,
+  playerPuuid: string,
+  duoPartnerPuuid: string
+): {
+  championName: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+} | null {
+  const player = match.info.participants.find((p) => p.puuid === playerPuuid);
+  if (!player) return null;
+
+  const partner = match.info.participants.find(
+    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId
+  );
+  if (!partner) return null;
+
+  return {
+    championName: partner.championName,
+    kills: partner.kills,
+    deaths: partner.deaths,
+    assists: partner.assists,
+  };
+}
+
 // ─── Data Dragon ─────────────────────────────────────────────────────────────
 
 export async function getLatestVersion(): Promise<string> {

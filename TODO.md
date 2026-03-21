@@ -33,6 +33,7 @@
 - [ ] Matches page: add VOD URL field to expanded match card (consistent with ReviewCard and PostGameReviewCard)
 - [ ] Matches page: standardize button sizes, variants, and icons across all forms
 - [ ] Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields
+- [ ] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
 - [x] Scout page: add "Most Played" and "Common Matchups" grouped recommendations to champion comboboxes
 - [x] Duo page: add loading.tsx skeleton (header, 4-stat grid, 2-KDA grid, synergy list, recent games)
 - [x] Review queue: add "Mark All as Reviewed" bulk action with confirmation dialog and skip reason
