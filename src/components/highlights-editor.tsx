@@ -36,7 +36,7 @@ export function HighlightsEditor({
     (type: "highlight" | "lowlight") => {
       const text = type === "highlight" ? newHighlightText : newLowlightText;
       const topic = type === "highlight" ? newHighlightTopic : newLowlightTopic;
-      if (!text.trim()) return;
+      if (!text.trim() && !topic) return;
 
       const items = type === "highlight" ? highlightItems : lowlightItems;
       if (items.length >= maxPerType) return;
@@ -91,12 +91,13 @@ export function HighlightsEditor({
               key={idx}
               className="flex items-center gap-2 rounded-md border border-green-500/20 bg-green-500/5 px-3 py-1.5 text-sm"
             >
-              <span className="flex-1">{item.text}</span>
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
                   {item.topic}
                 </Badge>
               )}
+              {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
+              {!item.text && <span className="flex-1" />}
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
@@ -108,21 +109,9 @@ export function HighlightsEditor({
           );
         })}
 
-        {/* Add highlight input */}
+        {/* Add highlight input — topic first, then detail */}
         {highlightItems.length < maxPerType && (
           <div className="flex gap-2">
-            <Input
-              value={newHighlightText}
-              onChange={(e) => setNewHighlightText(e.target.value)}
-              placeholder="What went well?"
-              className="flex-1 text-sm h-8"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addItem("highlight");
-                }
-              }}
-            />
             <select
               value={newHighlightTopic}
               onChange={(e) => setNewHighlightTopic(e.target.value)}
@@ -135,13 +124,25 @@ export function HighlightsEditor({
                 </option>
               ))}
             </select>
+            <Input
+              value={newHighlightText}
+              onChange={(e) => setNewHighlightText(e.target.value)}
+              placeholder="Details (optional)"
+              className="flex-1 text-sm h-8"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addItem("highlight");
+                }
+              }}
+            />
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-8 px-2 shrink-0"
               onClick={() => addItem("highlight")}
-              disabled={!newHighlightText.trim()}
+              disabled={!newHighlightText.trim() && !newHighlightTopic}
             >
               <Plus className="h-3 w-3" />
             </Button>
@@ -164,12 +165,13 @@ export function HighlightsEditor({
               key={idx}
               className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-sm"
             >
-              <span className="flex-1">{item.text}</span>
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
                   {item.topic}
                 </Badge>
               )}
+              {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
+              {!item.text && <span className="flex-1" />}
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
@@ -181,21 +183,9 @@ export function HighlightsEditor({
           );
         })}
 
-        {/* Add lowlight input */}
+        {/* Add lowlight input — topic first, then detail */}
         {lowlightItems.length < maxPerType && (
           <div className="flex gap-2">
-            <Input
-              value={newLowlightText}
-              onChange={(e) => setNewLowlightText(e.target.value)}
-              placeholder="What went wrong?"
-              className="flex-1 text-sm h-8"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addItem("lowlight");
-                }
-              }}
-            />
             <select
               value={newLowlightTopic}
               onChange={(e) => setNewLowlightTopic(e.target.value)}
@@ -208,13 +198,25 @@ export function HighlightsEditor({
                 </option>
               ))}
             </select>
+            <Input
+              value={newLowlightText}
+              onChange={(e) => setNewLowlightText(e.target.value)}
+              placeholder="Details (optional)"
+              className="flex-1 text-sm h-8"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addItem("lowlight");
+                }
+              }}
+            />
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-8 px-2 shrink-0"
               onClick={() => addItem("lowlight")}
-              disabled={!newLowlightText.trim()}
+              disabled={!newLowlightText.trim() && !newLowlightTopic}
             >
               <Plus className="h-3 w-3" />
             </Button>
