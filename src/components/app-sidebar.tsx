@@ -31,13 +31,19 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const mainNav: NavItem[] = [
+const dashboardNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+];
+
+const trackerNav: NavItem[] = [
   { label: "Matches", href: "/matches", icon: Swords },
-  { label: "Matchup Scout", href: "/scout", icon: Crosshair },
-  { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Duo", href: "/duo", icon: Users },
   { label: "Review Queue", href: "/review", icon: ClipboardCheck },
+  { label: "Duo", href: "/duo", icon: Users },
+];
+
+const insightsNav: NavItem[] = [
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Matchup Scout", href: "/scout", icon: Crosshair },
 ];
 
 const coachingNav: NavItem[] = [
@@ -98,7 +104,25 @@ function SidebarContent({
       {/* Main nav */}
       <ScrollArea className="flex-1 px-3 py-4">
         <div className="space-y-1">
-          {mainNav.map((item) => (
+          {dashboardNav.map((item) => (
+            <NavLink key={item.href} item={item} onClick={onNavClick} />
+          ))}
+        </div>
+
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
+          Tracker
+        </div>
+        <div className="space-y-1">
+          {trackerNav.map((item) => (
+            <NavLink key={item.href} item={item} onClick={onNavClick} />
+          ))}
+        </div>
+
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
+          Insights
+        </div>
+        <div className="space-y-1">
+          {insightsNav.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
         </div>
