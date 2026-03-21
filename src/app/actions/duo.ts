@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { matches, users } from "@/db/schema";
 import { eq, and, isNotNull, desc, sql, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
+import { revalidatePath } from "next/cache";
 import type { RiotMatch, RiotMatchParticipant } from "@/lib/riot-api";
 
 const PAGE_SIZE = 10;
@@ -376,4 +377,71 @@ export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
   synergies.sort((a, b) => b.games - a.games);
 
   return synergies;
+}
+
+// ─── Backfill Duo Partner Puuid ──────────────────────────────────────────────
+
+export async function backfillDuoGames(): Promise<{
+  processed: number;
+  duoFound: number;
+}> {
+  const user = await requireUser();
+  if (!user.duoPartnerUserId || !user.puuid) {
+    return { processed: 0, duoFound: 0 };
+  }
+
+  const partner = await db.query.users.findFirst({
+    where: eq(users.id, user.duoPartnerUserId),
+    columns: { puuid: true },
+  });
+  if (!partner?.puuid) return { processed: 0, duoFound: 0 };
+
+  const partnerPuuid = partner.puuid;
+
+  // Get all matches with raw JSON that don't already have duo partner set
+  const allMatches = await db
+    .select({
+      id: matches.id,
+      rawMatchJson: matches.rawMatchJson,
+    })
+    .from(matches)
+    .where(
+      and(
+        eq(matches.userId, user.id),
+        isNotNull(matches.rawMatchJson),
+        sql`${matches.duoPartnerPuuid} IS NULL`
+      )
+    );
+
+  let duoFound = 0;
+
+  for (const m of allMatches) {
+    if (!m.rawMatchJson) continue;
+    try {
+      const matchData: RiotMatch = JSON.parse(m.rawMatchJson);
+      const participants = matchData.info.participants;
+
+      const player = participants.find((p) => p.puuid === user.puuid);
+      if (!player) continue;
+
+      const partnerOnTeam = participants.find(
+        (p) => p.puuid === partnerPuuid && p.teamId === player.teamId
+      );
+
+      if (partnerOnTeam) {
+        await db
+          .update(matches)
+          .set({ duoPartnerPuuid: partnerPuuid })
+          .where(
+            and(eq(matches.id, m.id), eq(matches.userId, user.id))
+          );
+        duoFound++;
+      }
+    } catch {
+      // Skip unparseable matches
+    }
+  }
+
+  revalidatePath("/duo");
+  return { processed: allMatches.length, duoFound };
 }

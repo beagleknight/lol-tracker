@@ -22,9 +22,11 @@ import {
   TrendingDown,
   Settings,
   Loader2,
+  Search,
 } from "lucide-react";
+import { toast } from "sonner";
 import { getChampionIconUrl, normalizeDDragonChampionName } from "@/lib/riot-api";
-import { getDuoGames } from "@/app/actions/duo";
+import { getDuoGames, backfillDuoGames } from "@/app/actions/duo";
 import type {
   DuoPartnerInfo,
   DuoStats,
@@ -83,6 +85,8 @@ export function DuoClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isPending, startTransition] = useTransition();
+
+  const [isBackfilling, startBackfill] = useTransition();
 
   function handlePageChange(page: number) {
     startTransition(async () => {
@@ -429,12 +433,39 @@ export function DuoClient({
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Swords className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Duo Games Found</h3>
-            <p className="text-sm text-muted-foreground max-w-md">
-              Sync your matches to detect games played together with{" "}
-              <span className="text-gold">{partnerRiotName}</span>. If you
-              already synced, try running the backfill script for existing
-              matches.
+            <p className="text-sm text-muted-foreground max-w-md mb-4">
+              Your synced matches haven&apos;t been scanned for duo games with{" "}
+              <span className="text-gold">{partnerRiotName}</span> yet. Scan your
+              existing matches or sync new games to get started.
             </p>
+            <div className="flex gap-3">
+              <Button
+                disabled={isBackfilling}
+                onClick={() => {
+                  startBackfill(async () => {
+                    const result = await backfillDuoGames();
+                    if (result.duoFound > 0) {
+                      toast.success(
+                        `Found ${result.duoFound} duo games out of ${result.processed} matches scanned!`
+                      );
+                      // Reload to show the data
+                      window.location.reload();
+                    } else {
+                      toast.info(
+                        `Scanned ${result.processed} matches but no duo games were found. Try syncing more games first.`
+                      );
+                    }
+                  });
+                }}
+              >
+                {isBackfilling ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
+                {isBackfilling ? "Scanning..." : "Scan Existing Matches"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
