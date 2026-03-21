@@ -70,11 +70,17 @@ Always add indexes when:
 
 ## Migration workflow
 
+**Important**: `drizzle-kit migrate` and `drizzle-kit push` do NOT work reliably with dotenvx because `drizzle.config.ts` reads env vars at module scope (before any banner stripping). See the `vercel-turso-deploy` skill for the full explanation and workaround.
+
+### Steps
+
 1. Modify `src/db/schema.ts`
 2. Generate migration: `npx drizzle-kit generate`
-3. Review the generated SQL in `drizzle/` directory
-4. Apply locally: `npx drizzle-kit push` (or restart dev server)
-5. Apply to production: `npx drizzle-kit push` with `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` set
+3. Review the generated SQL in `drizzle/XXXX_*.sql`
+4. Apply locally: restart dev server (local SQLite picks up schema changes automatically)
+5. **Apply to production Turso**: Write a standalone `scripts/apply-migration-XXXX.ts` script that uses `@libsql/client` directly with `cleanEnv()` banner stripping, then run via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`. See `vercel-turso-deploy` skill for the script template.
+6. Verify migration succeeded before pushing code
+7. **Push code only after production DB has the new schema** — Vercel does NOT run migrations on deploy
 
 ## Data sync (db-push / db-pull)
 
