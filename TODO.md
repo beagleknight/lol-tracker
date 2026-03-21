@@ -20,6 +20,13 @@
 - [x] Add champion avatars everywhere (champion stats, matchup labels, filters, game pickers)
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
 - [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
+- [ ] Cross-page linking audit: add clickable links throughout the app so users can navigate between related views seamlessly. Examples:
+  - Analytics page: click a champion name (yours or opponent) in matchup stats to jump to the Matchup Scout with that champion pre-selected
+  - Dashboard: click a champion in recent games or top champions to go to Scout or Analytics filtered for that champion
+  - Match detail: click enemy champion to open Scout for that matchup
+  - Duo page: click a champion combo in synergy table to navigate to relevant Scout/Analytics views
+  - Match list: click champion icons/names to navigate to filtered views
+  - General: anywhere a champion name or matchup appears, it should be a link to a relevant deeper view
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)
@@ -48,14 +55,14 @@
 - [ ] Goal setting (e.g., "reach Diamond by end of split") with progress tracking
 
 ## Features — Duo Partner Tracking & Synergy
-- [ ] Add duo partners: settings page to register duo partners by Riot ID (gameName#tagLine)
-- [ ] Auto-detect duo games: parse rawMatchJson to find games where a registered duo partner was on your team
-- [ ] Per-duo dashboard: win rate together, games played, average combined KDA, best/worst champion combos
-- [ ] Champion synergy matrix: which champion pairs (yours + duo's) have the highest win rate together
-- [ ] Duo vs solo comparison: show how your stats differ when playing with each duo partner vs solo queue
-- [ ] Per-match duo indicator: tag matches in the match list with the duo partner's name/champion when detected
+- [x] Add duo partners: settings page to register duo partners (select from registered users with linked Riot accounts)
+- [x] Auto-detect duo games: parse rawMatchJson to find games where a registered duo partner was on your team
+- [x] Per-duo dashboard: win rate together, games played, average combined KDA, best/worst champion combos
+- [x] Champion synergy matrix: which champion pairs (yours + duo's) have the highest win rate together
+- [x] Duo vs solo comparison: show how your stats differ when playing with each duo partner vs solo queue
+- [x] Per-match duo indicator: tag matches in the match list with duo icon, highlight partner in match detail
 - [ ] Duo-specific analytics: lane proximity, shared kills/assists, how often you die together vs separately
-- [ ] Data source: rawMatchJson already contains all 10 players per game — extract duo partner's participantId to pull their stats (champion, KDA, items, role, lane)
+- [x] Data source: rawMatchJson parsing for duo partner detection and stats extraction
 
 ## Features — Ascent VOD Integration
 - [ ] Scrape user's Ascent profile to pull VOD links (no known public API — web scraping or headless browser needed)
