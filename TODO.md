@@ -23,9 +23,14 @@
 - [x] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
 - [x] Color contrast audit: fix poor text-on-background contrast throughout the app (e.g., dark text on bright blue win-row in Duo Recent Games)
 - [ ] List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).
+- [ ] Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon
+- [ ] Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling
 
 ## Performance
-- [ ] Duo page: still feels slow despite improvements — profile loading times, investigate query performance and consider caching or incremental data fetching
+- [x] Duo page: added composite index `(userId, duoPartnerPuuid)` — all duo queries were doing full table scans
+- [x] Duo page: parallelized count + select in `getDuoGames` (was sequential waterfall)
+- [x] Duo page: added SQL LIMIT to `getChampionSynergy` (was fetching all combos, client used 15)
+- [ ] Duo page: remaining slowness is likely Vercel cold starts (~5-10s on free tier) — consider Suspense streaming to improve perceived performance
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)

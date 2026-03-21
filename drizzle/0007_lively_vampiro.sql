@@ -1,0 +1,1 @@
+CREATE INDEX `matches_user_duo_partner_idx` ON `matches` (`user_id`,`duo_partner_puuid`);
