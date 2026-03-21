@@ -7,6 +7,7 @@ import { useSyncMatches } from "@/hooks/use-sync-matches";
 import {
   updateMatchComment,
   updateMatchReview,
+  saveMatchHighlights,
 } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,13 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  HighlightsEditor,
+  type HighlightItem,
+} from "@/components/highlights-editor";
 import { toast } from "sonner";
 import {
   RefreshCw,
   Search,
   MessageSquare,
   Eye,
-  ChevronRight,
   ChevronDown,
   Loader2,
   AlertCircle,
@@ -35,16 +39,23 @@ import {
   Users,
   ThumbsUp,
   ThumbsDown,
+  ChevronRight,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 
+interface MatchHighlightData {
+  type: "highlight" | "lowlight";
+  text: string;
+  topic: string | null;
+}
+
 interface MatchesClientProps {
   matches: Match[];
   ddragonVersion: string;
   isRiotLinked: boolean;
-  highlightCounts: Record<string, { highlights: number; lowlights: number }>;
+  highlightsPerMatch: Record<string, MatchHighlightData[]>;
 }
 
 function formatDuration(seconds: number): string {
@@ -93,18 +104,27 @@ function ChampionIcon({
 function MatchCard({
   match,
   ddragonVersion,
-  highlightCount,
+  matchHighlights,
 }: {
   match: Match;
   ddragonVersion: string;
-  highlightCount?: { highlights: number; lowlights: number };
+  matchHighlights: MatchHighlightData[];
 }) {
   const [expanded, setExpanded] = useState(false);
   const [comment, setComment] = useState(match.comment || "");
   const [reviewed, setReviewed] = useState(match.reviewed);
   const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
+  const [showNotes, setShowNotes] = useState(false);
+  const [highlights, setHighlights] = useState<HighlightItem[]>(
+    matchHighlights.map((h) => ({
+      type: h.type,
+      text: h.text,
+      topic: h.topic ?? undefined,
+    }))
+  );
   const [isSavingComment, startCommentTransition] = useTransition();
   const [isSavingReview, startReviewTransition] = useTransition();
+  const [isSavingHighlights, startHighlightsTransition] = useTransition();
 
   const isWin = match.result === "Victory";
   const hasComment = !!match.comment;
@@ -112,6 +132,10 @@ function MatchCard({
   const kda = match.deaths === 0
     ? "Perfect"
     : ((match.kills + match.assists) / match.deaths).toFixed(1);
+
+  const highlightItems = matchHighlights.filter((h) => h.type === "highlight");
+  const lowlightItems = matchHighlights.filter((h) => h.type === "lowlight");
+  const hasHighlights = matchHighlights.length > 0;
 
   const saveComment = useCallback(() => {
     startCommentTransition(async () => {
@@ -136,6 +160,25 @@ function MatchCard({
       }
     });
   }, [match.id, reviewed, reviewNotes]);
+
+  const saveHighlights = useCallback(() => {
+    startHighlightsTransition(async () => {
+      try {
+        const result = await saveMatchHighlights(match.id, highlights);
+        if (result.success) toast.success("Highlights saved.");
+        else toast.error("Failed to save highlights.");
+      } catch {
+        toast.error("Failed to save highlights.");
+      }
+    });
+  }, [match.id, highlights]);
+
+  // Check if highlights have changed from server data
+  const highlightsChanged = JSON.stringify(
+    highlights.map((h) => ({ type: h.type, text: h.text, topic: h.topic || null }))
+  ) !== JSON.stringify(
+    matchHighlights.map((h) => ({ type: h.type, text: h.text, topic: h.topic }))
+  );
 
   return (
     <div
@@ -182,8 +225,32 @@ function MatchCard({
               )}
             </div>
 
-            {/* Comment preview */}
-            {hasComment && !expanded && (
+            {/* Highlights preview (collapsed) — show topic badges */}
+            {!expanded && hasHighlights && (
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {highlightItems.map((item, i) => (
+                  <span
+                    key={`h-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-400"
+                  >
+                    <ThumbsUp className="h-2.5 w-2.5" />
+                    {item.topic || item.text}
+                  </span>
+                ))}
+                {lowlightItems.map((item, i) => (
+                  <span
+                    key={`l-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-400"
+                  >
+                    <ThumbsDown className="h-2.5 w-2.5" />
+                    {item.topic || item.text}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Fallback: show comment if no highlights */}
+            {!expanded && !hasHighlights && hasComment && (
               <p className="text-xs text-muted-foreground italic mt-0.5 truncate max-w-md">
                 &ldquo;{match.comment}&rdquo;
               </p>
@@ -208,18 +275,6 @@ function MatchCard({
 
           {/* Indicators */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {highlightCount && highlightCount.highlights > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-green-400">
-                <ThumbsUp className="h-3.5 w-3.5" />
-                <span className="text-[10px]">{highlightCount.highlights}</span>
-              </span>
-            )}
-            {highlightCount && highlightCount.lowlights > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-red-400">
-                <ThumbsDown className="h-3.5 w-3.5" />
-                <span className="text-[10px]">{highlightCount.lowlights}</span>
-              </span>
-            )}
             {match.duoPartnerPuuid && (
               <Users className="h-3.5 w-3.5 text-electric/70" />
             )}
@@ -297,35 +352,73 @@ function MatchCard({
             <span>Vision {match.visionScore}</span>
           </div>
 
-          {/* Game Notes */}
+          {/* Highlights / Lowlights Editor — primary section */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <MessageSquare className="h-3 w-3" />
-              Game Notes
-            </label>
-            <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="What happened? What could you improve?"
-              rows={2}
-              className="text-sm resize-none"
+            <HighlightsEditor
+              highlights={highlights}
+              onChange={setHighlights}
             />
             <div className="flex justify-end">
               <Button
                 size="sm"
                 variant="outline"
-                onClick={saveComment}
-                disabled={isSavingComment || comment === (match.comment || "")}
+                onClick={saveHighlights}
+                disabled={isSavingHighlights || !highlightsChanged}
                 className="h-7 text-xs gap-1.5"
               >
-                {isSavingComment ? (
+                {isSavingHighlights ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <Save className="h-3 w-3" />
                 )}
-                Save Notes
+                Save Highlights
               </Button>
             </div>
+          </div>
+
+          {/* Game Notes — collapsible secondary section */}
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowNotes(!showNotes)}
+              className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <ChevronRight
+                className={`h-3 w-3 transition-transform ${showNotes ? "rotate-90" : ""}`}
+              />
+              <MessageSquare className="h-3 w-3" />
+              Game Notes
+              {hasComment && (
+                <span className="text-[10px] text-gold/70 ml-1">(has notes)</span>
+              )}
+            </button>
+            {showNotes && (
+              <div className="space-y-2 pl-4">
+                <Textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="What happened? What could you improve?"
+                  rows={2}
+                  className="text-sm resize-none"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={saveComment}
+                    disabled={isSavingComment || comment === (match.comment || "")}
+                    className="h-7 text-xs gap-1.5"
+                  >
+                    {isSavingComment ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Save className="h-3 w-3" />
+                    )}
+                    Save Notes
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Review */}
@@ -397,7 +490,7 @@ export function MatchesClient({
   matches: initialMatches,
   ddragonVersion,
   isRiotLinked,
-  highlightCounts,
+  highlightsPerMatch,
 }: MatchesClientProps) {
   const { isSyncing, handleSync } = useSyncMatches();
   const [search, setSearch] = useState("");
@@ -560,7 +653,7 @@ export function MatchesClient({
                 key={match.id}
                 match={match}
                 ddragonVersion={ddragonVersion}
-                highlightCount={highlightCounts[match.id]}
+                matchHighlights={highlightsPerMatch[match.id] || []}
               />
             ))}
           </div>

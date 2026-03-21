@@ -47,19 +47,27 @@ export default async function MatchesPage() {
       columns: {
         matchId: true,
         type: true,
+        text: true,
+        topic: true,
       },
     }),
     getLatestVersion(),
   ]);
 
-  // Build highlight counts per match
-  const highlightCounts: Record<string, { highlights: number; lowlights: number }> = {};
+  // Build highlight data per match (full items for preview + counts)
+  const highlightsPerMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  > = {};
   for (const h of allHighlights) {
-    if (!highlightCounts[h.matchId]) {
-      highlightCounts[h.matchId] = { highlights: 0, lowlights: 0 };
+    if (!highlightsPerMatch[h.matchId]) {
+      highlightsPerMatch[h.matchId] = [];
     }
-    if (h.type === "highlight") highlightCounts[h.matchId].highlights++;
-    else highlightCounts[h.matchId].lowlights++;
+    highlightsPerMatch[h.matchId].push({
+      type: h.type as "highlight" | "lowlight",
+      text: h.text,
+      topic: h.topic,
+    });
   }
 
   const isRiotLinked = !!user.puuid;
@@ -69,7 +77,7 @@ export default async function MatchesPage() {
       matches={userMatches as any}
       ddragonVersion={ddragonVersion}
       isRiotLinked={isRiotLinked}
-      highlightCounts={highlightCounts}
+      highlightsPerMatch={highlightsPerMatch}
     />
   );
 }

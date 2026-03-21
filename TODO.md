@@ -18,6 +18,7 @@
 - [x] Add error boundaries for graceful error handling
 - [x] Add toast notifications (Sonner) for success/error feedback on all actions
 - [x] Add champion avatars everywhere (champion stats, matchup labels, filters, game pickers)
+- [ ] Add a proper favicon (replace Next.js default)
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
 - [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
 - [ ] Cross-page linking audit: add clickable links throughout the app so users can navigate between related views seamlessly. Examples:
