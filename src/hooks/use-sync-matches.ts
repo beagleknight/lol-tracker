@@ -17,12 +17,14 @@ export function useSyncMatches() {
   const [progress, setProgress] = useState<SyncProgress | null>(null);
   const router = useRouter();
   const toastIdRef = useRef<string | number | undefined>(undefined);
+  const doneRef = useRef(false);
 
   const handleSync = useCallback(() => {
     if (isSyncing) return;
 
     setIsSyncing(true);
     setProgress(null);
+    doneRef.current = false;
 
     toastIdRef.current = toast.loading("Starting sync...");
 
@@ -54,6 +56,7 @@ export function useSyncMatches() {
           }
 
           case "done":
+            doneRef.current = true;
             eventSource.close();
             setIsSyncing(false);
             setProgress(null);
@@ -66,6 +69,7 @@ export function useSyncMatches() {
             break;
 
           case "error":
+            doneRef.current = true;
             eventSource.close();
             setIsSyncing(false);
             setProgress(null);
@@ -79,9 +83,11 @@ export function useSyncMatches() {
 
     eventSource.onerror = () => {
       eventSource.close();
-      setIsSyncing(false);
-      setProgress(null);
-      toast.error("Connection lost during sync.", { id: toastIdRef.current });
+      if (!doneRef.current) {
+        setIsSyncing(false);
+        setProgress(null);
+        toast.error("Connection lost during sync.", { id: toastIdRef.current });
+      }
     };
   }, [isSyncing, router]);
 
