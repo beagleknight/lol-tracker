@@ -15,6 +15,7 @@ export async function updateMatchComment(matchId: string, comment: string) {
     .where(and(eq(matches.id, matchId), eq(matches.userId, user.id)));
 
   revalidatePath("/matches");
+  revalidatePath("/scout");
   return { success: true };
 }
 
@@ -35,5 +36,6 @@ export async function updateMatchReview(
 
   revalidatePath("/matches");
   revalidatePath("/review");
+  revalidatePath("/scout");
   return { success: true };
 }
