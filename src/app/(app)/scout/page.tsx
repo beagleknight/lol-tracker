@@ -6,8 +6,13 @@ import {
 } from "@/app/actions/live";
 import { ScoutClient } from "./scout-client";
 
-export default async function ScoutPage() {
+export default async function ScoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ your?: string; enemy?: string }>;
+}) {
   const user = await requireUser();
+  const params = await searchParams;
 
   const [ddragonVersion, allChampions, recentUnreviewed] = await Promise.all([
     getLatestVersion(),
@@ -23,6 +28,8 @@ export default async function ScoutPage() {
       allChampions={allChampions}
       recentUnreviewed={recentUnreviewed}
       isRiotLinked={isRiotLinked}
+      initialYourChampion={params.your || ""}
+      initialEnemyChampion={params.enemy || ""}
     />
   );
 }

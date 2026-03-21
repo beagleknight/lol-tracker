@@ -36,6 +36,7 @@ import {
 import { BarChart3, TrendingUp, Trophy } from "lucide-react";
 import type { Match, RankSnapshot } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 
 // ─── LP / Rank Utilities ─────────────────────────────────────────────────────
 
@@ -648,26 +649,28 @@ export function AnalyticsClient({
                     stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
                     tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
-                      <g transform={`translate(${x},${y})`}>
-                        <image
-                          href={getChampionIconUrl(ddragonVersion, payload.value)}
-                          x={-118}
-                          y={-10}
-                          width={20}
-                          height={20}
-                          clipPath="inset(0 round 2px)"
-                        />
-                        <text
-                          x={-94}
-                          y={0}
-                          dy={4}
-                          fill="oklch(0.75 0.02 260)"
-                          fontSize={12}
-                          textAnchor="start"
-                        >
-                          {payload.value}
-                        </text>
-                      </g>
+                      <a href={`/scout?enemy=${encodeURIComponent(payload.value)}`}>
+                        <g transform={`translate(${x},${y})`} style={{ cursor: "pointer" }}>
+                          <image
+                            href={getChampionIconUrl(ddragonVersion, payload.value)}
+                            x={-118}
+                            y={-10}
+                            width={20}
+                            height={20}
+                            clipPath="inset(0 round 2px)"
+                          />
+                          <text
+                            x={-94}
+                            y={0}
+                            dy={4}
+                            fill="oklch(0.75 0.02 260)"
+                            fontSize={12}
+                            textAnchor="start"
+                          >
+                            {payload.value}
+                          </text>
+                        </g>
+                      </a>
                     )}
                   />
                   <Tooltip
@@ -785,16 +788,13 @@ export function AnalyticsClient({
               {championStats.map((champ) => (
                 <TableRow key={champ.name}>
                   <TableCell className="font-medium text-sm">
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src={getChampionIconUrl(ddragonVersion, champ.name)}
-                        alt={champ.name}
-                        width={24}
-                        height={24}
-                        className="rounded"
-                      />
-                      {champ.name}
-                    </div>
+                    <ChampionLink
+                      champion={champ.name}
+                      ddragonVersion={ddragonVersion}
+                      linkTo="scout-your"
+                      iconSize={24}
+                      textClassName="font-medium text-sm"
+                    />
                   </TableCell>
                   <TableCell className="text-center text-sm">
                     {champ.games}

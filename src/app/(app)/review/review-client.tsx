@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 import { Pagination, paginate } from "@/components/pagination";
 
 interface ReviewClientProps {
@@ -161,16 +162,14 @@ function ReviewCard({
               {formatDuration(match.gameDurationSeconds)} &middot;{" "}
               vs{" "}
               {match.matchupChampionName ? (
-                <>
-                  <Image
-                    src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                    alt={match.matchupChampionName}
-                    width={16}
-                    height={16}
-                    className="rounded"
-                  />
-                  {match.matchupChampionName}
-                </>
+                <ChampionLink
+                  champion={match.matchupChampionName}
+                  ddragonVersion={ddragonVersion}
+                  linkTo="scout-enemy"
+                  yourChampion={match.championName}
+                  iconSize={16}
+                  textClassName="text-xs"
+                />
               ) : "?"}
               {match.runeKeystoneName && (
                 <>

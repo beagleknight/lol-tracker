@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect } from "react";
 import Image from "next/image";
 import {
   detectLiveMatchup,
@@ -130,6 +130,8 @@ interface ScoutClientProps {
   allChampions: string[];
   recentUnreviewed: RecentUnreviewedMatch | null;
   isRiotLinked: boolean;
+  initialYourChampion?: string;
+  initialEnemyChampion?: string;
 }
 
 // ─── Post-Game Review Card ──────────────────────────────────────────────────
@@ -656,9 +658,11 @@ export function ScoutClient({
   allChampions,
   recentUnreviewed,
   isRiotLinked,
+  initialYourChampion = "",
+  initialEnemyChampion = "",
 }: ScoutClientProps) {
-  const [yourChampion, setYourChampion] = useState<string>("");
-  const [enemyChampion, setEnemyChampion] = useState<string>("");
+  const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
+  const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
   const [isLoadingReport, startReportTransition] = useTransition();
   const [isCheckingGame, startCheckTransition] = useTransition();
@@ -681,6 +685,14 @@ export function ScoutClient({
     },
     []
   );
+
+  // Auto-load report if initial champions are provided via URL params
+  useEffect(() => {
+    if (initialEnemyChampion) {
+      loadReport(initialEnemyChampion, initialYourChampion || undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEnemyChange = useCallback(
     (value: string) => {

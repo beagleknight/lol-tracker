@@ -47,6 +47,7 @@ import {
 import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 
 /** Slim participant — only fields needed for the match detail view */
 type SlimParticipant = Pick<
@@ -134,12 +135,12 @@ function ParticipantRow({
     >
       <TableCell>
         <div className="flex items-center gap-2">
-          <Image
-            src={getChampionIconUrl(version, participant.championName)}
-            alt={participant.championName}
-            width={28}
-            height={28}
-            className="rounded"
+          <ChampionLink
+            champion={participant.championName}
+            ddragonVersion={version}
+            linkTo="scout-enemy"
+            showName={false}
+            iconSize={28}
           />
           <div>
             <span
@@ -147,9 +148,13 @@ function ParticipantRow({
             >
               {participant.riotIdGameName || participant.summonerName}
             </span>
-            <span className="text-xs text-muted-foreground ml-1">
-              {participant.championName}
-            </span>
+            <ChampionLink
+              champion={participant.championName}
+              ddragonVersion={version}
+              linkTo="scout-enemy"
+              showIcon={false}
+              textClassName="text-xs text-muted-foreground ml-1"
+            />
           </div>
         </div>
       </TableCell>
@@ -297,18 +302,29 @@ export function MatchDetailClient({
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div className="flex-1">
+          <div className="flex-1">
           <div className="flex items-center gap-3">
-            <Image
-              src={getChampionIconUrl(ddragonVersion, match.championName)}
-              alt={match.championName}
-              width={48}
-              height={48}
-              className="rounded"
+            <ChampionLink
+              champion={match.championName}
+              ddragonVersion={ddragonVersion}
+              linkTo="scout-your"
+              enemyChampion={match.matchupChampionName || undefined}
+              showName={false}
+              iconSize={48}
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-gradient-gold">{match.championName}</h1>
+                <h1 className="text-xl font-bold text-gradient-gold">
+                  <ChampionLink
+                    champion={match.championName}
+                    ddragonVersion={ddragonVersion}
+                    linkTo="scout-your"
+                    enemyChampion={match.matchupChampionName || undefined}
+                    showIcon={false}
+                    textClassName="text-xl font-bold text-gradient-gold"
+                    className="hover:bg-accent/30"
+                  />
+                </h1>
                 <Badge
                   variant={
                     match.result === "Victory" ? "default" : "destructive"
@@ -338,14 +354,13 @@ export function MatchDetailClient({
                 {match.matchupChampionName && (
                   <>
                     {" "}vs{" "}
-                    <Image
-                      src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                      alt={match.matchupChampionName}
-                      width={16}
-                      height={16}
-                      className="inline rounded"
+                    <ChampionLink
+                      champion={match.matchupChampionName}
+                      ddragonVersion={ddragonVersion}
+                      linkTo="scout-enemy"
+                      yourChampion={match.championName}
+                      iconSize={16}
                     />
-                    {" "}{match.matchupChampionName}
                   </>
                 )}
               </p>

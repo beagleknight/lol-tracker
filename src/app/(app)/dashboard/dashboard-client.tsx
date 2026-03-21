@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 
 interface DashboardMatch {
   id: string;
@@ -370,16 +371,15 @@ export function DashboardClient({
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                           vs
                           {match.matchupChampionName ? (
-                            <>
-                              <Image
-                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                                alt={match.matchupChampionName}
-                                width={16}
-                                height={16}
-                                className="rounded"
-                              />
-                              {match.matchupChampionName}
-                            </>
+                            <ChampionLink
+                              champion={match.matchupChampionName}
+                              ddragonVersion={ddragonVersion}
+                              linkTo="scout-enemy"
+                              yourChampion={match.championName}
+                              iconSize={16}
+                              textClassName="text-xs text-muted-foreground"
+                              stopPropagation
+                            />
                           ) : "?"}
                         </span>
                       </div>
