@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getChampionIconUrl, normalizeDDragonChampionName } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 import { getDuoGames, backfillDuoGames } from "@/app/actions/duo";
 import type {
   DuoPartnerInfo,
@@ -304,7 +305,15 @@ export function DuoClient({
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium">
-                          {s.yourChampion} + {s.partnerChampion}
+                          <ChampionLink
+                            champion={s.yourChampion}
+                            ddragonVersion={ddragonVersion}
+                            linkTo="matches"
+                            showIcon={false}
+                            textClassName="text-sm font-medium"
+                          />
+                          {" + "}
+                          {s.partnerChampion}
                         </span>
                       </div>
                       <div className="text-right text-sm">

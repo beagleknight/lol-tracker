@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionLink } from "@/components/champion-link";
 
 interface MatchHighlightData {
   type: "highlight" | "lowlight";
@@ -245,16 +246,15 @@ function MatchCard({
               </span>
               <span className="text-muted-foreground text-xs">vs</span>
               {match.matchupChampionName ? (
-                <div className="flex items-center gap-1">
-                  <ChampionIcon
-                    championName={match.matchupChampionName}
-                    version={ddragonVersion}
-                    size={20}
-                  />
-                  <span className="text-sm">
-                    {match.matchupChampionName}
-                  </span>
-                </div>
+                <ChampionLink
+                  champion={match.matchupChampionName}
+                  ddragonVersion={ddragonVersion}
+                  linkTo="scout-enemy"
+                  yourChampion={match.championName}
+                  iconSize={20}
+                  textClassName="text-sm"
+                  stopPropagation
+                />
               ) : (
                 <span className="text-sm text-muted-foreground">—</span>
               )}

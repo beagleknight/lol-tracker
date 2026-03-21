@@ -18,10 +18,10 @@
 - [x] Add error boundaries for graceful error handling
 - [x] Add toast notifications (Sonner) for success/error feedback on all actions
 - [x] Add champion avatars everywhere (champion stats, matchup labels, filters, game pickers)
-- [ ] Add a proper favicon (replace Next.js default)
+- [x] Add a proper favicon (replace Next.js default)
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
 - [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
-- [ ] Cross-page linking audit: add clickable links throughout the app so users can navigate between related views seamlessly. Examples:
+- [x] Cross-page linking audit: add clickable links throughout the app so users can navigate between related views seamlessly. Examples:
   - Analytics page: click a champion name (yours or opponent) in matchup stats to jump to the Matchup Scout with that champion pre-selected
   - Dashboard: click a champion in recent games or top champions to go to Scout or Analytics filtered for that champion
   - Match detail: click enemy champion to open Scout for that matchup
@@ -35,11 +35,11 @@
 - [ ] Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields
 - [ ] Scout page: add "Most Played" and "Common Matchups" grouped recommendations to champion comboboxes
 - [ ] Duo page: add loading.tsx skeleton (header, 4-stat grid, 2-KDA grid, synergy list, recent games)
-- [ ] Review queue: add "Mark All as Reviewed" bulk action with confirmation dialog and skip reason
-- [ ] Review queue: add progress indicator (X of Y reviewed)
-- [ ] Review queue: remove reviewed stubs from list instead of keeping them at 50% opacity
-- [ ] Review queue: replace hand-rolled skip dropdown with shadcn DropdownMenu
-- [ ] Review queue: remove "Will review later" from skip reasons
+- [x] Review queue: add "Mark All as Reviewed" bulk action with confirmation dialog and skip reason
+- [x] Review queue: add progress indicator (X of Y reviewed)
+- [x] Review queue: remove reviewed stubs from list instead of keeping them at 50% opacity
+- [x] Review queue: replace hand-rolled skip dropdown with shadcn DropdownMenu
+- [x] Review queue: remove "Will review later" from skip reasons
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)
@@ -135,8 +135,19 @@
 - [x] Fix identified issues — SELECT DISTINCT for matchup query, revalidatePath for scout, reviewed field check
 
 ## Known Limitations
-- Riot API personal key expires every 24h — need to refresh at https://developer.riotgames.com/
+- ~~Riot API personal key expires every 24h~~ — resolved: registered Personal API Key (non-expiring)
 - Rate limits: 20 req/sec, 100 req/2min — sufficient for personal use but sync is sequential
 - Imported CSV games have synthetic match IDs (prefixed `IMPORT_`) and no raw match JSON
 - Match detail page won't show full player data for imported games
 - First user auto-promoted to admin; subsequent users need an invite code
+
+## Cleanup — Remove Dev API Key Workarounds
+Now that we have a non-expiring Personal API Key, the following dev-key workarounds can be removed or simplified:
+- [ ] Remove `validateRiotApiKey()` server action in `src/app/actions/settings.ts` (lines 81-129)
+- [ ] Remove admin "API Key Status" card from Settings UI (`src/app/(app)/settings/page.tsx` — state, auto-check, card)
+- [ ] Remove non-admin "API Key Info" card from Settings UI (`src/app/(app)/settings/page.tsx` — lines 599-633)
+- [ ] Simplify 401/403 error messages in `riotFetch` (`src/lib/riot-api.ts:123-128`) — remove "Regenerate at developer.riotgames.com"
+- [ ] Simplify 401/403 error messages in `getActiveGame` (`src/lib/riot-api.ts:278-283`) — same
+- [ ] Update `.env.example` — remove "expires every 24 hours" note (line 13)
+- [ ] Update `README.md` — remove bold warning about key expiration (line 63)
+- [ ] Update `.opencode/skills/riot-api/SKILL.md` — update key expiration references (lines 20-23, 207)
