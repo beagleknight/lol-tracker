@@ -60,7 +60,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Important Notes
 
-- **Riot API keys expire every 24 hours.** If you get authentication errors when syncing matches, regenerate your key at [developer.riotgames.com](https://developer.riotgames.com) and update `RIOT_API_KEY` in `.env.local`.
 - The production build uses the `--webpack` flag because Turbopack has issues bundling `@libsql/client`.
 
 ## Scripts

@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import {
   linkRiotAccount,
   unlinkRiotAccount,
-  validateRiotApiKey,
   getRegisteredUsers,
   getDuoPartner,
   setDuoPartner,
@@ -35,9 +34,6 @@ import {
   Plus,
   Copy,
   Trash2,
-  CheckCircle2,
-  XCircle,
-  Key,
   Ticket,
   Shield,
   Users,
@@ -63,13 +59,6 @@ export default function SettingsPage() {
   // ─── Invite state (admin only) ────────────────────────────────────────────
   const [invitesList, setInvitesList] = useState<InviteItem[]>([]);
   const [invitesLoading, setInvitesLoading] = useState(false);
-
-  // ─── API key status (admin only) ──────────────────────────────────────────
-  const [apiKeyStatus, setApiKeyStatus] = useState<{
-    valid: boolean;
-    message?: string;
-  } | null>(null);
-  const [apiKeyLoading, setApiKeyLoading] = useState(false);
 
   // ─── Duo partner state ────────────────────────────────────────────────────
   const [duoPartner, setDuoPartnerState] = useState<{
@@ -97,15 +86,6 @@ export default function SettingsPage() {
         .then(setInvitesList)
         .catch(() => toast.error("Failed to load invites"))
         .finally(() => setInvitesLoading(false));
-
-      // Check API key
-      setApiKeyLoading(true);
-      validateRiotApiKey()
-        .then(setApiKeyStatus)
-        .catch(() =>
-          setApiKeyStatus({ valid: false, message: "Failed to check" })
-        )
-        .finally(() => setApiKeyLoading(false));
     }
   }, [isAdmin]);
 
@@ -420,89 +400,6 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {/* Admin Section: API Key Status */}
-      {isAdmin && (
-        <Card className="surface-glow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-gold" />
-              API Key Status
-              <Badge variant="secondary" className="ml-2">
-                <Shield className="mr-1 h-3 w-3" />
-                Admin
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              Check whether the Riot Games API key is currently valid.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {apiKeyLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Checking API key...
-              </div>
-            ) : apiKeyStatus ? (
-              <div className="flex items-center gap-3">
-                {apiKeyStatus.valid ? (
-                  <>
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                    <span className="text-sm font-medium text-emerald-500">
-                      Valid
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5 text-destructive" />
-                    <div>
-                      <span className="text-sm font-medium text-destructive">
-                        Expired / Invalid
-                      </span>
-                      {apiKeyStatus.message && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {apiKeyStatus.message}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-auto"
-                  disabled={apiKeyLoading}
-                  onClick={() => {
-                    setApiKeyLoading(true);
-                    validateRiotApiKey()
-                      .then(setApiKeyStatus)
-                      .catch(() =>
-                        setApiKeyStatus({
-                          valid: false,
-                          message: "Failed to check",
-                        })
-                      )
-                      .finally(() => setApiKeyLoading(false));
-                  }}
-                >
-                  Re-check
-                </Button>
-              </div>
-            ) : null}
-            <p className="text-xs text-muted-foreground mt-3">
-              Personal development keys expire every 24 hours. Regenerate at{" "}
-              <a
-                href="https://developer.riotgames.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-electric underline hover:text-electric-light"
-              >
-                developer.riotgames.com
-              </a>
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Admin Section: Invite Friends */}
       {isAdmin && (
         <Card className="surface-glow">
@@ -596,41 +493,6 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {/* API Key Info Card (visible to everyone) */}
-      {!isAdmin && (
-        <Card className="surface-glow">
-          <CardHeader>
-            <CardTitle>API Key Info</CardTitle>
-            <CardDescription>
-              Information about the Riot Games API key configuration.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              The Riot API personal development key expires every 24 hours. If
-              you encounter authentication errors when syncing, you may need to
-              regenerate your key at{" "}
-              <a
-                href="https://developer.riotgames.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-electric underline hover:text-electric-light"
-              >
-                developer.riotgames.com
-              </a>{" "}
-              and update the{" "}
-              <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">
-                RIOT_API_KEY
-              </code>{" "}
-              in your{" "}
-              <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded border border-border/50 font-mono">
-                .env.local
-              </code>{" "}
-              file.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

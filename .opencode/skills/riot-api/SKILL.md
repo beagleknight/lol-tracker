@@ -17,9 +17,8 @@ Guide integration with the Riot Games API for League of Legends applications, co
 
 ## API key management
 
-### Development key
-- Personal API keys expire every 24 hours
-- Regenerate at https://developer.riotgames.com/
+### Personal API Key
+- Non-expiring personal key from https://developer.riotgames.com/
 - Store as `RIOT_API_KEY` env var
 
 ### Production key (RSO)
@@ -204,7 +203,7 @@ export class RiotApiError extends Error {
 ```
 
 Key status codes:
-- **401/403**: API key expired or invalid. Personal keys expire every 24h.
+- **401/403**: API key is invalid or unauthorized.
 - **404**: Summoner/account not found (likely wrong region or misspelled Riot ID)
 - **429**: Rate limited. Respect `Retry-After` header.
 - **503**: Riot API temporarily unavailable
