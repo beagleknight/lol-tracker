@@ -17,15 +17,16 @@ import { Plus, GraduationCap, ChevronRight } from "lucide-react";
 export default async function CoachingListPage() {
   const user = await requireUser();
 
-  const sessions = await db.query.coachingSessions.findMany({
-    where: eq(coachingSessions.userId, user.id),
-    orderBy: desc(coachingSessions.date),
-  });
-
-  // Get action item counts per session
-  const allActionItems = await db.query.coachingActionItems.findMany({
-    where: eq(coachingActionItems.userId, user.id),
-  });
+  // Parallel: sessions + action items (both only need user.id)
+  const [sessions, allActionItems] = await Promise.all([
+    db.query.coachingSessions.findMany({
+      where: eq(coachingSessions.userId, user.id),
+      orderBy: desc(coachingSessions.date),
+    }),
+    db.query.coachingActionItems.findMany({
+      where: eq(coachingActionItems.userId, user.id),
+    }),
+  ]);
 
   const actionItemsBySession = new Map<number, { total: number; completed: number }>();
   for (const item of allActionItems) {

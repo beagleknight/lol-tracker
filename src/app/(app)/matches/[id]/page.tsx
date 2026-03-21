@@ -23,8 +23,6 @@ export default async function MatchDetailPage({
     notFound();
   }
 
-  const ddragonVersion = await getLatestVersion();
-
   // Parse raw match JSON if available
   let rawMatch: RiotMatch | null = null;
   if (match.rawMatchJson) {
@@ -35,19 +33,22 @@ export default async function MatchDetailPage({
     }
   }
 
-  // Get linked coaching sessions
-  const linkedSessions = await db
-    .select({
-      sessionId: coachingSessions.id,
-      coachName: coachingSessions.coachName,
-      date: coachingSessions.date,
-    })
-    .from(coachingSessionMatches)
-    .innerJoin(
-      coachingSessions,
-      eq(coachingSessionMatches.sessionId, coachingSessions.id)
-    )
-    .where(eq(coachingSessionMatches.matchId, match.id));
+  // These two are independent — run in parallel
+  const [ddragonVersion, linkedSessions] = await Promise.all([
+    getLatestVersion(),
+    db
+      .select({
+        sessionId: coachingSessions.id,
+        coachName: coachingSessions.coachName,
+        date: coachingSessions.date,
+      })
+      .from(coachingSessionMatches)
+      .innerJoin(
+        coachingSessions,
+        eq(coachingSessionMatches.sessionId, coachingSessions.id)
+      )
+      .where(eq(coachingSessionMatches.matchId, match.id)),
+  ]);
 
   return (
     <MatchDetailClient

@@ -28,6 +28,36 @@ import {
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName } from "@/lib/riot-api";
 
+interface DashboardMatch {
+  id: string;
+  gameDate: Date;
+  result: "Victory" | "Defeat";
+  championId: number;
+  championName: string;
+  runeKeystoneId: number | null;
+  runeKeystoneName: string | null;
+  matchupChampionId: number | null;
+  matchupChampionName: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+  cs: number;
+  csPerMin: number | null;
+  gameDurationSeconds: number;
+  goldEarned: number | null;
+  visionScore: number | null;
+  reviewed: boolean;
+  comment: string | null;
+  queueId: number | null;
+}
+
+interface MatchStats {
+  total: number;
+  wins: number;
+  losses: number;
+  unreviewed: number;
+}
+
 interface DashboardClientProps {
   user: {
     name?: string | null;
@@ -35,8 +65,8 @@ interface DashboardClientProps {
     riotTagLine?: string | null;
     puuid?: string | null;
   };
-  recentMatches: Match[];
-  allMatches: Match[];
+  recentMatches: DashboardMatch[];
+  matchStats: MatchStats;
   latestRank: RankSnapshot | null;
   recentSnapshots: RankSnapshot[];
   actionItems: CoachingActionItem[];
@@ -49,7 +79,7 @@ function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function getStreak(matches: Match[]): { type: "W" | "L"; count: number } | null {
+function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
   if (matches.length === 0) return null;
   const first = matches[0].result;
   let count = 0;
@@ -76,7 +106,7 @@ function getRankDisplay(rank: RankSnapshot | null) {
 export function DashboardClient({
   user,
   recentMatches,
-  allMatches,
+  matchStats,
   latestRank,
   recentSnapshots,
   actionItems,
@@ -96,12 +126,12 @@ export function DashboardClient({
       ? Math.round((sessionWins / recentMatches.length) * 100)
       : 0;
 
-  // Overall stats
-  const totalWins = allMatches.filter((m) => m.result === "Victory").length;
-  const totalLosses = allMatches.filter((m) => m.result === "Defeat").length;
+  // Overall stats from aggregates
+  const totalWins = matchStats.wins;
+  const totalLosses = matchStats.losses;
   const totalWinRate =
-    allMatches.length > 0
-      ? Math.round((totalWins / allMatches.length) * 100)
+    matchStats.total > 0
+      ? Math.round((totalWins / matchStats.total) * 100)
       : 0;
 
   // Average KDA from recent matches
@@ -123,7 +153,7 @@ export function DashboardClient({
       : "0";
 
   // Games needing review
-  const unreviewedCount = allMatches.filter((m) => !m.reviewed).length;
+  const unreviewedCount = matchStats.unreviewed;
 
   // LP trend: compare latest snapshot to oldest in the recent set
   const lpTrend = (() => {
@@ -295,7 +325,7 @@ export function DashboardClient({
             <div>
               <CardTitle>Recent Games</CardTitle>
               <CardDescription>
-                {allMatches.length} total &middot; {totalWins}W {totalLosses}L ({totalWinRate}%)
+                {matchStats.total} total &middot; {totalWins}W {totalLosses}L ({totalWinRate}%)
               </CardDescription>
             </div>
             <Link href="/matches">

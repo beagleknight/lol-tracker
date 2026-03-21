@@ -31,30 +31,29 @@ export default async function CoachingDetailPage({
 
   if (!session) notFound();
 
-  // Get linked matches
-  const linkedMatchRows = await db
-    .select({
-      id: matches.id,
-      gameDate: matches.gameDate,
-      result: matches.result,
-      championName: matches.championName,
-      matchupChampionName: matches.matchupChampionName,
-      kills: matches.kills,
-      deaths: matches.deaths,
-      assists: matches.assists,
-      runeKeystoneName: matches.runeKeystoneName,
-      gameDurationSeconds: matches.gameDurationSeconds,
-    })
-    .from(coachingSessionMatches)
-    .innerJoin(matches, eq(coachingSessionMatches.matchId, matches.id))
-    .where(eq(coachingSessionMatches.sessionId, sessionId));
-
-  // Get action items
-  const items = await db.query.coachingActionItems.findMany({
-    where: eq(coachingActionItems.sessionId, sessionId),
-  });
-
-  const ddragonVersion = await getLatestVersion();
+  // Parallel: linked matches + action items + DDragon version
+  const [linkedMatchRows, items, ddragonVersion] = await Promise.all([
+    db
+      .select({
+        id: matches.id,
+        gameDate: matches.gameDate,
+        result: matches.result,
+        championName: matches.championName,
+        matchupChampionName: matches.matchupChampionName,
+        kills: matches.kills,
+        deaths: matches.deaths,
+        assists: matches.assists,
+        runeKeystoneName: matches.runeKeystoneName,
+        gameDurationSeconds: matches.gameDurationSeconds,
+      })
+      .from(coachingSessionMatches)
+      .innerJoin(matches, eq(coachingSessionMatches.matchId, matches.id))
+      .where(eq(coachingSessionMatches.sessionId, sessionId)),
+    db.query.coachingActionItems.findMany({
+      where: eq(coachingActionItems.sessionId, sessionId),
+    }),
+    getLatestVersion(),
+  ]);
 
   return (
     <CoachingDetailClient
