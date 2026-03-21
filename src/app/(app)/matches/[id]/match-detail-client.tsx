@@ -45,12 +45,37 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
-import type { RiotMatch, RiotMatchParticipant } from "@/lib/riot-api";
+import type { RiotMatchParticipant } from "@/lib/riot-api";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+
+/** Slim participant — only fields needed for the match detail view */
+type SlimParticipant = Pick<
+  RiotMatchParticipant,
+  | "puuid"
+  | "teamId"
+  | "championName"
+  | "riotIdGameName"
+  | "summonerName"
+  | "kills"
+  | "deaths"
+  | "assists"
+  | "totalMinionsKilled"
+  | "neutralMinionsKilled"
+  | "visionScore"
+  | "goldEarned"
+  | "totalDamageDealtToChampions"
+  | "item0"
+  | "item1"
+  | "item2"
+  | "item3"
+  | "item4"
+  | "item5"
+  | "item6"
+>;
 
 interface MatchDetailClientProps {
   match: Match;
-  rawMatch: RiotMatch | null;
+  participants: SlimParticipant[] | null;
   linkedSessions: Array<{
     sessionId: number;
     coachName: string;
@@ -84,7 +109,7 @@ function ParticipantRow({
   isUser,
   isDuoPartner,
 }: {
-  participant: RiotMatchParticipant;
+  participant: SlimParticipant;
   version: string;
   isUser: boolean;
   isDuoPartner: boolean;
@@ -174,7 +199,7 @@ function ParticipantRow({
 
 export function MatchDetailClient({
   match,
-  rawMatch,
+  participants,
   linkedSessions,
   highlights: initialHighlights,
   ddragonVersion,
@@ -260,8 +285,8 @@ export function MatchDetailClient({
   );
 
   // Split participants into teams
-  const blueTeam = rawMatch?.info.participants.filter((p) => p.teamId === 100) || [];
-  const redTeam = rawMatch?.info.participants.filter((p) => p.teamId === 200) || [];
+  const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
+  const redTeam = participants?.filter((p) => p.teamId === 200) || [];
 
   return (
     <div className="space-y-6">
@@ -406,7 +431,7 @@ export function MatchDetailClient({
       </div>
 
       {/* All 10 Players */}
-      {rawMatch && (
+      {participants && (
         <div className="space-y-4">
           {[
             { team: blueTeam, label: "Blue Team", color: "text-electric" },

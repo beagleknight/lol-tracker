@@ -105,7 +105,9 @@ export const coachingSessions = sqliteTable("coaching_sessions", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
-});
+}, (table) => [
+  index("coaching_sessions_user_date_idx").on(table.userId, table.date),
+]);
 
 // ─── Coaching Session <-> Matches (many-to-many) ─────────────────────────────
 
@@ -122,6 +124,7 @@ export const coachingSessionMatches = sqliteTable(
   },
   (table) => [
     primaryKey({ columns: [table.sessionId, table.matchId] }),
+    index("coaching_session_matches_match_user_idx").on(table.matchId, table.userId),
   ]
 );
 
@@ -148,6 +151,7 @@ export const coachingActionItems = sqliteTable("coaching_action_items", {
     .$defaultFn(() => new Date()),
 }, (table) => [
   index("action_items_user_status_idx").on(table.userId, table.status),
+  index("action_items_session_idx").on(table.sessionId),
 ]);
 
 // ─── Invites ─────────────────────────────────────────────────────────────────
@@ -181,6 +185,7 @@ export const matchHighlights = sqliteTable("match_highlights", {
     .$defaultFn(() => new Date()),
 }, (table) => [
   index("match_highlights_match_user_idx").on(table.matchId, table.userId),
+  index("match_highlights_user_idx").on(table.userId),
 ]);
 
 // ─── Type Exports ────────────────────────────────────────────────────────────
