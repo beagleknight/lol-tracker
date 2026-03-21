@@ -24,6 +24,7 @@ import {
   Trash2,
   ListChecks,
 } from "lucide-react";
+import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 
 interface ActionItemWithSession {
   id: number;
@@ -154,6 +155,7 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
 export function ActionItemsClient({ items }: ActionItemsClientProps) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
 
   const topics = [...new Set(items.map((i) => i.topic).filter(Boolean))] as string[];
 
@@ -162,6 +164,11 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
     if (topicFilter !== "all" && item.topic !== topicFilter) return false;
     return true;
   });
+
+  // Clamp page if filters reduce result count
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedItems = paginate(filtered, safePage);
 
   const pendingCount = items.filter((i) => i.status === "pending").length;
   const inProgressCount = items.filter((i) => i.status === "in_progress").length;
@@ -181,7 +188,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
       <div className="flex gap-3">
         <Select
           value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v ?? "all")}
+          onValueChange={(v) => { setStatusFilter(v ?? "all"); setPage(1); }}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Status" />
@@ -196,7 +203,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
         {topics.length > 0 && (
           <Select
             value={topicFilter}
-            onValueChange={(v) => setTopicFilter(v ?? "all")}
+            onValueChange={(v) => { setTopicFilter(v ?? "all"); setPage(1); }}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Topic" />
@@ -229,11 +236,18 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((item) => (
-            <ActionItemRow key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-2">
+            {paginatedItems.map((item) => (
+              <ActionItemRow key={item.id} item={item} />
+            ))}
+          </div>
+          <Pagination
+            currentPage={safePage}
+            totalItems={filtered.length}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );
