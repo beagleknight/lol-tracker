@@ -41,11 +41,28 @@
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
 - [ ] Auto-sync on login or on a schedule (instead of manual "Sync Games" button)
-- [ ] Game VOD link field (YouTube/Twitch clip URL per match)
 - [ ] Export data (CSV export of matches with all fields)
 - [ ] Multi-account support (track games across multiple Riot accounts)
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
 - [ ] Goal setting (e.g., "reach Diamond by end of split") with progress tracking
+
+## Features — Ascent VOD Integration
+- [ ] Scrape user's Ascent profile to pull VOD links (no known public API — web scraping or headless browser needed)
+- [ ] Auto-match Ascent VODs to synced games by game timestamp or Riot match ID
+- [ ] Store VOD URL per match in the database (new column or separate table)
+- [ ] Show VOD link on match detail page and match list cards (one-click to watch)
+- [ ] If scraping isn't reliable, fall back to manual Ascent URL input per match
+- [ ] Investigate whether Ascent exposes any undocumented API endpoints (network tab inspection)
+
+## Features — AI-Powered Coaching Assistant
+- [ ] AI-driven post-game analysis: summarize key mistakes and strengths from match data (KDA, CS, vision, gold, game duration, runes, matchup) and user-written notes
+- [ ] Personalized improvement plan: use match history trends + coaching session notes + action items to generate a prioritized list of things to work on
+- [ ] Pattern detection: identify recurring mistakes across games (e.g., "you die 2+ times before 10 min in 60% of losses", "your CS/min drops significantly in losing matchups vs assassins")
+- [ ] Coaching session prep: before a session, generate a summary of recent performance, progress on action items, and suggested discussion topics
+- [ ] Matchup advice: given a champion + matchup, surface relevant notes from past games, win rate context, and general tips
+- [ ] Review queue assistant: for unreviewed games, generate guided review prompts based on the match data (e.g., "You had 12 deaths this game — what fights could you have avoided?")
+- [ ] Goal tracking insights: if goals are set, provide periodic AI check-ins on progress with actionable suggestions
+- [ ] Data sources to feed the AI: match stats, raw match JSON (detailed player data), game notes, review notes, coaching session notes, action items, rank progression, champion/rune/matchup stats
 
 ## Known Limitations
 - Riot API personal key expires every 24h — need to refresh at https://developer.riotgames.com/
