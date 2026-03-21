@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey, index } from "drizzle-orm/sqlite-core";
 
 // ─── Users ───────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,10 @@ export const matches = sqliteTable("matches", {
     .notNull()
     .$defaultFn(() => new Date()),
   rawMatchJson: text("raw_match_json"),
-});
+}, (table) => [
+  index("matches_user_game_date_idx").on(table.userId, table.gameDate),
+  index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
+]);
 
 // ─── Rank Snapshots ──────────────────────────────────────────────────────────
 
@@ -74,7 +77,9 @@ export const rankSnapshots = sqliteTable("rank_snapshots", {
   lp: integer("lp").default(0),
   wins: integer("wins").default(0),
   losses: integer("losses").default(0),
-});
+}, (table) => [
+  index("rank_snapshots_user_captured_idx").on(table.userId, table.capturedAt),
+]);
 
 // ─── Coaching Sessions ───────────────────────────────────────────────────────
 
@@ -134,7 +139,9 @@ export const coachingActionItems = sqliteTable("coaching_action_items", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
-});
+}, (table) => [
+  index("action_items_user_status_idx").on(table.userId, table.status),
+]);
 
 // ─── Invites ─────────────────────────────────────────────────────────────────
 

@@ -1,10 +1,13 @@
+import { cache } from "react";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
-export async function getCurrentUser() {
+// cache() deduplicates this call within a single request,
+// so layout + page calling requireUser() only hits the DB once.
+export const getCurrentUser = cache(async () => {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -16,7 +19,7 @@ export async function getCurrentUser() {
   });
 
   return user || null;
-}
+});
 
 export async function requireUser() {
   const user = await getCurrentUser();
