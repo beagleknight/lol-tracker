@@ -283,7 +283,7 @@ export function DuoClient({
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {synergy.slice(0, 15).map((s) => (
+                  {synergy.map((s) => (
                     <div
                       key={`${s.yourChampion}-${s.partnerChampion}`}
                       className="flex items-center gap-3 rounded-lg border border-border/50 p-2 bg-surface-elevated"

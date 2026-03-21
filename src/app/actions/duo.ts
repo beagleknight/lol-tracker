@@ -171,47 +171,42 @@ export async function getDuoGames(page: number = 1): Promise<{
   const user = await requireUser();
   if (!user.duoPartnerUserId) return { games: [], totalPages: 0 };
 
-  // Count total duo games
-  const countResult = await db
-    .select({ total: count() })
-    .from(matches)
-    .where(
-      and(
-        eq(matches.userId, user.id),
-        isNotNull(matches.duoPartnerPuuid)
-      )
-    );
+  // Count + fetch page in parallel — no rawMatchJson needed
+  const offset = (page - 1) * PAGE_SIZE;
+  const duoWhere = and(
+    eq(matches.userId, user.id),
+    isNotNull(matches.duoPartnerPuuid)
+  );
+
+  const [countResult, rows] = await Promise.all([
+    db
+      .select({ total: count() })
+      .from(matches)
+      .where(duoWhere),
+    db
+      .select({
+        id: matches.id,
+        gameDate: matches.gameDate,
+        result: matches.result,
+        championName: matches.championName,
+        kills: matches.kills,
+        deaths: matches.deaths,
+        assists: matches.assists,
+        gameDurationSeconds: matches.gameDurationSeconds,
+        duoPartnerChampionName: matches.duoPartnerChampionName,
+        duoPartnerKills: matches.duoPartnerKills,
+        duoPartnerDeaths: matches.duoPartnerDeaths,
+        duoPartnerAssists: matches.duoPartnerAssists,
+      })
+      .from(matches)
+      .where(duoWhere)
+      .orderBy(desc(matches.gameDate))
+      .limit(PAGE_SIZE)
+      .offset(offset),
+  ]);
 
   const total = countResult[0]?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
-
-  // Fetch page — no rawMatchJson needed
-  const offset = (page - 1) * PAGE_SIZE;
-  const rows = await db
-    .select({
-      id: matches.id,
-      gameDate: matches.gameDate,
-      result: matches.result,
-      championName: matches.championName,
-      kills: matches.kills,
-      deaths: matches.deaths,
-      assists: matches.assists,
-      gameDurationSeconds: matches.gameDurationSeconds,
-      duoPartnerChampionName: matches.duoPartnerChampionName,
-      duoPartnerKills: matches.duoPartnerKills,
-      duoPartnerDeaths: matches.duoPartnerDeaths,
-      duoPartnerAssists: matches.duoPartnerAssists,
-    })
-    .from(matches)
-    .where(
-      and(
-        eq(matches.userId, user.id),
-        isNotNull(matches.duoPartnerPuuid)
-      )
-    )
-    .orderBy(desc(matches.gameDate))
-    .limit(PAGE_SIZE)
-    .offset(offset);
 
   const games: DuoGameRow[] = rows.map((row) => ({
     id: row.id,
@@ -253,7 +248,8 @@ export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
       )
     )
     .groupBy(matches.championName, matches.duoPartnerChampionName)
-    .orderBy(sql`count(*) desc`);
+    .orderBy(sql`count(*) desc`)
+    .limit(15);
 
   return rows
     .filter((r): r is typeof r & { partnerChampion: string } => !!r.partnerChampion)

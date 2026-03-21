@@ -71,6 +71,7 @@ export const matches = sqliteTable("matches", {
   unique("matches_user_odometer_unq").on(table.userId, table.odometer),
   index("matches_user_game_date_idx").on(table.userId, table.gameDate),
   index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
+  index("matches_user_duo_partner_idx").on(table.userId, table.duoPartnerPuuid),
 ]);
 
 // ─── Rank Snapshots ──────────────────────────────────────────────────────────
