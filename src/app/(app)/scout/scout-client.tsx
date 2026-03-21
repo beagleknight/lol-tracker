@@ -10,14 +10,11 @@ import {
   type RecentUnreviewedMatch,
 } from "@/app/actions/live";
 import {
-  updateMatchComment,
-  updateMatchReview,
   savePostGameReview,
 } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -25,27 +22,28 @@ import { ChampionCombobox, type ChampionRecommendations } from "@/components/cha
 import type { ChampionPickCount } from "@/app/actions/live";
 import {
   HighlightsEditor,
-  HighlightsDisplay,
   type HighlightItem,
 } from "@/components/highlights-editor";
 import { SKIP_REVIEW_REASONS } from "@/lib/topics";
 import { toast } from "sonner";
+import { MatchCard } from "@/components/match-card";
 import {
   Crosshair,
   Swords,
   Clock,
   MessageSquare,
-  Eye,
   Save,
   Loader2,
   AlertCircle,
   Gamepad2,
   TrendingUp,
   BarChart3,
-  ScrollText,
   SkipForward,
   ChevronDown,
   Link as LinkIcon,
+  Users,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
@@ -371,7 +369,17 @@ function ScoutingReport({
   report: MatchupReport;
   ddragonVersion: string;
 }) {
-  const { record, runeBreakdown, avgStats, games } = report;
+  const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
+
+  // Compute matchup KDA ratio for comparison
+  const matchupKdaRatio =
+    avgStats.deaths === 0
+      ? 0
+      : Math.round(((avgStats.kills + avgStats.assists) / avgStats.deaths) * 10) / 10;
+  const overallKdaRatio =
+    overallAvgStats.deaths === 0
+      ? 0
+      : Math.round(((overallAvgStats.kills + overallAvgStats.assists) / overallAvgStats.deaths) * 10) / 10;
 
   return (
     <div className="space-y-6">
@@ -445,95 +453,105 @@ function ScoutingReport({
 
       <Separator />
 
-      {/* Avg Stats */}
+      {/* Avg Stats with comparison */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-electric" />
-          Average Stats
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-electric" />
+            Average Stats
+          </h3>
+          {overallAvgStats.games > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              vs your avg ({overallAvgStats.games} games)
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          <StatCell label="KDA" value={`${avgStats.kills}/${avgStats.deaths}/${avgStats.assists}`} />
-          <StatCell label="CS/min" value={String(avgStats.csPerMin)} />
-          <StatCell label="Gold" value={avgStats.goldEarned.toLocaleString()} />
-          <StatCell label="Vision" value={String(avgStats.visionScore)} />
+          <StatCell
+            label="KDA"
+            value={`${avgStats.kills}/${avgStats.deaths}/${avgStats.assists}`}
+          />
+          <StatCell
+            label="CS/min"
+            value={String(avgStats.csPerMin)}
+            baseline={{ matchup: avgStats.csPerMin, overall: overallAvgStats.csPerMin }}
+          />
+          <StatCell
+            label="Gold"
+            value={avgStats.goldEarned.toLocaleString()}
+            baseline={{ matchup: avgStats.goldEarned, overall: overallAvgStats.goldEarned }}
+          />
+          <StatCell
+            label="Vision"
+            value={String(avgStats.visionScore)}
+            baseline={{ matchup: avgStats.visionScore, overall: overallAvgStats.visionScore }}
+          />
           <StatCell
             label="KDA Ratio"
-            value={
-              avgStats.deaths === 0
-                ? "Perfect"
-                : ((avgStats.kills + avgStats.assists) / avgStats.deaths).toFixed(1)
-            }
+            value={avgStats.deaths === 0 ? "Perfect" : String(matchupKdaRatio)}
+            baseline={{ matchup: matchupKdaRatio, overall: overallKdaRatio }}
           />
           <StatCell label="Games" value={String(record.total)} />
         </div>
       </div>
 
-      <Separator />
-
-      {/* Notes & Highlights from past games */}
-      {games.some((g) => g.comment || g.highlights.length > 0) && (
+      {/* Duo Pairs in this matchup */}
+      {duoPairs.length > 0 && (
         <>
+          <Separator />
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
-              <ScrollText className="h-4 w-4 text-gold" />
-              Your Notes & Highlights
+              <Users className="h-4 w-4 text-electric" />
+              Duo Pairs in this Matchup
             </h3>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {games
-                .filter((g) => g.comment || g.highlights.length > 0)
-                .map((g) => (
-                  <div
-                    key={g.matchId}
-                    className="rounded border border-border/50 bg-surface/30 p-3 text-sm space-y-2"
-                  >
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge
-                        variant={g.result === "Victory" ? "default" : "destructive"}
-                        className="text-[10px] px-1.5 py-0"
-                      >
-                        {g.result === "Victory" ? "W" : "L"}
-                      </Badge>
-                      <span>{formatDate(g.gameDate)}</span>
-                      <span>&middot;</span>
-                      <span className="font-mono">
-                        {g.kills}/{g.deaths}/{g.assists}
-                      </span>
-                      {g.runeKeystoneName && (
-                        <>
-                          <span>&middot;</span>
-                          {(() => {
-                            const url = getKeystoneIconUrlByName(g.runeKeystoneName);
-                            return url ? (
-                              <Image src={url} alt={g.runeKeystoneName} width={14} height={14} className="inline rounded" />
-                            ) : null;
-                          })()}
-                          <span>{g.runeKeystoneName}</span>
-                        </>
-                      )}
-                    </div>
-                    {g.highlights.length > 0 && (
-                      <HighlightsDisplay
-                        highlights={g.highlights.map((h) => ({
-                          ...h,
-                          topic: h.topic || undefined,
-                        }))}
-                        compact
-                      />
-                    )}
-                    {g.comment && (
-                      <p className="text-muted-foreground italic">
-                        &ldquo;{g.comment}&rdquo;
-                      </p>
-                    )}
+            <div className="space-y-2">
+              {duoPairs.map((pair) => (
+                <div
+                  key={`${pair.yourChampion}-${pair.duoChampion}`}
+                  className="flex items-center gap-3 rounded-lg border border-border/50 p-2 bg-surface-elevated"
+                >
+                  <div className="flex items-center gap-1">
+                    <ChampionIcon
+                      championName={pair.yourChampion}
+                      version={ddragonVersion}
+                      size={28}
+                    />
+                    <span className="text-xs text-muted-foreground mx-1">+</span>
+                    <ChampionIcon
+                      championName={pair.duoChampion}
+                      version={ddragonVersion}
+                      size={28}
+                    />
                   </div>
-                ))}
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium">
+                      {pair.yourChampion} + {pair.duoChampion}
+                    </span>
+                  </div>
+                  <div className="text-right text-sm">
+                    <span
+                      className={`font-bold ${
+                        pair.winRate >= 50
+                          ? "text-emerald-500"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {pair.winRate}%
+                    </span>
+                    <span className="text-muted-foreground ml-1.5">
+                      {pair.wins}W {pair.losses}L
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <Separator />
         </>
       )}
 
-      {/* Past Games */}
+      <Separator />
+
+      {/* Past Games — using shared MatchCard */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <Swords className="h-4 w-4 text-gold" />
@@ -541,10 +559,34 @@ function ScoutingReport({
         </h3>
         <div className="space-y-2">
           {games.map((game) => (
-            <PastGameCard
+            <MatchCard
               key={game.matchId}
-              game={game}
+              match={{
+                id: game.matchId,
+                gameDate: game.gameDate,
+                result: game.result,
+                championName: game.championName,
+                matchupChampionName: game.matchupChampionName,
+                kills: game.kills,
+                deaths: game.deaths,
+                assists: game.assists,
+                cs: game.cs,
+                csPerMin: game.csPerMin,
+                gameDurationSeconds: game.gameDurationSeconds,
+                goldEarned: game.goldEarned,
+                visionScore: game.visionScore,
+                runeKeystoneName: game.runeKeystoneName,
+                comment: game.comment,
+                reviewed: game.reviewed,
+                reviewNotes: game.reviewNotes,
+                duoPartnerPuuid: game.duoPartnerPuuid,
+              }}
               ddragonVersion={ddragonVersion}
+              matchHighlights={game.highlights.map((h) => ({
+                type: h.type,
+                text: h.text,
+                topic: h.topic,
+              }))}
             />
           ))}
         </div>
@@ -553,103 +595,55 @@ function ScoutingReport({
   );
 }
 
-function StatCell({ label, value }: { label: string; value: string }) {
+function StatCell({
+  label,
+  value,
+  baseline,
+  invertColor,
+}: {
+  label: string;
+  value: string;
+  baseline?: { matchup: number; overall: number };
+  invertColor?: boolean; // true for stats where lower is better (e.g. deaths)
+}) {
+  let delta: number | null = null;
+  let deltaLabel = "";
+  if (baseline && baseline.overall > 0) {
+    delta = Math.round((baseline.matchup - baseline.overall) * 10) / 10;
+    const sign = delta > 0 ? "+" : "";
+    deltaLabel = `${sign}${delta}`;
+  }
+
+  const isPositive = delta !== null && (invertColor ? delta < 0 : delta > 0);
+  const isNegative = delta !== null && (invertColor ? delta > 0 : delta < 0);
+
   return (
     <div className="rounded-lg border bg-surface/30 p-2 text-center">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-mono font-medium mt-0.5">{value}</p>
-    </div>
-  );
-}
-
-function PastGameCard({
-  game,
-  ddragonVersion,
-}: {
-  game: MatchupReport["games"][number];
-  ddragonVersion: string;
-}) {
-  const isWin = game.result === "Victory";
-  const kda =
-    game.deaths === 0
-      ? "Perfect"
-      : ((game.kills + game.assists) / game.deaths).toFixed(1);
-
-  return (
-    <div
-      className={`rounded-lg border p-3 ${
-        isWin
-          ? "border-l-[3px] border-l-green-500/60"
-          : "border-l-[3px] border-l-red-500/60"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        {/* Champion icon */}
-        <ChampionIcon
-          championName={game.championName}
-          version={ddragonVersion}
-          size={32}
-        />
-
-        {/* Stats */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm">
-              {game.kills}/{game.deaths}/{game.assists}
-              <span className="text-muted-foreground text-xs ml-1">({kda})</span>
-            </span>
-            {game.runeKeystoneName && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                {(() => {
-                  const url = getKeystoneIconUrlByName(game.runeKeystoneName);
-                  return url ? (
-                    <Image src={url} alt={game.runeKeystoneName} width={14} height={14} className="inline rounded" />
-                  ) : null;
-                })()}
-                {game.runeKeystoneName}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-            <span>{game.cs}cs ({game.csPerMin}/m)</span>
-            <span>&middot;</span>
-            <span>{game.goldEarned.toLocaleString()}g</span>
-            <span>&middot;</span>
-            <span>{formatDuration(game.gameDurationSeconds)}</span>
-          </div>
-        </div>
-
-        {/* Items */}
-        <div className="hidden sm:flex gap-0.5 shrink-0">
-          {game.items.map((itemId, i) => (
-            <ItemIcon key={i} itemId={itemId} version={ddragonVersion} size={22} />
-          ))}
-        </div>
-
-        {/* Result + Date */}
-        <div className="flex flex-col items-end gap-0.5 shrink-0">
-          <Badge variant={isWin ? "default" : "destructive"} className="text-xs">
-            {isWin ? "W" : "L"}
-          </Badge>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-            {formatDate(game.gameDate)}
-          </span>
-        </div>
-      </div>
-
-      {/* Comment preview */}
-      {game.comment && (
-        <p className="text-xs text-muted-foreground italic mt-2 truncate">
-          &ldquo;{game.comment}&rdquo;
+      {delta !== null && delta !== 0 && (
+        <p
+          className={`text-[10px] font-mono mt-0.5 flex items-center justify-center gap-0.5 ${
+            isPositive
+              ? "text-green-400"
+              : isNegative
+              ? "text-red-400"
+              : "text-muted-foreground"
+          }`}
+        >
+          {isPositive ? (
+            <ArrowUp className="h-2.5 w-2.5" />
+          ) : isNegative ? (
+            <ArrowDown className="h-2.5 w-2.5" />
+          ) : null}
+          {deltaLabel}
         </p>
       )}
-
-      {/* Items on mobile */}
-      <div className="flex gap-0.5 mt-2 sm:hidden">
-        {game.items.map((itemId, i) => (
-          <ItemIcon key={i} itemId={itemId} version={ddragonVersion} size={22} />
-        ))}
-      </div>
+      {delta === 0 && (
+        <p className="text-[10px] font-mono mt-0.5 text-muted-foreground">
+          avg
+        </p>
+      )}
     </div>
   );
 }
