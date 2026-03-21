@@ -405,7 +405,7 @@ export function AnalyticsClient({
               <span>Rank progression across {rankChartData.length} snapshots</span>
               <span
                 className={`font-mono font-semibold ${
-                  lpChartMeta.netChange >= 0 ? "text-green-500" : "text-red-500"
+                  lpChartMeta.netChange >= 0 ? "text-green-400" : "text-red-400"
                 }`}
               >
                 {lpChartMeta.netChange >= 0 ? "+" : ""}

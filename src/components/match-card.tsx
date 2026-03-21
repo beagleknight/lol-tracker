@@ -236,7 +236,7 @@ export function MatchCard({
                 {highlightItems.map((item, i) => (
                   <span
                     key={`h-${i}`}
-                    className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-400"
+                    className="inline-flex items-center gap-0.5 rounded-md bg-green-400/10 px-1.5 py-0.5 text-[10px] text-green-400"
                   >
                     <ThumbsUp className="h-2.5 w-2.5" />
                     {item.topic || item.text}
@@ -245,7 +245,7 @@ export function MatchCard({
                 {lowlightItems.map((item, i) => (
                   <span
                     key={`l-${i}`}
-                    className="inline-flex items-center gap-0.5 rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-400"
+                    className="inline-flex items-center gap-0.5 rounded-md bg-red-400/10 px-1.5 py-0.5 text-[10px] text-red-400"
                   >
                     <ThumbsDown className="h-2.5 w-2.5" />
                     {item.topic || item.text}
@@ -287,7 +287,7 @@ export function MatchCard({
               <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
             )}
             {match.reviewed && (
-              <Eye className="h-3.5 w-3.5 text-green-500/70" />
+              <Eye className="h-3.5 w-3.5 text-green-400/70" />
             )}
             {hasReviewNotes && !match.reviewed && (
               <Eye className="h-3.5 w-3.5 text-yellow-500/70" />

@@ -242,9 +242,9 @@ export default function ImportPage() {
 
       {/* Import Result */}
       {importResult && (
-        <Card className="border-green-500/50 surface-glow">
+        <Card className="border-green-400/50 surface-glow">
           <CardContent className="flex items-start gap-3 pt-6">
-            <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 shrink-0" />
             <div className="space-y-2">
               <p className="font-medium">{importResult.message}</p>
               <p className="text-sm text-muted-foreground">
@@ -373,13 +373,13 @@ export default function ImportPage() {
                 <div className="flex items-center gap-2 text-sm font-normal">
                   <Badge
                     variant="secondary"
-                    className="bg-green-500/10 text-green-500"
+                    className="bg-green-400/10 text-green-400"
                   >
                     {wins}W
                   </Badge>
                   <Badge
                     variant="secondary"
-                    className="bg-red-500/10 text-red-500"
+                    className="bg-red-400/10 text-red-400"
                   >
                     {losses}L
                   </Badge>
@@ -444,7 +444,7 @@ export default function ImportPage() {
                           </TableCell>
                           <TableCell>
                             {isReviewed ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <CheckCircle2 className="h-4 w-4 text-green-400" />
                             ) : (
                               <span className="text-xs text-muted-foreground">
                                 No

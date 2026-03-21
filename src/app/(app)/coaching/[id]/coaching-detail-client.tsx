@@ -90,7 +90,7 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   const icons = {
     pending: <Circle className="h-4 w-4 text-muted-foreground" />,
     in_progress: <Play className="h-4 w-4 text-yellow-500" />,
-    completed: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+    completed: <CheckCircle2 className="h-4 w-4 text-green-400" />,
   };
 
   return (
