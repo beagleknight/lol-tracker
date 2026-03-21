@@ -37,7 +37,7 @@ const dashboardNav: NavItem[] = [
 
 const trackerNav: NavItem[] = [
   { label: "Matches", href: "/matches", icon: Swords },
-  { label: "Review Queue", href: "/review", icon: ClipboardCheck },
+  { label: "Review", href: "/review", icon: ClipboardCheck },
   { label: "Duo", href: "/duo", icon: Users },
 ];
 

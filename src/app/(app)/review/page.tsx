@@ -8,58 +8,102 @@ import { ReviewClient } from "./review-client";
 export default async function ReviewPage() {
   const user = await requireUser();
 
-  // Parallel: DDragon version + unreviewed matches (exclude rawMatchJson)
-  const [ddragonVersion, unreviewedMatches] = await Promise.all([
-    getLatestVersion(),
-    db.query.matches.findMany({
-      where: and(
-        eq(matches.userId, user.id),
-        eq(matches.reviewed, false)
-      ),
-      orderBy: desc(matches.gameDate),
-      columns: {
-        id: true,
-        odometer: true,
-        userId: true,
-        gameDate: true,
-        result: true,
-        championId: true,
-        championName: true,
-        runeKeystoneId: true,
-        runeKeystoneName: true,
-        matchupChampionId: true,
-        matchupChampionName: true,
-        kills: true,
-        deaths: true,
-        assists: true,
-        cs: true,
-        csPerMin: true,
-        gameDurationSeconds: true,
-        goldEarned: true,
-        visionScore: true,
-        comment: true,
-        reviewed: true,
-        reviewNotes: true,
-        reviewSkippedReason: true,
-        vodUrl: true,
-        queueId: true,
-        syncedAt: true,
-        // rawMatchJson excluded — not needed for review list
-      },
-    }) as unknown as Promise<import("@/db/schema").Match[]>,
-  ]);
+  // Fetch DDragon version + all matches that are either:
+  // 1. Not reviewed (for Post-Game and VOD Review tabs)
+  // 2. Recently reviewed (for Completed tab — last 20)
+  const [ddragonVersion, unreviewedMatches, recentReviewedMatches] =
+    await Promise.all([
+      getLatestVersion(),
+      db.query.matches.findMany({
+        where: and(
+          eq(matches.userId, user.id),
+          eq(matches.reviewed, false)
+        ),
+        orderBy: desc(matches.gameDate),
+        columns: {
+          id: true,
+          odometer: true,
+          userId: true,
+          gameDate: true,
+          result: true,
+          championId: true,
+          championName: true,
+          runeKeystoneId: true,
+          runeKeystoneName: true,
+          matchupChampionId: true,
+          matchupChampionName: true,
+          kills: true,
+          deaths: true,
+          assists: true,
+          cs: true,
+          csPerMin: true,
+          gameDurationSeconds: true,
+          goldEarned: true,
+          visionScore: true,
+          comment: true,
+          reviewed: true,
+          reviewNotes: true,
+          reviewSkippedReason: true,
+          vodUrl: true,
+          queueId: true,
+          syncedAt: true,
+          duoPartnerPuuid: true,
+          // rawMatchJson excluded — not needed for review list
+        },
+      }) as unknown as Promise<import("@/db/schema").Match[]>,
+      db.query.matches.findMany({
+        where: and(
+          eq(matches.userId, user.id),
+          eq(matches.reviewed, true)
+        ),
+        orderBy: desc(matches.gameDate),
+        limit: 20,
+        columns: {
+          id: true,
+          odometer: true,
+          userId: true,
+          gameDate: true,
+          result: true,
+          championId: true,
+          championName: true,
+          runeKeystoneId: true,
+          runeKeystoneName: true,
+          matchupChampionId: true,
+          matchupChampionName: true,
+          kills: true,
+          deaths: true,
+          assists: true,
+          cs: true,
+          csPerMin: true,
+          gameDurationSeconds: true,
+          goldEarned: true,
+          visionScore: true,
+          comment: true,
+          reviewed: true,
+          reviewNotes: true,
+          reviewSkippedReason: true,
+          vodUrl: true,
+          queueId: true,
+          syncedAt: true,
+          duoPartnerPuuid: true,
+        },
+      }) as unknown as Promise<import("@/db/schema").Match[]>,
+    ]);
 
-  // Fetch highlights for all unreviewed matches (filtered by matchId)
-  const matchIds = unreviewedMatches.map((m) => m.id);
+  // Fetch highlights for all matches (unreviewed + recent reviewed)
+  const allMatchIds = [
+    ...unreviewedMatches.map((m) => m.id),
+    ...recentReviewedMatches.map((m) => m.id),
+  ];
   const allHighlights =
-    matchIds.length > 0
+    allMatchIds.length > 0
       ? await db
           .select()
           .from(matchHighlights)
           .where(
             and(
               eq(matchHighlights.userId, user.id),
-              inArray(matchHighlights.matchId, matchIds),
+              inArray(matchHighlights.matchId, allMatchIds)
             )
           )
       : [];
@@ -67,7 +111,12 @@ export default async function ReviewPage() {
   // Group highlights by matchId
   const highlightsByMatch: Record<
     string,
-    Array<{ id: number; type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{
+      id: number;
+      type: "highlight" | "lowlight";
+      text: string;
+      topic: string | null;
+    }>
   > = {};
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) {
@@ -83,7 +132,8 @@ export default async function ReviewPage() {
 
   return (
     <ReviewClient
-      matches={unreviewedMatches}
+      unreviewedMatches={unreviewedMatches}
+      recentReviewedMatches={recentReviewedMatches}
       highlightsByMatch={highlightsByMatch}
       ddragonVersion={ddragonVersion}
     />

@@ -419,10 +419,10 @@ export function DashboardClient({
 
         {/* Right Column */}
         <div className="space-y-4">
-          {/* Review Queue Card */}
+          {/* Review Card */}
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base">Review Queue</CardTitle>
+              <CardTitle className="text-base">Review</CardTitle>
               <Link href="/review">
                 <Button variant="ghost" size="sm">
                   <Target className="mr-1 h-3 w-3" />
