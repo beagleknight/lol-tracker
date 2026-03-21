@@ -6,6 +6,10 @@ import {
   linkRiotAccount,
   unlinkRiotAccount,
   validateRiotApiKey,
+  getRegisteredUsers,
+  getDuoPartner,
+  setDuoPartner,
+  clearDuoPartner,
 } from "@/app/actions/settings";
 import {
   createInvite,
@@ -36,6 +40,7 @@ import {
   Key,
   Ticket,
   Shield,
+  Users,
 } from "lucide-react";
 
 interface InviteItem {
@@ -66,6 +71,24 @@ export default function SettingsPage() {
   } | null>(null);
   const [apiKeyLoading, setApiKeyLoading] = useState(false);
 
+  // ─── Duo partner state ────────────────────────────────────────────────────
+  const [duoPartner, setDuoPartnerState] = useState<{
+    id: string;
+    name: string | null;
+    riotGameName: string | null;
+    riotTagLine: string | null;
+  } | null>(null);
+  const [registeredUsers, setRegisteredUsers] = useState<
+    Array<{
+      id: string;
+      name: string | null;
+      riotGameName: string | null;
+      riotTagLine: string | null;
+      puuid: string | null;
+    }>
+  >([]);
+  const [duoLoading, setDuoLoading] = useState(false);
+
   useEffect(() => {
     if (isAdmin) {
       // Load invites
@@ -85,6 +108,20 @@ export default function SettingsPage() {
         .finally(() => setApiKeyLoading(false));
     }
   }, [isAdmin]);
+
+  // Load duo partner data (for all users)
+  useEffect(() => {
+    if (isLinked) {
+      setDuoLoading(true);
+      Promise.all([getDuoPartner(), getRegisteredUsers()])
+        .then(([partner, users]) => {
+          setDuoPartnerState(partner);
+          setRegisteredUsers(users);
+        })
+        .catch(() => toast.error("Failed to load duo partner info"))
+        .finally(() => setDuoLoading(false));
+    }
+  }, [isLinked]);
 
   // ─── Riot account handlers ────────────────────────────────────────────────
 
@@ -156,6 +193,32 @@ export default function SettingsPage() {
         toast.success("Invite deleted.");
       } catch {
         toast.error("Failed to delete invite.");
+      }
+    });
+  }
+
+  // ─── Duo partner handlers ────────────────────────────────────────────────
+
+  function handleSetDuoPartner(partnerUserId: string) {
+    startTransition(async () => {
+      const result = await setDuoPartner(partnerUserId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`Duo partner set to ${result.partnerName}`);
+        // Refresh duo partner state
+        const partner = await getDuoPartner();
+        setDuoPartnerState(partner);
+      }
+    });
+  }
+
+  function handleClearDuoPartner() {
+    startTransition(async () => {
+      const result = await clearDuoPartner();
+      if (result.success) {
+        toast.success("Duo partner cleared.");
+        setDuoPartnerState(null);
       }
     });
   }
@@ -255,6 +318,107 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Duo Partner Card */}
+      {isLinked && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-gold" />
+              Duo Partner
+              {duoPartner ? (
+                <Badge
+                  variant="default"
+                  className="ml-2 bg-gold/20 text-gold border border-gold/30"
+                >
+                  Set
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="ml-2">
+                  Not Set
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Choose your duo partner to track shared games and synergy stats.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {duoLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading...
+              </div>
+            ) : duoPartner ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">Duo Partner</p>
+                    <p className="text-lg font-semibold text-gold">
+                      {duoPartner.riotGameName}#{duoPartner.riotTagLine}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleClearDuoPartner}
+                    disabled={isPending}
+                  >
+                    {isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Unlink className="mr-2 h-4 w-4" />
+                    )}
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            ) : registeredUsers.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Select a registered user as your duo partner:
+                </p>
+                <div className="space-y-2">
+                  {registeredUsers.map((u) => (
+                    <div
+                      key={u.id}
+                      className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gold">
+                          {u.riotGameName}#{u.riotTagLine}
+                        </p>
+                        {u.name && (
+                          <p className="text-xs text-muted-foreground">
+                            {u.name}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSetDuoPartner(u.id)}
+                        disabled={isPending}
+                      >
+                        {isPending ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Users className="mr-2 h-4 w-4" />
+                        )}
+                        Set
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No other users with linked Riot accounts found. Invite a friend
+                to get started!
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Admin Section: API Key Status */}
       {isAdmin && (

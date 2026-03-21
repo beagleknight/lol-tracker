@@ -12,6 +12,7 @@ export const users = sqliteTable("users", {
   riotTagLine: text("riot_tag_line"),
   puuid: text("puuid"),
   summonerId: text("summoner_id"),
+  duoPartnerUserId: text("duo_partner_user_id"),
   role: text("role", { enum: ["admin", "user"] })
     .notNull()
     .default("user"),
@@ -57,6 +58,7 @@ export const matches = sqliteTable("matches", {
     .notNull()
     .$defaultFn(() => new Date()),
   rawMatchJson: text("raw_match_json"),
+  duoPartnerPuuid: text("duo_partner_puuid"), // Set if duo partner was on same team
 }, (table) => [
   primaryKey({ columns: [table.id, table.userId] }),
   unique("matches_user_odometer_unq").on(table.userId, table.odometer),

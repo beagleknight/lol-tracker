@@ -37,6 +37,7 @@ export default async function MatchesPage() {
         reviewNotes: true,
         queueId: true,
         syncedAt: true,
+        duoPartnerPuuid: true,
       },
     }),
     getLatestVersion(),

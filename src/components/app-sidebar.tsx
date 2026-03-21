@@ -17,6 +17,7 @@ import {
   ListChecks,
   Menu,
   X,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +36,7 @@ const mainNav: NavItem[] = [
   { label: "Matches", href: "/matches", icon: Swords },
   { label: "Matchup Scout", href: "/scout", icon: Crosshair },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Duo", href: "/duo", icon: Users },
   { label: "Review Queue", href: "/review", icon: ClipboardCheck },
 ];
 

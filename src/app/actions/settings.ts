@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, isNotNull, ne } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
   getAccountByRiotId,
@@ -126,4 +126,109 @@ export async function validateRiotApiKey(): Promise<{
       message: error instanceof Error ? error.message : "Network error",
     };
   }
+}
+
+// ─── Duo Partner ─────────────────────────────────────────────────────────────
+
+/**
+ * Get all registered users with linked Riot accounts (excluding current user).
+ * Used to populate the duo partner picker.
+ */
+export async function getRegisteredUsers() {
+  const user = await requireUser();
+
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      riotGameName: users.riotGameName,
+      riotTagLine: users.riotTagLine,
+      puuid: users.puuid,
+    })
+    .from(users)
+    .where(
+      and(
+        ne(users.id, user.id),
+        isNotNull(users.puuid),
+      )
+    );
+
+  return result;
+}
+
+/**
+ * Get the current user's duo partner info (if set).
+ */
+export async function getDuoPartner() {
+  const user = await requireUser();
+
+  if (!user.duoPartnerUserId) {
+    return null;
+  }
+
+  const partner = await db.query.users.findFirst({
+    where: eq(users.id, user.duoPartnerUserId),
+    columns: {
+      id: true,
+      name: true,
+      riotGameName: true,
+      riotTagLine: true,
+      puuid: true,
+    },
+  });
+
+  return partner || null;
+}
+
+/**
+ * Set the current user's duo partner.
+ */
+export async function setDuoPartner(partnerUserId: string) {
+  const user = await requireUser();
+
+  // Verify the partner exists and has a linked Riot account
+  const partner = await db.query.users.findFirst({
+    where: and(eq(users.id, partnerUserId), isNotNull(users.puuid)),
+    columns: { id: true, riotGameName: true, riotTagLine: true },
+  });
+
+  if (!partner) {
+    return { error: "User not found or has no linked Riot account." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      duoPartnerUserId: partnerUserId,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/settings");
+  revalidatePath("/duo");
+
+  return {
+    success: true,
+    partnerName: `${partner.riotGameName}#${partner.riotTagLine}`,
+  };
+}
+
+/**
+ * Clear the current user's duo partner.
+ */
+export async function clearDuoPartner() {
+  const user = await requireUser();
+
+  await db
+    .update(users)
+    .set({
+      duoPartnerUserId: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/settings");
+  revalidatePath("/duo");
+
+  return { success: true };
 }

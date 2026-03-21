@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { matches, rankSnapshots } from "@/db/schema";
+import { matches, rankSnapshots, users } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -7,6 +7,7 @@ import {
   getMatch,
   extractPlayerData,
   findMatchupChampion,
+  findDuoPartner,
   getKeystoneName,
   getSoloQueueEntry,
 } from "@/lib/riot-api";
@@ -109,6 +110,16 @@ export async function GET() {
         });
         let nextOdometer = (maxOdoResult?.odometer || 0) + 1;
 
+        // Look up duo partner puuid (if user has one configured)
+        let duoPartnerPuuid: string | null = null;
+        if (user.duoPartnerUserId) {
+          const partner = await db.query.users.findFirst({
+            where: eq(users.id, user.duoPartnerUserId),
+            columns: { puuid: true },
+          });
+          duoPartnerPuuid = partner?.puuid || null;
+        }
+
         let syncedCount = 0;
         let failedCount = 0;
 
@@ -125,6 +136,11 @@ export async function GET() {
             }
 
             const matchup = findMatchupChampion(matchData, user.puuid!);
+
+            // Check if duo partner was on the same team
+            const detectedDuoPuuid = duoPartnerPuuid
+              ? findDuoPartner(matchData, user.puuid!, duoPartnerPuuid)
+              : null;
 
             await db.insert(matches).values({
               id: matchId,
@@ -150,6 +166,7 @@ export async function GET() {
               visionScore: playerData.visionScore,
               queueId: playerData.queueId,
               rawMatchJson: JSON.stringify(matchData),
+              duoPartnerPuuid: detectedDuoPuuid,
             }).onConflictDoUpdate({
               target: [matches.id, matches.userId],
               set: {
@@ -173,6 +190,7 @@ export async function GET() {
                 visionScore: playerData.visionScore,
                 queueId: playerData.queueId,
                 rawMatchJson: JSON.stringify(matchData),
+                duoPartnerPuuid: detectedDuoPuuid,
                 syncedAt: new Date(),
               },
             });

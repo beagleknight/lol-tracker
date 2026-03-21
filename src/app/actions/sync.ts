@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { matches, rankSnapshots } from "@/db/schema";
+import { matches, rankSnapshots, users } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
@@ -9,6 +9,7 @@ import {
   getMatch,
   extractPlayerData,
   findMatchupChampion,
+  findDuoPartner,
   getKeystoneName,
   getSoloQueueEntry,
 } from "@/lib/riot-api";
@@ -72,6 +73,16 @@ export async function syncMatches() {
     });
     let nextOdometer = (maxOdoResult?.odometer || 0) + 1;
 
+    // Look up duo partner puuid (if user has one configured)
+    let duoPartnerPuuid: string | null = null;
+    if (user.duoPartnerUserId) {
+      const partner = await db.query.users.findFirst({
+        where: eq(users.id, user.duoPartnerUserId),
+        columns: { puuid: true },
+      });
+      duoPartnerPuuid = partner?.puuid || null;
+    }
+
     let syncedCount = 0;
 
     for (const matchId of allMatchIds) {
@@ -84,6 +95,11 @@ export async function syncMatches() {
         if (!playerData) continue;
 
         const matchup = findMatchupChampion(matchData, user.puuid);
+
+        // Check if duo partner was on the same team
+        const detectedDuoPuuid = duoPartnerPuuid
+          ? findDuoPartner(matchData, user.puuid, duoPartnerPuuid)
+          : null;
 
         await db.insert(matches).values({
           id: matchId,
@@ -109,6 +125,7 @@ export async function syncMatches() {
           visionScore: playerData.visionScore,
           queueId: playerData.queueId,
           rawMatchJson: JSON.stringify(matchData),
+          duoPartnerPuuid: detectedDuoPuuid,
         }).onConflictDoUpdate({
           target: [matches.id, matches.userId],
           set: {
@@ -132,6 +149,7 @@ export async function syncMatches() {
             visionScore: playerData.visionScore,
             queueId: playerData.queueId,
             rawMatchJson: JSON.stringify(matchData),
+            duoPartnerPuuid: detectedDuoPuuid,
             syncedAt: new Date(),
           },
         });
@@ -154,6 +172,7 @@ export async function syncMatches() {
     revalidatePath("/matches");
     revalidatePath("/dashboard");
     revalidatePath("/analytics");
+    revalidatePath("/duo");
 
     return {
       synced: syncedCount,
