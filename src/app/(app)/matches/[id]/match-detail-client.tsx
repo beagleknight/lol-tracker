@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  updateMatchComment,
-  updateMatchReview,
-  saveMatchHighlights,
-  updateMatchVodUrl,
-} from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -31,18 +21,19 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import {
-  HighlightsEditor,
+  HighlightsDisplay,
   type HighlightItem,
 } from "@/components/highlights-editor";
-import { SKIP_REVIEW_REASONS } from "@/lib/topics";
-import { toast } from "sonner";
 import {
   ArrowLeft,
-  Loader2,
   GraduationCap,
-  Save,
-  SkipForward,
+  ClipboardEdit,
   Link as LinkIcon,
+  Eye,
+  EyeOff,
+  SkipForward,
+  MessageSquare,
+  ExternalLink,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
@@ -206,92 +197,19 @@ export function MatchDetailClient({
   match,
   participants,
   linkedSessions,
-  highlights: initialHighlights,
+  highlights,
   ddragonVersion,
   userPuuid,
 }: MatchDetailClientProps) {
-  const [highlights, setHighlights] = useState<HighlightItem[]>(initialHighlights);
-  const [comment, setComment] = useState(match.comment || "");
-  const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
-  const [reviewed, setReviewed] = useState(match.reviewed);
-  const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
-  const [isSavingHighlights, startSaveHighlights] = useTransition();
-  const [isSavingComment, startSaveComment] = useTransition();
-  const [isSavingVodUrl, startSaveVodUrl] = useTransition();
-  const [isSavingReview, startSaveReview] = useTransition();
-  const [showSkipMenu, setShowSkipMenu] = useState(false);
-
-  function saveHighlightsHandler() {
-    startSaveHighlights(async () => {
-      try {
-        const result = await saveMatchHighlights(match.id, highlights);
-        if (result.success) toast.success("Highlights saved.");
-        else toast.error("Failed to save highlights.");
-      } catch {
-        toast.error("Failed to save highlights.");
-      }
-    });
-  }
-
-  function saveComment() {
-    startSaveComment(async () => {
-      try {
-        const result = await updateMatchComment(match.id, comment);
-        if (result.success) toast.success("Comment saved.");
-        else toast.error("Failed to save comment.");
-      } catch {
-        toast.error("Failed to save comment.");
-      }
-    });
-  }
-
-  function saveVodUrlHandler() {
-    startSaveVodUrl(async () => {
-      try {
-        const result = await updateMatchVodUrl(match.id, vodUrl);
-        if (result.success) toast.success("VOD link saved.");
-        else toast.error("Failed to save VOD link.");
-      } catch {
-        toast.error("Failed to save VOD link.");
-      }
-    });
-  }
-
-  function saveReview() {
-    startSaveReview(async () => {
-      try {
-        const result = await updateMatchReview(match.id, reviewed, reviewNotes);
-        if (result.success) toast.success("Review saved.");
-        else toast.error("Failed to save review.");
-      } catch {
-        toast.error("Failed to save review.");
-      }
-    });
-  }
-
-  const handleSkipReview = useCallback(
-    (reason: string) => {
-      setShowSkipMenu(false);
-      startSaveReview(async () => {
-        try {
-          const result = await updateMatchReview(match.id, true, undefined, reason);
-          if (result.success) {
-            setReviewed(true);
-            toast.success("Marked as reviewed (skipped).");
-          } else {
-            toast.error("Failed to save.");
-          }
-        } catch {
-          toast.error("Failed to save.");
-        }
-      });
-    },
-    [match.id]
-  );
-
   // Split participants into teams
   const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
   const redTeam = participants?.filter((p) => p.teamId === 200) || [];
+
+  const hasHighlights = highlights.length > 0;
+  const hasComment = !!match.comment;
+  const hasVodUrl = !!match.vodUrl;
+  const hasReviewNotes = !!match.reviewNotes;
+  const hasAnyNotes = hasHighlights || hasComment || hasReviewNotes;
 
   return (
     <div className="space-y-6">
@@ -333,7 +251,16 @@ export function MatchDetailClient({
                   {match.result}
                 </Badge>
                 {match.reviewed && (
-                  <Badge variant="secondary">Reviewed</Badge>
+                  <Badge variant="secondary" className="gap-1">
+                    <Eye className="h-3 w-3" />
+                    Reviewed
+                  </Badge>
+                )}
+                {!match.reviewed && hasAnyNotes && (
+                  <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
+                    <EyeOff className="h-3 w-3" />
+                    Pending Review
+                  </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
@@ -380,6 +307,27 @@ export function MatchDetailClient({
               </Badge>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Review this game CTA */}
+      {!match.reviewed && (
+        <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
+          <ClipboardEdit className="h-5 w-5 text-gold shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">
+              {hasAnyNotes ? "This game has notes but hasn't been fully reviewed yet." : "This game hasn't been reviewed yet."}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Head to the Review page to add highlights, notes, and VOD review.
+            </p>
+          </div>
+          <Link href="/review">
+            <Button size="sm" className="gap-1.5 shrink-0">
+              <ClipboardEdit className="h-3.5 w-3.5" />
+              Review
+            </Button>
+          </Link>
         </div>
       )}
 
@@ -437,7 +385,7 @@ export function MatchDetailClient({
                   {match.runeKeystoneName}
                 </>
               ) : (
-                <span className="text-muted-foreground">—</span>
+                <span className="text-muted-foreground">&mdash;</span>
               )}
             </p>
             <p className="text-xs text-muted-foreground">Keystone</p>
@@ -488,166 +436,105 @@ export function MatchDetailClient({
         </div>
       )}
 
-      <Separator />
+      {/* Notes & Review Section — read-only */}
+      {(hasHighlights || hasComment || hasVodUrl || hasReviewNotes || match.reviewed) && (
+        <>
+          <Separator />
 
-      {/* Highlights / Lowlights */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle>Highlights & Lowlights</CardTitle>
-          <CardDescription>
-            Quick structured notes about what went well and what didn&apos;t.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <HighlightsEditor
-            highlights={highlights}
-            onChange={setHighlights}
-          />
-          <Button size="sm" onClick={saveHighlightsHandler} disabled={isSavingHighlights}>
-            {isSavingHighlights ? (
-              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-3 w-3" />
+          <div className="space-y-6">
+            {/* Highlights / Lowlights — read-only display */}
+            {hasHighlights && (
+              <Card className="surface-glow">
+                <CardHeader>
+                  <CardTitle>Highlights & Lowlights</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HighlightsDisplay highlights={highlights} />
+                </CardContent>
+              </Card>
             )}
-            Save Highlights
-          </Button>
-        </CardContent>
-      </Card>
 
-      {/* Comment + VOD + Review Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Game Notes */}
-        <Card className="surface-glow">
-          <CardHeader>
-            <CardTitle>Game Notes</CardTitle>
-            <CardDescription>
-              What happened? What was your thought process?
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="e.g. Got early kill but threw lead by overextending..."
-              rows={4}
-            />
-            <Button size="sm" onClick={saveComment} disabled={isSavingComment}>
-              {isSavingComment ? (
-                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-3 w-3" />
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Game Notes — read-only */}
+              {hasComment && (
+                <Card className="surface-glow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Game Notes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                      {match.comment}
+                    </p>
+                  </CardContent>
+                </Card>
               )}
-              Save Notes
-            </Button>
-          </CardContent>
-        </Card>
 
-        {/* VOD Link + Review */}
-        <Card className="surface-glow">
-          <CardHeader>
-            <CardTitle>VOD Review</CardTitle>
-            <CardDescription>
-              Link to Ascent VOD and review notes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {/* VOD URL */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <LinkIcon className="h-3 w-3" />
-                Ascent VOD Link
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={vodUrl}
-                  onChange={(e) => setVodUrl(e.target.value)}
-                  placeholder="https://ascent.gg/vod/..."
-                  className="text-sm h-8 flex-1"
-                />
-                <Button size="sm" variant="outline" onClick={saveVodUrlHandler} disabled={isSavingVodUrl} className="h-8">
-                  {isSavingVodUrl ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Save className="h-3 w-3" />
-                  )}
-                </Button>
-              </div>
-              {match.vodUrl && (
-                <a
-                  href={match.vodUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-electric hover:underline"
-                >
-                  Open VOD
-                </a>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Review status */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="reviewed-detail"
-                checked={reviewed}
-                onCheckedChange={(v) => setReviewed(!!v)}
-              />
-              <label htmlFor="reviewed-detail" className="text-sm">
-                Mark as reviewed
-              </label>
-            </div>
-            <Textarea
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder="Key takeaways from reviewing this game..."
-              rows={3}
-            />
-            <div className="flex items-center gap-2">
-              <Button size="sm" onClick={saveReview} disabled={isSavingReview}>
-                {isSavingReview ? (
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-3 w-3" />
-                )}
-                Save Review
-              </Button>
-              {!reviewed && (
-                <div className="relative">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSkipMenu(!showSkipMenu)}
-                    disabled={isSavingReview}
-                    className="gap-1.5"
-                  >
-                    <SkipForward className="h-3 w-3" />
-                    Skip VOD
-                  </Button>
-                  {showSkipMenu && (
-                    <div className="absolute bottom-full left-0 mb-1 w-56 rounded-md border bg-popover p-1 shadow-md z-10">
-                      {SKIP_REVIEW_REASONS.map((reason) => (
-                        <button
-                          key={reason}
-                          onClick={() => handleSkipReview(reason)}
-                          className="w-full text-left rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+              {/* VOD & Review — read-only */}
+              {(hasVodUrl || hasReviewNotes || match.reviewed) && (
+                <Card className="surface-glow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      VOD Review
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {/* VOD URL */}
+                    {hasVodUrl && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <LinkIcon className="h-3 w-3" />
+                          Ascent VOD
+                        </p>
+                        <a
+                          href={match.vodUrl!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-electric hover:underline inline-flex items-center gap-1"
                         >
-                          {reason}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                          <ExternalLink className="h-3 w-3" />
+                          Open VOD
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Review notes */}
+                    {hasReviewNotes && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Review Notes
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                          {match.reviewNotes}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Skip reason */}
+                    {match.reviewSkippedReason && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
+                        <SkipForward className="h-3 w-3" />
+                        Skipped: {match.reviewSkippedReason}
+                      </div>
+                    )}
+
+                    {/* Review status badge */}
+                    {match.reviewed && !hasReviewNotes && !match.reviewSkippedReason && (
+                      <p className="text-xs text-green-400 flex items-center gap-1.5">
+                        <Eye className="h-3 w-3" />
+                        Marked as reviewed
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
               )}
             </div>
-            {match.reviewSkippedReason && (
-              <p className="text-xs text-muted-foreground italic">
-                Skipped: {match.reviewSkippedReason}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

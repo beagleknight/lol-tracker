@@ -5,9 +5,9 @@
 - [ ] Coaching session detail (view session, cycle action item statuses, delete session)
 - [ ] Action items page (filtering by status/topic, status cycling, delete)
 - [ ] CSV import with actual file upload and data import
-- [ ] Inline comment editing on matches page (Add Comment button in table)
-- [ ] Inline review editing on matches page (Review button in table)
-- [ ] Match detail: save game notes and VOD review notes
+- [x] ~~Inline comment editing on matches page~~ (removed — editing now lives exclusively on Review page)
+- [x] ~~Inline review editing on matches page~~ (removed — editing now lives exclusively on Review page)
+- [x] ~~Match detail: save game notes and VOD review notes~~ (removed — match detail is now read-only; editing on Review page)
 - [ ] Invite system: test full flow (new user with invite code, reject without code)
 - [ ] Admin settings: generate/copy/delete invite codes
 - [ ] Auth proxy: verify redirect-to-login flow with Auth.js wrapper
@@ -15,16 +15,17 @@
 ## Polish
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
 - [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
-- [ ] Matches page: unify expanded card into single save button (highlights + notes + review saved together)
-- [ ] Matches page: replace raw HTML `<select>` in HighlightsEditor with shadcn Select component
-- [ ] Matches page: add VOD URL field to expanded match card (consistent with ReviewCard and PostGameReviewCard)
-- [ ] Matches page: standardize button sizes, variants, and icons across all forms
-- [ ] Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields
+- [x] ~~Matches page: unify expanded card into single save button~~ (moot — MatchCard is no longer expandable; review editing moved to Review page)
+- [x] ~~Matches page: replace raw HTML `<select>` in HighlightsEditor with shadcn Select component~~ (moot — highlights editing only on Review page now)
+- [x] ~~Matches page: add VOD URL field to expanded match card~~ (moot — no expanded card; VOD URL on Review page)
+- [x] ~~Matches page: standardize button sizes, variants, and icons across all forms~~ (moot — no forms on MatchCard anymore)
+- [x] ~~Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields~~ (moot — MatchCard has no form; scout PostGameReviewCard is its own component)
 - [x] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
 - [x] Color contrast audit: fix poor text-on-background contrast throughout the app (e.g., dark text on bright blue win-row in Duo Recent Games)
 - [ ] List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).
 - [ ] Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon
 - [ ] Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling
+- [ ] Paginated tables: inconsistent loading states — some pages (e.g., Duo) show an ugly spinner at the bottom instead of a proper loading skeleton; use the Matches page as the reference implementation
 
 ## Performance
 - [x] Duo page: added composite index `(userId, duoPartnerPuuid)` — all duo queries were doing full table scans
