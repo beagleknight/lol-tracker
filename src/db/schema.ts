@@ -61,6 +61,11 @@ export const matches = sqliteTable("matches", {
     .$defaultFn(() => new Date()),
   rawMatchJson: text("raw_match_json"),
   duoPartnerPuuid: text("duo_partner_puuid"), // Set if duo partner was on same team
+  // Denormalized duo partner stats (extracted from rawMatchJson during sync/backfill)
+  duoPartnerChampionName: text("duo_partner_champion_name"),
+  duoPartnerKills: integer("duo_partner_kills"),
+  duoPartnerDeaths: integer("duo_partner_deaths"),
+  duoPartnerAssists: integer("duo_partner_assists"),
 }, (table) => [
   primaryKey({ columns: [table.id, table.userId] }),
   unique("matches_user_odometer_unq").on(table.userId, table.odometer),

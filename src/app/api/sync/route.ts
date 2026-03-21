@@ -8,6 +8,7 @@ import {
   extractPlayerData,
   findMatchupChampion,
   findDuoPartner,
+  extractDuoPartnerData,
   getKeystoneName,
   getSoloQueueEntry,
 } from "@/lib/riot-api";
@@ -142,6 +143,11 @@ export async function GET() {
               ? findDuoPartner(matchData, user.puuid!, duoPartnerPuuid)
               : null;
 
+            // Extract duo partner stats for denormalized columns
+            const duoPartnerData = detectedDuoPuuid
+              ? extractDuoPartnerData(matchData, user.puuid!, duoPartnerPuuid!)
+              : null;
+
             await db.insert(matches).values({
               id: matchId,
               odometer: nextOdometer++,
@@ -167,6 +173,10 @@ export async function GET() {
               queueId: playerData.queueId,
               rawMatchJson: JSON.stringify(matchData),
               duoPartnerPuuid: detectedDuoPuuid,
+              duoPartnerChampionName: duoPartnerData?.championName ?? null,
+              duoPartnerKills: duoPartnerData?.kills ?? null,
+              duoPartnerDeaths: duoPartnerData?.deaths ?? null,
+              duoPartnerAssists: duoPartnerData?.assists ?? null,
             }).onConflictDoUpdate({
               target: [matches.id, matches.userId],
               set: {
@@ -191,6 +201,10 @@ export async function GET() {
                 queueId: playerData.queueId,
                 rawMatchJson: JSON.stringify(matchData),
                 duoPartnerPuuid: detectedDuoPuuid,
+                duoPartnerChampionName: duoPartnerData?.championName ?? null,
+                duoPartnerKills: duoPartnerData?.kills ?? null,
+                duoPartnerDeaths: duoPartnerData?.deaths ?? null,
+                duoPartnerAssists: duoPartnerData?.assists ?? null,
                 syncedAt: new Date(),
               },
             });
