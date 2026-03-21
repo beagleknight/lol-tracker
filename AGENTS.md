@@ -9,7 +9,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **Run migrations against production Turso BEFORE pushing code that references new schema.** Vercel does NOT run migrations on deploy.
 
-Steps: `npx drizzle-kit generate` -> `npx drizzle-kit migrate` (with `.env.local` credentials) -> verify -> push code.
+Steps: `npx drizzle-kit generate` -> review SQL -> apply via standalone script (see `vercel-turso-deploy` skill — `drizzle-kit migrate` does NOT work with dotenvx) -> verify -> push code.
 
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 <!-- END:turso-migration-rules -->

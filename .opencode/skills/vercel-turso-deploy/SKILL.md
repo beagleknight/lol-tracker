@@ -139,23 +139,47 @@ When you modify `src/db/schema.ts` (add columns, create tables, change indexes, 
 ### Steps after any schema change
 
 1. Generate migration: `npx drizzle-kit generate`
-2. **Run migration against production Turso**: `npx drizzle-kit migrate` (requires `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env.local`)
-3. Verify migration succeeded before pushing code
+2. Review the generated SQL in `drizzle/XXXX_*.sql`
+3. **Apply migration against production Turso**: Create a standalone script (see "`drizzle-kit migrate` fails or hangs with dotenvx" section below) and run it via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`
+4. Verify migration succeeded (e.g., `PRAGMA table_info(tablename)`) before pushing code
 
-### If `drizzle-kit migrate` hangs
+### `drizzle-kit migrate` fails or hangs with dotenvx
 
-The `drizzle-kit migrate` command sometimes hangs against remote Turso. Workaround — run the migration SQL directly with `@libsql/client`:
+`drizzle-kit migrate` reads `drizzle.config.ts` at module scope, which means env vars are consumed **before** any banner-stripping can run. When invoked via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx drizzle-kit migrate`, the `TURSO_DATABASE_URL` value is corrupted by the dotenvx banner and the command fails silently or with a cryptic error.
 
-```bash
-node --env-file=.env.local -e "
-  const { createClient } = require('@libsql/client');
-  const client = createClient({
-    url: process.env.TURSO_DATABASE_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
-  });
-  client.execute('CREATE INDEX IF NOT EXISTS ...');
-"
+**Workaround**: Write a standalone `.ts` migration script that strips the banner itself, then run it with `npx tsx`. See `scripts/apply-migration-0006.ts` for an example. The pattern:
+
+```ts
+// scripts/apply-migration-XXXX.ts
+import { createClient } from "@libsql/client";
+
+function cleanEnv(key: string): string | undefined {
+  const val = process.env[key];
+  if (!val) return undefined;
+  return val.replace(/^\[dotenv@[^\]]+\][^\n]*\n/, "");
+}
+
+const db = createClient({
+  url: cleanEnv("TURSO_DATABASE_URL")!,
+  authToken: cleanEnv("TURSO_AUTH_TOKEN"),
+});
+
+async function run() {
+  // Copy statements from the generated drizzle/XXXX_*.sql file:
+  await db.execute("ALTER TABLE `matches` ADD `new_column` text");
+  console.log("Done!");
+}
+run().catch(console.error);
 ```
+
+Run with:
+```bash
+npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts
+```
+
+**Important**: Do NOT use `node --env-file` with `require('@libsql/client')` — `@libsql/client` is ESM-only and won't work with `require()`.
+
+After applying manually, the drizzle `__drizzle_migrations` table in Turso will be out of sync with the applied state. This is acceptable for this project since migrations are applied manually anyway. If needed, you can insert a record into `__drizzle_migrations` to mark it as applied.
 
 ### If `.env.local` doesn't have Turso credentials
 
