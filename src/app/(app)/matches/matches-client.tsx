@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition, useMemo, useCallback } from "react";
+import { useState, useRef, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
 import {
   updateMatchComment,
@@ -40,10 +41,10 @@ import {
   ThumbsUp,
   ThumbsDown,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
-import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 
 interface MatchHighlightData {
   type: "highlight" | "lowlight";
@@ -56,6 +57,19 @@ interface MatchesClientProps {
   ddragonVersion: string;
   isRiotLinked: boolean;
   highlightsPerMatch: Record<string, MatchHighlightData[]>;
+  // Server pagination
+  currentPage: number;
+  totalPages: number;
+  totalMatches: number;
+  wins: number;
+  losses: number;
+  champions: string[];
+  filters: {
+    search: string;
+    result: string;
+    champion: string;
+    review: string;
+  };
 }
 
 function formatDuration(seconds: number): string {
@@ -97,6 +111,27 @@ function ChampionIcon({
       className="rounded"
     />
   );
+}
+
+// ─── URL helper ─────────────────────────────────────────────────────────────
+
+function buildMatchesUrl(
+  params: Record<string, string>,
+  overrides: Record<string, string>
+): string {
+  const merged = { ...params, ...overrides };
+  const sp = new URLSearchParams();
+  for (const [key, value] of Object.entries(merged)) {
+    // Omit defaults to keep URLs clean
+    if (key === "page" && value === "1") continue;
+    if (key === "result" && value === "all") continue;
+    if (key === "champion" && value === "all") continue;
+    if (key === "review" && value === "all") continue;
+    if (key === "search" && value === "") continue;
+    if (value) sp.set(key, value);
+  }
+  const qs = sp.toString();
+  return `/matches${qs ? `?${qs}` : ""}`;
 }
 
 // ─── Match Card ─────────────────────────────────────────────────────────────
@@ -484,63 +519,125 @@ function MatchCard({
   );
 }
 
+// ─── Server Pagination ──────────────────────────────────────────────────────
+
+function ServerPagination({
+  currentPage,
+  totalPages,
+  buildUrl,
+}: {
+  currentPage: number;
+  totalPages: number;
+  buildUrl: (page: number) => string;
+}) {
+  if (totalPages <= 1) return null;
+
+  // Build page numbers: first, last, current +/- 1, with ellipsis
+  const pages: (number | "ellipsis")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - 1 && i <= currentPage + 1)
+    ) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "ellipsis") {
+      pages.push("ellipsis");
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1 pt-4">
+      <Link
+        href={buildUrl(currentPage - 1)}
+        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+        scroll={false}
+      >
+        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage === 1}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </Link>
+      {pages.map((p, i) =>
+        p === "ellipsis" ? (
+          <span key={`e-${i}`} className="px-1 text-xs text-muted-foreground">
+            ...
+          </span>
+        ) : (
+          <Link key={p} href={buildUrl(p)} scroll={false}>
+            <Button
+              variant={p === currentPage ? "default" : "ghost"}
+              size="icon"
+              className="h-8 w-8 text-xs"
+            >
+              {p}
+            </Button>
+          </Link>
+        )
+      )}
+      <Link
+        href={buildUrl(currentPage + 1)}
+        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+        scroll={false}
+      >
+        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={currentPage === totalPages}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
 // ─── Main Matches Client ────────────────────────────────────────────────────
 
 export function MatchesClient({
-  matches: initialMatches,
+  matches: pageMatches,
   ddragonVersion,
   isRiotLinked,
   highlightsPerMatch,
+  currentPage,
+  totalPages,
+  totalMatches,
+  wins,
+  losses,
+  champions,
+  filters,
 }: MatchesClientProps) {
   const { isSyncing, handleSync } = useSyncMatches();
-  const [search, setSearch] = useState("");
-  const [resultFilter, setResultFilter] = useState<string>("all");
-  const [reviewFilter, setReviewFilter] = useState<string>("all");
-  const [page, setPage] = useState(1);
+  const router = useRouter();
 
-  // Unique champion names for filter
-  const champions = useMemo(() => {
-    const names = new Set(initialMatches.map((m) => m.championName));
-    return Array.from(names).sort();
-  }, [initialMatches]);
+  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
-  const [championFilter, setChampionFilter] = useState<string>("all");
+  // Current filter params for URL building
+  const currentParams: Record<string, string> = {
+    search: filters.search,
+    result: filters.result,
+    champion: filters.champion,
+    review: filters.review,
+    page: String(currentPage),
+  };
 
-  // Filter matches
-  const filteredMatches = useMemo(() => {
-    return initialMatches.filter((m) => {
-      if (resultFilter !== "all" && m.result !== resultFilter) return false;
-      if (championFilter !== "all" && m.championName !== championFilter)
-        return false;
-      if (reviewFilter === "reviewed" && !m.reviewed) return false;
-      if (reviewFilter === "unreviewed" && m.reviewed) return false;
-      if (reviewFilter === "has-notes" && !m.comment) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        const matchesSearch =
-          m.championName.toLowerCase().includes(q) ||
-          m.matchupChampionName?.toLowerCase().includes(q) ||
-          m.runeKeystoneName?.toLowerCase().includes(q) ||
-          m.comment?.toLowerCase().includes(q) ||
-          m.reviewNotes?.toLowerCase().includes(q);
-        if (!matchesSearch) return false;
-      }
-      return true;
-    });
-  }, [initialMatches, resultFilter, championFilter, reviewFilter, search]);
+  function navigateWithFilter(key: string, value: string) {
+    const url = buildMatchesUrl(currentParams, { [key]: value, page: "1" });
+    router.push(url, { scroll: false });
+  }
 
-  // Stats
-  const wins = filteredMatches.filter((m) => m.result === "Victory").length;
-  const losses = filteredMatches.filter((m) => m.result === "Defeat").length;
-  const winRate =
-    filteredMatches.length > 0
-      ? Math.round((wins / filteredMatches.length) * 100)
-      : 0;
+  function buildPageUrl(page: number): string {
+    return buildMatchesUrl(currentParams, { page: String(page) });
+  }
 
-  // Clamp page if filters reduce result count
-  const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const paginatedMatches = paginate(filteredMatches, safePage);
+  // Debounced search — navigate after typing stops
+  const [searchValue, setSearchValue] = useState(filters.search);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = setTimeout(() => {
+        navigateWithFilter("search", value);
+      }, 400);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filters.result, filters.champion, filters.review]
+  );
 
   return (
     <div className="space-y-6">
@@ -549,7 +646,7 @@ export function MatchesClient({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Matches</h1>
           <p className="text-muted-foreground">
-            {filteredMatches.length} game{filteredMatches.length !== 1 ? "s" : ""}{" "}
+            {totalMatches} game{totalMatches !== 1 ? "s" : ""}{" "}
             &middot; {wins}W {losses}L ({winRate}%)
           </p>
         </div>
@@ -586,12 +683,15 @@ export function MatchesClient({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search champion, matchup, notes..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              debouncedSearch(e.target.value);
+            }}
             className="pl-9"
           />
         </div>
-        <Select value={resultFilter} onValueChange={(v) => { setResultFilter(v ?? "all"); setPage(1); }}>
+        <Select value={filters.result} onValueChange={(v) => navigateWithFilter("result", v ?? "all")}>
           <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Result" />
           </SelectTrigger>
@@ -601,7 +701,7 @@ export function MatchesClient({
             <SelectItem value="Defeat">Defeats</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={championFilter} onValueChange={(v) => { setChampionFilter(v ?? "all"); setPage(1); }}>
+        <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Champion" />
           </SelectTrigger>
@@ -623,7 +723,7 @@ export function MatchesClient({
             ))}
           </SelectContent>
         </Select>
-        <Select value={reviewFilter} onValueChange={(v) => { setReviewFilter(v ?? "all"); setPage(1); }}>
+        <Select value={filters.review} onValueChange={(v) => navigateWithFilter("review", v ?? "all")}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Review" />
           </SelectTrigger>
@@ -637,18 +737,18 @@ export function MatchesClient({
       </div>
 
       {/* Match Cards */}
-      {filteredMatches.length === 0 ? (
+      {totalMatches === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
-            {initialMatches.length === 0
-              ? "No matches synced yet. Click Sync Games to get started."
-              : "No matches match your filters."}
+            {filters.search || filters.result !== "all" || filters.champion !== "all" || filters.review !== "all"
+              ? "No matches match your filters."
+              : "No matches synced yet. Click Sync Games to get started."}
           </p>
         </div>
       ) : (
         <>
           <div className="space-y-2">
-            {paginatedMatches.map((match) => (
+            {pageMatches.map((match) => (
               <MatchCard
                 key={match.id}
                 match={match}
@@ -657,10 +757,10 @@ export function MatchesClient({
               />
             ))}
           </div>
-          <Pagination
-            currentPage={safePage}
-            totalItems={filteredMatches.length}
-            onPageChange={setPage}
+          <ServerPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildUrl={buildPageUrl}
           />
         </>
       )}

@@ -1,17 +1,66 @@
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc, like, sql, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { MatchesClient } from "./matches-client";
 
-export default async function MatchesPage() {
-  const user = await requireUser();
+const PAGE_SIZE = 10;
 
-  const [userMatches, allHighlights, ddragonVersion] = await Promise.all([
+export default async function MatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const user = await requireUser();
+  const params = await searchParams;
+
+  // Parse search params
+  const page = Math.max(1, parseInt(String(params.page ?? "1"), 10) || 1);
+  const search = typeof params.search === "string" ? params.search : "";
+  const result = typeof params.result === "string" ? params.result : "all";
+  const champion = typeof params.champion === "string" ? params.champion : "all";
+  const review = typeof params.review === "string" ? params.review : "all";
+
+  // Build WHERE conditions
+  const conditions = [eq(matches.userId, user.id)];
+  if (result === "Victory" || result === "Defeat") {
+    conditions.push(eq(matches.result, result));
+  }
+  if (champion !== "all") {
+    conditions.push(eq(matches.championName, champion));
+  }
+  if (review === "reviewed") {
+    conditions.push(eq(matches.reviewed, true));
+  } else if (review === "unreviewed") {
+    conditions.push(eq(matches.reviewed, false));
+  } else if (review === "has-notes") {
+    conditions.push(sql`${matches.comment} IS NOT NULL AND ${matches.comment} != ''`);
+  }
+  if (search) {
+    const pattern = `%${search}%`;
+    conditions.push(
+      sql`(
+        ${matches.championName} LIKE ${pattern}
+        OR ${matches.matchupChampionName} LIKE ${pattern}
+        OR ${matches.runeKeystoneName} LIKE ${pattern}
+        OR ${matches.comment} LIKE ${pattern}
+        OR ${matches.reviewNotes} LIKE ${pattern}
+      )`
+    );
+  }
+
+  const whereClause = and(...conditions);
+
+  // Run: paginated matches + total count + champion list + highlights — in parallel
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const [pageMatches, countResult, championRows, ddragonVersion, statsResult] = await Promise.all([
     db.query.matches.findMany({
-      where: eq(matches.userId, user.id),
+      where: whereClause,
       orderBy: desc(matches.gameDate),
+      limit: PAGE_SIZE,
+      offset,
       columns: {
         id: true,
         odometer: true,
@@ -42,24 +91,53 @@ export default async function MatchesPage() {
         duoPartnerPuuid: true,
       },
     }),
-    db.query.matchHighlights.findMany({
-      where: eq(matchHighlights.userId, user.id),
-      columns: {
-        matchId: true,
-        type: true,
-        text: true,
-        topic: true,
-      },
-    }),
+    db.select({ total: count() }).from(matches).where(whereClause),
+    // Lightweight query: distinct champion names for filter dropdown
+    db
+      .selectDistinct({ championName: matches.championName })
+      .from(matches)
+      .where(eq(matches.userId, user.id)),
     getLatestVersion(),
+    // Win/loss stats for the filtered set
+    db
+      .select({
+        wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
+        losses: sql<number>`SUM(CASE WHEN ${matches.result} = 'Defeat' THEN 1 ELSE 0 END)`,
+      })
+      .from(matches)
+      .where(whereClause),
   ]);
 
-  // Build highlight data per match (full items for preview + counts)
+  const totalMatches = countResult[0]?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalMatches / PAGE_SIZE));
+  const champions = championRows.map((r) => r.championName).sort();
+  const wins = statsResult[0]?.wins ?? 0;
+  const losses = statsResult[0]?.losses ?? 0;
+
+  // Fetch highlights ONLY for the current page's matches
+  const matchIds = pageMatches.map((m) => m.id);
+  const pageHighlights =
+    matchIds.length > 0
+      ? await db.query.matchHighlights.findMany({
+          where: and(
+            eq(matchHighlights.userId, user.id),
+            inArray(matchHighlights.matchId, matchIds),
+          ),
+          columns: {
+            matchId: true,
+            type: true,
+            text: true,
+            topic: true,
+          },
+        })
+      : [];
+
+  // Build highlight data per match
   const highlightsPerMatch: Record<
     string,
     Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
   > = {};
-  for (const h of allHighlights) {
+  for (const h of pageHighlights) {
     if (!highlightsPerMatch[h.matchId]) {
       highlightsPerMatch[h.matchId] = [];
     }
@@ -70,14 +148,21 @@ export default async function MatchesPage() {
     });
   }
 
-  const isRiotLinked = !!user.puuid;
-
   return (
     <MatchesClient
-      matches={userMatches as any}
+      matches={pageMatches as any}
       ddragonVersion={ddragonVersion}
-      isRiotLinked={isRiotLinked}
+      isRiotLinked={!!user.puuid}
       highlightsPerMatch={highlightsPerMatch}
+      // Server pagination state
+      currentPage={Math.min(page, totalPages)}
+      totalPages={totalPages}
+      totalMatches={totalMatches}
+      wins={wins}
+      losses={losses}
+      champions={champions}
+      // Current filter values (for controlled inputs)
+      filters={{ search, result, champion, review }}
     />
   );
 }
