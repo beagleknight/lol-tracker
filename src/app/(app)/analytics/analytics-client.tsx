@@ -398,7 +398,7 @@ export function AnalyticsClient({
 
     const tierBoundaries = getTierBoundaries(yMin, yMax);
 
-    // Detect promotions/demotions
+    // Detect tier changes (framed as milestones, not promotions/demotions)
     const events: Array<{
       index: number;
       type: "promotion" | "demotion";
@@ -423,7 +423,32 @@ export function AnalyticsClient({
     const last = rankChartData[rankChartData.length - 1];
     const netChange = last.cumulativeLP - first.cumulativeLP;
 
-    return { yMin, yMax, tierBoundaries, events, netChange };
+    // Peak rank achieved (highest cumulative LP point)
+    let peakIndex = 0;
+    let peakLP = rankChartData[0].cumulativeLP;
+    for (let i = 1; i < rankChartData.length; i++) {
+      if (rankChartData[i].cumulativeLP > peakLP) {
+        peakLP = rankChartData[i].cumulativeLP;
+        peakIndex = i;
+      }
+    }
+    const peakRank = formatRank(peakLP);
+
+    // First-time-in-tier milestones: detect the first snapshot where a tier appears
+    const seenTiers = new Set<string>();
+    const milestones: Array<{ index: number; tier: string }> = [];
+    for (let i = 0; i < rankChartData.length; i++) {
+      const tier = rankChartData[i].tier;
+      if (tier && !seenTiers.has(tier)) {
+        seenTiers.add(tier);
+        // Skip the very first data point — that's just the starting tier, not a milestone
+        if (i > 0) {
+          milestones.push({ index: i, tier });
+        }
+      }
+    }
+
+    return { yMin, yMax, tierBoundaries, events, netChange, peakIndex, peakRank, milestones };
   }, [rankChartData]);
 
   if (matches.length === 0) {
@@ -455,23 +480,30 @@ export function AnalyticsClient({
         </p>
       </div>
 
-      {/* LP Over Time */}
+      {/* Rank Journey */}
       {rankChartData.length >= 2 && lpChartMeta && (
         <Card className="surface-glow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-gold" />
-              LP Over Time
+              Rank Journey
             </CardTitle>
-            <CardDescription className="flex items-center gap-3">
-              <span>Rank progression across {rankChartData.length} snapshots</span>
-              <span
-                className={`font-mono font-semibold ${
-                  lpChartMeta.netChange >= 0 ? "text-green-400" : "text-red-400"
-                }`}
-              >
-                {lpChartMeta.netChange >= 0 ? "+" : ""}
-                {lpChartMeta.netChange} LP net
+            <CardDescription>
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>{rankChartData.length} snapshots tracked</span>
+                <span className="font-medium text-foreground/80">
+                  Peak: {lpChartMeta.peakRank}
+                </span>
+                {lpChartMeta.netChange !== 0 && (
+                  <span
+                    className={`font-mono font-semibold ${
+                      lpChartMeta.netChange >= 0 ? "text-green-400" : "text-red-400"
+                    }`}
+                  >
+                    {lpChartMeta.netChange >= 0 ? "+" : ""}
+                    {lpChartMeta.netChange} LP overall
+                  </span>
+                )}
               </span>
             </CardDescription>
           </CardHeader>
@@ -507,8 +539,17 @@ export function AnalyticsClient({
                     content={({ active, payload }) => {
                       if (!active || !payload || !payload[0]) return null;
                       const d = payload[0].payload as (typeof rankChartData)[0];
+                      const idx = rankChartData.findIndex((r) => r.timestamp === d.timestamp);
+                      const isPeak = idx === lpChartMeta.peakIndex;
+                      const milestone = lpChartMeta.milestones.find((m) => m.index === idx);
                       return (
                         <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                          {isPeak && (
+                            <p className="text-xs font-semibold text-gold mb-1">Peak Rank Achieved</p>
+                          )}
+                          {milestone && (
+                            <p className="text-xs font-semibold text-green-400 mb-1">First time in {milestone.tier}!</p>
+                          )}
                           <p className="font-semibold text-gold">
                             {d.tier} {d.division}
                           </p>
@@ -549,7 +590,7 @@ export function AnalyticsClient({
                       }
                       strokeDasharray="4 4"
                       label={{
-                        value: e.type === "promotion" ? "Promoted" : "Demoted",
+                        value: e.type === "promotion" ? `Reached ${e.to.split(" ")[0]}` : `Back to ${e.to.split(" ")[0]}`,
                         fill:
                           e.type === "promotion"
                             ? "oklch(0.72 0.15 150)"
@@ -571,6 +612,32 @@ export function AnalyticsClient({
                       const isEvent = lpChartMeta.events.some(
                         (e: { index: number }) => e.index === props.index
                       );
+                      // Highlight peak rank point
+                      const isPeak = props.index === lpChartMeta.peakIndex;
+                      if (isPeak) {
+                        return (
+                          <g key={props.index}>
+                            <circle
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={6}
+                              fill="oklch(0.78 0.14 80)"
+                              stroke="oklch(0.90 0.14 80)"
+                              strokeWidth={2}
+                            />
+                            <text
+                              x={props.cx}
+                              y={props.cy - 12}
+                              textAnchor="middle"
+                              fill="oklch(0.85 0.12 80)"
+                              fontSize={9}
+                              fontWeight="bold"
+                            >
+                              Peak
+                            </text>
+                          </g>
+                        );
+                      }
                       if (isEvent) {
                         return (
                           <circle
