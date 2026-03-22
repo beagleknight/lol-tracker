@@ -66,7 +66,7 @@ type SlimParticipant = Pick<
 >;
 
 interface MatchDetailClientProps {
-  match: Match;
+  match: Omit<Match, "rawMatchJson">;
   participants: SlimParticipant[] | null;
   linkedSessions: Array<{
     sessionId: number;

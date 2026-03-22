@@ -35,7 +35,12 @@
 - [x] Duo page: added composite index `(userId, duoPartnerPuuid)` — all duo queries were doing full table scans
 - [x] Duo page: parallelized count + select in `getDuoGames` (was sequential waterfall)
 - [x] Duo page: added SQL LIMIT to `getChampionSynergy` (was fetching all combos, client used 15)
-- [ ] Duo page: remaining slowness is likely Vercel cold starts (~5-10s on free tier) — consider Suspense streaming to improve perceived performance
+- [x] Duo page: Suspense streaming — split into 3 async server components with skeleton fallbacks; only partner info + ddragon are blocking, stats/synergy/games stream in
+- [x] Match detail: strip `rawMatchJson` (50-100KB) from RSC payload — only used server-side
+- [x] Match detail: flatten waterfall — `getLatestVersion()` now starts immediately alongside match fetch
+- [x] Analytics: trim column selection from 22 to 8 — only fetch `gameDate`, `result`, `championName`, `matchupChampionName`, `runeKeystoneName`, `kills`, `deaths`, `assists`
+- [x] Coaching detail: flatten 4-stage waterfall to 3 — highlights query joins through `coachingSessionMatches` on `sessionId`, runs in parallel with match/items/ddragon fetches
+- [x] Review: add `limit: 50` to unbounded unreviewed matches query
 
 ## Features — LP Tracking
 - [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)

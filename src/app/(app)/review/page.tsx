@@ -66,6 +66,7 @@ export default async function ReviewPage({
           eq(matches.reviewed, false)
         ),
         orderBy: desc(matches.gameDate),
+        limit: 50,
         columns: matchColumns,
       }) as unknown as Promise<import("@/db/schema").Match[]>,
       db.query.matches.findMany({
