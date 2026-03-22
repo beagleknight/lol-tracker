@@ -74,16 +74,16 @@ export function useSyncMatches() {
               case "done":
                 receivedFinal = true;
                 if (data.synced > 0) {
-                  toast.success(data.message, { id: toastIdRef.current });
+                  toast.success(data.message, { id: toastIdRef.current, duration: 8000 });
                 } else {
-                  toast.info(data.message, { id: toastIdRef.current });
+                  toast.info(data.message, { id: toastIdRef.current, duration: 8000 });
                 }
                 router.refresh();
                 break;
 
               case "error":
                 receivedFinal = true;
-                toast.error(data.message, { id: toastIdRef.current });
+                toast.error(data.message, { id: toastIdRef.current, duration: 10000 });
                 break;
             }
           } catch {
@@ -116,9 +116,13 @@ export function useSyncMatches() {
           processMessage(buffer);
         }
 
-        // If the stream ended without a done/error event, dismiss the toast
+        // If the stream ended without a done/error event, show a warning
+        // (this shouldn't happen — indicates the server closed unexpectedly)
         if (!receivedFinal) {
-          toast.dismiss(toastIdRef.current);
+          toast.warning("Sync stream ended unexpectedly. Check if your matches updated.", {
+            id: toastIdRef.current,
+            duration: 8000,
+          });
         }
       })
       .catch((error) => {
