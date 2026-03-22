@@ -272,7 +272,7 @@ export function MatchDetailClient({
                     {(() => {
                       const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
                       return url ? (
-                        <Image src={url} alt={match.runeKeystoneName} width={16} height={16} className="inline rounded" />
+                        <Image src={url} alt={match.runeKeystoneName} width={20} height={20} className="inline -my-0.5" />
                       ) : null;
                     })()}
                     {" "}{match.runeKeystoneName}
@@ -373,13 +373,13 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold flex items-center gap-2">
+            <p className="text-2xl font-bold flex items-center justify-center gap-2">
               {match.runeKeystoneName ? (
                 <>
                   {(() => {
                     const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
                     return url ? (
-                      <Image src={url} alt={match.runeKeystoneName} width={28} height={28} className="rounded" />
+                      <Image src={url} alt={match.runeKeystoneName} width={36} height={36} />
                     ) : null;
                   })()}
                   {match.runeKeystoneName}
