@@ -40,7 +40,11 @@ export async function GET() {
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: Record<string, unknown>) => {
-        controller.enqueue(encoder.encode(sseMessage(data)));
+        try {
+          controller.enqueue(encoder.encode(sseMessage(data)));
+        } catch {
+          // Stream may already be closed (client disconnected) — ignore
+        }
       };
 
       try {
@@ -285,9 +289,14 @@ export async function GET() {
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to sync matches";
+        console.error("Sync error:", message);
         send({ type: "error", message });
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          // Already closed
+        }
       }
     },
   });
