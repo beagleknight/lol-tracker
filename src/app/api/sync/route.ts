@@ -51,10 +51,12 @@ export async function GET() {
         // Auto-backfill summonerId if missing (enables rank snapshot capture)
         let effectiveSummonerId = user.summonerId;
         let backfillError: string | null = null;
-        if (user.puuid && !user.summonerId) {
+        const hasPuuid = !!user.puuid;
+        const hasSummonerId = !!user.summonerId;
+        if (hasPuuid && !hasSummonerId) {
           try {
             send({ type: "status", message: "Backfilling summoner data..." });
-            const summoner = await getSummonerByPuuid(user.puuid);
+            const summoner = await getSummonerByPuuid(user.puuid!);
             await db
               .update(users)
               .set({ summonerId: summoner.id, updatedAt: new Date() })
@@ -121,7 +123,7 @@ export async function GET() {
           } else if (backfillError) {
             rankWarning = `Rank tracking failed: ${backfillError}`;
           } else {
-            rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings to enable it.";
+            rankWarning = `Rank tracking unavailable (puuid=${hasPuuid}, summonerId=${hasSummonerId}, backfill=${backfillError ?? "not attempted"}) — re-link your Riot account in Settings.`;
           }
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
@@ -275,7 +277,7 @@ export async function GET() {
         } else if (backfillError) {
           rankWarning = `Rank tracking failed: ${backfillError}`;
         } else {
-          rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings.";
+          rankWarning = `Rank tracking unavailable (puuid=${hasPuuid}, summonerId=${hasSummonerId}, backfill=${backfillError ?? "not attempted"}) — re-link your Riot account in Settings.`;
         }
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
