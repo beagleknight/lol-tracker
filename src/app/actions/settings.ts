@@ -6,8 +6,6 @@ import { eq, and, isNotNull, ne } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
   getAccountByRiotId,
-  getSummonerByPuuid,
-  RiotApiError,
 } from "@/lib/riot-api";
 import { revalidatePath } from "next/cache";
 
@@ -28,9 +26,6 @@ export async function linkRiotAccount(formData: FormData) {
     // Look up account via Riot API
     const account = await getAccountByRiotId(gameName, tagLine);
 
-    // Get summoner ID
-    const summoner = await getSummonerByPuuid(account.puuid);
-
     // Update user record
     await db
       .update(users)
@@ -38,7 +33,6 @@ export async function linkRiotAccount(formData: FormData) {
         riotGameName: account.gameName,
         riotTagLine: account.tagLine,
         puuid: account.puuid,
-        summonerId: summoner.id,
         updatedAt: new Date(),
       })
       .where(eq(users.id, user.id));

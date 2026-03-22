@@ -10,8 +10,7 @@ import {
   findDuoPartner,
   extractDuoPartnerData,
   getKeystoneName,
-  getSoloQueueEntry,
-  getSummonerByPuuid,
+  getSoloQueueEntryByPuuid,
   RiotApiError,
 } from "@/lib/riot-api";
 
@@ -48,33 +47,6 @@ export async function GET() {
       };
 
       try {
-        // Auto-backfill summonerId if missing (enables rank snapshot capture)
-        let effectiveSummonerId = user.summonerId;
-        let backfillError: string | null = null;
-        const hasPuuid = !!user.puuid;
-        const hasSummonerId = !!user.summonerId;
-        if (hasPuuid && !hasSummonerId) {
-          try {
-            send({ type: "status", message: "Backfilling summoner data..." });
-            const summoner = await getSummonerByPuuid(user.puuid!);
-            // The Riot API may return the summoner ID under different field names
-            const summonerId = summoner.id || (summoner as unknown as Record<string, unknown>).encryptedSummonerId as string | undefined;
-            if (!summonerId) {
-              backfillError = `Summoner API returned no ID. Keys: ${Object.keys(summoner).join(",")}`;
-            } else {
-              await db
-                .update(users)
-                .set({ summonerId, updatedAt: new Date() })
-                .where(eq(users.id, user.id));
-              effectiveSummonerId = summonerId;
-            }
-          } catch (err) {
-            backfillError = err instanceof Error ? err.message : String(err);
-            console.error("Failed to backfill summonerId:", backfillError);
-            // Non-fatal — continue with sync, just skip rank snapshots
-          }
-        }
-
         send({ type: "status", message: "Checking existing matches..." });
 
         // Check which matches we already have
@@ -123,14 +95,7 @@ export async function GET() {
 
         if (newMatchIds.length === 0) {
           // Still capture rank snapshot
-          let rankWarning: string | null = null;
-          if (effectiveSummonerId) {
-            rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
-          } else if (backfillError) {
-            rankWarning = `Rank tracking failed: ${backfillError}`;
-          } else {
-            rankWarning = `Rank tracking unavailable (puuid=${hasPuuid}, summonerId=${hasSummonerId}, effectiveSummonerId=${JSON.stringify(effectiveSummonerId)}, backfill=${backfillError ?? "no error"}) — re-link your Riot account in Settings.`;
-          }
+          const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
@@ -141,9 +106,7 @@ export async function GET() {
 
         // Capture rank snapshot BEFORE syncing — gives a "before" data point
         // so the LP chart shows the delta across this sync session
-        if (effectiveSummonerId) {
-          await captureRankSnapshot(user.id, effectiveSummonerId);
-        }
+        await captureRankSnapshot(user.id, user.puuid!);
 
         send({
           type: "status",
@@ -277,14 +240,7 @@ export async function GET() {
         }
 
         // Capture rank snapshot
-        let rankWarning: string | null = null;
-        if (effectiveSummonerId) {
-          rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
-        } else if (backfillError) {
-          rankWarning = `Rank tracking failed: ${backfillError}`;
-        } else {
-          rankWarning = `Rank tracking unavailable (puuid=${hasPuuid}, summonerId=${hasSummonerId}, backfill=${backfillError ?? "not attempted"}) — re-link your Riot account in Settings.`;
-        }
+        const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
         if (failedCount > 0) {
@@ -324,9 +280,9 @@ export async function GET() {
   });
 }
 
-async function captureRankSnapshot(userId: string, summonerId: string): Promise<string | null> {
+async function captureRankSnapshot(userId: string, puuid: string): Promise<string | null> {
   try {
-    const entry = await getSoloQueueEntry(summonerId);
+    const entry = await getSoloQueueEntryByPuuid(puuid);
     if (entry) {
       await db.insert(rankSnapshots).values({
         userId,
