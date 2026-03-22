@@ -94,10 +94,12 @@ export async function GET() {
           let rankWarning: string | null = null;
           if (user.summonerId) {
             rankWarning = await captureRankSnapshot(user.id, user.summonerId);
+          } else {
+            rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings to enable it.";
           }
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
-            : "No new matches found.";
+            : "No new matches found. Rank snapshot captured.";
           send({ type: "done", synced: 0, message: msg });
           controller.close();
           return;
@@ -244,6 +246,8 @@ export async function GET() {
         let rankWarning: string | null = null;
         if (user.summonerId) {
           rankWarning = await captureRankSnapshot(user.id, user.summonerId);
+        } else {
+          rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings.";
         }
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
@@ -291,13 +295,14 @@ async function captureRankSnapshot(userId: string, summonerId: string): Promise<
         wins: entry.wins,
         losses: entry.losses,
       });
+      return null;
     }
-    return null;
+    return "No Solo/Duo rank found — rank tracking only works for ranked Solo/Duo games.";
   } catch (error) {
     console.error("Failed to capture rank snapshot:", error);
     if (error instanceof RiotApiError && error.status === 400) {
       return "Rank tracking failed — please re-link your Riot account in Settings.";
     }
-    return null;
+    return "Rank snapshot failed — try again later.";
   }
 }
