@@ -42,10 +42,11 @@
 - [x] Coaching detail: flatten 4-stage waterfall to 3 — highlights query joins through `coachingSessionMatches` on `sessionId`, runs in parallel with match/items/ddragon fetches
 - [x] Review: add `limit: 50` to unbounded unreviewed matches query
 
-## Features — LP Tracking
-- [ ] Capture LP before/after each game during sync (requires comparing rank snapshots)
-- [ ] Add LP gain/loss column to matches table
-- [ ] Show promotion/demotion markers on LP graph
+## Features — Rank Journey (LP Tracking)
+- [x] Before-sync rank snapshot: capture rank at start of sync (in addition to end) for smoother LP chart with 2 data points per sync
+- [x] Milestone detection: peak rank marker + first-time-in-tier milestones on the LP chart
+- [x] Growth framing: renamed "LP Over Time" to "Rank Journey", promotion labels say "Reached X" instead of "Promoted", demotion labels say "Back to X", tooltip shows milestone context
+- [x] Design decision: no per-game LP deltas shown anywhere — LP is framed as a long-term journey, not a per-game metric, to promote a healthy relationship with the game
 
 ## Features — Deployment
 - [ ] Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)

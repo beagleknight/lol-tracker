@@ -103,6 +103,12 @@ export async function GET() {
           return;
         }
 
+        // Capture rank snapshot BEFORE syncing — gives a "before" data point
+        // so the LP chart shows the delta across this sync session
+        if (user.summonerId) {
+          await captureRankSnapshot(user.id, user.summonerId);
+        }
+
         send({
           type: "status",
           message: `Syncing ${newMatchIds.length} new matches (${existingIds.size} already synced)...`,
