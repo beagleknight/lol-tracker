@@ -57,12 +57,17 @@ export async function GET() {
           try {
             send({ type: "status", message: "Backfilling summoner data..." });
             const summoner = await getSummonerByPuuid(user.puuid!);
-            send({ type: "status", message: `Summoner result: id=${JSON.stringify(summoner.id)}, keys=${Object.keys(summoner).join(",")}` });
-            await db
-              .update(users)
-              .set({ summonerId: summoner.id, updatedAt: new Date() })
-              .where(eq(users.id, user.id));
-            effectiveSummonerId = summoner.id;
+            // The Riot API may return the summoner ID under different field names
+            const summonerId = summoner.id || (summoner as unknown as Record<string, unknown>).encryptedSummonerId as string | undefined;
+            if (!summonerId) {
+              backfillError = `Summoner API returned no ID. Keys: ${Object.keys(summoner).join(",")}`;
+            } else {
+              await db
+                .update(users)
+                .set({ summonerId, updatedAt: new Date() })
+                .where(eq(users.id, user.id));
+              effectiveSummonerId = summonerId;
+            }
           } catch (err) {
             backfillError = err instanceof Error ? err.message : String(err);
             console.error("Failed to backfill summonerId:", backfillError);
