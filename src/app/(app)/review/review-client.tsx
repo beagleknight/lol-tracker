@@ -410,7 +410,7 @@ function VodReviewCard({
         )}
         {match.comment && (
           <div className="rounded-md border border-border/50 bg-surface/30 p-2.5">
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-xs text-foreground/70 italic line-clamp-3">
               &ldquo;{match.comment}&rdquo;
             </p>
           </div>
@@ -656,9 +656,11 @@ function CompletedCard({
 
         {/* Comment */}
         {match.comment && (
-          <p className="text-xs text-muted-foreground italic truncate">
-            &ldquo;{match.comment}&rdquo;
-          </p>
+          <div className="rounded-md border border-border/50 bg-surface/30 p-2.5">
+            <p className="text-xs text-muted-foreground italic line-clamp-2">
+              &ldquo;{match.comment}&rdquo;
+            </p>
+          </div>
         )}
 
         {/* Review info row */}
@@ -675,11 +677,11 @@ function CompletedCard({
             </a>
           )}
           {match.reviewNotes && (
-            <span className="inline-flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              {match.reviewNotes.length > 60
-                ? match.reviewNotes.slice(0, 60) + "..."
-                : match.reviewNotes}
+            <span className="inline-flex items-start gap-1">
+              <Eye className="h-3 w-3 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">
+                {match.reviewNotes}
+              </span>
             </span>
           )}
           {match.reviewSkippedReason && (

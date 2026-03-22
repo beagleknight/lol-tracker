@@ -18,7 +18,7 @@ import {
   ChevronRight,
   EyeOff,
 } from "lucide-react";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { getChampionIconUrl } from "@/lib/riot-api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -182,8 +182,8 @@ export function MatchCard({
                         {item.topic || item.text}
                       </TooltipTrigger>
                       {hasText && (
-                        <TooltipContent side="bottom">
-                          {item.text}
+                        <TooltipContent side="bottom" className="max-w-sm">
+                          <p className="whitespace-pre-wrap">{item.text}</p>
                         </TooltipContent>
                       )}
                     </Tooltip>
@@ -204,8 +204,8 @@ export function MatchCard({
                         {item.topic || item.text}
                       </TooltipTrigger>
                       {hasText && (
-                        <TooltipContent side="bottom">
-                          {item.text}
+                        <TooltipContent side="bottom" className="max-w-sm">
+                          <p className="whitespace-pre-wrap">{item.text}</p>
                         </TooltipContent>
                       )}
                     </Tooltip>
@@ -253,8 +253,8 @@ export function MatchCard({
                 <TooltipTrigger className="cursor-default">
                   <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <span className="line-clamp-3">{match.comment}</span>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <p className="line-clamp-4 whitespace-pre-wrap">{match.comment}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -263,8 +263,8 @@ export function MatchCard({
                 <TooltipTrigger className="cursor-default">
                   <Eye className="h-3.5 w-3.5 text-green-400/70" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <span className="line-clamp-3">{reviewStatusText}</span>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <p className="line-clamp-4 whitespace-pre-wrap">{reviewStatusText}</p>
                 </TooltipContent>
               </Tooltip>
             )}
