@@ -6,7 +6,7 @@ import {
   matches,
   matchHighlights,
 } from "@/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { notFound } from "next/navigation";
 import { getLatestVersion } from "@/lib/riot-api";
@@ -32,8 +32,8 @@ export default async function CoachingDetailPage({
 
   if (!session) notFound();
 
-  // Parallel: linked matches + action items + DDragon version
-  const [linkedMatchRows, items, ddragonVersion] = await Promise.all([
+  // Parallel: linked matches + action items + DDragon version + highlights
+  const [linkedMatchRows, items, ddragonVersion, allHighlights] = await Promise.all([
     db
       .select({
         id: matches.id,
@@ -58,39 +58,42 @@ export default async function CoachingDetailPage({
       where: eq(coachingActionItems.sessionId, sessionId),
     }),
     getLatestVersion(),
-  ]);
-
-  // Fetch highlights for linked matches
-  const linkedMatchIds = linkedMatchRows.map((m) => m.id);
-  let highlightsByMatch: Record<
-    string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
-  > = {};
-
-  if (linkedMatchIds.length > 0) {
-    const highlights = await db
+    // Highlights via join on sessionId — no need to wait for linkedMatchIds
+    db
       .select({
         matchId: matchHighlights.matchId,
         type: matchHighlights.type,
         text: matchHighlights.text,
         topic: matchHighlights.topic,
       })
-      .from(matchHighlights)
+      .from(coachingSessionMatches)
+      .innerJoin(
+        matchHighlights,
+        and(
+          eq(coachingSessionMatches.matchId, matchHighlights.matchId),
+          eq(coachingSessionMatches.userId, matchHighlights.userId),
+        )
+      )
       .where(
         and(
-          inArray(matchHighlights.matchId, linkedMatchIds),
-          eq(matchHighlights.userId, user.id)
+          eq(coachingSessionMatches.sessionId, sessionId),
+          eq(coachingSessionMatches.userId, user.id),
         )
-      );
+      ),
+  ]);
 
-    for (const h of highlights) {
-      if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
-      highlightsByMatch[h.matchId].push({
-        type: h.type as "highlight" | "lowlight",
-        text: h.text,
-        topic: h.topic,
-      });
-    }
+  // Group highlights by matchId
+  const highlightsByMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  > = {};
+  for (const h of allHighlights) {
+    if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
+    highlightsByMatch[h.matchId].push({
+      type: h.type as "highlight" | "lowlight",
+      text: h.text,
+      topic: h.topic,
+    });
   }
 
   return (

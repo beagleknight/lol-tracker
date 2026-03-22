@@ -35,7 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
-import type { Match, RankSnapshot } from "@/db/schema";
+import type { RankSnapshot } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 
@@ -166,6 +166,18 @@ function prepareRankChartData(snapshots: RankSnapshot[]) {
   return data;
 }
 
+/** Slim match shape — only the 8 columns fetched by the analytics page */
+interface AnalyticsMatch {
+  gameDate: Date;
+  result: string;
+  championName: string;
+  matchupChampionName: string | null;
+  runeKeystoneName: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+}
+
 interface CoachingSessionSummary {
   id: number;
   coachName: string;
@@ -173,7 +185,7 @@ interface CoachingSessionSummary {
 }
 
 interface AnalyticsClientProps {
-  matches: Match[];
+  matches: AnalyticsMatch[];
   coachingSessions: CoachingSessionSummary[];
   rankSnapshots: RankSnapshot[];
   ddragonVersion: string;
@@ -181,7 +193,7 @@ interface AnalyticsClientProps {
 
 // Rolling win rate: for each match, calculate win rate of last N games
 function computeRollingWinRate(
-  matches: Match[],
+  matches: AnalyticsMatch[],
   window = 10
 ): Array<{ index: number; date: string; winRate: number }> {
   const data: Array<{ index: number; date: string; winRate: number }> = [];
@@ -199,7 +211,7 @@ function computeRollingWinRate(
   return data;
 }
 
-function computeMatchupStats(matches: Match[]) {
+function computeMatchupStats(matches: AnalyticsMatch[]) {
   const stats = new Map<
     string,
     { wins: number; losses: number; games: number }
@@ -221,7 +233,7 @@ function computeMatchupStats(matches: Match[]) {
     .sort((a, b) => b.games - a.games);
 }
 
-function computeRuneStats(matches: Match[]) {
+function computeRuneStats(matches: AnalyticsMatch[]) {
   const stats = new Map<
     string,
     { wins: number; losses: number; games: number }
@@ -243,7 +255,7 @@ function computeRuneStats(matches: Match[]) {
     .sort((a, b) => b.games - a.games);
 }
 
-function computeChampionStats(matches: Match[]) {
+function computeChampionStats(matches: AnalyticsMatch[]) {
   const stats = new Map<
     string,
     {

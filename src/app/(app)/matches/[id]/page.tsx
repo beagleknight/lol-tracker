@@ -41,6 +41,9 @@ export default async function MatchDetailPage({
   const { id } = await params;
   const user = await requireUser();
 
+  // Start DDragon version fetch immediately — it doesn't depend on the match
+  const ddragonVersionPromise = getLatestVersion();
+
   const match = await db.query.matches.findFirst({
     where: and(eq(matches.id, id), eq(matches.userId, user.id)),
   });
@@ -60,9 +63,12 @@ export default async function MatchDetailPage({
     }
   }
 
-  // These are independent — run in parallel
+  // Strip rawMatchJson before passing to client — saves 50-100KB from RSC payload
+  const { rawMatchJson: _stripped, ...matchForClient } = match;
+
+  // These are independent — run in parallel (ddragonVersion already started above)
   const [ddragonVersion, linkedSessions, highlights] = await Promise.all([
-    getLatestVersion(),
+    ddragonVersionPromise,
     db
       .select({
         sessionId: coachingSessions.id,
@@ -97,7 +103,7 @@ export default async function MatchDetailPage({
 
   return (
     <MatchDetailClient
-      match={match}
+      match={matchForClient}
       participants={participants}
       linkedSessions={linkedSessions}
       highlights={highlightItems}
