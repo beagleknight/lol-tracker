@@ -50,6 +50,7 @@ export async function GET() {
       try {
         // Auto-backfill summonerId if missing (enables rank snapshot capture)
         let effectiveSummonerId = user.summonerId;
+        let backfillError: string | null = null;
         if (user.puuid && !user.summonerId) {
           try {
             send({ type: "status", message: "Backfilling summoner data..." });
@@ -60,7 +61,8 @@ export async function GET() {
               .where(eq(users.id, user.id));
             effectiveSummonerId = summoner.id;
           } catch (err) {
-            console.error("Failed to backfill summonerId:", err);
+            backfillError = err instanceof Error ? err.message : String(err);
+            console.error("Failed to backfill summonerId:", backfillError);
             // Non-fatal — continue with sync, just skip rank snapshots
           }
         }
@@ -116,6 +118,8 @@ export async function GET() {
           let rankWarning: string | null = null;
           if (effectiveSummonerId) {
             rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
+          } else if (backfillError) {
+            rankWarning = `Rank tracking failed: ${backfillError}`;
           } else {
             rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings to enable it.";
           }
@@ -268,6 +272,8 @@ export async function GET() {
         let rankWarning: string | null = null;
         if (effectiveSummonerId) {
           rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
+        } else if (backfillError) {
+          rankWarning = `Rank tracking failed: ${backfillError}`;
         } else {
           rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings.";
         }
