@@ -11,6 +11,7 @@ import {
   extractDuoPartnerData,
   getKeystoneName,
   getSoloQueueEntry,
+  getSummonerByPuuid,
   RiotApiError,
 } from "@/lib/riot-api";
 
@@ -43,6 +44,23 @@ export async function GET() {
       };
 
       try {
+        // Auto-backfill summonerId if missing (enables rank snapshot capture)
+        let effectiveSummonerId = user.summonerId;
+        if (user.puuid && !user.summonerId) {
+          try {
+            send({ type: "status", message: "Backfilling summoner data..." });
+            const summoner = await getSummonerByPuuid(user.puuid);
+            await db
+              .update(users)
+              .set({ summonerId: summoner.id, updatedAt: new Date() })
+              .where(eq(users.id, user.id));
+            effectiveSummonerId = summoner.id;
+          } catch (err) {
+            console.error("Failed to backfill summonerId:", err);
+            // Non-fatal — continue with sync, just skip rank snapshots
+          }
+        }
+
         send({ type: "status", message: "Checking existing matches..." });
 
         // Check which matches we already have
@@ -92,8 +110,8 @@ export async function GET() {
         if (newMatchIds.length === 0) {
           // Still capture rank snapshot
           let rankWarning: string | null = null;
-          if (user.summonerId) {
-            rankWarning = await captureRankSnapshot(user.id, user.summonerId);
+          if (effectiveSummonerId) {
+            rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
           } else {
             rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings to enable it.";
           }
@@ -107,8 +125,8 @@ export async function GET() {
 
         // Capture rank snapshot BEFORE syncing — gives a "before" data point
         // so the LP chart shows the delta across this sync session
-        if (user.summonerId) {
-          await captureRankSnapshot(user.id, user.summonerId);
+        if (effectiveSummonerId) {
+          await captureRankSnapshot(user.id, effectiveSummonerId);
         }
 
         send({
@@ -244,8 +262,8 @@ export async function GET() {
 
         // Capture rank snapshot
         let rankWarning: string | null = null;
-        if (user.summonerId) {
-          rankWarning = await captureRankSnapshot(user.id, user.summonerId);
+        if (effectiveSummonerId) {
+          rankWarning = await captureRankSnapshot(user.id, effectiveSummonerId);
         } else {
           rankWarning = "Rank tracking unavailable — re-link your Riot account in Settings.";
         }

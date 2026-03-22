@@ -54,10 +54,30 @@ export default async function MatchDetailPage({
 
   // Parse raw match JSON and extract only the fields the client needs
   let participants: ReturnType<typeof slimParticipants> | null = null;
+  let matchPuuid = user.puuid || "";
   if (match.rawMatchJson) {
     try {
       const rawMatch: RiotMatch = JSON.parse(match.rawMatchJson);
       participants = slimParticipants(rawMatch);
+
+      // Derive the user's puuid from the match data itself for reliable highlighting.
+      // The stored user.puuid may have changed (e.g. account re-link) since the match
+      // was synced, so we find the participant whose championName matches the stored
+      // match record — that participant is guaranteed to be the user.
+      if (user.puuid) {
+        const puuidInMatch = rawMatch.info.participants.some(
+          (p) => p.puuid === user.puuid
+        );
+        if (!puuidInMatch && match.championName) {
+          // puuid doesn't match any participant — fall back to championName
+          const byChampion = rawMatch.info.participants.find(
+            (p) => p.championName === match.championName
+          );
+          if (byChampion) {
+            matchPuuid = byChampion.puuid;
+          }
+        }
+      }
     } catch {
       // ignore parse errors
     }
@@ -108,7 +128,7 @@ export default async function MatchDetailPage({
       linkedSessions={linkedSessions}
       highlights={highlightItems}
       ddragonVersion={ddragonVersion}
-      userPuuid={user.puuid || ""}
+      userPuuid={matchPuuid}
     />
   );
 }
