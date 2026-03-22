@@ -19,8 +19,6 @@ export interface RiotAccount {
 }
 
 export interface RiotSummoner {
-  id: string; // encrypted summoner ID
-  accountId: string;
   puuid: string;
   profileIconId: number;
   revisionDate: number;
@@ -218,10 +216,25 @@ export async function getLeagueEntries(
   );
 }
 
+export async function getLeagueEntriesByPuuid(
+  puuid: string
+): Promise<RiotLeagueEntry[]> {
+  return riotFetch<RiotLeagueEntry[]>(
+    `${PLATFORM_HOST}/lol/league/v4/entries/by-puuid/${puuid}`
+  );
+}
+
 export async function getSoloQueueEntry(
   summonerId: string
 ): Promise<RiotLeagueEntry | null> {
   const entries = await getLeagueEntries(summonerId);
+  return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
+}
+
+export async function getSoloQueueEntryByPuuid(
+  puuid: string
+): Promise<RiotLeagueEntry | null> {
+  const entries = await getLeagueEntriesByPuuid(puuid);
   return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
 }
 

@@ -73,16 +73,26 @@ Returns: { puuid, gameName, tagLine }
 ```
 GET /lol/summoner/v4/summoners/by-puuid/{puuid}
 Host: {platform}
-Returns: { id, accountId, puuid, profileIconId, summonerLevel }
+Returns: { puuid, profileIconId, revisionDate, summonerLevel }
 ```
+**NOTE (2026):** This endpoint no longer returns `id` (encrypted summoner ID) or `accountId`. Only 4 fields are returned. Do NOT rely on `summoner.id` for League-V4 lookups — use the by-puuid League endpoint instead.
 
-### Ranked data
+### Ranked data (by PUUID — preferred)
+```
+GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}
+Host: {platform}
+Returns: Array of { queueType, tier, rank, leaguePoints, wins, losses, summonerId, leagueId }
+```
+Filter for `queueType === "RANKED_SOLO_5x5"` for solo queue. This is the **preferred** endpoint since it uses puuid directly.
+
+### Ranked data (by summoner ID — legacy)
 ```
 GET /lol/league/v4/entries/by-summoner/{encryptedSummonerId}
 Host: {platform}
 Returns: Array of { queueType, tier, rank, leaguePoints, wins, losses }
 ```
 Filter for `queueType === "RANKED_SOLO_5x5"` for solo queue.
+**NOTE:** Since Summoner-V4 no longer returns `id`, obtaining an encrypted summoner ID requires an extra step. Prefer the by-puuid endpoint above.
 
 ### Match history (list of match IDs)
 ```
