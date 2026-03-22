@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import {
   LineChart,
@@ -25,6 +25,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -33,7 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, TrendingUp, Trophy } from "lucide-react";
+import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
 import type { Match, RankSnapshot } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
@@ -301,6 +302,55 @@ export function AnalyticsClient({
     () => prepareRankChartData(rankSnapshots),
     [rankSnapshots]
   );
+
+  // ─── Sort state for Rune Keystones table ──────────────────────────────────
+  type RuneSortKey = "games" | "winRate";
+  const [runeSortKey, setRuneSortKey] = useState<RuneSortKey>("games");
+  const [runeSortDesc, setRuneSortDesc] = useState(true);
+
+  const sortedRuneStats = useMemo(() => {
+    return [...runeStats].sort((a, b) => {
+      const aVal = a[runeSortKey];
+      const bVal = b[runeSortKey];
+      return runeSortDesc ? bVal - aVal : aVal - bVal;
+    });
+  }, [runeStats, runeSortKey, runeSortDesc]);
+
+  function toggleRuneSort(key: RuneSortKey) {
+    if (runeSortKey === key) {
+      setRuneSortDesc((d) => !d);
+    } else {
+      setRuneSortKey(key);
+      setRuneSortDesc(true);
+    }
+  }
+
+  // ─── Sort state for Champion Stats table ──────────────────────────────────
+  type ChampSortKey = "games" | "winRate" | "avgKDA";
+  const [champSortKey, setChampSortKey] = useState<ChampSortKey>("games");
+  const [champSortDesc, setChampSortDesc] = useState(true);
+
+  const sortedChampionStats = useMemo(() => {
+    return [...championStats].sort((a, b) => {
+      if (champSortKey === "avgKDA") {
+        const aVal = a.avgKDA === "Perfect" ? 999 : parseFloat(a.avgKDA);
+        const bVal = b.avgKDA === "Perfect" ? 999 : parseFloat(b.avgKDA);
+        return champSortDesc ? bVal - aVal : aVal - bVal;
+      }
+      const aVal = a[champSortKey];
+      const bVal = b[champSortKey];
+      return champSortDesc ? bVal - aVal : aVal - bVal;
+    });
+  }, [championStats, champSortKey, champSortDesc]);
+
+  function toggleChampSort(key: ChampSortKey) {
+    if (champSortKey === key) {
+      setChampSortDesc((d) => !d);
+    } else {
+      setChampSortKey(key);
+      setChampSortDesc(true);
+    }
+  }
 
   // Coaching session indices for reference lines
   const coachingIndices = useMemo(() => {
@@ -723,13 +773,37 @@ export function AnalyticsClient({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Keystone</TableHead>
-                    <TableHead className="text-center">Games</TableHead>
-                    <TableHead className="text-center">Win Rate</TableHead>
+                    <TableHead className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs px-1.5 -ml-1.5"
+                        onClick={() => toggleRuneSort("games")}
+                      >
+                        Games
+                        {runeSortKey === "games" && (
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs px-1.5 -ml-1.5"
+                        onClick={() => toggleRuneSort("winRate")}
+                      >
+                        Win Rate
+                        {runeSortKey === "winRate" && (
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-center">W/L</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {runeStats.map((rune) => (
+                  {sortedRuneStats.map((rune) => (
                     <TableRow key={rune.name}>
                       <TableCell className="font-medium text-sm">
                         <span className="flex items-center gap-1.5">
@@ -778,14 +852,50 @@ export function AnalyticsClient({
             <TableHeader>
               <TableRow>
                 <TableHead>Champion</TableHead>
-                <TableHead className="text-center">Games</TableHead>
-                <TableHead className="text-center">Win Rate</TableHead>
+                <TableHead className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs px-1.5 -ml-1.5"
+                    onClick={() => toggleChampSort("games")}
+                  >
+                    Games
+                    {champSortKey === "games" && (
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    )}
+                  </Button>
+                </TableHead>
+                <TableHead className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs px-1.5 -ml-1.5"
+                    onClick={() => toggleChampSort("winRate")}
+                  >
+                    Win Rate
+                    {champSortKey === "winRate" && (
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    )}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-center">W/L</TableHead>
-                <TableHead className="text-center">Avg KDA</TableHead>
+                <TableHead className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs px-1.5 -ml-1.5"
+                    onClick={() => toggleChampSort("avgKDA")}
+                  >
+                    Avg KDA
+                    {champSortKey === "avgKDA" && (
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    )}
+                  </Button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {championStats.map((champ) => (
+              {sortedChampionStats.map((champ) => (
                 <TableRow key={champ.name}>
                   <TableCell className="font-medium text-sm">
                     <ChampionLink

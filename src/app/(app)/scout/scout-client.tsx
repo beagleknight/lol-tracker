@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect, useMemo } from "react";
+import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   detectLiveMatchup,
@@ -660,12 +661,49 @@ export function ScoutClient({
   mostPlayed = [],
   mostFaced = [],
 }: ScoutClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
   const [isLoadingReport, startReportTransition] = useTransition();
   const [isCheckingGame, startCheckTransition] = useTransition();
   const [liveResult, setLiveResult] = useState<LiveMatchupResult | null>(null);
+
+  // Sync URL params -> local state when browser back/forward navigation occurs
+  const isUpdatingUrl = useRef(false);
+  useEffect(() => {
+    if (isUpdatingUrl.current) {
+      isUpdatingUrl.current = false;
+      return;
+    }
+    const urlYour = searchParams.get("your") || "";
+    const urlEnemy = searchParams.get("enemy") || "";
+    if (urlYour !== yourChampion) setYourChampion(urlYour);
+    if (urlEnemy !== enemyChampion) {
+      setEnemyChampion(urlEnemy);
+      if (urlEnemy) {
+        loadReport(urlEnemy, urlYour || undefined);
+      } else {
+        setReport(null);
+      }
+    }
+    // Only react to searchParams changes (browser navigation)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  /** Push champion selections to the URL without a full page reload */
+  const updateUrl = useCallback(
+    (yours: string, enemy: string) => {
+      const params = new URLSearchParams();
+      if (yours) params.set("your", yours);
+      if (enemy) params.set("enemy", enemy);
+      const qs = params.toString();
+      isUpdatingUrl.current = true;
+      router.replace(`/scout${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [router]
+  );
 
   // Build recommendation groups for comboboxes
   const yourChampionRecs: ChampionRecommendations[] = useMemo(
@@ -702,7 +740,7 @@ export function ScoutClient({
     []
   );
 
-  // Auto-load report if initial champions are provided via URL params
+  // Auto-load report on mount if initial champions are provided via URL params
   useEffect(() => {
     if (initialEnemyChampion) {
       loadReport(initialEnemyChampion, initialYourChampion || undefined);
@@ -714,18 +752,20 @@ export function ScoutClient({
     (value: string) => {
       setEnemyChampion(value);
       loadReport(value, yourChampion);
+      updateUrl(yourChampion, value);
     },
-    [yourChampion, loadReport]
+    [yourChampion, loadReport, updateUrl]
   );
 
   const handleYourChampionChange = useCallback(
     (value: string) => {
       setYourChampion(value);
+      updateUrl(value, enemyChampion);
       if (enemyChampion) {
         loadReport(enemyChampion, value);
       }
     },
-    [enemyChampion, loadReport]
+    [enemyChampion, loadReport, updateUrl]
   );
 
   const handleCheckGame = useCallback(() => {
@@ -745,20 +785,22 @@ export function ScoutClient({
           // Auto-set your champion
           if (result.userChampionName) {
             setYourChampion(result.userChampionName);
+            updateUrl(result.userChampionName, enemyChampion);
           }
         }
       } catch {
         toast.error("Failed to detect live game.");
       }
     });
-  }, []);
+  }, [enemyChampion, updateUrl]);
 
   const handleEnemyQuickSelect = useCallback(
     (championName: string) => {
       setEnemyChampion(championName);
       loadReport(championName, yourChampion);
+      updateUrl(yourChampion, championName);
     },
-    [yourChampion, loadReport]
+    [yourChampion, loadReport, updateUrl]
   );
 
   return (

@@ -22,14 +22,14 @@
 - [x] ~~Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields~~ (moot — MatchCard has no form; scout PostGameReviewCard is its own component)
 - [x] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
 - [x] Color contrast audit: fix poor text-on-background contrast throughout the app (e.g., dark text on bright blue win-row in Duo Recent Games)
-- [ ] List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).
-- [ ] Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon
-- [ ] Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling
-- [ ] Paginated tables: inconsistent loading states — some pages (e.g., Duo) show an ugly spinner at the bottom instead of a proper loading skeleton; use the Matches page as the reference implementation
-- [ ] Scout page: sync selectors (your champion, enemy champion, queue) to URL query params so the page state survives reloads and is shareable — the searchParams are already parsed server-side, just need the client selectors to read from/write to the URL
-- [ ] Review page styling pass: improve visual design of highlight/lowlight tags (size, colors, spacing) and comment/notes display across all three tabs (Post-Game, VOD Review, Completed)
-- [ ] MatchCard tooltip styling: review tooltip content for highlights and comments — ensure readable formatting and consistent look
-- [ ] Match detail read-only display: polish how highlights, comments, and review notes are presented (typography, spacing, visual hierarchy)
+- [x] ~~List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).~~
+- [x] ~~Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon~~
+- [x] ~~Match detail: "Blue Team" label and its player table are slightly misaligned horizontally compared to "Red Team" — likely a padding/border offset from the highlighted player/duo row styling~~
+- [x] ~~Paginated tables: inconsistent loading states — some pages (e.g., Duo) show an ugly spinner at the bottom instead of a proper loading skeleton; use the Matches page as the reference implementation~~
+- [x] ~~Scout page: sync selectors (your champion, enemy champion, queue) to URL query params so the page state survives reloads and is shareable — the searchParams are already parsed server-side, just need the client selectors to read from/write to the URL~~
+- [x] ~~Review page styling pass: improve visual design of highlight/lowlight tags (size, colors, spacing) and comment/notes display across all three tabs (Post-Game, VOD Review, Completed)~~
+- [x] ~~MatchCard tooltip styling: review tooltip content for highlights and comments — ensure readable formatting and consistent look~~
+- [x] ~~Match detail read-only display: polish how highlights, comments, and review notes are presented (typography, spacing, visual hierarchy)~~
 
 ## Performance
 - [x] Duo page: added composite index `(userId, duoPartnerPuuid)` — all duo queries were doing full table scans

@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   LinkIcon,
@@ -325,9 +326,12 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             {duoLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading...
+              <div className="flex items-center gap-4 rounded-lg border border-border/30 p-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-5 w-40" />
+                </div>
               </div>
             ) : duoPartner ? (
               <div className="space-y-4">
@@ -431,9 +435,14 @@ export default function SettingsPage() {
             </Button>
 
             {invitesLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading invites...
+              <div className="space-y-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border/30 p-3">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-16 flex-1" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                ))}
               </div>
             ) : invitesList.length > 0 ? (
               <div className="space-y-2">

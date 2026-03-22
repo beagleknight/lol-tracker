@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,6 +23,7 @@ import {
   Settings,
   Loader2,
   Search,
+  ArrowUpDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getChampionIconUrl, normalizeDDragonChampionName } from "@/lib/riot-api";
@@ -88,6 +89,28 @@ export function DuoClient({
   const [isPending, startTransition] = useTransition();
 
   const [isBackfilling, startBackfill] = useTransition();
+
+  type SynergySortKey = "games" | "winRate" | "wins";
+  const [synergySortKey, setSynergySortKey] = useState<SynergySortKey>("games");
+  const [synergySortDesc, setSynergySortDesc] = useState(true);
+
+  const sortedSynergy = useMemo(() => {
+    const sorted = [...synergy].sort((a, b) => {
+      const aVal = synergySortKey === "wins" ? a.wins : a[synergySortKey];
+      const bVal = synergySortKey === "wins" ? b.wins : b[synergySortKey];
+      return synergySortDesc ? bVal - aVal : aVal - bVal;
+    });
+    return sorted;
+  }, [synergy, synergySortKey, synergySortDesc]);
+
+  function toggleSynergySort(key: SynergySortKey) {
+    if (synergySortKey === key) {
+      setSynergySortDesc((d) => !d);
+    } else {
+      setSynergySortKey(key);
+      setSynergySortDesc(true);
+    }
+  }
 
   function handlePageChange(page: number) {
     startTransition(async () => {
@@ -276,14 +299,38 @@ export function DuoClient({
           {synergy.length > 0 && (
             <Card className="surface-glow">
               <CardHeader>
-                <CardTitle>Champion Synergy</CardTitle>
-                <CardDescription>
-                  Your champion combos with {partnerInfo.riotGameName}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Champion Synergy</CardTitle>
+                    <CardDescription>
+                      Your champion combos with {partnerInfo.riotGameName}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {(["games", "winRate", "wins"] as const).map((key) => (
+                      <Button
+                        key={key}
+                        variant={synergySortKey === key ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-7 text-xs px-2"
+                        onClick={() => toggleSynergySort(key)}
+                      >
+                        {key === "games"
+                          ? "Games"
+                          : key === "winRate"
+                            ? "Win %"
+                            : "Wins"}
+                        {synergySortKey === key && (
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {synergy.map((s) => (
+                  {sortedSynergy.map((s) => (
                     <div
                       key={`${s.yourChampion}-${s.partnerChampion}`}
                       className="flex items-center gap-3 rounded-lg border border-border/50 p-2 bg-surface-elevated"
@@ -327,7 +374,7 @@ export function DuoClient({
                           {s.winRate}%
                         </span>
                         <span className="text-muted-foreground ml-1.5">
-                          {s.games}G
+                          {s.wins}W / {s.games}G
                         </span>
                       </div>
                     </div>

@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { getKeystoneIconUrl, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 
 /** Slim participant — only fields needed for the match detail view */
@@ -118,10 +118,10 @@ function ParticipantRow({
     <TableRow
       className={
         isUser
-          ? "bg-gold/5 border-l-2 border-gold/40"
+          ? "bg-gold/5 border-l-2 border-l-gold/40"
           : isDuoPartner
-            ? "bg-electric/5 border-l-2 border-electric/40"
-            : ""
+            ? "bg-electric/5 border-l-2 border-l-electric/40"
+            : "border-l-2 border-l-transparent"
       }
     >
       <TableCell>
@@ -129,7 +129,7 @@ function ParticipantRow({
           <ChampionLink
             champion={participant.championName}
             ddragonVersion={version}
-            linkTo="scout-enemy"
+            linkTo={isUser ? "scout-your" : "scout-enemy"}
             showName={false}
             iconSize={28}
           />
@@ -142,7 +142,7 @@ function ParticipantRow({
             <ChampionLink
               champion={participant.championName}
               ddragonVersion={version}
-              linkTo="scout-enemy"
+              linkTo={isUser ? "scout-your" : "scout-enemy"}
               showIcon={false}
               textClassName="text-xs text-muted-foreground ml-1"
             />
@@ -270,7 +270,7 @@ export function MatchDetailClient({
                   <>
                     {" "}&middot;{" "}
                     {(() => {
-                      const url = getKeystoneIconUrlByName(match.runeKeystoneName);
+                      const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
                       return url ? (
                         <Image src={url} alt={match.runeKeystoneName} width={16} height={16} className="inline rounded" />
                       ) : null;
@@ -377,7 +377,7 @@ export function MatchDetailClient({
               {match.runeKeystoneName ? (
                 <>
                   {(() => {
-                    const url = getKeystoneIconUrlByName(match.runeKeystoneName);
+                    const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
                     return url ? (
                       <Image src={url} alt={match.runeKeystoneName} width={28} height={28} className="rounded" />
                     ) : null;
@@ -465,7 +465,7 @@ export function MatchDetailClient({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                    <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
                       {match.comment}
                     </p>
                   </CardContent>
@@ -481,7 +481,7 @@ export function MatchDetailClient({
                       VOD Review
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     {/* VOD URL */}
                     {hasVodUrl && (
                       <div className="space-y-1">
@@ -503,11 +503,11 @@ export function MatchDetailClient({
 
                     {/* Review notes */}
                     {hasReviewNotes && (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <p className="text-xs font-medium text-muted-foreground">
                           Review Notes
                         </p>
-                        <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                        <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
                           {match.reviewNotes}
                         </p>
                       </div>
