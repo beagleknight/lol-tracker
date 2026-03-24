@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { createCoachingSession } from "@/app/actions/coaching";
+import { scheduleCoachingSession } from "@/app/actions/coaching";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -19,7 +18,7 @@ import { toast } from "sonner";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
-import { Loader2, Plus, X, ArrowLeft, Video, Check } from "lucide-react";
+import { Loader2, ArrowLeft, Video, Check, Calendar, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -35,65 +34,55 @@ interface MatchSummary {
   vodUrl: string | null;
 }
 
-interface NewSessionClientProps {
+interface ScheduleSessionClientProps {
   recentMatches: MatchSummary[];
   ddragonVersion: string;
   highlightsByMatch: Record<
     string,
     Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
   >;
+  previousCoaches: string[];
 }
 
-export function NewSessionClient({
+export function ScheduleSessionClient({
   recentMatches,
   ddragonVersion,
   highlightsByMatch,
-}: NewSessionClientProps) {
+  previousCoaches,
+}: ScheduleSessionClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const [coachName, setCoachName] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [duration, setDuration] = useState("");
-  const [notes, setNotes] = useState("");
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [customTopic, setCustomTopic] = useState("");
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
-  const [actionItems, setActionItems] = useState<
-    Array<{ description: string; topic: string }>
-  >([]);
-  const [newActionDesc, setNewActionDesc] = useState("");
-  const [newActionTopic, setNewActionTopic] = useState("");
+  const [focusAreas, setFocusAreas] = useState<string[]>([]);
+  const [customTopic, setCustomTopic] = useState("");
+  const [showCoachSuggestions, setShowCoachSuggestions] = useState(false);
 
-  function toggleTopic(topic: string) {
-    setSelectedTopics((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+  // Filter coach suggestions based on input
+  const filteredCoaches = useMemo(() => {
+    if (!coachName.trim()) return previousCoaches;
+    return previousCoaches.filter((c) =>
+      c.toLowerCase().includes(coachName.toLowerCase())
     );
-  }
-
-  function addCustomTopic() {
-    if (customTopic && !selectedTopics.includes(customTopic)) {
-      setSelectedTopics((prev) => [...prev, customTopic]);
-      setCustomTopic("");
-    }
-  }
+  }, [coachName, previousCoaches]);
 
   function selectMatch(id: string) {
     setSelectedMatchId((prev) => (prev === id ? null : id));
   }
 
-  function addActionItem() {
-    if (!newActionDesc.trim()) return;
-    setActionItems((prev) => [
-      ...prev,
-      { description: newActionDesc.trim(), topic: newActionTopic },
-    ]);
-    setNewActionDesc("");
-    setNewActionTopic("");
+  function toggleFocusArea(topic: string) {
+    setFocusAreas((prev) =>
+      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+    );
   }
 
-  function removeActionItem(index: number) {
-    setActionItems((prev) => prev.filter((_, i) => i !== index));
+  function addCustomTopic() {
+    if (customTopic && !focusAreas.includes(customTopic)) {
+      setFocusAreas((prev) => [...prev, customTopic]);
+      setCustomTopic("");
+    }
   }
 
   // Get selected match details for preview
@@ -113,23 +102,24 @@ export function NewSessionClient({
       toast.error("Please enter a coach name.");
       return;
     }
+    if (!selectedMatchId) {
+      toast.error("Please select a match/VOD to review.");
+      return;
+    }
 
     startTransition(async () => {
       try {
-        const result = await createCoachingSession({
+        const result = await scheduleCoachingSession({
           coachName: coachName.trim(),
           date: new Date(date).toISOString(),
-          durationMinutes: duration ? parseInt(duration) : undefined,
-          topics: selectedTopics,
-          notes: notes || undefined,
-          matchIds: selectedMatchId ? [selectedMatchId] : [],
-          actionItems,
+          vodMatchId: selectedMatchId,
+          focusAreas: focusAreas.length > 0 ? focusAreas : undefined,
         });
 
-        toast.success("Coaching session created.");
+        toast.success("Coaching session scheduled!");
         router.push(`/coaching/${result.sessionId}`);
       } catch {
-        toast.error("Failed to create session.");
+        toast.error("Failed to schedule session.");
       }
     });
   }
@@ -145,29 +135,57 @@ export function NewSessionClient({
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            New Coaching Session
+            Schedule Coaching Session
           </h1>
           <p className="text-muted-foreground">
-            Log a coaching session and create action items.
+            Book a session — you&apos;ll fill in notes and action items after the
+            coaching.
           </p>
         </div>
       </div>
 
-      {/* Basic Info */}
+      {/* Session Details */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Session Details</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gold" />
+            Session Details
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="coach">Coach Name</Label>
               <Input
                 id="coach"
                 placeholder="e.g. midlaneacademy"
                 value={coachName}
                 onChange={(e) => setCoachName(e.target.value)}
+                onFocus={() => setShowCoachSuggestions(true)}
+                onBlur={() => {
+                  // Delay to allow clicking suggestions
+                  setTimeout(() => setShowCoachSuggestions(false), 150);
+                }}
+                autoComplete="off"
               />
+              {showCoachSuggestions && filteredCoaches.length > 0 && (
+                <div className="absolute z-10 top-full mt-1 w-full rounded-md border border-border bg-popover shadow-md">
+                  {filteredCoaches.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setCoachName(name);
+                        setShowCoachSuggestions(false);
+                      }}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
@@ -178,92 +196,16 @@ export function NewSessionClient({
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input
-                id="duration"
-                type="number"
-                placeholder="60"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Session Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Key points discussed, areas to focus on..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Topics */}
+      {/* VOD / Match to Review */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Topics Covered</CardTitle>
+          <CardTitle>VOD to Review</CardTitle>
           <CardDescription>
-            Select topics that were covered during this session.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {PREDEFINED_TOPICS.map((topic) => (
-              <Badge
-                key={topic}
-                variant={
-                  selectedTopics.includes(topic) ? "default" : "secondary"
-                }
-                className="cursor-pointer"
-                onClick={() => toggleTopic(topic)}
-              >
-                {topic}
-              </Badge>
-            ))}
-            {selectedTopics
-              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
-              .map((topic) => (
-                <Badge
-                  key={topic}
-                  variant="default"
-                  className="cursor-pointer"
-                  onClick={() => toggleTopic(topic)}
-                >
-                  {topic}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Custom topic..."
-              value={customTopic}
-              onChange={(e) => setCustomTopic(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addCustomTopic();
-                }
-              }}
-              className="max-w-xs"
-            />
-            <Button variant="outline" size="sm" onClick={addCustomTopic}>
-              Add
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Link Game — Single match picker */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle>Game Reviewed</CardTitle>
-          <CardDescription>
-            Select the game that was reviewed during this coaching session.
+            Select the game you want to review with your coach.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -310,7 +252,10 @@ export function NewSessionClient({
                     />
                     <span className="text-sm font-medium inline-flex items-center gap-1.5">
                       <Image
-                        src={getChampionIconUrl(ddragonVersion, match.championName)}
+                        src={getChampionIconUrl(
+                          ddragonVersion,
+                          match.championName
+                        )}
                         alt={match.championName}
                         width={20}
                         height={20}
@@ -323,7 +268,10 @@ export function NewSessionClient({
                       {match.matchupChampionName ? (
                         <>
                           <Image
-                            src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
+                            src={getChampionIconUrl(
+                              ddragonVersion,
+                              match.matchupChampionName
+                            )}
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}
@@ -331,12 +279,18 @@ export function NewSessionClient({
                           />
                           {match.matchupChampionName}
                         </>
-                      ) : "?"}
+                      ) : (
+                        "?"
+                      )}
                     </span>
                     <div className="flex items-center gap-1.5 ml-auto shrink-0">
                       {hasHighlights && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          {matchHL.length} note{matchHL.length !== 1 ? "s" : ""}
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0"
+                        >
+                          {matchHL.length} note
+                          {matchHL.length !== 1 ? "s" : ""}
                         </Badge>
                       )}
                       {match.vodUrl && (
@@ -359,12 +313,11 @@ export function NewSessionClient({
           {selectedMatch && (
             <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 space-y-3">
               <p className="text-xs font-medium text-muted-foreground">
-                Coaching prep for {selectedMatch.championName} vs{" "}
+                {selectedMatch.championName} vs{" "}
                 {selectedMatch.matchupChampionName || "?"} —{" "}
                 {selectedMatch.result === "Victory" ? "Win" : "Loss"}
               </p>
 
-              {/* VOD link */}
               {selectedMatch.vodUrl && (
                 <div className="flex items-center gap-2">
                   <Video className="h-3.5 w-3.5 text-electric" />
@@ -379,7 +332,6 @@ export function NewSessionClient({
                 </div>
               )}
 
-              {/* Highlights / Lowlights */}
               {selectedMatchHighlights.length > 0 ? (
                 <HighlightsDisplay highlights={selectedMatchHighlights} />
               ) : (
@@ -389,72 +341,64 @@ export function NewSessionClient({
               )}
             </div>
           )}
-
-          {selectedMatchId && (
-            <p className="text-xs text-muted-foreground">
-              1 game selected
-            </p>
-          )}
         </CardContent>
       </Card>
 
-      {/* Action Items */}
+      {/* Optional Focus Areas */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Action Items</CardTitle>
+          <CardTitle>Focus Areas</CardTitle>
           <CardDescription>
-            Things to work on before the next session.
+            Optionally note what you want to focus on — topics will be finalized
+            after the session.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {actionItems.length > 0 && (
-            <div className="space-y-2">
-              {actionItems.map((item, i) => (
-                  <div
-                  key={i}
-                  className="flex items-center gap-2 rounded-lg border border-border/50 p-2 bg-surface-elevated"
+          <div className="flex flex-wrap gap-2">
+            {PREDEFINED_TOPICS.map((topic) => (
+              <Badge
+                key={topic}
+                variant={
+                  focusAreas.includes(topic) ? "default" : "secondary"
+                }
+                className="cursor-pointer"
+                onClick={() => toggleFocusArea(topic)}
+              >
+                {topic}
+              </Badge>
+            ))}
+            {focusAreas
+              .filter(
+                (t) =>
+                  !(PREDEFINED_TOPICS as readonly string[]).includes(t)
+              )
+              .map((topic) => (
+                <Badge
+                  key={topic}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => toggleFocusArea(topic)}
                 >
-                  <div className="flex-1">
-                    <p className="text-sm">{item.description}</p>
-                    {item.topic && (
-                      <Badge variant="secondary" className="text-xs mt-1">
-                        {item.topic}
-                      </Badge>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => removeActionItem(i)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
+                  {topic}
+                  <X className="ml-1 h-3 w-3" />
+                </Badge>
               ))}
-            </div>
-          )}
+          </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Action item description..."
-              value={newActionDesc}
-              onChange={(e) => setNewActionDesc(e.target.value)}
+              placeholder="Custom topic..."
+              value={customTopic}
+              onChange={(e) => setCustomTopic(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  addActionItem();
+                  addCustomTopic();
                 }
               }}
-              className="flex-1"
+              className="max-w-xs"
             />
-            <Input
-              placeholder="Topic (optional)"
-              value={newActionTopic}
-              onChange={(e) => setNewActionTopic(e.target.value)}
-              className="w-40"
-            />
-            <Button variant="outline" size="icon" onClick={addActionItem}>
-              <Plus className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={addCustomTopic}>
+              Add
             </Button>
           </div>
         </CardContent>
@@ -467,7 +411,7 @@ export function NewSessionClient({
         </Link>
         <Button onClick={handleSubmit} disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Session
+          Schedule Session
         </Button>
       </div>
     </div>

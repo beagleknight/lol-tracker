@@ -31,6 +31,7 @@ export default async function AnalyticsPage() {
         id: true,
         coachName: true,
         date: true,
+        status: true,
       },
     }),
     db.query.rankSnapshots.findMany({

@@ -102,6 +102,10 @@ export const coachingSessions = sqliteTable("coaching_sessions", {
     .references(() => users.id, { onDelete: "cascade" }),
   coachName: text("coach_name").notNull(),
   date: integer("date", { mode: "timestamp" }).notNull(),
+  status: text("status", { enum: ["scheduled", "completed"] })
+    .notNull()
+    .default("scheduled"),
+  vodMatchId: text("vod_match_id"), // The specific match/VOD to review
   durationMinutes: integer("duration_minutes"),
   topics: text("topics"), // JSON array string e.g. '["laning","wave management"]'
   notes: text("notes"),
@@ -113,6 +117,7 @@ export const coachingSessions = sqliteTable("coaching_sessions", {
     .$defaultFn(() => new Date()),
 }, (table) => [
   index("coaching_sessions_user_date_idx").on(table.userId, table.date),
+  index("coaching_sessions_user_status_idx").on(table.userId, table.status),
 ]);
 
 // ─── Coaching Session <-> Matches (many-to-many) ─────────────────────────────

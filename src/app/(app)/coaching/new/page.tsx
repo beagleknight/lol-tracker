@@ -1,14 +1,14 @@
 import { db } from "@/db";
-import { matches, matchHighlights } from "@/db/schema";
+import { matches, matchHighlights, coachingSessions } from "@/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
-import { NewSessionClient } from "./new-session-client";
+import { ScheduleSessionClient } from "./schedule-session-client";
 
-export default async function NewCoachingSessionPage() {
+export default async function ScheduleCoachingSessionPage() {
   const user = await requireUser();
 
-  const [recentMatches, ddragonVersion] = await Promise.all([
+  const [recentMatches, ddragonVersion, previousCoaches] = await Promise.all([
     db.query.matches.findMany({
       where: eq(matches.userId, user.id),
       orderBy: desc(matches.gameDate),
@@ -26,26 +26,36 @@ export default async function NewCoachingSessionPage() {
       },
     }),
     getLatestVersion(),
+    // Get distinct coach names for autocomplete
+    db
+      .selectDistinct({ coachName: coachingSessions.coachName })
+      .from(coachingSessions)
+      .where(eq(coachingSessions.userId, user.id)),
   ]);
 
-  // Fetch highlights only for the 50 recent matches (not all user highlights)
+  // Fetch highlights only for the 50 recent matches
   const matchIds = recentMatches.map((m) => m.id);
-  const allHighlights = matchIds.length > 0
-    ? await db.query.matchHighlights.findMany({
-        where: inArray(matchHighlights.matchId, matchIds),
-        columns: {
-          matchId: true,
-          type: true,
-          text: true,
-          topic: true,
-        },
-      })
-    : [];
+  const allHighlights =
+    matchIds.length > 0
+      ? await db.query.matchHighlights.findMany({
+          where: inArray(matchHighlights.matchId, matchIds),
+          columns: {
+            matchId: true,
+            type: true,
+            text: true,
+            topic: true,
+          },
+        })
+      : [];
 
   // Group highlights by matchId
   const highlightsByMatch: Record<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{
+      type: "highlight" | "lowlight";
+      text: string;
+      topic: string | null;
+    }>
   > = {};
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
@@ -57,10 +67,11 @@ export default async function NewCoachingSessionPage() {
   }
 
   return (
-    <NewSessionClient
+    <ScheduleSessionClient
       recentMatches={recentMatches}
       ddragonVersion={ddragonVersion}
       highlightsByMatch={highlightsByMatch}
+      previousCoaches={previousCoaches.map((c) => c.coachName)}
     />
   );
 }

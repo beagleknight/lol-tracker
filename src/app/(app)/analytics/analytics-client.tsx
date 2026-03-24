@@ -15,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
   Cell,
 } from "recharts";
 import {
@@ -182,6 +183,7 @@ interface CoachingSessionSummary {
   id: number;
   coachName: string;
   date: Date;
+  status: "scheduled" | "completed";
 }
 
 interface AnalyticsClientProps {
@@ -364,9 +366,10 @@ export function AnalyticsClient({
     }
   }
 
-  // Coaching session indices for reference lines
-  const coachingIndices = useMemo(() => {
-    return coachingSessions.map((s) => {
+  // Coaching session indices for shaded bands between consecutive sessions
+  const coachingBands = useMemo(() => {
+    // Map each session to its closest match index
+    const sessionIndices = coachingSessions.map((s) => {
       const sessionTime = s.date.getTime();
       let closestIdx = 0;
       let closestDiff = Infinity;
@@ -377,9 +380,40 @@ export function AnalyticsClient({
           closestIdx = i;
         }
       }
-      return { index: closestIdx + 1, coachName: s.coachName };
+      return { index: closestIdx + 1, coachName: s.coachName, status: s.status };
     });
-  }, [matches, coachingSessions]);
+
+    // Build bands between consecutive sessions
+    const bands: Array<{
+      x1: number;
+      x2: number;
+      label: string;
+      isOngoing: boolean;
+    }> = [];
+    for (let i = 0; i < sessionIndices.length - 1; i++) {
+      const from = sessionIndices[i];
+      const to = sessionIndices[i + 1];
+      bands.push({
+        x1: from.index,
+        x2: to.index,
+        label: from.coachName,
+        isOngoing: false,
+      });
+    }
+    // If there's at least one session, add a trailing band from last session to end
+    if (sessionIndices.length > 0) {
+      const last = sessionIndices[sessionIndices.length - 1];
+      if (last.index < rollingWR.length) {
+        bands.push({
+          x1: last.index,
+          x2: rollingWR.length,
+          label: last.coachName,
+          isOngoing: last.status === "scheduled",
+        });
+      }
+    }
+    return { sessionIndices, bands };
+  }, [matches, coachingSessions, rollingWR.length]);
 
   // Top matchup data for bar chart (top 10 by games played)
   const topMatchups = matchupStats.slice(0, 10);
@@ -679,7 +713,9 @@ export function AnalyticsClient({
             Win Rate Over Time (10-game rolling)
           </CardTitle>
           <CardDescription>
-            Dotted lines show coaching sessions.
+            {coachingBands.bands.length > 0
+              ? "Shaded regions show intervals between coaching sessions."
+              : "No coaching sessions to overlay."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -724,14 +760,26 @@ export function AnalyticsClient({
                   strokeDasharray="3 3"
                   label={{ value: "50%", fill: "oklch(0.55 0.02 260)", fontSize: 11 }}
                 />
-                {coachingIndices.map((c, i) => (
+                {/* Shaded bands between coaching sessions */}
+                {coachingBands.bands.map((band, i) => (
+                  <ReferenceArea
+                    key={`band-${i}`}
+                    x1={band.x1}
+                    x2={band.x2}
+                    fill={band.isOngoing ? "oklch(0.6 0.2 300 / 0.08)" : "oklch(0.6 0.2 300 / 0.12)"}
+                    fillOpacity={1}
+                    strokeOpacity={0}
+                  />
+                ))}
+                {/* Coaching session markers (vertical lines at each session) */}
+                {coachingBands.sessionIndices.map((s, i) => (
                   <ReferenceLine
-                    key={i}
-                    x={c.index}
-                    stroke="oklch(0.6 0.2 300)"
-                    strokeDasharray="4 4"
+                    key={`session-${i}`}
+                    x={s.index}
+                    stroke={s.status === "scheduled" ? "oklch(0.6 0.2 300 / 0.6)" : "oklch(0.6 0.2 300)"}
+                    strokeDasharray={s.status === "scheduled" ? "6 4" : "4 4"}
                     label={{
-                      value: c.coachName,
+                      value: s.coachName,
                       fill: "oklch(0.6 0.2 300)",
                       fontSize: 10,
                       position: "top",
