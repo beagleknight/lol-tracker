@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { getChampionIconUrl } from "@/lib/riot-api";
-import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import {
+  HighlightsDisplay,
+  type HighlightItem,
+} from "@/components/highlights-editor";
 import {
   ArrowLeft,
   Loader2,
@@ -32,6 +35,9 @@ import {
   Play,
   Video,
   ExternalLink,
+  CalendarCheck,
+  TrendingUp,
+  Swords,
 } from "lucide-react";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
@@ -49,6 +55,18 @@ interface LinkedMatch {
   vodUrl: string | null;
 }
 
+interface ProgressMatch {
+  id: string;
+  gameDate: Date;
+  result: string;
+  championName: string;
+  matchupChampionName: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+  gameDurationSeconds: number;
+}
+
 interface CoachingDetailClientProps {
   session: CoachingSession;
   linkedMatches: LinkedMatch[];
@@ -56,7 +74,20 @@ interface CoachingDetailClientProps {
   ddragonVersion: string;
   highlightsByMatch: Record<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{
+      type: "highlight" | "lowlight";
+      text: string;
+      topic: string | null;
+    }>
+  >;
+  progressMatches: ProgressMatch[];
+  progressHighlightsByMatch: Record<
+    string,
+    Array<{
+      type: "highlight" | "lowlight";
+      text: string;
+      topic: string | null;
+    }>
   >;
 }
 
@@ -70,12 +101,14 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   const [isPending, startTransition] = useTransition();
 
   function cycleStatus() {
-    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> =
-      {
-        pending: "in_progress",
-        in_progress: "completed",
-        completed: "pending",
-      };
+    const nextStatus: Record<
+      string,
+      "pending" | "in_progress" | "completed"
+    > = {
+      pending: "in_progress",
+      in_progress: "completed",
+      completed: "pending",
+    };
     const next = nextStatus[item.status];
     startTransition(async () => {
       try {
@@ -144,6 +177,8 @@ export function CoachingDetailClient({
   actionItems,
   ddragonVersion,
   highlightsByMatch,
+  progressMatches,
+  progressHighlightsByMatch,
 }: CoachingDetailClientProps) {
   const router = useRouter();
   const [isDeleting, startDelete] = useTransition();
@@ -163,8 +198,53 @@ export function CoachingDetailClient({
     (i) => i.status === "completed"
   ).length;
 
+  const isScheduled = session.status === "scheduled";
+
+  // Collect action item topics for highlighting in progress matches
+  const actionItemTopics = useMemo(
+    () => new Set(actionItems.map((i) => i.topic).filter(Boolean) as string[]),
+    [actionItems]
+  );
+
+  // Compute progress stats
+  const progressStats = useMemo(() => {
+    if (progressMatches.length === 0) return null;
+    const wins = progressMatches.filter(
+      (m) => m.result === "Victory"
+    ).length;
+    const totalKills = progressMatches.reduce((s, m) => s + m.kills, 0);
+    const totalDeaths = progressMatches.reduce((s, m) => s + m.deaths, 0);
+    const totalAssists = progressMatches.reduce((s, m) => s + m.assists, 0);
+
+    // Count highlights/lowlights that match action item topics
+    let relevantHighlights = 0;
+    let relevantLowlights = 0;
+    for (const match of progressMatches) {
+      const hl = progressHighlightsByMatch[match.id] || [];
+      for (const h of hl) {
+        if (h.topic && actionItemTopics.has(h.topic)) {
+          if (h.type === "highlight") relevantHighlights++;
+          else relevantLowlights++;
+        }
+      }
+    }
+
+    return {
+      total: progressMatches.length,
+      wins,
+      winRate: Math.round((wins / progressMatches.length) * 100),
+      avgKDA:
+        totalDeaths === 0
+          ? "Perfect"
+          : ((totalKills + totalAssists) / totalDeaths).toFixed(1),
+      relevantHighlights,
+      relevantLowlights,
+    };
+  }, [progressMatches, progressHighlightsByMatch, actionItemTopics]);
+
   function handleDelete() {
-    if (!confirm("Delete this coaching session? This cannot be undone.")) return;
+    if (!confirm("Delete this coaching session? This cannot be undone."))
+      return;
     startDelete(async () => {
       try {
         await deleteCoachingSession(session.id);
@@ -188,7 +268,15 @@ export function CoachingDetailClient({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-gold" />
-            <h1 className="text-xl font-bold text-gradient-gold">{session.coachName}</h1>
+            <h1 className="text-xl font-bold text-gradient-gold">
+              {session.coachName}
+            </h1>
+            <Badge
+              variant={isScheduled ? "secondary" : "default"}
+              className="text-xs"
+            >
+              {isScheduled ? "Scheduled" : "Completed"}
+            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             {dateStr}
@@ -216,6 +304,28 @@ export function CoachingDetailClient({
         </Button>
       </div>
 
+      {/* Scheduled: CTA to complete */}
+      {isScheduled && (
+        <Card className="border-gold/30 bg-gold/5">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CalendarCheck className="h-5 w-5 text-gold" />
+                <div>
+                  <p className="font-medium">Session is scheduled</p>
+                  <p className="text-sm text-muted-foreground">
+                    After your coaching, fill in notes and action items.
+                  </p>
+                </div>
+              </div>
+              <Link href={`/coaching/${session.id}/complete`}>
+                <Button>Complete Session</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Topics */}
       {topics.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -224,6 +334,11 @@ export function CoachingDetailClient({
               {t}
             </Badge>
           ))}
+          {isScheduled && (
+            <span className="text-xs text-muted-foreground self-center ml-1">
+              (focus areas)
+            </span>
+          )}
         </div>
       )}
 
@@ -243,10 +358,15 @@ export function CoachingDetailClient({
       {linkedMatches.length > 0 && (
         <Card className="surface-glow">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Game Reviewed</CardTitle>
-            <CardDescription>
-              {linkedMatches.length} game{linkedMatches.length !== 1 ? "s" : ""} discussed
-            </CardDescription>
+            <CardTitle className="text-base">
+              {isScheduled ? "VOD to Review" : "Game Reviewed"}
+            </CardTitle>
+            {!isScheduled && (
+              <CardDescription>
+                {linkedMatches.length} game
+                {linkedMatches.length !== 1 ? "s" : ""} discussed
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -274,7 +394,10 @@ export function CoachingDetailClient({
                         }`}
                       />
                       <Image
-                        src={getChampionIconUrl(ddragonVersion, match.championName)}
+                        src={getChampionIconUrl(
+                          ddragonVersion,
+                          match.championName
+                        )}
                         alt={match.championName}
                         width={32}
                         height={32}
@@ -289,7 +412,10 @@ export function CoachingDetailClient({
                           {match.matchupChampionName ? (
                             <>
                               <Image
-                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
+                                src={getChampionIconUrl(
+                                  ddragonVersion,
+                                  match.matchupChampionName
+                                )}
                                 alt={match.matchupChampionName}
                                 width={16}
                                 height={16}
@@ -297,7 +423,9 @@ export function CoachingDetailClient({
                               />
                               {match.matchupChampionName}
                             </>
-                          ) : "?"}
+                          ) : (
+                            "?"
+                          )}
                         </span>
                       </div>
                       <span className="text-sm font-mono text-gold">
@@ -308,7 +436,9 @@ export function CoachingDetailClient({
                       </span>
                       <Badge
                         variant={
-                          match.result === "Victory" ? "default" : "destructive"
+                          match.result === "Victory"
+                            ? "default"
+                            : "destructive"
                         }
                         className="text-xs"
                       >
@@ -346,31 +476,260 @@ export function CoachingDetailClient({
         </Card>
       )}
 
-      <Separator />
+      {/* Action Items (only for completed sessions) */}
+      {!isScheduled && (
+        <>
+          <Separator />
 
-      {/* Action Items */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle className="text-base">Action Items</CardTitle>
-          <CardDescription>
-            {completedCount}/{actionItems.length} completed. Click the status
-            icon to cycle through: pending → in progress → completed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {actionItems.length === 0 ? (
+          <Card className="surface-glow">
+            <CardHeader>
+              <CardTitle className="text-base">Action Items</CardTitle>
+              <CardDescription>
+                {completedCount}/{actionItems.length} completed. Click the
+                status icon to cycle through: pending → in progress →
+                completed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {actionItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No action items for this session.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {actionItems.map((item) => (
+                    <ActionItemRow key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Progress Since This Session (only for completed sessions with matches) */}
+      {!isScheduled && progressMatches.length > 0 && progressStats && (
+        <>
+          <Separator />
+
+          <Card className="surface-glow">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-gold" />
+                Progress Since This Session
+              </CardTitle>
+              <CardDescription>
+                {progressStats.total} game
+                {progressStats.total !== 1 ? "s" : ""} played since this
+                coaching session.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Summary stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
+                  <p className="text-lg font-bold text-gold">
+                    {progressStats.winRate}%
+                  </p>
+                  <p className="text-xs text-muted-foreground">Win Rate</p>
+                  <p className="text-xs text-muted-foreground">
+                    {progressStats.wins}W{" "}
+                    {progressStats.total - progressStats.wins}L
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
+                  <p className="text-lg font-bold text-gold">
+                    {progressStats.avgKDA}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Avg KDA</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    {progressStats.relevantHighlights > 0 && (
+                      <span className="text-sm font-bold text-green-400">
+                        {progressStats.relevantHighlights}
+                      </span>
+                    )}
+                    {progressStats.relevantLowlights > 0 && (
+                      <span className="text-sm font-bold text-red-400">
+                        {progressStats.relevantLowlights}
+                      </span>
+                    )}
+                    {progressStats.relevantHighlights === 0 &&
+                      progressStats.relevantLowlights === 0 && (
+                        <span className="text-sm text-muted-foreground">
+                          —
+                        </span>
+                      )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Related Notes
+                  </p>
+                </div>
+              </div>
+
+              {/* Individual matches */}
+              <div className="space-y-3">
+                {progressMatches.map((match) => {
+                  const matchHL = progressHighlightsByMatch[match.id] || [];
+                  const highlights: HighlightItem[] = matchHL.map((h) => ({
+                    type: h.type,
+                    text: h.text,
+                    topic: h.topic || undefined,
+                  }));
+
+                  // Check which highlights relate to action items
+                  const hasRelevantNotes = matchHL.some(
+                    (h) => h.topic && actionItemTopics.has(h.topic)
+                  );
+
+                  const matchDateStr = new Intl.DateTimeFormat("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                  }).format(match.gameDate);
+
+                  return (
+                    <div
+                      key={match.id}
+                      className={`rounded-lg border p-3 space-y-2 ${
+                        hasRelevantNotes
+                          ? "border-gold/30 bg-gold/5"
+                          : "border-border/50 bg-surface-elevated"
+                      }`}
+                    >
+                      {/* Match summary row */}
+                      <Link
+                        href={`/matches/${match.id}`}
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                      >
+                        <div
+                          className={`w-1 h-6 rounded-full ${
+                            match.result === "Victory"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        />
+                        <Image
+                          src={getChampionIconUrl(
+                            ddragonVersion,
+                            match.championName
+                          )}
+                          alt={match.championName}
+                          width={24}
+                          height={24}
+                          className="rounded"
+                        />
+                        <span className="text-sm font-medium">
+                          {match.championName}
+                        </span>
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                          vs
+                          {match.matchupChampionName ? (
+                            <>
+                              <Image
+                                src={getChampionIconUrl(
+                                  ddragonVersion,
+                                  match.matchupChampionName
+                                )}
+                                alt={match.matchupChampionName}
+                                width={16}
+                                height={16}
+                                className="rounded"
+                              />
+                              {match.matchupChampionName}
+                            </>
+                          ) : (
+                            "?"
+                          )}
+                        </span>
+                        <div className="ml-auto flex items-center gap-2">
+                          <span className="text-xs font-mono text-gold">
+                            {match.kills}/{match.deaths}/{match.assists}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {matchDateStr}
+                          </span>
+                          <Badge
+                            variant={
+                              match.result === "Victory"
+                                ? "default"
+                                : "destructive"
+                            }
+                            className="text-xs"
+                          >
+                            {match.result === "Victory" ? "W" : "L"}
+                          </Badge>
+                        </div>
+                      </Link>
+
+                      {/* Highlights with action item topic highlighting */}
+                      {highlights.length > 0 && (
+                        <div className="ml-4">
+                          <div className="space-y-1">
+                            {highlights.map((h, i) => {
+                              const isRelevant =
+                                h.topic && actionItemTopics.has(h.topic);
+                              return (
+                                <div
+                                  key={i}
+                                  className={`flex items-start gap-2 text-xs rounded px-2 py-1 ${
+                                    isRelevant
+                                      ? "bg-gold/10 border border-gold/20"
+                                      : ""
+                                  }`}
+                                >
+                                  <Swords
+                                    className={`h-3 w-3 mt-0.5 shrink-0 ${
+                                      h.type === "highlight"
+                                        ? "text-green-400"
+                                        : "text-red-400"
+                                    }`}
+                                  />
+                                  <span
+                                    className={
+                                      isRelevant ? "text-gold" : ""
+                                    }
+                                  >
+                                    {h.text}
+                                  </span>
+                                  {h.topic && (
+                                    <Badge
+                                      variant={
+                                        isRelevant ? "default" : "secondary"
+                                      }
+                                      className="text-[10px] px-1.5 py-0 shrink-0"
+                                    >
+                                      {h.topic}
+                                      {isRelevant && " *"}
+                                    </Badge>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Empty progress state for completed sessions */}
+      {!isScheduled && progressMatches.length === 0 && (
+        <>
+          <Separator />
+          <div className="text-center py-6">
+            <Swords className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              No action items for this session.
+              No games played since this coaching session yet.
             </p>
-          ) : (
-            <div className="space-y-2">
-              {actionItems.map((item) => (
-                <ActionItemRow key={item.id} item={item} />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }

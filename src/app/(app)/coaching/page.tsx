@@ -1,31 +1,21 @@
 import { db } from "@/db";
-import { coachingSessions, coachingActionItems, type CoachingSession } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Plus, GraduationCap, ChevronRight } from "lucide-react";
-import { PaginationLinks, PAGE_SIZE } from "@/components/pagination-links";
+  coachingSessions,
+  coachingSessionMatches,
+  coachingActionItems,
+  matches,
+  matchHighlights,
+} from "@/db/schema";
+import { eq, desc, and, gt, lte, asc, inArray } from "drizzle-orm";
+import { requireUser } from "@/lib/session";
+import { getLatestVersion } from "@/lib/riot-api";
+import { CoachingHubClient } from "./coaching-hub-client";
 
-export default async function CoachingListPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const { page: pageParam } = await searchParams;
-  const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+export default async function CoachingHubPage() {
   const user = await requireUser();
 
-  // Parallel: sessions + action items (both only need user.id)
-  const [sessions, allActionItems] = await Promise.all([
+  // Fetch all sessions, action items, and DDragon version in parallel
+  const [allSessions, allActionItems, ddragonVersion] = await Promise.all([
     db.query.coachingSessions.findMany({
       where: eq(coachingSessions.userId, user.id),
       orderBy: desc(coachingSessions.date),
@@ -33,115 +23,158 @@ export default async function CoachingListPage({
     db.query.coachingActionItems.findMany({
       where: eq(coachingActionItems.userId, user.id),
     }),
+    getLatestVersion(),
   ]);
 
-  const actionItemsBySession = new Map<number, { total: number; completed: number }>();
+  const scheduledSessions = allSessions.filter(
+    (s) => s.status === "scheduled"
+  );
+  const completedSessions = allSessions.filter(
+    (s) => s.status === "completed"
+  );
+
+  // Get VOD match details for scheduled sessions
+  const vodMatchIds = scheduledSessions
+    .map((s) => s.vodMatchId)
+    .filter(Boolean) as string[];
+  const vodMatches =
+    vodMatchIds.length > 0
+      ? await db.query.matches.findMany({
+          where: and(
+            eq(matches.userId, user.id),
+            inArray(matches.id, vodMatchIds)
+          ),
+          columns: {
+            id: true,
+            championName: true,
+            matchupChampionName: true,
+            result: true,
+          },
+        })
+      : [];
+  const vodMatchMap = Object.fromEntries(vodMatches.map((m) => [m.id, m]));
+
+  // Build action items by session map
+  const actionItemsBySession = new Map<
+    number,
+    { total: number; completed: number }
+  >();
   for (const item of allActionItems) {
-    const existing = actionItemsBySession.get(item.sessionId) || { total: 0, completed: 0 };
+    const existing = actionItemsBySession.get(item.sessionId) || {
+      total: 0,
+      completed: 0,
+    };
     existing.total++;
     if (item.status === "completed") existing.completed++;
     actionItemsBySession.set(item.sessionId, existing);
   }
 
-  // Paginate sessions
-  const totalSessions = sessions.length;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const paginatedSessions = sessions.slice(start, start + PAGE_SIZE);
+  // Active action items (pending + in_progress)
+  const activeActionItems = allActionItems.filter(
+    (i) => i.status !== "completed"
+  );
+
+  // For completed sessions: compute "between sessions" match data
+  // Sort completed sessions ascending by date for interval computation
+  const sortedCompleted = [...completedSessions].sort(
+    (a, b) => a.date.getTime() - b.date.getTime()
+  );
+
+  // Build intervals: each completed session -> matches between it and the next
+  type SessionInterval = {
+    sessionId: number;
+    matchCount: number;
+    wins: number;
+    losses: number;
+    relevantNoteCount: number; // highlights/lowlights matching action item topics
+  };
+
+  const intervals: Map<number, SessionInterval> = new Map();
+
+  if (sortedCompleted.length > 0) {
+    // Collect all action item topics per session for matching
+    const topicsBySession = new Map<number, Set<string>>();
+    for (const item of allActionItems) {
+      if (item.topic) {
+        const set = topicsBySession.get(item.sessionId) || new Set();
+        set.add(item.topic);
+        topicsBySession.set(item.sessionId, set);
+      }
+    }
+
+    // For each completed session, find matches in the interval after it
+    for (let i = 0; i < sortedCompleted.length; i++) {
+      const current = sortedCompleted[i];
+      const next = sortedCompleted[i + 1];
+      const endDate = next?.date || new Date();
+
+      const intervalMatches = await db.query.matches.findMany({
+        where: and(
+          eq(matches.userId, user.id),
+          gt(matches.gameDate, current.date),
+          lte(matches.gameDate, endDate)
+        ),
+        columns: {
+          id: true,
+          result: true,
+        },
+      });
+
+      const wins = intervalMatches.filter(
+        (m) => m.result === "Victory"
+      ).length;
+      const losses = intervalMatches.length - wins;
+
+      // Count relevant highlights in these matches
+      let relevantNoteCount = 0;
+      const sessionTopics = topicsBySession.get(current.id);
+      if (sessionTopics && sessionTopics.size > 0 && intervalMatches.length > 0) {
+        const intervalMatchIds = intervalMatches.map((m) => m.id);
+        const intervalHighlights = await db.query.matchHighlights.findMany({
+          where: and(
+            eq(matchHighlights.userId, user.id),
+            inArray(matchHighlights.matchId, intervalMatchIds)
+          ),
+          columns: { topic: true },
+        });
+        relevantNoteCount = intervalHighlights.filter(
+          (h) => h.topic && sessionTopics.has(h.topic)
+        ).length;
+      }
+
+      intervals.set(current.id, {
+        sessionId: current.id,
+        matchCount: intervalMatches.length,
+        wins,
+        losses,
+        relevantNoteCount,
+      });
+    }
+  }
+
+  // Serialize intervals for client
+  const intervalsData: Record<
+    number,
+    { matchCount: number; wins: number; losses: number; relevantNoteCount: number }
+  > = {};
+  for (const [sessionId, data] of intervals) {
+    intervalsData[sessionId] = {
+      matchCount: data.matchCount,
+      wins: data.wins,
+      losses: data.losses,
+      relevantNoteCount: data.relevantNoteCount,
+    };
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            Coaching Sessions
-          </h1>
-          <p className="text-muted-foreground">
-            {sessions.length} session{sessions.length !== 1 ? "s" : ""} logged.
-          </p>
-        </div>
-        <Link href="/coaching/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Session
-          </Button>
-        </Link>
-      </div>
-
-      {sessions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <GraduationCap className="h-8 w-8 text-muted-foreground mb-3" />
-          <p className="text-lg font-medium">No coaching sessions yet</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Log your first coaching session to start tracking your improvement.
-          </p>
-          <Link href="/coaching/new" className="mt-4">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Session
-            </Button>
-          </Link>
-        </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {paginatedSessions.map((session: CoachingSession) => {
-            const topics: string[] = session.topics
-              ? JSON.parse(session.topics)
-              : [];
-            const items = actionItemsBySession.get(session.id);
-            const dateStr = new Intl.DateTimeFormat("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }).format(session.date);
-
-            return (
-              <Link key={session.id} href={`/coaching/${session.id}`}>
-                <Card className="hover:bg-surface-elevated transition-colors cursor-pointer hover-lift">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <GraduationCap className="h-5 w-5 text-gold shrink-0" />
-                        <div>
-                          <CardTitle className="text-base">
-                            {session.coachName}
-                          </CardTitle>
-                          <CardDescription>
-                            {dateStr}
-                            {session.durationMinutes &&
-                              ` · ${session.durationMinutes} min`}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex flex-wrap gap-1.5">
-                      {topics.map((t) => (
-                        <Badge key={t} variant="secondary" className="text-xs">
-                          {t}
-                        </Badge>
-                      ))}
-                    </div>
-                    {items && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {items.completed}/{items.total} action items completed
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-          </div>
-          <PaginationLinks
-            currentPage={currentPage}
-            totalItems={totalSessions}
-            basePath="/coaching"
-          />
-        </>
-      )}
-    </div>
+    <CoachingHubClient
+      scheduledSessions={scheduledSessions}
+      completedSessions={completedSessions}
+      activeActionItems={activeActionItems}
+      actionItemsBySession={Object.fromEntries(actionItemsBySession)}
+      vodMatchMap={vodMatchMap}
+      intervalsData={intervalsData}
+      ddragonVersion={ddragonVersion}
+    />
   );
 }

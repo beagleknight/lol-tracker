@@ -24,6 +24,7 @@ import {
   Loader2,
   ChevronRight,
   AlertCircle,
+  Calendar,
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -59,6 +60,13 @@ interface MatchStats {
   unreviewed: number;
 }
 
+interface UpcomingSession {
+  id: number;
+  coachName: string;
+  date: Date;
+  vodMatchId: string | null;
+}
+
 interface DashboardClientProps {
   user: {
     name?: string | null;
@@ -71,6 +79,7 @@ interface DashboardClientProps {
   latestRank: RankSnapshot | null;
   recentSnapshots: RankSnapshot[];
   actionItems: CoachingActionItem[];
+  upcomingSession: UpcomingSession | null;
   ddragonVersion: string;
 }
 
@@ -111,6 +120,7 @@ export function DashboardClient({
   latestRank,
   recentSnapshots,
   actionItems,
+  upcomingSession,
   ddragonVersion,
 }: DashboardClientProps) {
   const { isSyncing, handleSync } = useSyncMatches();
@@ -419,6 +429,55 @@ export function DashboardClient({
 
         {/* Right Column */}
         <div className="space-y-4">
+          {/* Upcoming Coaching Session */}
+          {upcomingSession && (
+            <Card className="surface-glow border-gold/20">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gold" />
+                  Next Session
+                </CardTitle>
+                <Link href={`/coaching/${upcomingSession.id}`}>
+                  <Button variant="ghost" size="sm">
+                    View
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-medium">{upcomingSession.coachName}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Intl.DateTimeFormat("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(upcomingSession.date)}
+                </p>
+                {(() => {
+                  const now = new Date();
+                  const diff = upcomingSession.date.getTime() - now.getTime();
+                  if (diff <= 0) {
+                    return (
+                      <Badge className="mt-2 text-xs bg-gold/20 text-gold border-gold/30">
+                        Ready to complete
+                      </Badge>
+                    );
+                  }
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const timeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+                  return (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      In {timeStr}
+                    </p>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Review Card */}
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">

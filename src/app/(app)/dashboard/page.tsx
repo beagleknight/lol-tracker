@@ -3,8 +3,9 @@ import {
   matches,
   rankSnapshots,
   coachingActionItems,
+  coachingSessions,
 } from "@/db/schema";
-import { eq, desc, and, count, sql } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { DashboardClient } from "./dashboard-client";
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
     activeActionItems,
     inProgressActionItems,
     matchStats,
+    upcomingSession,
   ] = await Promise.all([
     getLatestVersion(),
 
@@ -90,6 +92,21 @@ export default async function DashboardPage() {
       })
       .from(matches)
       .where(eq(matches.userId, user.id)),
+
+    // Next upcoming (scheduled) coaching session
+    db.query.coachingSessions.findFirst({
+      where: and(
+        eq(coachingSessions.userId, user.id),
+        eq(coachingSessions.status, "scheduled")
+      ),
+      orderBy: asc(coachingSessions.date),
+      columns: {
+        id: true,
+        coachName: true,
+        date: true,
+        vodMatchId: true,
+      },
+    }),
   ]);
 
   const latestRank = recentSnapshots[0] ?? null;
@@ -112,6 +129,7 @@ export default async function DashboardPage() {
       latestRank={latestRank}
       recentSnapshots={recentSnapshots}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
+      upcomingSession={upcomingSession ?? null}
       ddragonVersion={ddragonVersion}
     />
   );
