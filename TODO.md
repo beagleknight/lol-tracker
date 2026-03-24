@@ -4,13 +4,51 @@
 - [ ] Coaching session creation flow (create session, link matches, add action items)
 - [ ] Coaching session detail (view session, cycle action item statuses, delete session)
 - [ ] Action items page (filtering by status/topic, status cycling, delete)
-- [ ] CSV import with actual file upload and data import
+- [x] ~~CSV import with actual file upload and data import~~ (removed — CSV import feature dropped, see Cleanup section)
 - [x] ~~Inline comment editing on matches page~~ (removed — editing now lives exclusively on Review page)
 - [x] ~~Inline review editing on matches page~~ (removed — editing now lives exclusively on Review page)
 - [x] ~~Match detail: save game notes and VOD review notes~~ (removed — match detail is now read-only; editing on Review page)
 - [ ] Invite system: test full flow (new user with invite code, reject without code)
 - [ ] Admin settings: generate/copy/delete invite codes
 - [ ] Auth proxy: verify redirect-to-login flow with Auth.js wrapper
+
+## UX Feedback (user-reported, actionable)
+
+### Sync Games — global access
+- [ ] Move "Sync Games" to a persistent, always-visible location (e.g., sidebar or top bar) — it's needed across many pages but currently buried; keep it subtle (not a giant button), just always reachable
+
+### Dashboard — review widget clarity
+- [ ] Dashboard "games to review" widget: break down the count by review stage (e.g., "2 need post-game review, 1 needs VOD review") instead of a single number — clicking the current count leads to the Post-Game tab which may be empty, confusing the user
+
+### Match Detail — highlight visibility
+- [ ] Match detail: promote highlights/lowlights section higher on the page — currently buried at the bottom below stats and game details, but highlights are arguably the most important part of a reviewed game
+
+### Review Page — sort order & navigation
+- [ ] Review page: show games to review oldest-first (so the user reviews in chronological order)
+- [ ] Review page: preserve the active tab when navigating back from match detail (currently resets to the default tab on browser back)
+
+### Duo Page — performance (critical)
+- [ ] Duo page: the top section (partner info / stats) is still too slow despite previous query optimizations — investigate caching, materialized/precomputed stats, or syncing duo stats as part of the game sync process; **prioritize speed over data freshness** — stale-until-next-sync is acceptable
+
+### Analytics — layout & language
+- [ ] Analytics page: rethink layout — the two large charts dominate the viewport and push important data (champion stats, matchup stats) below the fold; consider a more balanced layout (e.g., charts smaller/collapsible, stats higher up)
+- [ ] Analytics / Rank Journey: remove technical language like "snapshots" — use player-friendly labels and descriptions throughout
+
+### Matchup Scout — simplify scope
+- [ ] Matchup Scout: remove "Check Game" (live game lookup) feature entirely for now — it only works once already in-game which is too late to be useful; may revisit in the future with a better UX (e.g., champ select detection)
+- [ ] Matchup Scout: remove the inline review functionality — it duplicates the Review page and clutters the scout experience
+
+### Coaching — VOD optional & reminders
+- [ ] Coaching session scheduling: make VOD URL optional at creation time (user may not have it yet when scheduling)
+- [ ] Coaching upcoming sessions (dashboard): show a visual indicator when VOD is missing for an upcoming session so the user remembers to add it
+- [ ] Coaching completed sessions: show reminders/nudges for sessions that are finished but missing focus areas or action items (similar to how we nudge for unreviewed games)
+
+### User-facing language audit
+- [ ] Audit all user-facing text for technical/developer jargon — replace with player-friendly language (applies to error messages, empty states, labels, tooltips, and explanatory text throughout the app)
+
+## Cleanup — Remove Unused Features
+- [ ] Remove CSV import/merge feature entirely — no longer needed, the app is the primary data source now
+- [ ] (Future) Consider adding CSV/data export instead, if needed
 
 ## Polish
 - [ ] Responsive refinements (mobile experience for tables, forms, etc.)
@@ -54,11 +92,12 @@
 
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
-- [ ] Auto-sync on login or on a schedule (instead of manual "Sync Games" button)
+- [ ] Auto-sync on login or on a schedule (in addition to the always-visible manual sync)
 - [ ] Export data (CSV export of matches with all fields)
 - [ ] Multi-account support (track games across multiple Riot accounts)
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
 - [ ] Goal setting (e.g., "reach Diamond by end of split") with progress tracking
+- [ ] Matchup Scout: revisit live game / champ select integration with a better UX when ready
 
 ## Features — Internationalization (nice to have)
 - [ ] Date/time format preference: allow users to pick a locale-aware format (e.g., DD/MM/YYYY vs MM/DD/YYYY) — US date format is confusing for non-US users
@@ -85,8 +124,6 @@
 
 ## Known Limitations
 - Rate limits: 20 req/sec, 100 req/2min — sufficient for personal use but sync is sequential
-- Imported CSV games have synthetic match IDs (prefixed `IMPORT_`) and no raw match JSON
-- Match detail page won't show full player data for imported games
 - First user auto-promoted to admin; subsequent users need an invite code
 
 ## Cleanup — Remove Dev API Key Workarounds
