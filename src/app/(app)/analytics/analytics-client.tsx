@@ -527,7 +527,6 @@ export function AnalyticsClient({
             </CardTitle>
             <CardDescription>
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{t("rankUpdatesTracked", { count: rankChartData.length })}</span>
                 <span className="font-medium text-foreground/80">
                   {t("peakLabel", { rank: lpChartMeta.peakRank })}
                 </span>

@@ -77,7 +77,7 @@ interface DashboardClientProps {
   recentMatches: DashboardMatch[];
   matchStats: MatchStats;
   latestRank: RankSnapshot | null;
-  recentSnapshots: RankSnapshot[];
+  lpTrend: number | null;
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
   ddragonVersion: string;
@@ -112,7 +112,7 @@ export function DashboardClient({
   recentMatches,
   matchStats,
   latestRank,
-  recentSnapshots,
+  lpTrend,
   actionItems,
   upcomingSession,
   ddragonVersion,
@@ -159,29 +159,6 @@ export function DashboardClient({
       : "0";
 
   // Games needing review
-  // LP trend: compare latest snapshot to oldest in the recent set
-  const lpTrend = (() => {
-    if (recentSnapshots.length < 2) return null;
-    // recentSnapshots are ordered desc, so [0] is newest, [last] is oldest
-    const newest = recentSnapshots[0];
-    const oldest = recentSnapshots[recentSnapshots.length - 1];
-    if (!newest.tier || !oldest.tier) return null;
-
-    const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
-    const DIV_ORDER = ["IV", "III", "II", "I"];
-
-    function toCumLP(tier: string, division: string | null, lp: number) {
-      const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase());
-      if (tierIdx === -1) return 0;
-      const isMaster = tierIdx >= TIER_ORDER.indexOf("MASTER");
-      const divIdx = isMaster ? 0 : DIV_ORDER.indexOf(division || "IV");
-      return tierIdx * 400 + (divIdx < 0 ? 0 : divIdx) * 100 + lp;
-    }
-
-    const newLP = toCumLP(newest.tier, newest.division, newest.lp || 0);
-    const oldLP = toCumLP(oldest.tier, oldest.division, oldest.lp || 0);
-    return newLP - oldLP;
-  })();
 
   return (
     <div className="space-y-6">
