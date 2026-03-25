@@ -1,0 +1,147 @@
+---
+name: pr-workflow
+description: PR-based development workflow for lol-tracker. Use when implementing features, fixing bugs, or making any code changes. Covers branch creation, CI checks, changelog entries, and PR creation.
+---
+
+## What I do
+
+Enforce the PR-based development workflow. All code changes go through pull requests — never push directly to main.
+
+## When to use me
+
+- Starting any implementation task (feature, bug fix, refactor, etc.)
+- Creating a branch for new work
+- Writing changelog entries for PRs
+- Creating pull requests
+- Checking CI status on PRs
+
+## Critical rules
+
+1. **NEVER commit to main.** NEVER push to main. All changes go through feature branches and PRs.
+2. **ALWAYS check the current branch** before making any changes. If on `main`, create a feature branch first.
+3. **Every PR must include a changelog entry** unless it's purely infrastructure (CI config, skill files, etc.) — in that case, add the `skip-changelog` label to the PR.
+
+## Workflow
+
+### 1. Start work — create a feature branch
+
+```bash
+# Always start from up-to-date main
+git checkout main
+git pull origin main
+git checkout -b <branch-name>
+```
+
+Branch naming conventions:
+- `feat/<short-description>` — new features
+- `fix/<short-description>` — bug fixes
+- `refactor/<short-description>` — refactoring
+- `chore/<short-description>` — infrastructure, CI, deps, etc.
+
+### 2. Implement the changes
+
+- Make commits on the feature branch
+- Run checks locally before pushing:
+  ```bash
+  npm run typecheck
+  npm run lint
+  npm run build
+  ```
+
+### 3. Write a changelog entry
+
+Create MDX files in **both** locale directories:
+
+```
+changelog/en/YYYY-MM-DD-slug.mdx
+changelog/es/YYYY-MM-DD-slug.mdx
+```
+
+Frontmatter format:
+```yaml
+---
+version: "X.Y.Z"
+date: "YYYY-MM-DD"
+title: "Human-readable title"
+---
+```
+
+Body uses standard Markdown: **bold**, lists, `### headings`.
+
+Version bumping:
+- **Patch** (X.Y.Z+1): bug fixes, small polish
+- **Minor** (X.Y+1.0): new features, significant changes
+- **Major** (X+1.0.0): breaking changes (unlikely for this project)
+
+To determine the next version, check the latest `version` in `changelog/en/` files.
+
+If the PR is purely infrastructure (CI, skills, config) and has no user-facing changes, skip the changelog and add the `skip-changelog` label to the PR instead.
+
+### 4. Push and create PR
+
+```bash
+git push -u origin <branch-name>
+```
+
+Create the PR with `gh pr create`. The PR body should follow this format:
+
+```markdown
+## Summary
+- Brief description of changes
+
+## Changelog
+- Version X.Y.Z: <what changed for users>
+```
+
+### 5. CI checks
+
+Four checks run automatically on every PR to `main`:
+
+| Check | Command | What it catches |
+|---|---|---|
+| **Typecheck** | `tsc --noEmit` | Type errors |
+| **Lint** | `eslint` | Code style, unused vars, React rules |
+| **Build** | `next build --webpack` | Compilation errors, broken imports |
+| **Changelog** | `git diff` on `changelog/` | Missing changelog entry (skipped with `skip-changelog` label) |
+
+All four must pass before merging.
+
+### 6. Merge
+
+After CI passes, merge the PR via GitHub (squash merge preferred for clean history).
+
+Vercel auto-deploys on merge to main — no manual deploy step needed.
+
+## Common scenarios
+
+### Quick fix (1 commit)
+```bash
+git checkout main && git pull
+git checkout -b fix/description
+# make changes
+npm run typecheck && npm run lint
+git add -A && git commit -m "fix: description"
+# add changelog entry
+git add -A && git commit -m "docs: add changelog entry"
+git push -u origin fix/description
+gh pr create --title "fix: description" --body "..."
+```
+
+### Feature (multiple commits)
+```bash
+git checkout main && git pull
+git checkout -b feat/description
+# implement in logical commits
+# add changelog at the end
+git push -u origin feat/description
+gh pr create --title "feat: description" --body "..."
+```
+
+### Infrastructure change (no changelog)
+```bash
+git checkout main && git pull
+git checkout -b chore/description
+# make changes
+git push -u origin chore/description
+gh pr create --title "chore: description" --body "..." --label skip-changelog
+```
