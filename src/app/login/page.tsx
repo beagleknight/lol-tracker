@@ -100,14 +100,11 @@ function DemoLoginForm() {
                 )}
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="shrink-0"
-              disabled={loading !== null}
+            <span
+              className="inline-flex items-center justify-center shrink-0 rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm"
             >
               {loading === user.id ? "..." : t("demoLoginButton")}
-            </Button>
+            </span>
           </button>
         ))}
       </CardContent>
