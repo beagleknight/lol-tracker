@@ -29,6 +29,36 @@ Steps: `npx drizzle-kit generate` -> review SQL -> apply via standalone script (
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 <!-- END:turso-migration-rules -->
 
+<!-- BEGIN:env-safety-rules -->
+# Environment variable safety — MANDATORY
+
+**`.env.local` is for LOCAL DEV ONLY.** It must NEVER contain production or preview credentials (Turso URLs, auth tokens, API keys for remote services).
+
+Rules:
+1. **NEVER run `vercel env pull` into `.env.local`** — it dumps production secrets. If you need remote credentials for a one-off task, pull into a temporary file (e.g., `.env.tmp`), use it, and delete it immediately.
+2. **NEVER set `TURSO_DATABASE_URL` in `.env.local`** — local dev defaults to `file:./data/lol-tracker.db` (SQLite). This is intentional.
+3. **To target a remote DB**, pass env vars explicitly inline: `TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... npm run db:seed -- --force-remote`
+4. **Before running ANY script that writes to a database**, verify the target URL. If it contains `turso.io` or any remote host, STOP and confirm with the user.
+5. **The seed script (`npm run db:seed`) refuses to run against remote databases** unless `--force-remote` is passed. This is a safety net — respect it.
+6. **`db:push` and `db:pull` require explicit env vars** — they do NOT load `.env.local`. Pass credentials inline.
+
+Environment strategy:
+- Local dev → `.env.local` (dev-safe defaults, no remote DB, demo mode enabled)
+- Preview → Vercel dashboard (Preview scope only)
+- Production → Vercel dashboard (Production scope only)
+<!-- END:env-safety-rules -->
+
+<!-- BEGIN:lockfile-safety-rules -->
+# Lockfile safety — MANDATORY before every commit
+
+**NEVER commit a modified `package-lock.json` without verifying it.** Local Node/npm version mismatches (e.g., Node 24 locally vs Node 22 in CI) can silently prune or add entries, causing `npm ci` to fail in CI.
+
+Before committing, if `package-lock.json` is staged:
+1. Check whether you actually changed dependencies in `package.json`. If not, **restore the lockfile from main**: `git checkout origin/main -- package-lock.json`
+2. If you did change dependencies, regenerate the lockfile with the CI Node version in mind. Verify with `npm ci` locally.
+3. Never blindly commit lockfile changes from `npm install` — they may reflect your local Node version, not CI's.
+<!-- END:lockfile-safety-rules -->
+
 <!-- BEGIN:task-completion-rules -->
 # Task completion workflow
 
