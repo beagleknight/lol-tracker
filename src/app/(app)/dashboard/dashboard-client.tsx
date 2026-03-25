@@ -206,7 +206,7 @@ export function DashboardClient({
                 {lpTrend !== null && (
                   <p
                     className={`text-xs font-mono font-semibold mt-1 flex items-center gap-1 ${
-                      lpTrend >= 0 ? "text-green-400" : "text-red-400"
+                      lpTrend >= 0 ? "text-win" : "text-loss"
                     }`}
                   >
                     {lpTrend >= 0 ? (
@@ -235,9 +235,9 @@ export function DashboardClient({
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold">{sessionWinRate}%</p>
               {sessionWinRate >= 50 ? (
-                <TrendingUp className="h-4 w-4 text-green-400" />
+                <TrendingUp className="h-4 w-4 text-win" />
               ) : recentMatches.length > 0 ? (
-                <TrendingDown className="h-4 w-4 text-red-400" />
+                <TrendingDown className="h-4 w-4 text-loss" />
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground">
@@ -258,9 +258,9 @@ export function DashboardClient({
             {streak ? (
               <div className="flex items-center gap-2">
                 {streak.type === "W" ? (
-                  <Flame className="h-5 w-5 text-orange-500" />
+                  <Flame className="h-5 w-5 text-streak-hot" />
                 ) : (
-                  <Snowflake className="h-5 w-5 text-blue-400" />
+                  <Snowflake className="h-5 w-5 text-streak-cold" />
                 )}
                 <p className="text-2xl font-bold">
                   {streak.count}{streak.type}
@@ -321,9 +321,9 @@ export function DashboardClient({
                   >
                     <div
                       className={`w-1 h-8 rounded-full ${
-                        match.result === "Victory"
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                         match.result === "Victory"
+                          ? "bg-win"
+                          : "bg-loss"
                       }`}
                     />
                     <Image
@@ -410,7 +410,7 @@ export function DashboardClient({
                   {formatDate(upcomingSession.date, locale, "datetime-short")}
                 </p>
                 {!upcomingSession.vodMatchId && (
-                  <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
+                  <p className="text-xs text-warning flex items-center gap-1 mt-1">
                     <AlertCircle className="h-3 w-3" />
                     {t("noVodSelected")}
                   </p>

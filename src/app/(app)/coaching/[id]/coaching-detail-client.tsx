@@ -120,8 +120,8 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
 
   const icons = {
     pending: <Circle className="h-4 w-4 text-muted-foreground" />,
-    in_progress: <Play className="h-4 w-4 text-yellow-500" />,
-    completed: <CheckCircle2 className="h-4 w-4 text-green-400" />,
+    in_progress: <Play className="h-4 w-4 text-status-progress" />,
+    completed: <CheckCircle2 className="h-4 w-4 text-win" />,
   };
 
   return (
@@ -383,8 +383,8 @@ export function CoachingDetailClient({
                       <div
                         className={`w-1 h-8 rounded-full ${
                           match.result === "Victory"
-                            ? "bg-green-500"
-                            : "bg-red-500"
+                            ? "bg-win"
+                            : "bg-loss"
                         }`}
                       />
                       <Image
@@ -536,12 +536,12 @@ export function CoachingDetailClient({
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     {progressStats.relevantHighlights > 0 && (
-                      <span className="text-sm font-bold text-green-400">
+                      <span className="text-sm font-bold text-win">
                         {progressStats.relevantHighlights}
                       </span>
                     )}
                     {progressStats.relevantLowlights > 0 && (
-                      <span className="text-sm font-bold text-red-400">
+                      <span className="text-sm font-bold text-loss">
                         {progressStats.relevantLowlights}
                       </span>
                     )}
@@ -592,8 +592,8 @@ export function CoachingDetailClient({
                         <div
                           className={`w-1 h-6 rounded-full ${
                             match.result === "Victory"
-                              ? "bg-green-500"
-                              : "bg-red-500"
+                              ? "bg-win"
+                              : "bg-loss"
                           }`}
                         />
                         <Image
@@ -668,8 +668,8 @@ export function CoachingDetailClient({
                                   <Swords
                                     className={`h-3 w-3 mt-0.5 shrink-0 ${
                                       h.type === "highlight"
-                                        ? "text-green-400"
-                                        : "text-red-400"
+                                        ? "text-win"
+                                        : "text-loss"
                                     }`}
                                   />
                                   <span

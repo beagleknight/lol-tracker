@@ -75,7 +75,13 @@ Final todos should be:
 
 All tasks, features, and bugs are tracked as **GitHub Issues** (not a local TODO file). Use `gh issue list` at the start of every session to understand what's open.
 
-When a PR resolves an issue, include `Fixes #N` in the PR description to auto-close it on merge. Reference issues in commit messages when relevant.
+**Issue linking in PRs is mandatory.** Before creating any PR:
+1. Check `gh issue list` for related issues
+2. If the PR fully resolves an issue, include `Fixes #N` in the PR body (one per line for multiple issues)
+3. If the PR partially addresses an issue, use `Relates to #N` instead
+4. GitHub auto-closes issues linked with `Fixes` when the PR merges
 
-Full conventions are in the `todo-tracking` OpenCode skill.
+Reference issues in commit messages when relevant.
+
+Full PR conventions are in the `pr-workflow` OpenCode skill.
 <!-- END:github-issues-rules -->

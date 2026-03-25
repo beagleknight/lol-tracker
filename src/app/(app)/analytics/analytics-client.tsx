@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useChartColors } from "@/hooks/use-chart-colors";
 import {
   LineChart,
   Line,
@@ -306,6 +307,7 @@ export function AnalyticsClient({
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Analytics");
+  const cc = useChartColors();
 
   const rollingWR = useMemo(() => computeRollingWinRate(matches, locale), [matches, locale]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
@@ -533,7 +535,7 @@ export function AnalyticsClient({
                 {lpChartMeta.netChange !== 0 && (
                   <span
                     className={`font-mono font-semibold ${
-                      lpChartMeta.netChange >= 0 ? "text-green-400" : "text-red-400"
+                      lpChartMeta.netChange >= 0 ? "text-win" : "text-loss"
                     }`}
                   >
                     {lpChartMeta.netChange >= 0 ? "+" : ""}
@@ -549,27 +551,27 @@ export function AnalyticsClient({
                 <AreaChart data={rankChartData}>
                   <defs>
                     <linearGradient id="lpGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="oklch(0.78 0.14 80)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="oklch(0.78 0.14 80)" stopOpacity={0} />
+                      <stop offset="5%" stopColor={cc.gold} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={cc.gold} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
                   <XAxis
                     dataKey="date"
-                    stroke="oklch(0.55 0.02 260)"
+                    stroke={cc.chartAxis}
                     fontSize={12}
                     interval="preserveStartEnd"
                   />
                   <YAxis
-                    stroke="oklch(0.55 0.02 260)"
+                    stroke={cc.chartAxis}
                     fontSize={12}
                     domain={[lpChartMeta.yMin, lpChartMeta.yMax]}
                     tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "oklch(0.18 0.03 260)",
-                      border: "1px solid oklch(0.25 0.03 260)",
+                      backgroundColor: cc.chartTooltipBg,
+                      border: `1px solid ${cc.chartTooltipBorder}`,
                       borderRadius: "8px",
                     }}
                     content={({ active, payload }) => {
@@ -584,7 +586,7 @@ export function AnalyticsClient({
                             <p className="text-xs font-semibold text-gold mb-1">{t("tooltips.peakRankAchieved")}</p>
                           )}
                           {milestone && (
-                            <p className="text-xs font-semibold text-green-400 mb-1">{t("tooltips.firstTimeInTier", { tier: milestone.tier })}</p>
+                            <p className="text-xs font-semibold text-win mb-1">{t("tooltips.firstTimeInTier", { tier: milestone.tier })}</p>
                           )}
                           <p className="font-semibold text-gold">
                             {d.tier} {d.division}
@@ -604,11 +606,11 @@ export function AnalyticsClient({
                     <ReferenceLine
                       key={b.label}
                       y={b.lp}
-                      stroke="oklch(0.65 0.17 250)"
+                      stroke={cc.electric}
                       strokeDasharray="6 3"
                       label={{
                         value: b.label,
-                        fill: "oklch(0.65 0.17 250)",
+                        fill: cc.electric,
                         fontSize: 11,
                         position: "right",
                       }}
@@ -621,16 +623,16 @@ export function AnalyticsClient({
                       x={rankChartData[e.index].date}
                       stroke={
                         e.type === "promotion"
-                          ? "oklch(0.72 0.15 150)"
-                          : "oklch(0.65 0.22 27)"
+                          ? cc.chartPromotion
+                          : cc.chartDemotion
                       }
                       strokeDasharray="4 4"
                       label={{
                         value: e.type === "promotion" ? t("chartLabels.reached", { tier: e.to.split(" ")[0] }) : t("chartLabels.backTo", { tier: e.to.split(" ")[0] }),
                         fill:
                           e.type === "promotion"
-                            ? "oklch(0.72 0.15 150)"
-                            : "oklch(0.65 0.22 27)",
+                            ? cc.chartPromotion
+                            : cc.chartDemotion,
                         fontSize: 10,
                         position: "top",
                       }}
@@ -639,7 +641,7 @@ export function AnalyticsClient({
                   <Area
                     type="monotone"
                     dataKey="cumulativeLP"
-                    stroke="oklch(0.78 0.14 80)"
+                    stroke={cc.gold}
                     strokeWidth={2}
                     fill="url(#lpGradient)"
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -657,15 +659,15 @@ export function AnalyticsClient({
                               cx={props.cx}
                               cy={props.cy}
                               r={6}
-                              fill="oklch(0.78 0.14 80)"
-                              stroke="oklch(0.90 0.14 80)"
+                              fill={cc.gold}
+                              stroke={cc.goldLight}
                               strokeWidth={2}
                             />
                             <text
                               x={props.cx}
                               y={props.cy - 12}
                               textAnchor="middle"
-                              fill="oklch(0.85 0.12 80)"
+                              fill={cc.goldLight}
                               fontSize={9}
                               fontWeight="bold"
                             >
@@ -681,8 +683,8 @@ export function AnalyticsClient({
                             cx={props.cx}
                             cy={props.cy}
                             r={5}
-                            fill="oklch(0.78 0.14 80)"
-                            stroke="oklch(0.13 0.02 260)"
+                            fill={cc.gold}
+                            stroke={cc.background}
                             strokeWidth={2}
                           />
                         );
@@ -693,12 +695,12 @@ export function AnalyticsClient({
                           cx={props.cx}
                           cy={props.cy}
                           r={2}
-                          fill="oklch(0.78 0.14 80)"
+                          fill={cc.gold}
                           opacity={0.5}
                         />
                       );
                     }}
-                    activeDot={{ r: 5, fill: "oklch(0.85 0.12 80)" }}
+                    activeDot={{ r: 5, fill: cc.goldLight }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -738,21 +740,21 @@ export function AnalyticsClient({
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={rollingWR}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
+                <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
                 <XAxis
                   dataKey="date"
-                  stroke="oklch(0.55 0.02 260)"
+                  stroke={cc.chartAxis}
                   fontSize={12}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  stroke="oklch(0.55 0.02 260)"
+                  stroke={cc.chartAxis}
                   fontSize={12}
                   domain={[0, 100]}
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip
-                  cursor={{ stroke: "oklch(0.45 0.02 260)" }}
+                  cursor={{ stroke: cc.chartReference }}
                   content={({ active, payload }) => {
                     if (!active || !payload || !payload[0]) return null;
                     const d = payload[0].payload as (typeof rollingWR)[0];
@@ -761,7 +763,7 @@ export function AnalyticsClient({
                         <p className="text-sm font-semibold text-foreground">{d.date}</p>
                         <p className="text-sm">
                           {t("tooltips.winRate")}{" "}
-                          <span className={d.winRate >= 50 ? "text-gold" : "text-red-400"}>
+                          <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
                             {d.winRate}%
                           </span>
                         </p>
@@ -772,9 +774,9 @@ export function AnalyticsClient({
                 />
                 <ReferenceLine
                   y={50}
-                  stroke="oklch(0.35 0.02 260)"
+                  stroke={cc.chartReference}
                   strokeDasharray="3 3"
-                  label={{ value: "50%", fill: "oklch(0.55 0.02 260)", fontSize: 11 }}
+                  label={{ value: "50%", fill: cc.chartAxis, fontSize: 11 }}
                 />
                 {/* Shaded bands between coaching sessions */}
                 {coachingBands.bands.map((band, i) => (
@@ -782,8 +784,8 @@ export function AnalyticsClient({
                     key={`band-${i}`}
                     x1={band.x1}
                     x2={band.x2}
-                    fill={band.isOngoing ? "oklch(0.6 0.2 300 / 0.08)" : "oklch(0.6 0.2 300 / 0.12)"}
-                    fillOpacity={1}
+                    fill={cc.neonPurple}
+                    fillOpacity={band.isOngoing ? 0.08 : 0.12}
                     strokeOpacity={0}
                   />
                 ))}
@@ -792,11 +794,12 @@ export function AnalyticsClient({
                   <ReferenceLine
                     key={`session-${i}`}
                     x={s.index}
-                    stroke={s.status === "scheduled" ? "oklch(0.6 0.2 300 / 0.6)" : "oklch(0.6 0.2 300)"}
+                    stroke={cc.neonPurple}
+                    strokeOpacity={s.status === "scheduled" ? 0.6 : 1}
                     strokeDasharray={s.status === "scheduled" ? "6 4" : "4 4"}
                     label={{
                       value: s.coachName,
-                      fill: "oklch(0.6 0.2 300)",
+                      fill: cc.neonPurple,
                       fontSize: 10,
                       position: "top",
                     }}
@@ -805,7 +808,7 @@ export function AnalyticsClient({
                 <Line
                   type="monotone"
                   dataKey="winRate"
-                  stroke="oklch(0.78 0.14 80)"
+                  stroke={cc.gold}
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}
@@ -831,19 +834,19 @@ export function AnalyticsClient({
             <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topMatchups} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.03 260)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
                   <XAxis
                     type="number"
                     domain={[0, 100]}
                     tickFormatter={(v) => `${v}%`}
-                    stroke="oklch(0.55 0.02 260)"
+                    stroke={cc.chartAxis}
                     fontSize={12}
                   />
                   <YAxis
                     type="category"
                     dataKey="name"
                     width={100}
-                    stroke="oklch(0.55 0.02 260)"
+                    stroke={cc.chartAxis}
                     fontSize={12}
                     tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
                       <a href={`/scout?enemy=${encodeURIComponent(payload.value)}`}>
@@ -860,7 +863,7 @@ export function AnalyticsClient({
                             x={-74}
                             y={0}
                             dy={4}
-                            fill="oklch(0.75 0.02 260)"
+                            fill={cc.mutedForeground}
                             fontSize={12}
                             textAnchor="start"
                           >
@@ -871,7 +874,7 @@ export function AnalyticsClient({
                     )}
                   />
                   <Tooltip
-                    cursor={{ fill: "oklch(0.25 0.03 260 / 0.3)" }}
+                    cursor={{ fill: `color-mix(in oklch, ${cc.chartGrid}, transparent 70%)` }}
                     content={({ active, payload }) => {
                       if (!active || !payload || !payload[0]) return null;
                       const d = payload[0].payload as (typeof topMatchups)[0];
@@ -880,7 +883,7 @@ export function AnalyticsClient({
                           <p className="font-semibold text-foreground">{d.name}</p>
                           <p className="text-sm">
                             Win Rate:{" "}
-                            <span className={d.winRate >= 50 ? "text-gold" : "text-red-400"}>
+                            <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
                               {d.winRate}%
                             </span>{" "}
                             <span className="text-muted-foreground">
@@ -891,12 +894,12 @@ export function AnalyticsClient({
                       );
                     }}
                   />
-                  <ReferenceLine x={50} stroke="oklch(0.35 0.02 260)" strokeDasharray="3 3" />
+                  <ReferenceLine x={50} stroke={cc.chartReference} strokeDasharray="3 3" />
                   <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
                     {topMatchups.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={entry.winRate >= 50 ? "oklch(0.78 0.14 80)" : "#ef4444"}
+                        fill={entry.winRate >= 50 ? cc.gold : cc.loss}
                       />
                     ))}
                   </Bar>

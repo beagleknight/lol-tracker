@@ -88,8 +88,8 @@ function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
 
   const icons = {
     pending: <Circle className="h-3.5 w-3.5 text-muted-foreground" />,
-    in_progress: <Play className="h-3.5 w-3.5 text-yellow-500" />,
-    completed: <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />,
+    in_progress: <Play className="h-3.5 w-3.5 text-status-progress" />,
+    completed: <CheckCircle2 className="h-3.5 w-3.5 text-win" />,
   };
 
   return (
@@ -201,7 +201,7 @@ export function CoachingHubClient({
                         </div>
                         <div className="flex items-center gap-2">
                           {!session.vodMatchId && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-400">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-warning/40 text-warning">
                               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
                               {t("badgeNoVod")}
                             </Badge>
@@ -361,7 +361,7 @@ export function CoachingHubClient({
                         )}
                         {/* Nudges for incomplete session data */}
                         {(topics.length === 0 || !items || items.total === 0) && (
-                          <p className="text-xs text-amber-400 flex items-center gap-1 mt-2">
+                          <p className="text-xs text-warning flex items-center gap-1 mt-2">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
                             {topics.length === 0 && (!items || items.total === 0)
                               ? t("missingFocusAreasAndActionItems")
@@ -383,10 +383,10 @@ export function CoachingHubClient({
                         {t("intervalGames", { count: interval.matchCount })}
                       </span>
                       <span className="font-mono">
-                        <span className="text-green-400">
+                        <span className="text-win">
                           {interval.wins}W
                         </span>{" "}
-                        <span className="text-red-400">
+                        <span className="text-loss">
                           {interval.losses}L
                         </span>
                       </span>

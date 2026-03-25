@@ -243,9 +243,9 @@ export function ScheduleSessionClient({
                     </div>
                     <div
                       className={`w-1 h-6 rounded-full ${
-                        match.result === "Victory"
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                         match.result === "Victory"
+                          ? "bg-win"
+                          : "bg-loss"
                       }`}
                     />
                     <span className="text-sm font-medium inline-flex items-center gap-1.5">
