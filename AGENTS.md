@@ -24,3 +24,11 @@ Final todos should be:
 2. Commit changes with a descriptive message
 3. Push to remote
 <!-- END:task-completion-rules -->
+
+<!-- BEGIN:todo-tracking-rules -->
+# TODO.md tracking
+
+**Keep `TODO.md` in sync with every change.** After completing any implementation task, immediately update the relevant checkbox in `TODO.md` before moving to the next task. Read `TODO.md` at the start of every session.
+
+Full conventions are in the `todo-tracking` OpenCode skill.
+<!-- END:todo-tracking-rules -->
