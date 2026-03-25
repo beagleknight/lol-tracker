@@ -168,6 +168,121 @@ async function seed() {
 
   const client = createClient({ url: dbUrl, authToken: dbToken });
 
+  // Ensure tables exist (CREATE IF NOT EXISTS).
+  // This makes the seed script self-contained — no need to run
+  // drizzle-kit push separately for local dev.
+  console.log("Ensuring tables exist...");
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      discord_id TEXT NOT NULL UNIQUE,
+      name TEXT,
+      image TEXT,
+      email TEXT,
+      riot_game_name TEXT,
+      riot_tag_line TEXT,
+      puuid TEXT,
+      summoner_id TEXT,
+      duo_partner_user_id TEXT,
+      locale TEXT DEFAULT 'en-GB',
+      language TEXT DEFAULT 'en',
+      role TEXT NOT NULL DEFAULT 'user',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS matches (
+      id TEXT NOT NULL,
+      odometer INTEGER NOT NULL,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      game_date INTEGER NOT NULL,
+      result TEXT NOT NULL,
+      champion_id INTEGER NOT NULL,
+      champion_name TEXT NOT NULL,
+      rune_keystone_id INTEGER,
+      rune_keystone_name TEXT,
+      matchup_champion_id INTEGER,
+      matchup_champion_name TEXT,
+      kills INTEGER NOT NULL DEFAULT 0,
+      deaths INTEGER NOT NULL DEFAULT 0,
+      assists INTEGER NOT NULL DEFAULT 0,
+      cs INTEGER NOT NULL DEFAULT 0,
+      cs_per_min REAL DEFAULT 0,
+      game_duration_seconds INTEGER NOT NULL DEFAULT 0,
+      gold_earned INTEGER DEFAULT 0,
+      vision_score INTEGER DEFAULT 0,
+      comment TEXT,
+      reviewed INTEGER NOT NULL DEFAULT 0,
+      review_notes TEXT,
+      review_skipped_reason TEXT,
+      vod_url TEXT,
+      queue_id INTEGER,
+      synced_at INTEGER NOT NULL,
+      raw_match_json TEXT,
+      duo_partner_puuid TEXT,
+      duo_partner_champion_name TEXT,
+      duo_partner_kills INTEGER,
+      duo_partner_deaths INTEGER,
+      duo_partner_assists INTEGER,
+      PRIMARY KEY (id, user_id)
+    );
+    CREATE TABLE IF NOT EXISTS rank_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      captured_at INTEGER NOT NULL,
+      tier TEXT,
+      division TEXT,
+      lp INTEGER DEFAULT 0,
+      wins INTEGER DEFAULT 0,
+      losses INTEGER DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS coaching_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      coach_name TEXT NOT NULL,
+      date INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'scheduled',
+      vod_match_id TEXT,
+      duration_minutes INTEGER,
+      topics TEXT,
+      notes TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS coaching_session_matches (
+      session_id INTEGER NOT NULL REFERENCES coaching_sessions(id) ON DELETE CASCADE,
+      match_id TEXT NOT NULL,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      PRIMARY KEY (session_id, match_id)
+    );
+    CREATE TABLE IF NOT EXISTS coaching_action_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL REFERENCES coaching_sessions(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      description TEXT NOT NULL,
+      topic TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      completed_at INTEGER,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS invites (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      used_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+      used_at INTEGER,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS match_highlights (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id TEXT NOT NULL,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      text TEXT NOT NULL,
+      topic TEXT,
+      created_at INTEGER NOT NULL
+    );
+  `);
+
   // Clear existing data (order matters for foreign keys)
   console.log("Clearing existing data...");
   await client.executeMultiple(`

@@ -14,9 +14,8 @@
 # What this script does:
 #   1. Creates a Turso database named "lol-tracker-preview" in dub1 (Dublin)
 #   2. Creates an auth token for it
-#   3. Pushes the Drizzle schema to the preview DB
-#   4. Seeds it with demo data
-#   5. Prints the env vars to set in Vercel dashboard
+#   3. Seeds it with demo data (tables are created automatically)
+#   4. Prints the env vars to set in Vercel dashboard
 #
 # After running this script, configure Vercel:
 #   1. Go to Project Settings > Environment Variables
@@ -58,17 +57,12 @@ echo "Creating auth token..."
 DB_TOKEN=$(turso db tokens create "$DB_NAME")
 echo "✓ Auth token created"
 
-# Push schema
-echo ""
-echo "=== Pushing Drizzle schema to preview DB ==="
-TURSO_DATABASE_URL="$DB_URL" TURSO_AUTH_TOKEN="$DB_TOKEN" npx drizzle-kit push --force
-echo "✓ Schema pushed"
-
-# Seed data
+# Seed data (the seed script creates tables via CREATE TABLE IF NOT EXISTS,
+# so no separate drizzle-kit push step is needed)
 echo ""
 echo "=== Seeding preview database ==="
-TURSO_DATABASE_URL="$DB_URL" TURSO_AUTH_TOKEN="$DB_TOKEN" npx tsx scripts/seed.ts
-echo "✓ Database seeded"
+TURSO_DATABASE_URL="$DB_URL" TURSO_AUTH_TOKEN="$DB_TOKEN" npm run db:seed
+echo "✓ Database seeded (tables created + demo data inserted)"
 
 # Print Vercel env vars
 echo ""
