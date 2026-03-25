@@ -19,12 +19,13 @@ import {
   X,
   Users,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 interface NavItem {
@@ -32,6 +33,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: number; // optional counter badge
+  dot?: boolean; // small unseen indicator dot
 }
 
 /** Nav definitions without labels — labels are resolved via useTranslations */
@@ -53,6 +55,7 @@ const navDefs = {
     { key: "navActionItems" as const, href: "/coaching/action-items", icon: ListChecks },
   ],
   bottom: [
+    { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navSettings" as const, href: "/settings", icon: Settings },
   ],
 } as const;
@@ -78,6 +81,7 @@ interface SidebarProps {
     postGame: number;
     vod: number;
   };
+  latestChangelogVersion?: string | null;
 }
 
 function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
@@ -116,6 +120,9 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
           {item.badge}
         </span>
       )}
+      {item.dot && (
+        <span className="ml-auto h-2 w-2 rounded-full bg-gold animate-pulse" />
+      )}
     </Link>
   );
 }
@@ -123,11 +130,20 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
 function SidebarContent({
   user,
   reviewCounts,
+  latestChangelogVersion,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
   const isLinked = !!user.puuid;
   const { isSyncing, handleSync } = useSyncMatches(isLinked);
+
+  // Track whether there are unseen changelog entries
+  const [hasUnseenChangelog, setHasUnseenChangelog] = useState(false);
+  useEffect(() => {
+    if (!latestChangelogVersion) return;
+    const lastSeen = localStorage.getItem("changelog-last-seen");
+    setHasUnseenChangelog(lastSeen !== latestChangelogVersion);
+  }, [latestChangelogVersion]);
 
   // Resolve nav labels from translations
   const resolve = (defs: readonly { key: string; href: string; icon: React.ComponentType<{ className?: string }> }[]): NavItem[] =>
@@ -144,6 +160,13 @@ function SidebarContent({
   const trackerNavWithBadges = trackerNav.map((item) =>
     item.href === "/review" && totalReview > 0
       ? { ...item, badge: totalReview }
+      : item
+  );
+
+  // Inject unseen dot into the changelog nav link
+  const bottomNavWithDot = bottomNav.map((item) =>
+    item.href === "/changelog" && hasUnseenChangelog
+      ? { ...item, dot: true }
       : item
   );
 
@@ -213,7 +236,7 @@ function SidebarContent({
         <Separator className="my-4" />
 
         <div className="space-y-1">
-          {bottomNav.map((item) => (
+          {bottomNavWithDot.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
         </div>
@@ -251,7 +274,7 @@ function SidebarContent({
   );
 }
 
-export function AppSidebar({ user, reviewCounts }: SidebarProps) {
+export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -288,6 +311,7 @@ export function AppSidebar({ user, reviewCounts }: SidebarProps) {
         <SidebarContent
           user={user}
           reviewCounts={reviewCounts}
+          latestChangelogVersion={latestChangelogVersion}
           onNavClick={() => setMobileOpen(false)}
         />
       </aside>

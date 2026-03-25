@@ -102,6 +102,7 @@
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
 - [x] ~~Auto-sync on login or on a schedule (in addition to the always-visible manual sync)~~ (three triggers: login cookie consumed on mount, tab visibility change after 30min stale, jittered 12-18min periodic interval; silent mode skips toasts when no new matches found; manual sync button unchanged)
+- [x] ~~User-facing changelog ("What's New")~~ (MDX-based: `changelog/{en,es}/*.mdx` files with frontmatter, rendered server-side via `next-mdx-remote/rsc`, dedicated `/changelog` page, sidebar nav link with localStorage-based unseen indicator dot, i18n-ready with per-locale files)
 - [ ] Export data (CSV export of matches with all fields)
 - [ ] Multi-account support (track games across multiple Riot accounts)
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
