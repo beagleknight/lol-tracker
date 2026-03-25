@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import {
   coachingSessions,
-  coachingSessionMatches,
   matches,
   matchHighlights,
 } from "@/db/schema";

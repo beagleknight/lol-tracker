@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { invites, users } from "@/db/schema";
-import { eq, count, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
@@ -40,7 +40,7 @@ export async function createInvite() {
 }
 
 export async function getInvites() {
-  const admin = await requireAdmin();
+  await requireAdmin();
 
   const allInvites = await db.query.invites.findMany({
     orderBy: (invites, { desc }) => [desc(invites.createdAt)],
@@ -72,7 +72,7 @@ export async function getInvites() {
 }
 
 export async function deleteInvite(id: number) {
-  const admin = await requireAdmin();
+  await requireAdmin();
 
   await db.delete(invites).where(eq(invites.id, id));
   revalidatePath("/settings");

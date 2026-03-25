@@ -9,7 +9,6 @@ import {
   getMatchupReport,
   type MatchupReport,
 } from "@/app/actions/live";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -362,7 +361,7 @@ function StatCell({
 export function ScoutClient({
   ddragonVersion,
   allChampions,
-  isRiotLinked,
+  isRiotLinked: _isRiotLinked,
   initialYourChampion = "",
   initialEnemyChampion = "",
   mostPlayed = [],
@@ -445,7 +444,7 @@ export function ScoutClient({
         }
       });
     },
-    []
+    [t]
   );
 
   // Auto-load report on mount if initial champions are provided via URL params

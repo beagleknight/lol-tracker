@@ -42,7 +42,7 @@ export function useSyncMatches(isLinked: boolean = false) {
   const [progress, setProgress] = useState<SyncProgress | null>(null);
   const router = useRouter();
   const toastIdRef = useRef<string | number | undefined>(undefined);
-  const lastSyncAtRef = useRef<number>(Date.now());
+  const lastSyncAtRef = useRef<number>(0);
   const isSyncingRef = useRef(false);
 
   const handleSync = useCallback(

@@ -235,7 +235,7 @@ function PostGameCard({
         }
       });
     },
-    [match.id, highlights, comment, vodUrl, onReviewed]
+    [match.id, highlights, comment, vodUrl, onReviewed, t]
   );
 
   return (
@@ -389,7 +389,7 @@ function VodReviewCard({
         }
       });
     },
-    [match.id, match.comment, existingHighlights, vodUrl, reviewNotes, onReviewed]
+    [match.id, match.comment, existingHighlights, vodUrl, reviewNotes, onReviewed, t]
   );
 
   return (
@@ -544,7 +544,7 @@ function CompletedCard({
         toast.error(t("toasts.failedToUpdateReview"));
       }
     });
-  }, [match.id, highlights, comment, vodUrl, reviewNotes, onSaved]);
+  }, [match.id, highlights, comment, vodUrl, reviewNotes, onSaved, t]);
 
   const handleCancel = useCallback(() => {
     // Reset to original values
@@ -911,7 +911,7 @@ export function ReviewClient({
         toast.error(t("toasts.failedToMarkReviewed"));
       }
     });
-  }, [bulkSkipReason, unreviewedMatches]);
+  }, [bulkSkipReason, unreviewedMatches, t]);
 
   const totalUnreviewed = postGameMatches.length + vodReviewMatches.length;
 

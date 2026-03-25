@@ -23,7 +23,7 @@ import {
   AlertCircle,
   Calendar,
 } from "lucide-react";
-import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
+import type { RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { formatDuration, formatDate, DEFAULT_LOCALE } from "@/lib/format";

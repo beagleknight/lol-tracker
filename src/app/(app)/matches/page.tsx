@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, desc, like, sql, inArray, count } from "drizzle-orm";
+import { matches, matchHighlights, type Match } from "@/db/schema";
+import { eq, and, desc, sql, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { MatchesClient } from "./matches-client";
@@ -150,7 +150,7 @@ export default async function MatchesPage({
 
   return (
     <MatchesClient
-      matches={pageMatches as any}
+      matches={pageMatches as Match[]}
       ddragonVersion={ddragonVersion}
       isRiotLinked={!!user.puuid}
       highlightsPerMatch={highlightsPerMatch}
