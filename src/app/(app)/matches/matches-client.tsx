@@ -4,7 +4,6 @@ import { useState, useRef, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useSyncMatches } from "@/hooks/use-sync-matches";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  RefreshCw,
   Search,
   Loader2,
   AlertCircle,
@@ -153,7 +151,6 @@ export function MatchesClient({
   champions,
   filters,
 }: MatchesClientProps) {
-  const { isSyncing, handleSync } = useSyncMatches();
   const router = useRouter();
   const [isNavigating, startTransition] = useTransition();
 
@@ -208,18 +205,6 @@ export function MatchesClient({
             &middot; {wins}W {losses}L ({winRate}%)
           </p>
         </div>
-        <Button
-          onClick={handleSync}
-          disabled={isSyncing || !isRiotLinked}
-          className="shrink-0"
-        >
-          {isSyncing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          Update Games
-        </Button>
       </div>
 
       {!isRiotLinked && (
