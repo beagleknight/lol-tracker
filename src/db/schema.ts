@@ -201,16 +201,7 @@ export const matchHighlights = sqliteTable("match_highlights", {
 
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
 export type Match = typeof matches.$inferSelect;
-export type NewMatch = typeof matches.$inferInsert;
 export type RankSnapshot = typeof rankSnapshots.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
-export type NewCoachingSession = typeof coachingSessions.$inferInsert;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
-export type NewCoachingActionItem = typeof coachingActionItems.$inferInsert;
-export type Invite = typeof invites.$inferSelect;
-export type NewInvite = typeof invites.$inferInsert;
-export type MatchHighlight = typeof matchHighlights.$inferSelect;
-export type NewMatchHighlight = typeof matchHighlights.$inferInsert;

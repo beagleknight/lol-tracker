@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
 import { db } from "@/db";
 import { users, invites } from "@/db/schema";
-import { eq, count, isNull } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

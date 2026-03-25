@@ -10,7 +10,7 @@
 - [x] ~~Match detail: save game notes and VOD review notes~~ (removed — match detail is now read-only; editing on Review page)
 - [x] ~~Invite system: test full flow (new user with invite code, reject without code)~~ (partially verified — admin generate/copy/delete tested; new user sign-up with invite not tested in browser, requires separate Discord account)
 - [x] ~~Admin settings: generate/copy/delete invite codes~~ (verified — generate creates code with toast, copy works, delete now has confirm dialog)
-- [ ] Auth proxy: verify redirect-to-login flow with Auth.js wrapper
+- [x] ~~Auth proxy: verify redirect-to-login flow with Auth.js wrapper~~ (removed — `src/proxy.ts` was dead code, never wired as middleware; Auth.js handles auth natively)
 
 ## UX Feedback (user-reported, actionable)
 
@@ -48,6 +48,7 @@
 
 ## Cleanup — Remove Unused Features
 - [x] ~~Remove CSV import/merge feature entirely — no longer needed, the app is the primary data source now~~
+- [x] ~~Dead code cleanup round: deleted 6 dead files, removed ~34 unused exports, 4 unused functions, 8 unused interfaces, 1 unused import across 9 files~~
 - [ ] (Future) Consider adding CSV/data export instead, if needed
 
 ## Polish
@@ -94,7 +95,7 @@
 - [x] Design decision: no per-game LP deltas shown anywhere — LP is framed as a long-term journey, not a per-game metric, to promote a healthy relationship with the game
 
 ## Features — Deployment
-- [ ] Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)
+- [x] ~~Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)~~ (removed — file was dead code, Auth.js handles auth natively)
 - [ ] Add smoke tests (build check, key routes return 200) and run them before auto-deploy
 
 ## Features — Future Enhancements

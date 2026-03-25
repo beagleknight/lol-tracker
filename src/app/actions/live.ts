@@ -5,9 +5,7 @@ import { matches, matchHighlights } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
-  getActiveGame,
   getChampionIdMap,
-  getKeystoneName,
   type RiotMatch,
 } from "@/lib/riot-api";
 import { cacheLife, cacheTag } from "next/cache";
@@ -15,23 +13,7 @@ import { scoutTag } from "@/lib/cache";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface EnemyChampion {
-  championId: number;
-  championName: string;
-}
-
-export interface LiveMatchupResult {
-  inGame: boolean;
-  userChampionId: number | null;
-  userChampionName: string | null;
-  opponentChampionId: number | null;
-  opponentChampionName: string | null;
-  enemyTeam: EnemyChampion[];
-  gameQueueId: number | null;
-  error?: string;
-}
-
-export interface MatchupGameDetail {
+interface MatchupGameDetail {
   matchId: string;
   gameDate: Date;
   result: "Victory" | "Defeat";
@@ -60,7 +42,7 @@ export interface MatchupGameDetail {
   }>;
 }
 
-export interface RuneBreakdown {
+interface RuneBreakdown {
   keystoneName: string;
   games: number;
   wins: number;
@@ -68,7 +50,7 @@ export interface RuneBreakdown {
   winRate: number;
 }
 
-export interface DuoPairStats {
+interface DuoPairStats {
   yourChampion: string;
   duoChampion: string;
   games: number;
@@ -101,113 +83,6 @@ export interface MatchupReport {
   };
   duoPairs: DuoPairStats[];
   games: MatchupGameDetail[];
-}
-
-export interface RecentUnreviewedMatch {
-  matchId: string;
-  gameDate: Date;
-  result: "Victory" | "Defeat";
-  championName: string;
-  matchupChampionName: string | null;
-  kills: number;
-  deaths: number;
-  assists: number;
-  runeKeystoneName: string | null;
-  items: number[];
-  gameDurationSeconds: number;
-}
-
-// ─── detectLiveMatchup ──────────────────────────────────────────────────────
-
-/**
- * Check if the user is currently in a live game.
- * If so, identify their champion and their lane opponent.
- */
-export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
-  const user = await requireUser();
-
-  if (!user.puuid) {
-    return {
-      inGame: false,
-      userChampionId: null,
-      userChampionName: null,
-      opponentChampionId: null,
-      opponentChampionName: null,
-      enemyTeam: [],
-      gameQueueId: null,
-      error: "No Riot account linked. Go to Settings to link your account.",
-    };
-  }
-
-  try {
-    const game = await getActiveGame(user.puuid);
-
-    if (!game) {
-      return {
-        inGame: false,
-        userChampionId: null,
-        userChampionName: null,
-        opponentChampionId: null,
-        opponentChampionName: null,
-        enemyTeam: [],
-        gameQueueId: null,
-      };
-    }
-
-    const championMap = await getChampionIdMap();
-
-    // Find the user in the game
-    const userParticipant = game.participants.find(
-      (p) => p.puuid === user.puuid
-    );
-
-    if (!userParticipant) {
-      return {
-        inGame: true,
-        userChampionId: null,
-        userChampionName: null,
-        opponentChampionId: null,
-        opponentChampionName: null,
-        enemyTeam: [],
-        gameQueueId: game.gameQueueConfigId,
-        error: "Could not find you in the active game participants.",
-      };
-    }
-
-    const userChampionName =
-      championMap.get(userParticipant.championId) || "Unknown";
-
-    // Extract enemy team champions
-    const enemyTeam: EnemyChampion[] = game.participants
-      .filter((p) => p.teamId !== userParticipant.teamId)
-      .map((p) => ({
-        championId: p.championId,
-        championName: championMap.get(p.championId) || "Unknown",
-      }));
-
-    return {
-      inGame: true,
-      userChampionId: userParticipant.championId,
-      userChampionName: userChampionName,
-      opponentChampionId: null,
-      opponentChampionName: null,
-      enemyTeam,
-      gameQueueId: game.gameQueueConfigId,
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to check live game";
-    return {
-      inGame: false,
-      userChampionId: null,
-      userChampionName: null,
-      opponentChampionId: null,
-      opponentChampionName: null,
-      enemyTeam: [],
-      gameQueueId: null,
-      error: message,
-    };
-  }
 }
 
 // ─── getMatchupReport ───────────────────────────────────────────────────────
@@ -468,99 +343,6 @@ export async function getMatchupReport(
     matchupChampionName,
     yourChampionName
   );
-}
-
-// ─── getRecentUnreviewedMatch ───────────────────────────────────────────────
-
-/**
- * Get the user's latest match if it was played within the last ~2 hours
- * and has no comment/notes yet. Used for the post-game review prompt.
- */
-export async function getRecentUnreviewedMatch(): Promise<RecentUnreviewedMatch | null> {
-  const user = await requireUser();
-
-  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-
-  // Get most recent match
-  const [latestMatch] = await db
-    .select()
-    .from(matches)
-    .where(eq(matches.userId, user.id))
-    .orderBy(desc(matches.gameDate))
-    .limit(1);
-
-  if (!latestMatch) return null;
-
-  // Check if it's within 2 hours and has no comment/review
-  if (latestMatch.gameDate < twoHoursAgo) return null;
-  if (latestMatch.comment || latestMatch.reviewed) return null;
-
-  // Extract items from rawMatchJson
-  let items: number[] = [0, 0, 0, 0, 0, 0, 0];
-  if (latestMatch.rawMatchJson) {
-    try {
-      const raw: RiotMatch = JSON.parse(latestMatch.rawMatchJson);
-      const participant = raw.info.participants.find(
-        (p) => p.puuid === user.puuid
-      );
-      if (participant) {
-        items = [
-          participant.item0,
-          participant.item1,
-          participant.item2,
-          participant.item3,
-          participant.item4,
-          participant.item5,
-          participant.item6,
-        ];
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }
-
-  return {
-    matchId: latestMatch.id,
-    gameDate: latestMatch.gameDate,
-    result: latestMatch.result as "Victory" | "Defeat",
-    championName: latestMatch.championName,
-    matchupChampionName: latestMatch.matchupChampionName,
-    kills: latestMatch.kills,
-    deaths: latestMatch.deaths,
-    assists: latestMatch.assists,
-    runeKeystoneName: latestMatch.runeKeystoneName,
-    items,
-    gameDurationSeconds: latestMatch.gameDurationSeconds,
-  };
-}
-
-// ─── getUniqueMatchupChampions ──────────────────────────────────────────────
-
-/**
- * Get a sorted list of all unique opponent champion names the user has faced.
- * Used to populate the matchup picker dropdown.
- */
-async function getCachedUniqueMatchupChampions(
-  userId: string
-): Promise<string[]> {
-  "use cache: remote";
-  cacheLife("hours");
-  cacheTag(scoutTag(userId));
-
-  const rows = await db
-    .selectDistinct({ matchupChampionName: matches.matchupChampionName })
-    .from(matches)
-    .where(eq(matches.userId, userId));
-
-  return rows
-    .map((r) => r.matchupChampionName)
-    .filter((name): name is string => !!name)
-    .sort();
-}
-
-export async function getUniqueMatchupChampions(): Promise<string[]> {
-  const user = await requireUser();
-  return getCachedUniqueMatchupChampions(user.id);
 }
 
 // ─── getAllChampionNames ────────────────────────────────────────────────────

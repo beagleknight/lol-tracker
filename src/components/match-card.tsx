@@ -29,7 +29,7 @@ export interface MatchHighlightData {
 }
 
 /** The minimal match shape that MatchCard needs */
-export interface MatchCardData {
+interface MatchCardData {
   id: string;
   gameDate: Date;
   result: "Victory" | "Defeat" | string;
