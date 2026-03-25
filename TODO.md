@@ -26,6 +26,7 @@
 ### Review Page — sort order & navigation
 - [x] ~~Review page: show games to review oldest-first~~ (changed `orderBy` from `desc` to `asc` for unreviewed matches)
 - [x] ~~Review page: preserve the active tab when navigating back from match detail~~ (tab synced to `?tab=` URL param via `router.replace`; maps post-game→0, vod→1, completed→2)
+- [x] ~~Match detail: "Review" button navigates to correct tab based on match state~~ (links to `?tab=vod` when match has notes/highlights, `?tab=post-game` otherwise — was always defaulting to post-game)
 
 ### Duo Page — performance (critical)
 - [x] ~~Duo page: the top section (partner info / stats) is still too slow despite previous query optimizations~~ (Suspense streaming with skeleton fallbacks + SQL optimizations from prior session; stale-until-next-sync via `"use cache: remote"`)
