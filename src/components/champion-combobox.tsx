@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { getChampionIconUrl } from "@/lib/riot-api";
 
-export interface ChampionRecommendation {
+interface ChampionRecommendation {
   name: string;
   games: number;
 }

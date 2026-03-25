@@ -12,20 +12,13 @@ const PLATFORM_HOST = "https://euw1.api.riotgames.com";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface RiotAccount {
+interface RiotAccount {
   puuid: string;
   gameName: string;
   tagLine: string;
 }
 
-export interface RiotSummoner {
-  puuid: string;
-  profileIconId: number;
-  revisionDate: number;
-  summonerLevel: number;
-}
-
-export interface RiotLeagueEntry {
+interface RiotLeagueEntry {
   leagueId: string;
   summonerId: string;
   queueType: string; // "RANKED_SOLO_5x5" | "RANKED_FLEX_SR"
@@ -75,7 +68,7 @@ export interface RiotMatchParticipant {
   wardsKilled: number;
 }
 
-export interface RiotMatchInfo {
+interface RiotMatchInfo {
   gameCreation: number;
   gameDuration: number; // seconds
   gameId: number;
@@ -148,47 +141,6 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
   throw new RiotApiError(500, "Unexpected error in riotFetch");
 }
 
-// ─── Spectator / Active Game Types ───────────────────────────────────────────
-
-export interface CurrentGamePerks {
-  perkIds: number[];
-  perkStyle: number;
-  perkSubStyle: number;
-}
-
-export interface CurrentGameParticipant {
-  championId: number;
-  perks: CurrentGamePerks;
-  profileIconId: number;
-  bot: boolean;
-  teamId: number; // 100 = blue, 200 = red
-  puuid: string | null; // null when player is anonymous
-  spell1Id: number;
-  spell2Id: number;
-  riotId: string | null; // gameName#tagLine
-  gameCustomizationObjects: Array<{ category: string; content: string }>;
-}
-
-export interface BannedChampion {
-  pickTurn: number;
-  championId: number;
-  teamId: number;
-}
-
-export interface CurrentGameInfo {
-  gameId: number;
-  gameType: string;
-  gameStartTime: number; // epoch millis
-  mapId: number;
-  gameLength: number; // seconds elapsed
-  platformId: string;
-  gameMode: string;
-  gameQueueConfigId: number | null;
-  bannedChampions: BannedChampion[];
-  observers: { encryptionKey: string };
-  participants: CurrentGameParticipant[];
-}
-
 // ─── Account ─────────────────────────────────────────────────────────────────
 
 export async function getAccountByRiotId(
@@ -200,35 +152,14 @@ export async function getAccountByRiotId(
   );
 }
 
-export async function getSummonerByPuuid(puuid: string): Promise<RiotSummoner> {
-  return riotFetch<RiotSummoner>(
-    `${PLATFORM_HOST}/lol/summoner/v4/summoners/by-puuid/${puuid}`
-  );
-}
-
 // ─── League / Rank ───────────────────────────────────────────────────────────
 
-export async function getLeagueEntries(
-  summonerId: string
-): Promise<RiotLeagueEntry[]> {
-  return riotFetch<RiotLeagueEntry[]>(
-    `${PLATFORM_HOST}/lol/league/v4/entries/by-summoner/${summonerId}`
-  );
-}
-
-export async function getLeagueEntriesByPuuid(
+async function getLeagueEntriesByPuuid(
   puuid: string
 ): Promise<RiotLeagueEntry[]> {
   return riotFetch<RiotLeagueEntry[]>(
     `${PLATFORM_HOST}/lol/league/v4/entries/by-puuid/${puuid}`
   );
-}
-
-export async function getSoloQueueEntry(
-  summonerId: string
-): Promise<RiotLeagueEntry | null> {
-  const entries = await getLeagueEntries(summonerId);
-  return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
 }
 
 export async function getSoloQueueEntryByPuuid(
@@ -266,52 +197,6 @@ export async function getMatch(matchId: string): Promise<RiotMatch> {
   return riotFetch<RiotMatch>(
     `${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`
   );
-}
-
-// ─── Spectator / Active Game ────────────────────────────────────────────────
-
-/**
- * Check if a player is currently in a game.
- * Returns null if the player is not in an active game (404).
- */
-export async function getActiveGame(
-  puuid: string
-): Promise<CurrentGameInfo | null> {
-  const url = `${PLATFORM_HOST}/lol/spectator/v5/active-games/by-summoner/${puuid}`;
-  try {
-    const response = await fetch(url, {
-      headers: { "X-Riot-Token": getRiotApiKey() },
-      cache: "no-store",
-    });
-
-    if (response.status === 404) {
-      return null; // Not in game — this is expected
-    }
-
-    if (response.status === 401 || response.status === 403) {
-      throw new RiotApiError(
-        response.status,
-        "Riot API key is invalid or unauthorized"
-      );
-    }
-
-    if (response.status === 429) {
-      throw new RiotApiError(429, "Rate limited by Riot API. Try again in a moment.");
-    }
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new RiotApiError(
-        response.status,
-        `Spectator API error ${response.status}: ${body}`
-      );
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof RiotApiError) throw error;
-    throw new RiotApiError(500, `Failed to check active game: ${error}`);
-  }
 }
 
 // ─── Champion ID Mapping (Data Dragon) ──────────────────────────────────────
@@ -494,17 +379,12 @@ const CHAMPION_NAME_FIXES: Record<string, string> = {
   FiddleSticks: "Fiddlesticks", // Riot API uses capital S, DDragon uses lowercase
 };
 
-export function normalizeDDragonChampionName(championName: string): string {
+function normalizeDDragonChampionName(championName: string): string {
   return CHAMPION_NAME_FIXES[championName] || championName;
 }
 
 export function getChampionIconUrl(version: string, championName: string) {
   return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${normalizeDDragonChampionName(championName)}.png`;
-}
-
-export function getItemIconUrl(version: string, itemId: number) {
-  if (itemId === 0) return null;
-  return `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${itemId}.png`;
 }
 
 // Rune keystone name mapping (common ones)
