@@ -10,6 +10,8 @@ import {
   getKeystoneName,
   type RiotMatch,
 } from "@/lib/riot-api";
+import { cacheLife, cacheTag } from "next/cache";
+import { scoutTag } from "@/lib/cache";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -215,15 +217,19 @@ export async function detectLiveMatchup(): Promise<LiveMatchupResult> {
  * Optionally filter by your own champion for champion-vs-champion stats.
  * Queries all of the user's matches against that champion and aggregates stats.
  */
-export async function getMatchupReport(
+async function getCachedMatchupReport(
+  userId: string,
+  userPuuid: string | null,
   matchupChampionName: string,
-  yourChampionName?: string
+  yourChampionName: string | undefined
 ): Promise<MatchupReport | null> {
-  const user = await requireUser();
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(scoutTag(userId));
 
   // Build where conditions
   const conditions = [
-    eq(matches.userId, user.id),
+    eq(matches.userId, userId),
     eq(matches.matchupChampionName, matchupChampionName),
   ];
   if (yourChampionName) {
@@ -308,7 +314,7 @@ export async function getMatchupReport(
         .from(matchHighlights)
         .where(
           and(
-            eq(matchHighlights.userId, user.id),
+            eq(matchHighlights.userId, userId),
             inArray(matchHighlights.matchId, matchIds),
           )
         )
@@ -336,7 +342,7 @@ export async function getMatchupReport(
       try {
         const raw: RiotMatch = JSON.parse(m.rawMatchJson);
         const participant = raw.info.participants.find(
-          (p) => p.puuid === user.puuid
+          (p) => p.puuid === userPuuid
         );
         if (participant) {
           items = [
@@ -383,7 +389,7 @@ export async function getMatchupReport(
   // ─── Overall average stats (for comparison baseline) ────────────────────
   // If yourChampionName is set, compare against all games as that champion.
   // Otherwise, compare against all user games.
-  const overallConditions = [eq(matches.userId, user.id)];
+  const overallConditions = [eq(matches.userId, userId)];
   if (yourChampionName) {
     overallConditions.push(eq(matches.championName, yourChampionName));
   }
@@ -448,6 +454,20 @@ export async function getMatchupReport(
     duoPairs,
     games,
   };
+}
+
+/** Public wrapper — resolves userId from session, delegates to cached fn. */
+export async function getMatchupReport(
+  matchupChampionName: string,
+  yourChampionName?: string
+): Promise<MatchupReport | null> {
+  const user = await requireUser();
+  return getCachedMatchupReport(
+    user.id,
+    user.puuid ?? null,
+    matchupChampionName,
+    yourChampionName
+  );
 }
 
 // ─── getRecentUnreviewedMatch ───────────────────────────────────────────────
@@ -520,13 +540,17 @@ export async function getRecentUnreviewedMatch(): Promise<RecentUnreviewedMatch 
  * Get a sorted list of all unique opponent champion names the user has faced.
  * Used to populate the matchup picker dropdown.
  */
-export async function getUniqueMatchupChampions(): Promise<string[]> {
-  const user = await requireUser();
+async function getCachedUniqueMatchupChampions(
+  userId: string
+): Promise<string[]> {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(scoutTag(userId));
 
   const rows = await db
     .selectDistinct({ matchupChampionName: matches.matchupChampionName })
     .from(matches)
-    .where(eq(matches.userId, user.id));
+    .where(eq(matches.userId, userId));
 
   return rows
     .map((r) => r.matchupChampionName)
@@ -534,15 +558,29 @@ export async function getUniqueMatchupChampions(): Promise<string[]> {
     .sort();
 }
 
+export async function getUniqueMatchupChampions(): Promise<string[]> {
+  const user = await requireUser();
+  return getCachedUniqueMatchupChampions(user.id);
+}
+
 // ─── getAllChampionNames ────────────────────────────────────────────────────
 
 /**
  * Get a sorted list of ALL champion names from DDragon.
  * Used to populate searchable champion comboboxes.
+ * Cached with "days" lifetime since DDragon champion list changes infrequently.
  */
-export async function getAllChampionNames(): Promise<string[]> {
+async function getCachedAllChampionNames(): Promise<string[]> {
+  "use cache: remote";
+  cacheLife("days");
+  // No cacheTag — DDragon data is global, not per-user. Revalidates on TTL only.
+
   const championMap = await getChampionIdMap();
   return Array.from(championMap.values()).sort();
+}
+
+export async function getAllChampionNames(): Promise<string[]> {
+  return getCachedAllChampionNames();
 }
 
 // ─── getChampionPickCounts ─────────────────────────────────────────────────
@@ -556,10 +594,13 @@ export interface ChampionPickCount {
  * Get the user's most-played champions, sorted by game count descending.
  * Returns top `limit` champions (default 10).
  */
-export async function getMostPlayedChampions(
-  limit = 10
+async function getCachedMostPlayedChampions(
+  userId: string,
+  limit: number
 ): Promise<ChampionPickCount[]> {
-  const user = await requireUser();
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(scoutTag(userId));
 
   const rows = await db
     .select({
@@ -567,7 +608,7 @@ export async function getMostPlayedChampions(
       games: sql<number>`count(*)`.as("games"),
     })
     .from(matches)
-    .where(eq(matches.userId, user.id))
+    .where(eq(matches.userId, userId))
     .groupBy(matches.championName)
     .orderBy(sql`count(*) desc`)
     .limit(limit);
@@ -575,14 +616,24 @@ export async function getMostPlayedChampions(
   return rows;
 }
 
+export async function getMostPlayedChampions(
+  limit = 10
+): Promise<ChampionPickCount[]> {
+  const user = await requireUser();
+  return getCachedMostPlayedChampions(user.id, limit);
+}
+
 /**
  * Get the opponents the user has faced most often, sorted by game count descending.
  * Returns top `limit` opponents (default 10).
  */
-export async function getMostFacedOpponents(
-  limit = 10
+async function getCachedMostFacedOpponents(
+  userId: string,
+  limit: number
 ): Promise<ChampionPickCount[]> {
-  const user = await requireUser();
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(scoutTag(userId));
 
   const rows = await db
     .select({
@@ -592,7 +643,7 @@ export async function getMostFacedOpponents(
     .from(matches)
     .where(
       and(
-        eq(matches.userId, user.id),
+        eq(matches.userId, userId),
         sql`${matches.matchupChampionName} is not null`
       )
     )
@@ -601,4 +652,11 @@ export async function getMostFacedOpponents(
     .limit(limit);
 
   return rows.filter((r): r is ChampionPickCount => !!r.name);
+}
+
+export async function getMostFacedOpponents(
+  limit = 10
+): Promise<ChampionPickCount[]> {
+  const user = await requireUser();
+  return getCachedMostFacedOpponents(user.id, limit);
 }

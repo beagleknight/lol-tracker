@@ -3,17 +3,20 @@ import { matches, coachingSessions, rankSnapshots } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
+import { cacheLife, cacheTag } from "next/cache";
+import { analyticsTag } from "@/lib/cache";
 import { AnalyticsClient } from "./analytics-client";
 
-export default async function AnalyticsPage() {
-  const user = await requireUser();
+async function getCachedAnalyticsData(userId: string) {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(analyticsTag(userId));
 
   const [allMatches, sessions, ranks, ddragonVersion] = await Promise.all([
     db.query.matches.findMany({
-      where: eq(matches.userId, user.id),
+      where: eq(matches.userId, userId),
       orderBy: asc(matches.gameDate),
       columns: {
-        // Only the 8 columns used by analytics compute functions
         gameDate: true,
         result: true,
         championName: true,
@@ -25,7 +28,7 @@ export default async function AnalyticsPage() {
       },
     }),
     db.query.coachingSessions.findMany({
-      where: eq(coachingSessions.userId, user.id),
+      where: eq(coachingSessions.userId, userId),
       orderBy: asc(coachingSessions.date),
       columns: {
         id: true,
@@ -35,11 +38,19 @@ export default async function AnalyticsPage() {
       },
     }),
     db.query.rankSnapshots.findMany({
-      where: eq(rankSnapshots.userId, user.id),
+      where: eq(rankSnapshots.userId, userId),
       orderBy: asc(rankSnapshots.capturedAt),
     }),
     getLatestVersion(),
   ]);
+
+  return { allMatches, sessions, ranks, ddragonVersion };
+}
+
+export default async function AnalyticsPage() {
+  const user = await requireUser();
+  const { allMatches, sessions, ranks, ddragonVersion } =
+    await getCachedAnalyticsData(user.id);
 
   return (
     <AnalyticsClient

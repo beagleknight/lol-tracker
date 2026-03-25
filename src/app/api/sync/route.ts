@@ -13,8 +13,7 @@ import {
   getSoloQueueEntryByPuuid,
   RiotApiError,
 } from "@/lib/riot-api";
-
-export const dynamic = "force-dynamic";
+import { invalidateAllCaches } from "@/lib/cache";
 
 function sseMessage(data: Record<string, unknown>): string {
   return `data: ${JSON.stringify(data)}\n\n`;
@@ -241,6 +240,11 @@ export async function GET() {
 
         // Capture rank snapshot
         const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
+
+        // Invalidate all cached data for this user after syncing new matches
+        if (syncedCount > 0) {
+          invalidateAllCaches(user.id);
+        }
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
         if (failedCount > 0) {

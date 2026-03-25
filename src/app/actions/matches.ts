@@ -5,6 +5,7 @@ import { matches, matchHighlights } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { invalidateReviewCaches } from "@/lib/cache";
 
 /**
  * Save a complete post-game review in one action:
@@ -65,6 +66,7 @@ export async function savePostGameReview(
   revalidatePath("/review");
   revalidatePath("/scout");
   revalidatePath("/coaching");
+  invalidateReviewCaches(user.id);
   return { success: true };
 }
 
@@ -87,5 +89,6 @@ export async function bulkMarkReviewed(skipReason: string) {
   revalidatePath("/review");
   revalidatePath("/scout");
   revalidatePath("/coaching");
+  invalidateReviewCaches(user.id);
   return { success: true, count };
 }

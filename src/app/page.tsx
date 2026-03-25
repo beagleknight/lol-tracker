@@ -1,12 +1,23 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { connection } from "next/server";
 
-export default async function Home() {
+async function HomeRedirect(): Promise<React.ReactNode> {
+  await connection();
   const session = await auth();
 
   if (session?.user) {
     redirect("/dashboard");
-  } else {
-    redirect("/login");
   }
+
+  redirect("/login");
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <HomeRedirect />
+    </Suspense>
+  );
 }

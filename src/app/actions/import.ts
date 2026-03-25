@@ -5,6 +5,7 @@ import { matches } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { invalidateAllCaches } from "@/lib/cache";
 
 interface CsvRow {
   date: string;
@@ -222,6 +223,7 @@ export async function importCsvData(rows: CsvRow[]) {
   revalidatePath("/matches");
   revalidatePath("/dashboard");
   revalidatePath("/analytics");
+  invalidateAllCaches(user.id);
 
   const parts: string[] = [];
   parts.push(`Merged comments into ${merged} match${merged !== 1 ? "es" : ""}`);

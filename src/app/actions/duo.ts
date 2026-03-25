@@ -5,6 +5,8 @@ import { matches, users } from "@/db/schema";
 import { eq, and, isNotNull, desc, sql, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
 import type { RiotMatch } from "@/lib/riot-api";
 
 const PAGE_SIZE = 10;
@@ -58,7 +60,7 @@ export interface ChampionSynergy {
   winRate: number;
 }
 
-// ─── Duo Partner Info ────────────────────────────────────────────────────────
+// ─── Duo Partner Info (not cached — fast PK lookup, needs duoPartnerUserId) ─
 
 export async function getDuoPartnerInfo(): Promise<DuoPartnerInfo | null> {
   const user = await requireUser();
@@ -79,11 +81,19 @@ export async function getDuoPartnerInfo(): Promise<DuoPartnerInfo | null> {
   return partner || null;
 }
 
-// ─── Duo Stats (pure SQL — no JSON parsing) ─────────────────────────────────
+// ─── Cached Duo Stats ───────────────────────────────────────────────────────
 
-export async function getDuoStats(): Promise<DuoStats | null> {
-  const user = await requireUser();
-  if (!user.duoPartnerUserId) return null;
+async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(duoTag(userId));
+
+  // Check if user has a duo partner configured
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { duoPartnerUserId: true },
+  });
+  if (!user?.duoPartnerUserId) return null;
 
   // Run duo + solo aggregations in parallel — no rawMatchJson needed
   const [duoAgg, soloAgg] = await Promise.all([
@@ -101,7 +111,7 @@ export async function getDuoStats(): Promise<DuoStats | null> {
       .from(matches)
       .where(
         and(
-          eq(matches.userId, user.id),
+          eq(matches.userId, userId),
           isNotNull(matches.duoPartnerPuuid)
         )
       ),
@@ -113,7 +123,7 @@ export async function getDuoStats(): Promise<DuoStats | null> {
       .from(matches)
       .where(
         and(
-          eq(matches.userId, user.id),
+          eq(matches.userId, userId),
           sql`${matches.duoPartnerPuuid} IS NULL`
         )
       ),
@@ -162,19 +172,32 @@ export async function getDuoStats(): Promise<DuoStats | null> {
   };
 }
 
-// ─── Duo Games (paginated — reads denormalized columns) ─────────────────────
-
-export async function getDuoGames(page: number = 1): Promise<{
-  games: DuoGameRow[];
-  totalPages: number;
-}> {
+/** Public wrapper — resolves userId from session, delegates to cached fn. */
+export async function getDuoStats(): Promise<DuoStats | null> {
   const user = await requireUser();
-  if (!user.duoPartnerUserId) return { games: [], totalPages: 0 };
+  return getCachedDuoStats(user.id);
+}
 
-  // Count + fetch page in parallel — no rawMatchJson needed
+// ─── Cached Duo Games (paginated) ──────────────────────────────────────────
+
+async function getCachedDuoGames(
+  userId: string,
+  page: number
+): Promise<{ games: DuoGameRow[]; totalPages: number }> {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(duoTag(userId));
+
+  // Check if user has a duo partner configured
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { duoPartnerUserId: true },
+  });
+  if (!user?.duoPartnerUserId) return { games: [], totalPages: 0 };
+
   const offset = (page - 1) * PAGE_SIZE;
   const duoWhere = and(
-    eq(matches.userId, user.id),
+    eq(matches.userId, userId),
     isNotNull(matches.duoPartnerPuuid)
   );
 
@@ -226,11 +249,30 @@ export async function getDuoGames(page: number = 1): Promise<{
   return { games, totalPages };
 }
 
-// ─── Champion Synergy (pure SQL — no JSON parsing) ──────────────────────────
-
-export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
+/** Public wrapper — resolves userId from session, delegates to cached fn. */
+export async function getDuoGames(page: number = 1): Promise<{
+  games: DuoGameRow[];
+  totalPages: number;
+}> {
   const user = await requireUser();
-  if (!user.duoPartnerUserId) return [];
+  return getCachedDuoGames(user.id, page);
+}
+
+// ─── Cached Champion Synergy ────────────────────────────────────────────────
+
+async function getCachedChampionSynergy(
+  userId: string
+): Promise<ChampionSynergy[]> {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(duoTag(userId));
+
+  // Check if user has a duo partner configured
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { duoPartnerUserId: true },
+  });
+  if (!user?.duoPartnerUserId) return [];
 
   const rows = await db
     .select({
@@ -242,7 +284,7 @@ export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
     .from(matches)
     .where(
       and(
-        eq(matches.userId, user.id),
+        eq(matches.userId, userId),
         isNotNull(matches.duoPartnerPuuid),
         isNotNull(matches.duoPartnerChampionName)
       )
@@ -260,6 +302,12 @@ export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
       wins: r.wins,
       winRate: r.games > 0 ? Math.round((r.wins / r.games) * 100) : 0,
     }));
+}
+
+/** Public wrapper — resolves userId from session, delegates to cached fn. */
+export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
+  const user = await requireUser();
+  return getCachedChampionSynergy(user.id);
 }
 
 // ─── Backfill Duo Partner Data ──────────────────────────────────────────────
@@ -332,6 +380,7 @@ export async function backfillDuoGames(): Promise<{
   }
 
   revalidatePath("/duo");
+  invalidateDuoBackfillCaches(user.id);
   return { processed: allMatches.length, duoFound };
 }
 
@@ -392,5 +441,6 @@ export async function backfillDuoPartnerStats(): Promise<{
     }
   }
 
+  invalidateDuoBackfillCaches(user.id);
   return { updated };
 }

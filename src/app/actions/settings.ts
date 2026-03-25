@@ -8,6 +8,7 @@ import {
   getAccountByRiotId,
 } from "@/lib/riot-api";
 import { revalidatePath } from "next/cache";
+import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
@@ -39,6 +40,7 @@ export async function linkRiotAccount(formData: FormData) {
 
     revalidatePath("/settings");
     revalidatePath("/dashboard");
+    invalidateAllCaches(user.id);
 
     return {
       success: true,
@@ -68,6 +70,7 @@ export async function unlinkRiotAccount() {
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  invalidateAllCaches(user.id);
 
   return { success: true };
 }
@@ -150,6 +153,7 @@ export async function setDuoPartner(partnerUserId: string) {
 
   revalidatePath("/settings");
   revalidatePath("/duo");
+  invalidateDuoCaches(user.id);
 
   return {
     success: true,
@@ -173,6 +177,7 @@ export async function clearDuoPartner() {
 
   revalidatePath("/settings");
   revalidatePath("/duo");
+  invalidateDuoCaches(user.id);
 
   return { success: true };
 }
