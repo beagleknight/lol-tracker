@@ -313,7 +313,7 @@ export function MatchDetailClient({
               {t("reviewCtaSubtext")}
             </p>
           </div>
-          <Link href="/review">
+          <Link href={`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`}>
             <Button size="sm" className="gap-1.5 shrink-0">
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("reviewButton")}
