@@ -44,6 +44,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             maxAge: 60 * 60 * 24 * 365, // 1 year
           });
 
+          // Trigger auto-sync on login if Riot account is linked
+          if (existing.puuid) {
+            cookieStore.set("sync_on_login", "1", {
+              path: "/",
+              httpOnly: false, // Client JS needs to read it
+              sameSite: "lax",
+              maxAge: 60, // Short-lived — consumed once by the client
+            });
+          }
+
           return true;
         }
 

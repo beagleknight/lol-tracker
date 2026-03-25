@@ -126,8 +126,8 @@ function SidebarContent({
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
-  const { isSyncing, handleSync } = useSyncMatches();
   const isLinked = !!user.puuid;
+  const { isSyncing, handleSync } = useSyncMatches(isLinked);
 
   // Resolve nav labels from translations
   const resolve = (defs: readonly { key: string; href: string; icon: React.ComponentType<{ className?: string }> }[]): NavItem[] =>
@@ -164,7 +164,7 @@ function SidebarContent({
               ? "text-gold/70 hover:text-gold hover:bg-gold/10 ring-1 ring-gold/20"
               : "text-muted-foreground"
           )}
-          onClick={handleSync}
+          onClick={() => handleSync()}
           disabled={isSyncing || !isLinked}
           title={isLinked ? t("updateGamesTooltip") : t("linkRiotAccountTooltip")}
         >

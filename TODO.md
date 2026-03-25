@@ -100,7 +100,7 @@
 
 ## Features — Future Enhancements
 - [ ] Riot RSO authentication (Phase 2 — requires Production API key from Riot)
-- [ ] Auto-sync on login or on a schedule (in addition to the always-visible manual sync)
+- [x] ~~Auto-sync on login or on a schedule (in addition to the always-visible manual sync)~~ (three triggers: login cookie consumed on mount, tab visibility change after 30min stale, jittered 12-18min periodic interval; silent mode skips toasts when no new matches found; manual sync button unchanged)
 - [ ] Export data (CSV export of matches with all fields)
 - [ ] Multi-account support (track games across multiple Riot accounts)
 - [ ] Matchup-specific notes (per champion matchup, not just per game)
@@ -132,6 +132,7 @@
 
 ## Known Limitations
 - Rate limits: 20 req/sec, 100 req/2min — sufficient for personal use but sync is sequential
+- Multi-user rate limits: auto-sync intervals are jittered (12-18min) to avoid thundering herd. At 10+ concurrent users, may need server-side throttling (global rate limiter or per-user last-sync-at check) to stay within the 100 req/2min API key limit
 - First user auto-promoted to admin; subsequent users need an invite code
 
 ## Cleanup — Remove Dev API Key Workarounds
