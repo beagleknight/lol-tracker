@@ -1,9 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { updateActionItemStatus } from "@/app/actions/coaching";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -120,6 +122,8 @@ export function CoachingHubClient({
   intervalsData,
   ddragonVersion,
 }: CoachingHubClientProps) {
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const totalSessions = scheduledSessions.length + completedSessions.length;
 
   return (
@@ -171,12 +175,7 @@ export function CoachingHubClient({
           </div>
           <div className="space-y-3">
             {scheduledSessions.map((session) => {
-              const dateStr = new Intl.DateTimeFormat("en-GB", {
-                weekday: "short",
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }).format(session.date);
+              const dateStr = formatDate(session.date, locale, "medium");
               const vodMatch = session.vodMatchId
                 ? vodMatchMap[session.vodMatchId]
                 : null;
@@ -316,11 +315,7 @@ export function CoachingHubClient({
                 : [];
               const items = actionItemsBySession[session.id];
               const interval = intervalsData[session.id];
-              const dateStr = new Intl.DateTimeFormat("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }).format(session.date);
+              const dateStr = formatDate(session.date, locale, "short");
 
               return (
                 <div key={session.id} className="space-y-2">

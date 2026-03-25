@@ -4,6 +4,7 @@ import { useState, useTransition, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,7 @@ import type { Match } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { Pagination, paginate } from "@/components/pagination";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -91,28 +93,16 @@ interface ReviewClientProps {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
 // ─── Match Header (shared across card types) ────────────────────────────────
 
 function MatchCardHeader({
   match,
   ddragonVersion,
+  locale,
 }: {
   match: Match;
   ddragonVersion: string;
+  locale: string;
 }) {
   return (
     <div className="flex items-center gap-3">
@@ -141,7 +131,7 @@ function MatchCardHeader({
           </Badge>
         </div>
         <CardDescription className="inline-flex items-center gap-1 flex-wrap">
-          {formatDate(match.gameDate)} &middot;{" "}
+          {formatDate(match.gameDate, locale)} &middot;{" "}
           {match.kills}/{match.deaths}/{match.assists} &middot;{" "}
           {formatDuration(match.gameDurationSeconds)} &middot;{" "}
           vs{" "}
@@ -197,11 +187,13 @@ function PostGameCard({
   existingHighlights,
   ddragonVersion,
   onReviewed,
+  locale,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
   onReviewed: (matchId: string) => void;
+  locale: string;
 }) {
   const [highlights, setHighlights] =
     useState<HighlightItem[]>(existingHighlights);
@@ -246,7 +238,7 @@ function PostGameCard({
   return (
     <Card className="surface-glow">
       <CardHeader className="pb-3">
-        <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+        <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Highlights / Lowlights (primary) */}
@@ -350,11 +342,13 @@ function VodReviewCard({
   existingHighlights,
   ddragonVersion,
   onReviewed,
+  locale,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
   onReviewed: (matchId: string) => void;
+  locale: string;
 }) {
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
@@ -397,7 +391,7 @@ function VodReviewCard({
   return (
     <Card className="surface-glow">
       <CardHeader className="pb-3">
-        <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+        <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Existing post-game notes — read-only context */}
@@ -508,11 +502,13 @@ function CompletedCard({
   existingHighlights,
   ddragonVersion,
   onSaved,
+  locale,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
   onSaved: () => void;
+  locale: string;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [highlights, setHighlights] =
@@ -558,7 +554,7 @@ function CompletedCard({
     return (
       <Card className="surface-glow border-primary/30">
         <CardHeader className="pb-3">
-          <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+          <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Highlights / Lowlights */}
@@ -637,7 +633,7 @@ function CompletedCard({
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} />
+            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
           </div>
           <Button
             variant="ghost"
@@ -804,6 +800,8 @@ export function ReviewClient({
 }: ReviewClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
 
   // Track which matches have been actioned this session (optimistic removal/movement)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
@@ -1075,6 +1073,7 @@ export function ReviewClient({
                     existingHighlights={getHighlightItems(match.id)}
                     ddragonVersion={ddragonVersion}
                     onReviewed={handleReviewed}
+                    locale={locale}
                   />
                 ))}
                 <Pagination
@@ -1109,6 +1108,7 @@ export function ReviewClient({
                     existingHighlights={getHighlightItems(match.id)}
                     ddragonVersion={ddragonVersion}
                     onReviewed={handleReviewed}
+                    locale={locale}
                   />
                 ))}
                 <Pagination
@@ -1148,6 +1148,7 @@ export function ReviewClient({
                       existingHighlights={getHighlightItems(match.id)}
                       ddragonVersion={ddragonVersion}
                       onSaved={handleCompletedSaved}
+                      locale={locale}
                     />
                   ))}
                 </div>

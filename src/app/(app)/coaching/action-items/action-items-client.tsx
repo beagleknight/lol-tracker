@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   updateActionItemStatus,
   deleteActionItem,
 } from "@/app/actions/coaching";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +44,7 @@ interface ActionItemsClientProps {
   items: ActionItemWithSession[];
 }
 
-function ActionItemRow({ item }: { item: ActionItemWithSession }) {
+function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: string }) {
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDelete] = useTransition();
 
@@ -82,10 +84,7 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
     completed: <CheckCircle2 className="h-4 w-4 text-green-400" />,
   };
 
-  const dateStr = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-  }).format(item.sessionDate);
+  const dateStr = formatDate(item.sessionDate, locale, "short-compact");
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated">
@@ -154,6 +153,8 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
 }
 
 export function ActionItemsClient({ items }: ActionItemsClientProps) {
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
@@ -240,7 +241,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
         <>
           <div className="space-y-2">
             {paginatedItems.map((item) => (
-              <ActionItemRow key={item.id} item={item} />
+              <ActionItemRow key={item.id} item={item} locale={locale} />
             ))}
           </div>
           <Pagination

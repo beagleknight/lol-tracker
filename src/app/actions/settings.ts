@@ -9,6 +9,7 @@ import {
 } from "@/lib/riot-api";
 import { revalidatePath } from "next/cache";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
@@ -178,6 +179,34 @@ export async function clearDuoPartner() {
   revalidatePath("/settings");
   revalidatePath("/duo");
   invalidateDuoCaches(user.id);
+
+  return { success: true };
+}
+
+// ─── Locale Preference ──────────────────────────────────────────────────────
+
+/**
+ * Update the user's locale preference.
+ */
+export async function updateLocale(locale: SupportedLocale) {
+  const user = await requireUser();
+
+  // Validate locale is supported
+  const valid = SUPPORTED_LOCALES.some((l) => l.value === locale);
+  if (!valid) {
+    return { error: "Unsupported locale." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      locale,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
 
   return { success: true };
 }

@@ -9,6 +9,7 @@ import {
   getDuoPartner,
   setDuoPartner,
   clearDuoPartner,
+  updateLocale,
 } from "@/app/actions/settings";
 import {
   createInvite,
@@ -26,6 +27,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
@@ -38,7 +46,9 @@ import {
   Ticket,
   Shield,
   Users,
+  Globe,
 } from "lucide-react";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
 
 interface InviteItem {
   id: number;
@@ -56,6 +66,11 @@ export default function SettingsPage() {
 
   const isLinked = !!session?.user?.riotGameName;
   const isAdmin = session?.user?.role === "admin";
+  const userLocale = (session?.user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
+
+  // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
+  const [previewDate, setPreviewDate] = useState<Date | null>(null);
+  useEffect(() => { setPreviewDate(new Date()); }, []);
 
   // ─── Invite state (admin only) ────────────────────────────────────────────
   const [invitesList, setInvitesList] = useState<InviteItem[]>([]);
@@ -205,6 +220,21 @@ export default function SettingsPage() {
     });
   }
 
+  // ─── Locale handler ─────────────────────────────────────────────────────
+
+  function handleLocaleChange(locale: string | null) {
+    if (!locale) return;
+    startTransition(async () => {
+      const result = await updateLocale(locale as SupportedLocale);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Language & region updated.");
+        await updateSession();
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -298,6 +328,42 @@ export default function SettingsPage() {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Language & Region Card */}
+      <Card className="surface-glow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-gold" />
+            Language & Region
+          </CardTitle>
+          <CardDescription>
+            Choose how dates and numbers are displayed across the app.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="locale-select">Date & number format</Label>
+            <Select
+              value={userLocale}
+              onValueChange={handleLocaleChange}
+            >
+              <SelectTrigger id="locale-select" className="w-full max-w-xs" disabled={isPending}>
+                <SelectValue placeholder="Select locale" />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LOCALES.map((loc) => (
+                  <SelectItem key={loc.value} value={loc.value}>
+                    {loc.label} ({loc.description})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Preview: {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
+          </p>
         </CardContent>
       </Card>
 

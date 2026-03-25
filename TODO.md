@@ -108,7 +108,7 @@
 - [ ] Matchup Scout: revisit live game / champ select integration with a better UX when ready
 
 ## Features — Internationalization (nice to have)
-- [ ] Date/time format preference: allow users to pick a locale-aware format (e.g., DD/MM/YYYY vs MM/DD/YYYY) — US date format is confusing for non-US users
+- [x] ~~Date/time format preference: allow users to pick a locale-aware format (e.g., DD/MM/YYYY vs MM/DD/YYYY) — US date format is confusing for non-US users~~ (added `locale` column to users table, `formatDate`/`formatDuration`/`formatNumber` shared utilities in `src/lib/format.ts`, locale selector in Settings with live preview, all inline `Intl.DateTimeFormat` calls replaced across 13 client components, supports en-GB/en-US/es-ES)
 - [ ] Multi-language support (i18n): start with English + Spanish; translations can be AI-generated and maintained with assistance, so the burden stays low
 
 ## Features — Duo Partner Tracking & Synergy

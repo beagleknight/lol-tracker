@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { scheduleCoachingSession } from "@/app/actions/coaching";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +53,8 @@ export function ScheduleSessionClient({
   previousCoaches,
 }: ScheduleSessionClientProps) {
   const router = useRouter();
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const [isPending, startTransition] = useTransition();
 
   const [coachName, setCoachName] = useState("");
@@ -213,10 +217,7 @@ export function ScheduleSessionClient({
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {recentMatches.map((match) => {
                 const isSelected = selectedMatchId === match.id;
-                const dateStr = new Intl.DateTimeFormat("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                }).format(match.gameDate);
+                const dateStr = formatDate(match.gameDate, locale, "short-compact");
                 const matchHL = highlightsByMatch[match.id];
                 const hasHighlights = matchHL && matchHL.length > 0;
                 return (

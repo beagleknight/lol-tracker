@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import {
   getMatchupReport,
@@ -26,6 +27,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { formatDate, formatNumber, DEFAULT_LOCALE } from "@/lib/format";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -49,14 +51,6 @@ function ChampionIcon({
   );
 }
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
 // ─── Props ──────────────────────────────────────────────────────────────────
 
 interface ScoutClientProps {
@@ -74,9 +68,11 @@ interface ScoutClientProps {
 function ScoutingReport({
   report,
   ddragonVersion,
+  locale,
 }: {
   report: MatchupReport;
   ddragonVersion: string;
+  locale: string;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
 
@@ -115,7 +111,7 @@ function ScoutingReport({
           </div>
           {report.lastPlayed && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last played: {formatDate(report.lastPlayed)}
+              Last played: {formatDate(report.lastPlayed, locale)}
             </p>
           )}
         </div>
@@ -187,7 +183,7 @@ function ScoutingReport({
           />
           <StatCell
             label="Gold"
-            value={avgStats.goldEarned.toLocaleString()}
+            value={formatNumber(avgStats.goldEarned, locale)}
             baseline={{ matchup: avgStats.goldEarned, overall: overallAvgStats.goldEarned }}
           />
           <StatCell
@@ -296,6 +292,7 @@ function ScoutingReport({
                 text: h.text,
                 topic: h.topic,
               }))}
+              locale={locale}
             />
           ))}
         </div>
@@ -370,6 +367,8 @@ export function ScoutClient({
 }: ScoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
@@ -523,7 +522,7 @@ export function ScoutClient({
 
       {/* Scouting report */}
       {!isLoadingReport && report && (
-        <ScoutingReport report={report} ddragonVersion={ddragonVersion} />
+        <ScoutingReport report={report} ddragonVersion={ddragonVersion} locale={locale} />
       )}
 
       {/* No historical data state */}
