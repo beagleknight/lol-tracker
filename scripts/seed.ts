@@ -163,6 +163,23 @@ function ts(date: Date): number {
 async function seed() {
   const dbUrl = process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db";
   const dbToken = process.env.TURSO_AUTH_TOKEN;
+  const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
+  const forceRemote = process.argv.includes("--force-remote");
+
+  // Safety guard: refuse to seed a remote database without explicit opt-in
+  if (isRemote && !forceRemote) {
+    console.error("ERROR: Refusing to seed a remote database without --force-remote flag.");
+    console.error(`  Target: ${dbUrl}`);
+    console.error("");
+    console.error("This is a safety measure to prevent accidentally wiping production data.");
+    console.error("If you are sure this is the right database, re-run with:");
+    console.error(`  TURSO_DATABASE_URL="${dbUrl}" TURSO_AUTH_TOKEN=... npm run db:seed -- --force-remote`);
+    process.exit(1);
+  }
+
+  if (isRemote) {
+    console.warn("WARNING: Seeding REMOTE database (--force-remote was passed)");
+  }
 
   console.log(`Seeding database: ${dbUrl}`);
 

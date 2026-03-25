@@ -61,7 +61,7 @@ echo "✓ Auth token created"
 # so no separate drizzle-kit push step is needed)
 echo ""
 echo "=== Seeding preview database ==="
-TURSO_DATABASE_URL="$DB_URL" TURSO_AUTH_TOKEN="$DB_TOKEN" npm run db:seed
+TURSO_DATABASE_URL="$DB_URL" TURSO_AUTH_TOKEN="$DB_TOKEN" npm run db:seed -- --force-remote
 echo "✓ Database seeded (tables created + demo data inserted)"
 
 # Print Vercel env vars
