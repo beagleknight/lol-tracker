@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -13,9 +14,107 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Swords, Ticket } from "lucide-react";
+import { Swords, Ticket, User, Shield } from "lucide-react";
+import { demoLogin } from "@/app/actions/demo-login";
 
-function LoginForm() {
+// ─── Demo users (must match seed.ts) ──────────────────────────────────────────
+
+const DEMO_USERS = [
+  {
+    id: "demo-user-0001-0001-000000000001",
+    name: "DemoPlayer",
+    riotId: "DemoPlayer#EUW",
+    rank: "Gold III · 62 LP",
+    role: "admin" as const,
+    hasRiot: true,
+  },
+  {
+    id: "demo-user-0002-0002-000000000002",
+    name: "DuoPartner",
+    riotId: "DuoPartner#EUW",
+    rank: null,
+    role: "user" as const,
+    hasRiot: true,
+  },
+];
+
+// ─── Demo Login Form ──────────────────────────────────────────────────────────
+
+function DemoLoginForm() {
+  const t = useTranslations("Login");
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handleDemoLogin(userId: string) {
+    setLoading(userId);
+    try {
+      await demoLogin(userId);
+    } catch {
+      setLoading(null);
+    }
+  }
+
+  return (
+    <Card className="w-full max-w-md border-gold/20 surface-glow">
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 glow-gold-sm">
+          <Swords className="h-8 w-8 text-gold" />
+        </div>
+        <CardTitle className="text-2xl text-gradient-gold">
+          {t("demoModeTitle")}
+        </CardTitle>
+        <CardDescription>
+          {t("demoModeDescription")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {DEMO_USERS.map((user) => (
+          <button
+            key={user.id}
+            onClick={() => handleDemoLogin(user.id)}
+            disabled={loading !== null}
+            className="w-full flex items-center gap-3 rounded-lg border border-border/50 bg-card p-3 text-left transition-all hover:border-gold/40 hover:bg-gold/5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+              {user.role === "admin" ? (
+                <Shield className="h-5 w-5 text-gold" />
+              ) : (
+                <User className="h-5 w-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground truncate">
+                  {user.name}
+                </span>
+                <Badge
+                  variant="outline"
+                  className="text-xs shrink-0"
+                >
+                  {user.role === "admin" ? t("demoRoleAdmin") : t("demoRoleUser")}
+                </Badge>
+              </div>
+              <div className="text-sm text-muted-foreground truncate">
+                {user.hasRiot ? user.riotId : t("demoNoRiotAccount")}
+                {user.rank && (
+                  <span className="ml-2 text-gold">{user.rank}</span>
+                )}
+              </div>
+            </div>
+            <span
+              className="inline-flex items-center justify-center shrink-0 rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm"
+            >
+              {loading === user.id ? "..." : t("demoLoginButton")}
+            </span>
+          </button>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Discord Login Form ───────────────────────────────────────────────────────
+
+function DiscordLoginForm() {
   const t = useTranslations("Login");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -106,11 +205,18 @@ function LoginForm() {
   );
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+function LoginContent() {
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  return isDemoMode ? <DemoLoginForm /> : <DiscordLoginForm />;
+}
+
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background bg-mesh">
       <Suspense>
-        <LoginForm />
+        <LoginContent />
       </Suspense>
     </div>
   );

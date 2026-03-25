@@ -825,6 +825,9 @@ export function ReviewClient({
   // Server-side pagination for Completed tab
   const [isCompletedNavigating, startCompletedTransition] = useTransition();
 
+  // Tab state — controlled to avoid Base UI uncontrolled defaultValue warning
+  const tabValue = initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
+
   // Tab change handler — sync tab to URL
   const handleTabChange = useCallback(
     (value: unknown) => {
@@ -1022,7 +1025,7 @@ export function ReviewClient({
 
       {/* Tabs */}
       <Tabs
-        defaultValue={initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0}
+        value={tabValue}
         onValueChange={handleTabChange}
       >
         <TabsList>

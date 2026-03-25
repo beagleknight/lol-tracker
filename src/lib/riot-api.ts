@@ -1,6 +1,15 @@
 // Riot Games API service layer
 // Docs: https://developer.riotgames.com/docs/lol
 
+import {
+  mockGetAccountByRiotId,
+  mockGetSoloQueueEntryByPuuid,
+  mockGetMatchIds,
+  mockGetMatch,
+} from "@/lib/riot-api-mock";
+
+const _isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 function getRiotApiKey(): string {
   return process.env.RIOT_API_KEY!;
 }
@@ -147,6 +156,7 @@ export async function getAccountByRiotId(
   gameName: string,
   tagLine: string
 ): Promise<RiotAccount> {
+  if (_isDemoMode) return mockGetAccountByRiotId(gameName, tagLine);
   return riotFetch<RiotAccount>(
     `${REGIONAL_HOST}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`
   );
@@ -165,6 +175,7 @@ async function getLeagueEntriesByPuuid(
 export async function getSoloQueueEntryByPuuid(
   puuid: string
 ): Promise<RiotLeagueEntry | null> {
+  if (_isDemoMode) return mockGetSoloQueueEntryByPuuid(puuid);
   const entries = await getLeagueEntriesByPuuid(puuid);
   return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
 }
@@ -180,6 +191,7 @@ export async function getMatchIds(
     startTime?: number; // epoch seconds
   } = {}
 ): Promise<string[]> {
+  if (_isDemoMode) return mockGetMatchIds();
   const params = new URLSearchParams();
   if (options.queue !== undefined) params.set("queue", String(options.queue));
   if (options.count !== undefined) params.set("count", String(options.count));
@@ -194,6 +206,7 @@ export async function getMatchIds(
 }
 
 export async function getMatch(matchId: string): Promise<RiotMatch> {
+  if (_isDemoMode) return mockGetMatch(matchId);
   return riotFetch<RiotMatch>(
     `${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`
   );
