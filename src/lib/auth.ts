@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users, invites } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { isDemoMode, demoCredentialsProvider } from "@/lib/fake-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,9 +16,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         params: { prompt: "none" },
       },
     }),
+    // Demo/preview mode: cookie-based Credentials provider that bypasses
+    // Discord OAuth. Only authorizes when NEXT_PUBLIC_DEMO_MODE=true.
+    ...(isDemoMode() ? [demoCredentialsProvider()] : []),
   ],
   callbacks: {
     async signIn({ user, account }) {
+      // ── Demo provider: user already exists in DB (seeded) ──
+      if (account?.provider === "demo" && account.providerAccountId) {
+        const existing = await db.query.users.findFirst({
+          where: eq(users.discordId, account.providerAccountId),
+        });
+        if (!existing) return false;
+
+        const cookieStore = await cookies();
+        cookieStore.set("language", existing.language || "en", {
+          path: "/",
+          httpOnly: false,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 365,
+        });
+        if (existing.puuid) {
+          cookieStore.set("sync_on_login", "1", {
+            path: "/",
+            httpOnly: false,
+            sameSite: "lax",
+            maxAge: 60,
+          });
+        }
+        return true;
+      }
+
       if (account?.provider === "discord" && account.providerAccountId) {
         // Check if user already exists
         const existing = await db.query.users.findFirst({
@@ -138,7 +167,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async jwt({ token, account }) {
-      if (account?.provider === "discord") {
+      if (account?.provider === "discord" || account?.provider === "demo") {
         token.discordId = account.providerAccountId;
       }
       return token;

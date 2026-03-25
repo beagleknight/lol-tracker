@@ -49,7 +49,13 @@
     "inviteCodePlaceholder": "Introduce tu código de invitación",
     "signInWithDiscord": "Iniciar sesión con Discord",
     "haveInviteCode": "¿Tienes un código de invitación?",
-    "alreadyHaveAccount": "¿Ya tienes cuenta? Inicia sesión sin código."
+    "alreadyHaveAccount": "¿Ya tienes cuenta? Inicia sesión sin código.",
+    "demoModeTitle": "Modo Demo",
+    "demoModeDescription": "Selecciona una cuenta para explorar la app con datos de ejemplo.",
+    "demoLoginButton": "Entrar",
+    "demoRoleAdmin": "Admin",
+    "demoRoleUser": "Usuario",
+    "demoNoRiotAccount": "Sin cuenta de Riot vinculada"
   },
   "Dashboard": {
     "heading": "Panel",
