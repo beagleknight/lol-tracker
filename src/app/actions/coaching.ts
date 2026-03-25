@@ -9,6 +9,7 @@ import {
 import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { invalidateCoachingCaches } from "@/lib/cache";
 
 // ─── Phase 1: Schedule a coaching session ────────────────────────────────────
 
@@ -43,6 +44,7 @@ export async function scheduleCoachingSession(data: {
 
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true, sessionId };
 }
@@ -111,6 +113,7 @@ export async function completeCoachingSession(
   revalidatePath(`/coaching/${sessionId}`);
   revalidatePath("/coaching/action-items");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }
@@ -171,6 +174,7 @@ export async function createCoachingSession(data: {
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
   revalidatePath("/coaching/action-items");
+  invalidateCoachingCaches(user.id);
 
   return { success: true, sessionId };
 }
@@ -216,6 +220,7 @@ export async function updateCoachingSession(
 
   revalidatePath("/coaching");
   revalidatePath(`/coaching/${sessionId}`);
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }
@@ -234,6 +239,7 @@ export async function deleteCoachingSession(sessionId: number) {
 
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }
@@ -262,6 +268,7 @@ export async function updateActionItemStatus(
   revalidatePath("/coaching/action-items");
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }
@@ -284,6 +291,7 @@ export async function createActionItem(data: {
   revalidatePath(`/coaching/${data.sessionId}`);
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }
@@ -303,6 +311,7 @@ export async function deleteActionItem(itemId: number) {
   revalidatePath("/coaching/action-items");
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
 
   return { success: true };
 }

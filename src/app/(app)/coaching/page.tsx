@@ -9,19 +9,23 @@ import {
 import { eq, desc, and, gt, lte, asc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
+import { cacheLife, cacheTag } from "next/cache";
+import { coachingTag } from "@/lib/cache";
 import { CoachingHubClient } from "./coaching-hub-client";
 
-export default async function CoachingHubPage() {
-  const user = await requireUser();
+async function getCachedCoachingHubData(userId: string) {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(coachingTag(userId));
 
   // Fetch all sessions, action items, and DDragon version in parallel
   const [allSessions, allActionItems, ddragonVersion] = await Promise.all([
     db.query.coachingSessions.findMany({
-      where: eq(coachingSessions.userId, user.id),
+      where: eq(coachingSessions.userId, userId),
       orderBy: desc(coachingSessions.date),
     }),
     db.query.coachingActionItems.findMany({
-      where: eq(coachingActionItems.userId, user.id),
+      where: eq(coachingActionItems.userId, userId),
     }),
     getLatestVersion(),
   ]);
@@ -41,7 +45,7 @@ export default async function CoachingHubPage() {
     vodMatchIds.length > 0
       ? await db.query.matches.findMany({
           where: and(
-            eq(matches.userId, user.id),
+            eq(matches.userId, userId),
             inArray(matches.id, vodMatchIds)
           ),
           columns: {
@@ -86,7 +90,7 @@ export default async function CoachingHubPage() {
     matchCount: number;
     wins: number;
     losses: number;
-    relevantNoteCount: number; // highlights/lowlights matching action item topics
+    relevantNoteCount: number;
   };
 
   const intervals: Map<number, SessionInterval> = new Map();
@@ -110,7 +114,7 @@ export default async function CoachingHubPage() {
 
       const intervalMatches = await db.query.matches.findMany({
         where: and(
-          eq(matches.userId, user.id),
+          eq(matches.userId, userId),
           gt(matches.gameDate, current.date),
           lte(matches.gameDate, endDate)
         ),
@@ -132,7 +136,7 @@ export default async function CoachingHubPage() {
         const intervalMatchIds = intervalMatches.map((m) => m.id);
         const intervalHighlights = await db.query.matchHighlights.findMany({
           where: and(
-            eq(matchHighlights.userId, user.id),
+            eq(matchHighlights.userId, userId),
             inArray(matchHighlights.matchId, intervalMatchIds)
           ),
           columns: { topic: true },
@@ -166,15 +170,30 @@ export default async function CoachingHubPage() {
     };
   }
 
+  return {
+    scheduledSessions,
+    completedSessions,
+    activeActionItems,
+    actionItemsBySession: Object.fromEntries(actionItemsBySession),
+    vodMatchMap,
+    intervalsData,
+    ddragonVersion,
+  };
+}
+
+export default async function CoachingHubPage() {
+  const user = await requireUser();
+  const data = await getCachedCoachingHubData(user.id);
+
   return (
     <CoachingHubClient
-      scheduledSessions={scheduledSessions}
-      completedSessions={completedSessions}
-      activeActionItems={activeActionItems}
-      actionItemsBySession={Object.fromEntries(actionItemsBySession)}
-      vodMatchMap={vodMatchMap}
-      intervalsData={intervalsData}
-      ddragonVersion={ddragonVersion}
+      scheduledSessions={data.scheduledSessions}
+      completedSessions={data.completedSessions}
+      activeActionItems={data.activeActionItems}
+      actionItemsBySession={data.actionItemsBySession}
+      vodMatchMap={data.vodMatchMap}
+      intervalsData={data.intervalsData}
+      ddragonVersion={data.ddragonVersion}
     />
   );
 }
