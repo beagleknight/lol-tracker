@@ -40,10 +40,12 @@ Final todos should be:
 3. Push to remote
 <!-- END:task-completion-rules -->
 
-<!-- BEGIN:todo-tracking-rules -->
-# TODO.md tracking
+<!-- BEGIN:github-issues-rules -->
+# GitHub Issues tracking
 
-**Keep `TODO.md` in sync with every change.** After completing any implementation task, immediately update the relevant checkbox in `TODO.md` before moving to the next task. Read `TODO.md` at the start of every session.
+All tasks, features, and bugs are tracked as **GitHub Issues** (not a local TODO file). Use `gh issue list` at the start of every session to understand what's open.
+
+When a PR resolves an issue, include `Fixes #N` in the PR description to auto-close it on merge. Reference issues in commit messages when relevant.
 
 Full conventions are in the `todo-tracking` OpenCode skill.
-<!-- END:todo-tracking-rules -->
+<!-- END:github-issues-rules -->

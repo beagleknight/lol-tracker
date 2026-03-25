@@ -6,7 +6,7 @@ import {
   coachingActionItems,
   coachingSessions,
 } from "@/db/schema";
-import { eq, desc, and, count, sql, asc, lte } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { DashboardClient } from "./dashboard-client";
@@ -125,20 +125,25 @@ export default async function DashboardPage() {
   };
   const postGamePending = unreviewed - vodPending;
 
-  // LP trend: compare rank now vs. rank at the time of the oldest recent match
-  // This gives "LP change over your last 10 games" instead of arbitrary snapshot diffs
+  // LP trend: compare latest rank snapshot vs. an older one.
+  // Each sync creates 1-2 snapshots (timestamped at sync time, not match time).
+  // We skip back ~20 snapshots (~10 syncs) to find the baseline rank, giving
+  // a "LP change over recent sessions" indicator.
   let lpTrend: number | null = null;
   if (latestRankOrUndef?.tier && recentMatches.length >= 2) {
-    const oldestMatchDate = recentMatches[recentMatches.length - 1].gameDate;
     const baseSnapshot = await db.query.rankSnapshots.findFirst({
-      where: and(
-        eq(rankSnapshots.userId, user.id),
-        lte(rankSnapshots.capturedAt, oldestMatchDate),
-      ),
+      where: eq(rankSnapshots.userId, user.id),
       orderBy: desc(rankSnapshots.capturedAt),
+      offset: 20,
     });
 
-    if (baseSnapshot?.tier) {
+    // Fall back to the very oldest snapshot if we don't have 20+ yet
+    const baseline = baseSnapshot ?? await db.query.rankSnapshots.findFirst({
+      where: eq(rankSnapshots.userId, user.id),
+      orderBy: asc(rankSnapshots.capturedAt),
+    });
+
+    if (baseline?.tier && baseline.id !== latestRankOrUndef.id) {
       const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
       const DIV_ORDER = ["IV", "III", "II", "I"];
       function toCumLP(tier: string, division: string | null, lp: number) {
@@ -149,7 +154,7 @@ export default async function DashboardPage() {
         return tierIdx * 400 + (divIdx < 0 ? 0 : divIdx) * 100 + lp;
       }
       const newLP = toCumLP(latestRankOrUndef.tier!, latestRankOrUndef.division, latestRankOrUndef.lp || 0);
-      const oldLP = toCumLP(baseSnapshot.tier, baseSnapshot.division, baseSnapshot.lp || 0);
+      const oldLP = toCumLP(baseline.tier, baseline.division, baseline.lp || 0);
       lpTrend = newLP - oldLP;
     }
   }
