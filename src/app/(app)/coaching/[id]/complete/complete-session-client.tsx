@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { completeCoachingSession } from "@/app/actions/coaching";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +69,8 @@ export function CompleteSessionClient({
   ddragonVersion,
 }: CompleteSessionClientProps) {
   const router = useRouter();
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const [isPending, startTransition] = useTransition();
 
   // Pre-fill topics from focus areas if they were set during scheduling
@@ -84,12 +88,7 @@ export function CompleteSessionClient({
   const [newActionDesc, setNewActionDesc] = useState("");
   const [newActionTopic, setNewActionTopic] = useState("");
 
-  const dateStr = new Intl.DateTimeFormat("en-GB", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(session.date);
+  const dateStr = formatDate(session.date, locale, "long");
 
   const highlights: HighlightItem[] = vodHighlights.map((h) => ({
     type: h.type,

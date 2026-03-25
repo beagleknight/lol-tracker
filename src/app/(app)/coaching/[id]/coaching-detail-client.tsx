@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import {
   updateActionItemStatus,
   deleteCoachingSession,
 } from "@/app/actions/coaching";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -89,12 +91,6 @@ interface CoachingDetailClientProps {
       topic: string | null;
     }>
   >;
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 function ActionItemRow({ item }: { item: CoachingActionItem }) {
@@ -181,18 +177,15 @@ export function CoachingDetailClient({
   progressHighlightsByMatch,
 }: CoachingDetailClientProps) {
   const router = useRouter();
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const [isDeleting, startDelete] = useTransition();
 
   const topics: string[] = session.topics
     ? JSON.parse(session.topics)
     : [];
 
-  const dateStr = new Intl.DateTimeFormat("en-GB", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(session.date);
+  const dateStr = formatDate(session.date, locale, "long");
 
   const completedCount = actionItems.filter(
     (i) => i.status === "completed"
@@ -583,10 +576,7 @@ export function CoachingDetailClient({
                     (h) => h.topic && actionItemTopics.has(h.topic)
                   );
 
-                  const matchDateStr = new Intl.DateTimeFormat("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                  }).format(match.gameDate);
+                  const matchDateStr = formatDate(match.gameDate, locale, "short-compact");
 
                   return (
                     <div

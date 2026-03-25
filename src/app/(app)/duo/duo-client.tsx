@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/pagination";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import {
   Users,
   Trophy,
@@ -56,12 +58,6 @@ function ChampionIcon({
       className="rounded"
     />
   );
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 // ─── DuoHeader ───────────────────────────────────────────────────────────────
@@ -425,6 +421,8 @@ export function DuoRecentGames({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isPending, startTransition] = useTransition();
+  const { data: authSession } = useSession();
+  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
 
   function handlePageChange(page: number) {
     startTransition(async () => {
@@ -498,7 +496,7 @@ export function DuoRecentGames({
 
                 <div className="ml-auto text-right text-xs text-muted-foreground shrink-0">
                   <p>{formatDuration(game.gameDurationSeconds)}</p>
-                  <p>{new Date(game.gameDate).toLocaleDateString()}</p>
+                  <p>{formatDate(game.gameDate, locale, "short")}</p>
                 </div>
               </Link>
             ))}

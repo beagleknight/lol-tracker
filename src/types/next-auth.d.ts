@@ -11,6 +11,7 @@ declare module "next-auth" {
       riotTagLine?: string | null;
       puuid?: string | null;
       role?: string | null;
+      locale?: string | null;
     };
   }
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useTransition, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +24,7 @@ import {
 import type { Match } from "@/db/schema";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
+import { DEFAULT_LOCALE } from "@/lib/format";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -152,6 +154,8 @@ export function MatchesClient({
   filters,
 }: MatchesClientProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const [isNavigating, startTransition] = useTransition();
 
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
@@ -303,6 +307,7 @@ export function MatchesClient({
                   match={match}
                   ddragonVersion={ddragonVersion}
                   matchHighlights={highlightsPerMatch[match.id] || []}
+                  locale={locale}
                 />
               ))}
             </div>

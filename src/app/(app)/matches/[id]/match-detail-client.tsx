@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,6 +40,7 @@ import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
 import { getKeystoneIconUrl, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 
 /** Slim participant — only fields needed for the match detail view */
 type SlimParticipant = Pick<
@@ -76,23 +78,6 @@ interface MatchDetailClientProps {
   highlights: HighlightItem[];
   ddragonVersion: string;
   userPuuid: string;
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
 }
 
 function ParticipantRow({
@@ -201,6 +186,9 @@ export function MatchDetailClient({
   ddragonVersion,
   userPuuid,
 }: MatchDetailClientProps) {
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+
   // Split participants into teams
   const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
   const redTeam = participants?.filter((p) => p.teamId === 200) || [];
@@ -264,7 +252,7 @@ export function MatchDetailClient({
                 )}
               </div>
               <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
-                {formatDate(match.gameDate)} &middot;{" "}
+                {formatDate(match.gameDate, locale, "datetime")} &middot;{" "}
                 {formatDuration(match.gameDurationSeconds)}
                 {match.runeKeystoneName && (
                   <>

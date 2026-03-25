@@ -19,6 +19,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { getChampionIconUrl } from "@/lib/riot-api";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -53,20 +54,6 @@ interface MatchCardData {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
 function ChampionIcon({
   championName,
   version,
@@ -93,10 +80,12 @@ export function MatchCard({
   match,
   ddragonVersion,
   matchHighlights,
+  locale = DEFAULT_LOCALE,
 }: {
   match: MatchCardData;
   ddragonVersion: string;
   matchHighlights: MatchHighlightData[];
+  locale?: string;
 }) {
   const isWin = match.result === "Victory";
   const hasComment = !!match.comment;
@@ -290,7 +279,7 @@ export function MatchCard({
               {isWin ? "W" : "L"}
             </Badge>
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {formatDate(match.gameDate)}
+              {formatDate(match.gameDate, locale)}
             </span>
           </div>
 

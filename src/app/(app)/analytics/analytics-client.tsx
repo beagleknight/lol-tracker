@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import {
   LineChart,
   Line,
@@ -38,6 +39,7 @@ import {
 import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
 import type { RankSnapshot } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { ChampionLink } from "@/components/champion-link";
 
 // ─── LP / Rank Utilities ─────────────────────────────────────────────────────
@@ -127,7 +129,7 @@ function formatRank(cumulativeLP: number): string {
 }
 
 /** Prepare rank snapshot data for the LP chart */
-function prepareRankChartData(snapshots: RankSnapshot[]) {
+function prepareRankChartData(snapshots: RankSnapshot[], locale: string) {
   const data: Array<{
     date: string;
     cumulativeLP: number;
@@ -143,10 +145,7 @@ function prepareRankChartData(snapshots: RankSnapshot[]) {
     const clp = toCumulativeLP(s.tier, s.division, s.lp);
     if (clp === null) continue;
 
-    const dateStr = new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-    }).format(s.capturedAt);
+    const dateStr = formatDate(s.capturedAt, locale, "short-compact");
 
     const tierName = s.tier
       ? s.tier.charAt(0) + s.tier.slice(1).toLowerCase()
@@ -196,6 +195,7 @@ interface AnalyticsClientProps {
 // Rolling win rate: for each match, calculate win rate of last N games
 function computeRollingWinRate(
   matches: AnalyticsMatch[],
+  locale: string,
   window = 10
 ): Array<{ index: number; date: string; winRate: number }> {
   const data: Array<{ index: number; date: string; winRate: number }> = [];
@@ -204,10 +204,7 @@ function computeRollingWinRate(
     const slice = matches.slice(start, i + 1);
     const wins = slice.filter((m) => m.result === "Victory").length;
     const wr = Math.round((wins / slice.length) * 100);
-    const dateStr = new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-    }).format(matches[i].gameDate);
+    const dateStr = formatDate(matches[i].gameDate, locale, "short-compact");
     data.push({ index: i + 1, date: dateStr, winRate: wr });
   }
   return data;
@@ -305,7 +302,10 @@ export function AnalyticsClient({
   rankSnapshots,
   ddragonVersion,
 }: AnalyticsClientProps) {
-  const rollingWR = useMemo(() => computeRollingWinRate(matches), [matches]);
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+
+  const rollingWR = useMemo(() => computeRollingWinRate(matches, locale), [matches, locale]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
   const runeStats = useMemo(() => computeRuneStats(matches), [matches]);
   const championStats = useMemo(
@@ -313,8 +313,8 @@ export function AnalyticsClient({
     [matches]
   );
   const rankChartData = useMemo(
-    () => prepareRankChartData(rankSnapshots),
-    [rankSnapshots]
+    () => prepareRankChartData(rankSnapshots, locale),
+    [rankSnapshots, locale]
   );
 
   // ─── Sort state for Rune Keystones table ──────────────────────────────────

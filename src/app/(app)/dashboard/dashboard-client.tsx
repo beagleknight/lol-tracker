@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +25,7 @@ import {
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
+import { formatDuration, formatDate, DEFAULT_LOCALE } from "@/lib/format";
 
 interface DashboardMatch {
   id: string;
@@ -80,12 +82,6 @@ interface DashboardClientProps {
   ddragonVersion: string;
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
   if (matches.length === 0) return null;
   const first = matches[0].result;
@@ -120,6 +116,8 @@ export function DashboardClient({
   upcomingSession,
   ddragonVersion,
 }: DashboardClientProps) {
+  const { data: session } = useSession();
+  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.puuid;
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
@@ -428,13 +426,7 @@ export function DashboardClient({
               <CardContent>
                 <p className="text-sm font-medium">{upcomingSession.coachName}</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Intl.DateTimeFormat("en-GB", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(upcomingSession.date)}
+                  {formatDate(upcomingSession.date, locale, "datetime-short")}
                 </p>
                 {!upcomingSession.vodMatchId && (
                   <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
