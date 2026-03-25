@@ -231,7 +231,7 @@ export function MatchCard({
               </span>
             </span>
             <span className="font-mono text-muted-foreground">
-              {match.cs}cs
+              {match.cs} CS
             </span>
             <span className="text-muted-foreground">
               {formatDuration(match.gameDurationSeconds)}

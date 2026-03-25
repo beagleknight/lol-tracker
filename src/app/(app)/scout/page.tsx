@@ -1,8 +1,10 @@
+import { db } from "@/db";
+import { matches } from "@/db/schema";
+import { eq, count, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import {
   getAllChampionNames,
-  getRecentUnreviewedMatch,
   getMostPlayedChampions,
   getMostFacedOpponents,
 } from "@/app/actions/live";
@@ -19,24 +21,30 @@ export default async function ScoutPage({
   const [
     ddragonVersion,
     allChampions,
-    recentUnreviewed,
+    unreviewedResult,
     mostPlayed,
     mostFaced,
   ] = await Promise.all([
     getLatestVersion(),
     getAllChampionNames(),
-    getRecentUnreviewedMatch(),
+    db
+      .select({ value: count() })
+      .from(matches)
+      .where(
+        sql`${matches.userId} = ${user.id} AND ${matches.reviewed} = 0`
+      ),
     getMostPlayedChampions(8),
     getMostFacedOpponents(8),
   ]);
 
+  const unreviewedCount = unreviewedResult[0]?.value ?? 0;
   const isRiotLinked = !!user.puuid;
 
   return (
     <ScoutClient
       ddragonVersion={ddragonVersion}
       allChampions={allChampions}
-      recentUnreviewed={recentUnreviewed}
+      unreviewedCount={unreviewedCount}
       isRiotLinked={isRiotLinked}
       initialYourChampion={params.your || ""}
       initialEnemyChampion={params.enemy || ""}

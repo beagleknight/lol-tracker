@@ -218,7 +218,7 @@ export function MatchesClient({
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          Sync Games
+          Update Games
         </Button>
       </div>
 
@@ -230,7 +230,7 @@ export function MatchesClient({
             <Link href="/settings" className="underline font-medium">
               Settings
             </Link>{" "}
-            to sync games.
+            to import games.
           </span>
         </div>
       )}
@@ -299,8 +299,8 @@ export function MatchesClient({
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
             {filters.search || filters.result !== "all" || filters.champion !== "all" || filters.review !== "all"
-              ? "No matches match your filters."
-              : "No matches synced yet. Click Sync Games to get started."}
+              ? "No games match your filters."
+              : "No matches yet. Click Update Games to get started."}
           </p>
         </div>
       ) : (

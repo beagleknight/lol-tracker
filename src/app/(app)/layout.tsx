@@ -16,6 +16,7 @@ async function SidebarWithUser() {
         image: user.image,
         riotGameName: user.riotGameName,
         riotTagLine: user.riotTagLine,
+        puuid: user.puuid,
       }}
     />
   );

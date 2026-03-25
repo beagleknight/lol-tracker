@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import {
   matches,
+  matchHighlights,
   rankSnapshots,
   coachingActionItems,
   coachingSessions,
@@ -89,6 +90,13 @@ export default async function DashboardPage() {
         unreviewed: count(
           sql`CASE WHEN ${matches.reviewed} = 0 THEN 1 END`
         ),
+        // VOD-pending: unreviewed games that already have post-game notes (comment or highlights)
+        vodPending: count(
+          sql`CASE WHEN ${matches.reviewed} = 0 AND (
+            ${matches.comment} IS NOT NULL
+            OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
+          ) THEN 1 END`
+        ),
       })
       .from(matches)
       .where(eq(matches.userId, user.id)),
@@ -110,11 +118,13 @@ export default async function DashboardPage() {
   ]);
 
   const latestRank = recentSnapshots[0] ?? null;
-  const { total, wins, unreviewed } = matchStats[0] ?? {
+  const { total, wins, unreviewed, vodPending } = matchStats[0] ?? {
     total: 0,
     wins: 0,
     unreviewed: 0,
+    vodPending: 0,
   };
+  const postGamePending = unreviewed - vodPending;
 
   return (
     <DashboardClient
@@ -125,7 +135,7 @@ export default async function DashboardPage() {
         puuid: user.puuid,
       }}
       recentMatches={recentMatches}
-      matchStats={{ total, wins, losses: total - wins, unreviewed }}
+      matchStats={{ total, wins, losses: total - wins, unreviewed, postGamePending, vodPending }}
       latestRank={latestRank}
       recentSnapshots={recentSnapshots}
       actionItems={[...inProgressActionItems, ...activeActionItems]}

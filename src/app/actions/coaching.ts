@@ -16,7 +16,7 @@ import { invalidateCoachingCaches } from "@/lib/cache";
 export async function scheduleCoachingSession(data: {
   coachName: string;
   date: string; // ISO string
-  vodMatchId: string;
+  vodMatchId?: string; // optional — user may not have picked a VOD yet
   focusAreas?: string[]; // optional pre-session focus topics
 }) {
   const user = await requireUser();
@@ -28,19 +28,21 @@ export async function scheduleCoachingSession(data: {
       coachName: data.coachName,
       date: new Date(data.date),
       status: "scheduled",
-      vodMatchId: data.vodMatchId,
+      vodMatchId: data.vodMatchId ?? null,
       topics: data.focusAreas?.length ? JSON.stringify(data.focusAreas) : null,
     })
     .returning({ id: coachingSessions.id });
 
   const sessionId = session[0].id;
 
-  // Link the VOD match
-  await db.insert(coachingSessionMatches).values({
-    sessionId,
-    matchId: data.vodMatchId,
-    userId: user.id,
-  });
+  // Link the VOD match if one was selected
+  if (data.vodMatchId) {
+    await db.insert(coachingSessionMatches).values({
+      sessionId,
+      matchId: data.vodMatchId,
+      userId: user.id,
+    });
+  }
 
   revalidatePath("/coaching");
   revalidatePath("/dashboard");

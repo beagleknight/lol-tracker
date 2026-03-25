@@ -24,7 +24,7 @@ export function useSyncMatches() {
     setIsSyncing(true);
     setProgress(null);
 
-    toastIdRef.current = toast.loading("Starting sync...");
+    toastIdRef.current = toast.loading("Fetching latest matches...");
 
     // Use fetch + ReadableStream instead of EventSource to avoid
     // spurious onerror firing when the server closes the stream.
@@ -32,7 +32,7 @@ export function useSyncMatches() {
       .then(async (res) => {
         if (!res.ok || !res.body) {
           throw new Error(
-            res.ok ? "No response body" : `Sync failed (${res.status})`
+            res.ok ? "No response body" : `Something went wrong while fetching matches. Please try again.`
           );
         }
 
@@ -65,7 +65,7 @@ export function useSyncMatches() {
                   message: data.message,
                 });
                 toast.loading(
-                  `${data.message} (${data.synced} synced, ${pct}%)`,
+                  `${data.message} (${data.synced} imported, ${pct}%)`,
                   { id: toastIdRef.current }
                 );
                 break;
@@ -119,7 +119,7 @@ export function useSyncMatches() {
         // If the stream ended without a done/error event, show a warning
         // (this shouldn't happen — indicates the server closed unexpectedly)
         if (!receivedFinal) {
-          toast.warning("Sync stream ended unexpectedly. Check if your matches updated.", {
+          toast.warning("Update ended unexpectedly. Check if your matches are up to date.", {
             id: toastIdRef.current,
             duration: 8000,
           });
@@ -129,7 +129,7 @@ export function useSyncMatches() {
         // Only fires on actual network errors (fetch failure, aborted, etc.)
         // NOT on clean server-side stream close.
         const message =
-          error instanceof Error ? error.message : "Connection lost during sync.";
+          error instanceof Error ? error.message : "Connection lost while updating matches.";
         toast.error(message, { id: toastIdRef.current });
       })
       .finally(() => {

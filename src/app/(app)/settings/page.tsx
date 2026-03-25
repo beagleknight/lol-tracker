@@ -85,7 +85,7 @@ export default function SettingsPage() {
       setInvitesLoading(true);
       getInvites()
         .then(setInvitesList)
-        .catch(() => toast.error("Failed to load invites"))
+        .catch(() => toast.error("Couldn't load invite codes."))
         .finally(() => setInvitesLoading(false));
     }
   }, [isAdmin]);
@@ -99,7 +99,7 @@ export default function SettingsPage() {
           setDuoPartnerState(partner);
           setRegisteredUsers(users);
         })
-        .catch(() => toast.error("Failed to load duo partner info"))
+        .catch(() => toast.error("Couldn't load duo partner details."))
         .finally(() => setDuoLoading(false));
     }
   }, [isLinked]);
@@ -109,7 +109,7 @@ export default function SettingsPage() {
   function handleLink() {
     if (!riotId.includes("#")) {
       toast.error(
-        "Invalid format. Use GameName#TagLine (e.g. beagleknight#euw)"
+        "Please enter your Riot ID as GameName#TagLine (e.g. beagleknight#euw)"
       );
       return;
     }
@@ -263,7 +263,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Unlinking will not delete your synced match data.
+                Unlinking will not delete your imported match data.
               </p>
             </div>
           ) : (
@@ -293,7 +293,7 @@ export default function SettingsPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 Enter your Riot ID in GameName#TagLine format. This is used to
-                fetch your ranked match data from the Riot API.
+                import your ranked match history.
               </p>
             </div>
           )}

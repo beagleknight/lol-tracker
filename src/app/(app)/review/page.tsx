@@ -1,11 +1,12 @@
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, desc, inArray, count } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { ReviewClient } from "./review-client";
 
 const COMPLETED_PAGE_SIZE = 10;
+const VALID_TABS = ["post-game", "vod", "completed"] as const;
 
 export default async function ReviewPage({
   searchParams,
@@ -18,6 +19,10 @@ export default async function ReviewPage({
     1,
     parseInt(String(params.completedPage ?? "1"), 10) || 1
   );
+  const tabParam = String(params.tab ?? "post-game");
+  const initialTab = VALID_TABS.includes(tabParam as typeof VALID_TABS[number])
+    ? (tabParam as typeof VALID_TABS[number])
+    : "post-game";
   const completedOffset = (completedPage - 1) * COMPLETED_PAGE_SIZE;
 
   const reviewedWhere = and(
@@ -65,7 +70,7 @@ export default async function ReviewPage({
           eq(matches.userId, user.id),
           eq(matches.reviewed, false)
         ),
-        orderBy: desc(matches.gameDate),
+        orderBy: asc(matches.gameDate),
         limit: 50,
         columns: matchColumns,
       }) as unknown as Promise<import("@/db/schema").Match[]>,
@@ -134,6 +139,7 @@ export default async function ReviewPage({
       completedPage={Math.min(completedPage, completedTotalPages)}
       completedTotalPages={completedTotalPages}
       completedTotal={completedTotal}
+      initialTab={initialTab}
     />
   );
 }
