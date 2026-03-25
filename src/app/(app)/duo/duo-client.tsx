@@ -350,6 +350,11 @@ export function DuoSynergyCard({
         </div>
       </CardHeader>
       <CardContent>
+        {synergy.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No champion synergy data yet. Play more duo games to see your best champion combos.
+          </p>
+        ) : (
         <div className="space-y-2">
           {sortedSynergy.map((s) => (
             <div
@@ -397,6 +402,7 @@ export function DuoSynergyCard({
             </div>
           ))}
         </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -444,7 +450,7 @@ export function DuoRecentGames({
               <Link
                 key={game.id}
                 href={`/matches/${game.id}`}
-                className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated hover:bg-accent transition-colors"
+                className="flex items-center gap-3 flex-wrap sm:flex-nowrap rounded-lg border border-border/50 p-3 bg-surface-elevated hover:bg-accent transition-colors"
               >
                 <Badge
                   variant={

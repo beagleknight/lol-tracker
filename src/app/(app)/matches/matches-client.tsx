@@ -235,7 +235,7 @@ export function MatchesClient({
           />
         </div>
         <Select value={filters.result} onValueChange={(v) => navigateWithFilter("result", v ?? "all")}>
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger className="w-full sm:w-[130px]">
             <SelectValue placeholder="Result" />
           </SelectTrigger>
           <SelectContent>
@@ -245,7 +245,7 @@ export function MatchesClient({
           </SelectContent>
         </Select>
         <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-full sm:w-[150px]">
             <SelectValue placeholder="Champion" />
           </SelectTrigger>
           <SelectContent>
@@ -267,7 +267,7 @@ export function MatchesClient({
           </SelectContent>
         </Select>
         <Select value={filters.review} onValueChange={(v) => navigateWithFilter("review", v ?? "all")}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Review" />
           </SelectTrigger>
           <SelectContent>

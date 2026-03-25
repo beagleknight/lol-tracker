@@ -223,7 +223,7 @@ export function ScheduleSessionClient({
                   <button
                     key={match.id}
                     type="button"
-                    className={`flex items-center gap-3 rounded-lg p-2 w-full text-left transition-colors ${
+                    className={`flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap rounded-lg p-2 w-full text-left transition-colors ${
                       isSelected
                         ? "bg-gold/10 border border-gold/30"
                         : "hover:bg-accent border border-transparent"

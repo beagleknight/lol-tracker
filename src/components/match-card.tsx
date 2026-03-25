@@ -222,7 +222,10 @@ export function MatchCard({
             )}
           </div>
 
-          {/* Stats */}
+          {/* Stats — compact on mobile, full on sm+ */}
+          <span className="sm:hidden font-mono text-xs text-muted-foreground shrink-0">
+            {match.kills}/{match.deaths}/{match.assists}
+          </span>
           <div className="hidden sm:flex items-center gap-4 text-sm shrink-0">
             <span className="font-mono">
               {match.kills}/{match.deaths}/{match.assists}

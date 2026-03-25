@@ -356,7 +356,7 @@ export function CompleteSessionClient({
               ))}
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Action item description..."
               value={newActionDesc}
@@ -369,15 +369,17 @@ export function CompleteSessionClient({
               }}
               className="flex-1"
             />
-            <Input
-              placeholder="Topic (optional)"
-              value={newActionTopic}
-              onChange={(e) => setNewActionTopic(e.target.value)}
-              className="w-40"
-            />
-            <Button variant="outline" size="icon" onClick={addActionItem}>
-              <Plus className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Topic (optional)"
+                value={newActionTopic}
+                onChange={(e) => setNewActionTopic(e.target.value)}
+                className="flex-1 sm:w-40"
+              />
+              <Button variant="outline" size="icon" onClick={addActionItem} className="shrink-0">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

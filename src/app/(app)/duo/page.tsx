@@ -144,8 +144,6 @@ async function DuoSynergySection({
 }) {
   const synergy = await getChampionSynergy();
 
-  if (synergy.length === 0) return null;
-
   return (
     <DuoSynergyCard
       synergy={synergy}

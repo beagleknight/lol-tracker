@@ -52,8 +52,8 @@
 - [ ] (Future) Consider adding CSV/data export instead, if needed
 
 ## Polish
-- [ ] Responsive refinements (mobile experience for tables, forms, etc.)
-- [ ] Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)
+- [x] ~~Responsive refinements (mobile experience for tables, forms, etc.)~~ (MatchCard compact mobile KDA, Scout 'vs' indicator visible on mobile, Match detail hides Vision/Gold/Damage columns on mobile, Analytics Y-axis width reduced, Matches filter selects responsive widths, Complete session action items stack vertically on mobile, Schedule session VOD buttons wrap, Duo recent games wrap on mobile)
+- [x] ~~Empty states with illustrations/helpful messages (no matches yet, no coaching sessions, etc.)~~ (Dashboard coaching session placeholder when no session scheduled, Analytics rank chart 'not enough data' message, Analytics matchup/champion tables show empty messages, Duo synergy card shows empty message instead of silent null)
 - [x] ~~Matches page: unify expanded card into single save button~~ (moot — MatchCard is no longer expandable; review editing moved to Review page)
 - [x] ~~Matches page: replace raw HTML `<select>` in HighlightsEditor with shadcn Select component~~ (moot — highlights editing only on Review page now)
 - [x] ~~Matches page: add VOD URL field to expanded match card~~ (moot — no expanded card; VOD URL on Review page)

@@ -156,13 +156,13 @@ function ParticipantRow({
         {kda}
       </TableCell>
       <TableCell className="text-center text-sm">{cs}</TableCell>
-      <TableCell className="text-center text-sm text-muted-foreground">
+      <TableCell className="hidden sm:table-cell text-center text-sm text-muted-foreground">
         {participant.visionScore}
       </TableCell>
-      <TableCell className="text-center text-sm">
+      <TableCell className="hidden sm:table-cell text-center text-sm">
         {(participant.goldEarned / 1000).toFixed(1)}k
       </TableCell>
-      <TableCell className="text-center text-sm text-muted-foreground">
+      <TableCell className="hidden sm:table-cell text-center text-sm text-muted-foreground">
         {(participant.totalDamageDealtToChampions / 1000).toFixed(1)}k
       </TableCell>
       <TableCell>
@@ -424,9 +424,9 @@ export function MatchDetailClient({
                       <TableHead className="text-center">KDA</TableHead>
                       <TableHead className="text-center">Ratio</TableHead>
                       <TableHead className="text-center">CS</TableHead>
-                      <TableHead className="text-center">Vision</TableHead>
-                      <TableHead className="text-center">Gold</TableHead>
-                      <TableHead className="text-center">Damage</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">Vision</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">Gold</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">Damage</TableHead>
                       <TableHead>Items</TableHead>
                     </TableRow>
                   </TableHeader>
