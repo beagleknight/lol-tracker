@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useSyncMatches } from "@/hooks/use-sync-matches";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -18,6 +19,7 @@ import {
   Menu,
   X,
   Users,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,6 +64,7 @@ interface SidebarProps {
     image?: string | null;
     riotGameName?: string | null;
     riotTagLine?: string | null;
+    puuid?: string | null;
   };
 }
 
@@ -92,12 +95,29 @@ function SidebarContent({
   user,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
+  const { isSyncing, handleSync } = useSyncMatches();
+  const isLinked = !!user.puuid;
+
   return (
     <div className="flex h-full flex-col">
-      {/* Logo */}
-      <div className="flex h-14 items-center gap-2 px-4 font-semibold">
-        <Swords className="h-5 w-5 text-gold" />
-        <span className="text-gradient-gold">LoL Tracker</span>
+      {/* Logo + Sync */}
+      <div className="flex h-14 items-center justify-between px-4">
+        <div className="flex items-center gap-2 font-semibold">
+          <Swords className="h-5 w-5 text-gold" />
+          <span className="text-gradient-gold">LoL Tracker</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-gold"
+          onClick={handleSync}
+          disabled={isSyncing || !isLinked}
+          title={isLinked ? "Update games" : "Link Riot account in Settings first"}
+        >
+          <RefreshCw
+            className={cn("h-4 w-4", isSyncing && "animate-spin")}
+          />
+        </Button>
       </div>
       <Separator />
 

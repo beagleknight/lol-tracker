@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSyncMatches } from "@/hooks/use-sync-matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -14,17 +13,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  RefreshCw,
   TrendingUp,
   TrendingDown,
   Flame,
   Snowflake,
-  Swords,
   Target,
-  Loader2,
   ChevronRight,
   AlertCircle,
   Calendar,
+  ClipboardEdit,
+  Video,
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -58,6 +56,8 @@ interface MatchStats {
   wins: number;
   losses: number;
   unreviewed: number;
+  postGamePending: number;
+  vodPending: number;
 }
 
 interface UpcomingSession {
@@ -123,8 +123,6 @@ export function DashboardClient({
   upcomingSession,
   ddragonVersion,
 }: DashboardClientProps) {
-  const { isSyncing, handleSync } = useSyncMatches();
-
   const isLinked = !!user.puuid;
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
@@ -202,18 +200,6 @@ export function DashboardClient({
             </p>
           )}
         </div>
-        <Button
-          onClick={handleSync}
-          disabled={isSyncing || !isLinked}
-          className="shrink-0"
-        >
-          {isSyncing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          Sync Games
-        </Button>
       </div>
 
       {!isLinked && (
@@ -260,7 +246,7 @@ export function DashboardClient({
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
-                No rank data yet. Sync games to capture.
+                No rank data yet. Update your games to see your rank.
               </p>
             )}
           </CardContent>
@@ -349,7 +335,7 @@ export function DashboardClient({
           <CardContent>
             {recentMatches.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No matches synced yet.
+                No matches yet.
               </p>
             ) : (
               <div className="space-y-2">
@@ -455,6 +441,12 @@ export function DashboardClient({
                     minute: "2-digit",
                   }).format(upcomingSession.date)}
                 </p>
+                {!upcomingSession.vodMatchId && (
+                  <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
+                    <AlertCircle className="h-3 w-3" />
+                    No VOD selected yet
+                  </p>
+                )}
                 {(() => {
                   const now = new Date();
                   const diff = upcomingSession.date.getTime() - now.getTime();
@@ -491,10 +483,32 @@ export function DashboardClient({
             </CardHeader>
             <CardContent>
               {unreviewedCount > 0 ? (
-                <p className="text-sm">
-                  <span className="text-2xl font-bold">{unreviewedCount}</span>{" "}
-                  <span className="text-muted-foreground">games to review</span>
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <span className="text-2xl font-bold">{unreviewedCount}</span>{" "}
+                    <span className="text-muted-foreground">games to review</span>
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {matchStats.postGamePending > 0 && (
+                      <Link
+                        href="/review?tab=post-game"
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        <ClipboardEdit className="h-3 w-3" />
+                        {matchStats.postGamePending} post-game
+                      </Link>
+                    )}
+                    {matchStats.vodPending > 0 && (
+                      <Link
+                        href="/review?tab=vod"
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        <Video className="h-3 w-3" />
+                        {matchStats.vodPending} VOD review
+                      </Link>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   All caught up!

@@ -3,7 +3,7 @@
 import { useState, useTransition, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +86,7 @@ interface ReviewClientProps {
   completedPage: number;
   completedTotalPages: number;
   completedTotal: number;
+  initialTab: "post-game" | "vod" | "completed";
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -799,8 +800,10 @@ export function ReviewClient({
   completedPage,
   completedTotalPages,
   completedTotal,
+  initialTab,
 }: ReviewClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Track which matches have been actioned this session (optimistic removal/movement)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
@@ -818,16 +821,36 @@ export function ReviewClient({
   // Server-side pagination for Completed tab
   const [isCompletedNavigating, startCompletedTransition] = useTransition();
 
+  // Tab change handler — sync tab to URL
+  const handleTabChange = useCallback(
+    (value: unknown) => {
+      const tabMap: Record<number, string> = {
+        0: "post-game",
+        1: "vod",
+        2: "completed",
+      };
+      const tabName = typeof value === "number" ? tabMap[value] : String(value);
+      if (!tabName) return;
+      const sp = new URLSearchParams(searchParams.toString());
+      sp.set("tab", tabName);
+      // Reset completedPage when switching away from completed tab
+      if (tabName !== "completed") sp.delete("completedPage");
+      router.replace(`/review?${sp.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
   const navigateCompletedPage = useCallback(
     (page: number) => {
-      const sp = new URLSearchParams();
+      const sp = new URLSearchParams(searchParams.toString());
+      sp.set("tab", "completed");
       if (page > 1) sp.set("completedPage", String(page));
-      const qs = sp.toString();
+      else sp.delete("completedPage");
       startCompletedTransition(() => {
-        router.push(`/review${qs ? `?${qs}` : ""}`, { scroll: false });
+        router.push(`/review?${sp.toString()}`, { scroll: false });
       });
     },
-    [router]
+    [router, searchParams]
   );
 
   // Partition unreviewed matches into Post-Game vs VOD Review
@@ -996,7 +1019,10 @@ export function ReviewClient({
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue={0}>
+      <Tabs
+        defaultValue={initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0}
+        onValueChange={handleTabChange}
+      >
         <TabsList>
           <TabsTrigger value={0}>
             <ClipboardEdit className="h-3.5 w-3.5" />

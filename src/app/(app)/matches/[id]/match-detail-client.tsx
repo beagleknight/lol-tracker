@@ -393,6 +393,18 @@ export function MatchDetailClient({
         </Card>
       </div>
 
+      {/* Highlights / Lowlights — promoted above player tables for visibility */}
+      {hasHighlights && (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle>Highlights & Lowlights</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HighlightsDisplay highlights={highlights} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* All 10 Players */}
       {participants && (
         <div className="space-y-4">
@@ -437,23 +449,11 @@ export function MatchDetailClient({
       )}
 
       {/* Notes & Review Section — read-only */}
-      {(hasHighlights || hasComment || hasVodUrl || hasReviewNotes || match.reviewed) && (
+      {(hasComment || hasVodUrl || hasReviewNotes || match.reviewed) && (
         <>
           <Separator />
 
           <div className="space-y-6">
-            {/* Highlights / Lowlights — read-only display */}
-            {hasHighlights && (
-              <Card className="surface-glow">
-                <CardHeader>
-                  <CardTitle>Highlights & Lowlights</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HighlightsDisplay highlights={highlights} />
-                </CardContent>
-              </Card>
-            )}
-
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Game Notes — read-only */}
               {hasComment && (

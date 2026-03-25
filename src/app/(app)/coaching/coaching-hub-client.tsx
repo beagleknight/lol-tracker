@@ -29,6 +29,7 @@ import {
   ListChecks,
   TrendingUp,
   Swords,
+  AlertTriangle,
 } from "lucide-react";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
@@ -76,7 +77,7 @@ function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
       try {
         await updateActionItemStatus(item.id, next);
       } catch {
-        toast.error("Failed to update status.");
+        toast.error("Couldn't update the action item. Please try again.");
       }
     });
   }
@@ -198,6 +199,12 @@ export function CoachingHubClient({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {!session.vodMatchId && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-400">
+                              <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+                              No VOD
+                            </Badge>
+                          )}
                           <Badge variant="secondary" className="text-xs">
                             Scheduled
                           </Badge>
@@ -354,6 +361,17 @@ export function CoachingHubClient({
                           <p className="text-xs text-muted-foreground mt-2">
                             {items.completed}/{items.total} action items
                             completed
+                          </p>
+                        )}
+                        {/* Nudges for incomplete session data */}
+                        {(topics.length === 0 || !items || items.total === 0) && (
+                          <p className="text-xs text-amber-400 flex items-center gap-1 mt-2">
+                            <AlertTriangle className="h-3 w-3 shrink-0" />
+                            {topics.length === 0 && (!items || items.total === 0)
+                              ? "Missing focus areas and action items"
+                              : topics.length === 0
+                              ? "Missing focus areas"
+                              : "Missing action items"}
                           </p>
                         )}
                       </CardContent>

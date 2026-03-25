@@ -102,17 +102,13 @@ export function ScheduleSessionClient({
       toast.error("Please enter a coach name.");
       return;
     }
-    if (!selectedMatchId) {
-      toast.error("Please select a match/VOD to review.");
-      return;
-    }
 
     startTransition(async () => {
       try {
         const result = await scheduleCoachingSession({
           coachName: coachName.trim(),
           date: new Date(date).toISOString(),
-          vodMatchId: selectedMatchId,
+          vodMatchId: selectedMatchId || undefined,
           focusAreas: focusAreas.length > 0 ? focusAreas : undefined,
         });
 
@@ -205,13 +201,13 @@ export function ScheduleSessionClient({
         <CardHeader>
           <CardTitle>VOD to Review</CardTitle>
           <CardDescription>
-            Select the game you want to review with your coach.
+            Optionally select the game you want to review — you can add this later.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {recentMatches.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No matches synced yet. Sync your games first.
+              No matches found. Import your games first.
             </p>
           ) : (
             <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -336,7 +332,7 @@ export function ScheduleSessionClient({
                 <HighlightsDisplay highlights={selectedMatchHighlights} />
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  No highlights/lowlights recorded for this game.
+                  No highlights or lowlights recorded for this game.
                 </p>
               )}
             </div>

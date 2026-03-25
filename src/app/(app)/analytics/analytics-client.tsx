@@ -491,14 +491,14 @@ export function AnalyticsClient({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Analytics</h1>
           <p className="text-muted-foreground">
-            Sync some games first to see your analytics.
+            Import some games first to see your analytics.
           </p>
         </div>
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <BarChart3 className="h-8 w-8 text-muted-foreground mb-3" />
           <p className="text-lg font-medium">No data yet</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Sync your ranked games to see charts and statistics.
+            Fetch your ranked games to see charts and statistics.
           </p>
         </div>
       </div>
@@ -514,7 +514,8 @@ export function AnalyticsClient({
         </p>
       </div>
 
-      {/* Rank Journey */}
+      {/* Rank Journey + Win Rate side-by-side */}
+      <div className="grid gap-6 lg:grid-cols-2">
       {rankChartData.length >= 2 && lpChartMeta && (
         <Card className="surface-glow">
           <CardHeader>
@@ -524,7 +525,7 @@ export function AnalyticsClient({
             </CardTitle>
             <CardDescription>
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{rankChartData.length} snapshots tracked</span>
+                <span>{rankChartData.length} rank updates tracked</span>
                 <span className="font-medium text-foreground/80">
                   Peak: {lpChartMeta.peakRank}
                 </span>
@@ -714,8 +715,8 @@ export function AnalyticsClient({
           </CardTitle>
           <CardDescription>
             {coachingBands.bands.length > 0
-              ? "Shaded regions show intervals between coaching sessions."
-              : "No coaching sessions to overlay."}
+              ? "Shaded areas show the time between coaching sessions."
+              : "No coaching sessions to show."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -799,6 +800,7 @@ export function AnalyticsClient({
           </div>
         </CardContent>
       </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Matchup Win Rates */}
@@ -894,7 +896,7 @@ export function AnalyticsClient({
           </CardHeader>
           <CardContent>
             {runeStats.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No data.</p>
+              <p className="text-sm text-muted-foreground">No rune data available.</p>
             ) : (
               <Table>
                 <TableHeader>
