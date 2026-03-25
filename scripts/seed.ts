@@ -56,9 +56,9 @@ const CHAMPIONS = [
   { id: 103, name: "Ahri" },
   { id: 112, name: "Viktor" },
   { id: 134, name: "Syndra" },
-  { id: 7, name: "LeBlanc" },
+  { id: 7, name: "Leblanc" },
   { id: 238, name: "Zed" },
-  { id: 4, name: "Twisted Fate" },
+  { id: 4, name: "TwistedFate" },
   { id: 61, name: "Orianna" },
   { id: 69, name: "Cassiopeia" },
   { id: 245, name: "Ekko" },
@@ -69,7 +69,7 @@ const CHAMPIONS = [
   { id: 45, name: "Veigar" },
   { id: 115, name: "Ziggs" },
   { id: 101, name: "Xerath" },
-  { id: 161, name: "Vel'Koz" },
+  { id: 161, name: "Velkoz" },
   { id: 127, name: "Lissandra" },
 ] as const;
 
