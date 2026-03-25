@@ -34,6 +34,7 @@
 ### Analytics — layout & language
 - [x] ~~Analytics page: rethink layout~~ (side-by-side 2-col grid for Rank Journey + Win Rate charts; remaining: charts smaller/collapsible, stats higher up)
 - [x] ~~Analytics / Rank Journey: remove technical language like "snapshots"~~ ("snapshots tracked" → "rank updates tracked", "intervals" → "time between", "overlay" → "show", improved empty states)
+- [x] ~~Analytics / Rank Journey: remove noisy "N rank updates tracked" text from chart subtitle~~
 
 ### Matchup Scout — simplify scope
 - [x] ~~Matchup Scout: remove "Check Game" (live game lookup) feature entirely for now~~ (removed ~70 lines of live game detection UI; may revisit in the future, see Future Enhancements)
@@ -94,6 +95,7 @@
 - [x] Milestone detection: peak rank marker + first-time-in-tier milestones on the LP chart
 - [x] Growth framing: renamed "LP Over Time" to "Rank Journey", promotion labels say "Reached X" instead of "Promoted", demotion labels say "Back to X", tooltip shows milestone context
 - [x] Design decision: no per-game LP deltas shown anywhere — LP is framed as a long-term journey, not a per-game metric, to promote a healthy relationship with the game
+- [x] ~~Fix dashboard LP trend showing "+0 LP recently"~~ — snapshots were created on every sync (even with no new matches); now computes LP change over the last 10 games by comparing snapshot at oldest match date vs current rank
 
 ## Features — Deployment
 - [x] ~~Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)~~ (removed — file was dead code, Auth.js handles auth natively)
