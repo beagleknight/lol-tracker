@@ -12,6 +12,7 @@
     "navSessions": "Sessions",
     "navActionItems": "Action Items",
     "navSettings": "Settings",
+    "navWhatsNew": "What's New",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
     "sectionCoaching": "Coaching"
@@ -538,5 +539,10 @@
       "TOPIC_REQUIRED": "Please select at least one topic covered.",
       "FAILED_COMPLETE_SESSION": "Failed to complete session."
     }
+  },
+  "Changelog": {
+    "title": "What's New",
+    "subtitle": "Latest updates and improvements to LoL Tracker",
+    "empty": "No updates yet. Check back soon!"
   }
 }
