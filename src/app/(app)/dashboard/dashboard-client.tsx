@@ -411,7 +411,7 @@ export function DashboardClient({
         {/* Right Column */}
         <div className="space-y-4">
           {/* Upcoming Coaching Session */}
-          {upcomingSession && (
+          {upcomingSession ? (
             <Card className="surface-glow border-gold/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -461,6 +461,21 @@ export function DashboardClient({
                     </p>
                   );
                 })()}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="surface-glow border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  Next Session
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">No coaching sessions scheduled.</p>
+                <Link href="/coaching/new" className="inline-block mt-2">
+                  <Button variant="outline" size="sm">Schedule one</Button>
+                </Link>
               </CardContent>
             </Card>
           )}

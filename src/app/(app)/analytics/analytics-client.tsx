@@ -516,7 +516,7 @@ export function AnalyticsClient({
 
       {/* Rank Journey + Win Rate side-by-side */}
       <div className="grid gap-6 lg:grid-cols-2">
-      {rankChartData.length >= 2 && lpChartMeta && (
+      {rankChartData.length >= 2 && lpChartMeta ? (
         <Card className="surface-glow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -704,6 +704,20 @@ export function AnalyticsClient({
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <Card className="surface-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-gold" />
+              Rank Journey
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Not enough rank data yet. Play more ranked games to see your LP journey.
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Win Rate Over Time */}
@@ -796,10 +810,10 @@ export function AnalyticsClient({
                   activeDot={{ r: 4 }}
                 />
               </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -810,6 +824,9 @@ export function AnalyticsClient({
             <CardDescription>Top 10 most-played matchups</CardDescription>
           </CardHeader>
           <CardContent>
+            {topMatchups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No matchup data yet. Play more games to see win rates by matchup.</p>
+            ) : (
             <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topMatchups} layout="vertical">
@@ -824,7 +841,7 @@ export function AnalyticsClient({
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={120}
+                    width={100}
                     stroke="oklch(0.55 0.02 260)"
                     fontSize={12}
                     tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
@@ -832,14 +849,14 @@ export function AnalyticsClient({
                         <g transform={`translate(${x},${y})`} style={{ cursor: "pointer" }}>
                           <image
                             href={getChampionIconUrl(ddragonVersion, payload.value)}
-                            x={-118}
+                            x={-98}
                             y={-10}
                             width={20}
                             height={20}
                             clipPath="inset(0 round 2px)"
                           />
                           <text
-                            x={-94}
+                            x={-74}
                             y={0}
                             dy={4}
                             fill="oklch(0.75 0.02 260)"
@@ -885,6 +902,7 @@ export function AnalyticsClient({
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            )}
           </CardContent>
         </Card>
 
@@ -977,6 +995,9 @@ export function AnalyticsClient({
           <CardDescription>Performance by champion</CardDescription>
         </CardHeader>
         <CardContent>
+          {sortedChampionStats.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No champion data yet. Play some games to see your champion stats.</p>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -1058,6 +1079,7 @@ export function AnalyticsClient({
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -498,7 +498,7 @@ export function ScoutClient({
           className="flex-1 sm:max-w-xs"
           recommendations={yourChampionRecs}
         />
-        <span className="hidden sm:flex items-end pb-2 text-muted-foreground font-medium">
+        <span className="flex items-center sm:items-end sm:pb-2 text-muted-foreground font-medium text-sm justify-center">
           vs
         </span>
         <ChampionCombobox
