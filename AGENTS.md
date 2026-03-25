@@ -29,6 +29,17 @@ Steps: `npx drizzle-kit generate` -> review SQL -> apply via standalone script (
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 <!-- END:turso-migration-rules -->
 
+<!-- BEGIN:lockfile-safety-rules -->
+# Lockfile safety — MANDATORY before every commit
+
+**NEVER commit a modified `package-lock.json` without verifying it.** Local Node/npm version mismatches (e.g., Node 24 locally vs Node 22 in CI) can silently prune or add entries, causing `npm ci` to fail in CI.
+
+Before committing, if `package-lock.json` is staged:
+1. Check whether you actually changed dependencies in `package.json`. If not, **restore the lockfile from main**: `git checkout origin/main -- package-lock.json`
+2. If you did change dependencies, regenerate the lockfile with the CI Node version in mind. Verify with `npm ci` locally.
+3. Never blindly commit lockfile changes from `npm install` — they may reflect your local Node version, not CI's.
+<!-- END:lockfile-safety-rules -->
+
 <!-- BEGIN:task-completion-rules -->
 # Task completion workflow
 
