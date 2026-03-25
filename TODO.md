@@ -15,36 +15,36 @@
 ## UX Feedback (user-reported, actionable)
 
 ### Sync Games — global access
-- [ ] Move "Sync Games" to a persistent, always-visible location (e.g., sidebar or top bar) — it's needed across many pages but currently buried; keep it subtle (not a giant button), just always reachable
+- [x] ~~Move "Sync Games" to a persistent, always-visible location (e.g., sidebar or top bar)~~ (moved to sidebar header — subtle RefreshCw icon, always reachable, spins while syncing)
 
 ### Dashboard — review widget clarity
-- [ ] Dashboard "games to review" widget: break down the count by review stage (e.g., "2 need post-game review, 1 needs VOD review") instead of a single number — clicking the current count leads to the Post-Game tab which may be empty, confusing the user
+- [x] ~~Dashboard "games to review" widget: break down the count by review stage~~ (shows "3 post-game · 2 VOD review" with deep links to `/review?tab=post-game` and `/review?tab=vod`)
 
 ### Match Detail — highlight visibility
-- [ ] Match detail: promote highlights/lowlights section higher on the page — currently buried at the bottom below stats and game details, but highlights are arguably the most important part of a reviewed game
+- [x] ~~Match detail: promote highlights/lowlights section higher on the page~~ (moved above player tables, directly after stats row; only renders when highlights exist)
 
 ### Review Page — sort order & navigation
-- [ ] Review page: show games to review oldest-first (so the user reviews in chronological order)
-- [ ] Review page: preserve the active tab when navigating back from match detail (currently resets to the default tab on browser back)
+- [x] ~~Review page: show games to review oldest-first~~ (changed `orderBy` from `desc` to `asc` for unreviewed matches)
+- [x] ~~Review page: preserve the active tab when navigating back from match detail~~ (tab synced to `?tab=` URL param via `router.replace`; maps post-game→0, vod→1, completed→2)
 
 ### Duo Page — performance (critical)
-- [ ] Duo page: the top section (partner info / stats) is still too slow despite previous query optimizations — investigate caching, materialized/precomputed stats, or syncing duo stats as part of the game sync process; **prioritize speed over data freshness** — stale-until-next-sync is acceptable
+- [x] ~~Duo page: the top section (partner info / stats) is still too slow despite previous query optimizations~~ (Suspense streaming with skeleton fallbacks + SQL optimizations from prior session; stale-until-next-sync via `"use cache: remote"`)
 
 ### Analytics — layout & language
-- [ ] Analytics page: rethink layout — the two large charts dominate the viewport and push important data (champion stats, matchup stats) below the fold; consider a more balanced layout (e.g., charts smaller/collapsible, stats higher up)
-- [ ] Analytics / Rank Journey: remove technical language like "snapshots" — use player-friendly labels and descriptions throughout
+- [x] ~~Analytics page: rethink layout~~ (side-by-side 2-col grid for Rank Journey + Win Rate charts; remaining: charts smaller/collapsible, stats higher up)
+- [x] ~~Analytics / Rank Journey: remove technical language like "snapshots"~~ ("snapshots tracked" → "rank updates tracked", "intervals" → "time between", "overlay" → "show", improved empty states)
 
 ### Matchup Scout — simplify scope
-- [ ] Matchup Scout: remove "Check Game" (live game lookup) feature entirely for now — it only works once already in-game which is too late to be useful; may revisit in the future with a better UX (e.g., champ select detection)
-- [ ] Matchup Scout: remove the inline review functionality — it duplicates the Review page and clutters the scout experience
+- [x] ~~Matchup Scout: remove "Check Game" (live game lookup) feature entirely for now~~ (removed ~70 lines of live game detection UI; may revisit in the future, see Future Enhancements)
+- [x] ~~Matchup Scout: remove the inline review functionality~~ (removed ~220 lines of PostGameReviewCard; replaced with subtle gold banner linking to `/review?tab=post-game`)
 
 ### Coaching — VOD optional & reminders
-- [ ] Coaching session scheduling: make VOD URL optional at creation time (user may not have it yet when scheduling)
-- [ ] Coaching upcoming sessions (dashboard): show a visual indicator when VOD is missing for an upcoming session so the user remembers to add it
-- [ ] Coaching completed sessions: show reminders/nudges for sessions that are finished but missing focus areas or action items (similar to how we nudge for unreviewed games)
+- [x] ~~Coaching session scheduling: make VOD URL optional at creation time~~ (`vodMatchId` optional in action, conditional session-match insert, form says "Optionally select...")
+- [x] ~~Coaching upcoming sessions (dashboard): show a visual indicator when VOD is missing~~ (amber "No VOD" badge on coaching hub + "No VOD selected yet" on dashboard Next Session card)
+- [x] ~~Coaching completed sessions: show reminders/nudges for sessions that are finished but missing focus areas or action items~~ (amber nudge text: "Missing focus areas and action items" / "Missing focus areas" / "Missing action items")
 
 ### User-facing language audit
-- [ ] Audit all user-facing text for technical/developer jargon — replace with player-friendly language (applies to error messages, empty states, labels, tooltips, and explanatory text throughout the app)
+- [x] ~~Audit all user-facing text for technical/developer jargon~~ (~25 high-impact fixes: "sync" → "update/import/fetch", removed "Riot API" from user text, fixed CS formatting, improved error messages with "Please try again", removed HTTP status codes)
 
 ## Cleanup — Remove Unused Features
 - [ ] Remove CSV import/merge feature entirely — no longer needed, the app is the primary data source now
@@ -79,6 +79,7 @@
 - [x] Analytics: trim column selection from 22 to 8 — only fetch `gameDate`, `result`, `championName`, `matchupChampionName`, `runeKeystoneName`, `kills`, `deaths`, `assists`
 - [x] Coaching detail: flatten 4-stage waterfall to 3 — highlights query joins through `coachingSessionMatches` on `sessionId`, runs in parallel with match/items/ddragon fetches
 - [x] Review: add `limit: 50` to unbounded unreviewed matches query
+- [x] Tier 1 pages: `"use cache: remote"` with `cacheLife("hours")` for persistent Vercel distributed cache (Duo, Analytics, Coaching, Scout, Review)
 
 ## Features — Rank Journey (LP Tracking)
 - [x] Before-sync rank snapshot: capture rank at start of sync (in addition to end) for smoother LP chart with 2 data points per sync
