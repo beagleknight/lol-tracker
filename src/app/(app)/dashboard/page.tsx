@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   const [
     ddragonVersion,
     recentMatches,
-    recentSnapshots,
+    latestRank,
     activeActionItems,
     inProgressActionItems,
     matchStats,
@@ -55,11 +55,10 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Rank snapshots (last 10) — latestRank is just [0]
-    db.query.rankSnapshots.findMany({
+    // Latest rank snapshot (for current rank display)
+    db.query.rankSnapshots.findFirst({
       where: eq(rankSnapshots.userId, user.id),
       orderBy: desc(rankSnapshots.capturedAt),
-      limit: 10,
     }),
 
     // Pending action items
@@ -117,7 +116,7 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const latestRank = recentSnapshots[0] ?? null;
+  const latestRankOrUndef = latestRank ?? null;
   const { total, wins, unreviewed, vodPending } = matchStats[0] ?? {
     total: 0,
     wins: 0,
@@ -125,6 +124,40 @@ export default async function DashboardPage() {
     vodPending: 0,
   };
   const postGamePending = unreviewed - vodPending;
+
+  // LP trend: compare latest rank snapshot vs. an older one.
+  // Each sync creates 1-2 snapshots (timestamped at sync time, not match time).
+  // We skip back ~20 snapshots (~10 syncs) to find the baseline rank, giving
+  // a "LP change over recent sessions" indicator.
+  let lpTrend: number | null = null;
+  if (latestRankOrUndef?.tier && recentMatches.length >= 2) {
+    const baseSnapshot = await db.query.rankSnapshots.findFirst({
+      where: eq(rankSnapshots.userId, user.id),
+      orderBy: desc(rankSnapshots.capturedAt),
+      offset: 20,
+    });
+
+    // Fall back to the very oldest snapshot if we don't have 20+ yet
+    const baseline = baseSnapshot ?? await db.query.rankSnapshots.findFirst({
+      where: eq(rankSnapshots.userId, user.id),
+      orderBy: asc(rankSnapshots.capturedAt),
+    });
+
+    if (baseline?.tier && baseline.id !== latestRankOrUndef.id) {
+      const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
+      const DIV_ORDER = ["IV", "III", "II", "I"];
+      function toCumLP(tier: string, division: string | null, lp: number) {
+        const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase());
+        if (tierIdx === -1) return 0;
+        const isMaster = tierIdx >= TIER_ORDER.indexOf("MASTER");
+        const divIdx = isMaster ? 0 : DIV_ORDER.indexOf(division || "IV");
+        return tierIdx * 400 + (divIdx < 0 ? 0 : divIdx) * 100 + lp;
+      }
+      const newLP = toCumLP(latestRankOrUndef.tier!, latestRankOrUndef.division, latestRankOrUndef.lp || 0);
+      const oldLP = toCumLP(baseline.tier, baseline.division, baseline.lp || 0);
+      lpTrend = newLP - oldLP;
+    }
+  }
 
   return (
     <DashboardClient
@@ -136,8 +169,8 @@ export default async function DashboardPage() {
       }}
       recentMatches={recentMatches}
       matchStats={{ total, wins, losses: total - wins, unreviewed, postGamePending, vodPending }}
-      latestRank={latestRank}
-      recentSnapshots={recentSnapshots}
+      latestRank={latestRankOrUndef}
+      lpTrend={lpTrend}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
       ddragonVersion={ddragonVersion}
