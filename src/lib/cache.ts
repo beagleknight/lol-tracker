@@ -14,7 +14,7 @@ export const scoutTag = (userId: string) => `scout-${userId}`;
 // Call these from mutation actions / API routes after writing to the DB.
 // All use profile="max" for stale-while-revalidate semantics.
 
-/** Invalidate all Tier 1 caches for a user (sync, account link/unlink, CSV import). */
+/** Invalidate all Tier 1 caches for a user (sync, account link/unlink). */
 export function invalidateAllCaches(userId: string) {
   revalidateTag(duoTag(userId), "max");
   revalidateTag(analyticsTag(userId), "max");

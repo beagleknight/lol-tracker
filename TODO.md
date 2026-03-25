@@ -1,15 +1,15 @@
 # LoL Tracker — TODO
 
 ## Untested Flows (code exists, needs browser verification)
-- [ ] Coaching session creation flow (create session, link matches, add action items)
-- [ ] Coaching session detail (view session, cycle action item statuses, delete session)
-- [ ] Action items page (filtering by status/topic, status cycling, delete)
+- [x] ~~Coaching session creation flow (create session, link matches, add action items)~~ (verified — form fills, VOD selection, focus areas, submit all work; redirects to detail page)
+- [x] ~~Coaching session detail (view session, cycle action item statuses, delete session)~~ (verified — status cycling pending→in progress→completed→pending works; delete has confirm dialog)
+- [x] ~~Action items page (filtering by status/topic, status cycling, delete)~~ (verified — filters work, status cycling works, delete now has confirm dialog)
 - [x] ~~CSV import with actual file upload and data import~~ (removed — CSV import feature dropped, see Cleanup section)
 - [x] ~~Inline comment editing on matches page~~ (removed — editing now lives exclusively on Review page)
 - [x] ~~Inline review editing on matches page~~ (removed — editing now lives exclusively on Review page)
 - [x] ~~Match detail: save game notes and VOD review notes~~ (removed — match detail is now read-only; editing on Review page)
-- [ ] Invite system: test full flow (new user with invite code, reject without code)
-- [ ] Admin settings: generate/copy/delete invite codes
+- [x] ~~Invite system: test full flow (new user with invite code, reject without code)~~ (partially verified — admin generate/copy/delete tested; new user sign-up with invite not tested in browser, requires separate Discord account)
+- [x] ~~Admin settings: generate/copy/delete invite codes~~ (verified — generate creates code with toast, copy works, delete now has confirm dialog)
 - [ ] Auth proxy: verify redirect-to-login flow with Auth.js wrapper
 
 ## UX Feedback (user-reported, actionable)
@@ -47,7 +47,7 @@
 - [x] ~~Audit all user-facing text for technical/developer jargon~~ (~25 high-impact fixes: "sync" → "update/import/fetch", removed "Riot API" from user text, fixed CS formatting, improved error messages with "Please try again", removed HTTP status codes)
 
 ## Cleanup — Remove Unused Features
-- [ ] Remove CSV import/merge feature entirely — no longer needed, the app is the primary data source now
+- [x] ~~Remove CSV import/merge feature entirely — no longer needed, the app is the primary data source now~~
 - [ ] (Future) Consider adding CSV/data export instead, if needed
 
 ## Polish

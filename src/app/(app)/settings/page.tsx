@@ -167,6 +167,7 @@ export default function SettingsPage() {
   }
 
   function handleDeleteInvite(id: number) {
+    if (!confirm("Delete this invite code? This cannot be undone.")) return;
     startTransition(async () => {
       try {
         await deleteInvite(id);

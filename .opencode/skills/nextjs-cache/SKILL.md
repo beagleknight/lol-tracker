@@ -103,7 +103,7 @@ The single-arg form `revalidateTag(tag)` is deprecated.
 
 | Helper | Tags invalidated | Used by |
 |--------|-----------------|---------|
-| `invalidateAllCaches(userId)` | duo, analytics, coaching, scout | Sync, account link/unlink, CSV import |
+| `invalidateAllCaches(userId)` | duo, analytics, coaching, scout | Sync, account link/unlink |
 | `invalidateReviewCaches(userId)` | analytics, coaching, scout | `savePostGameReview`, `bulkMarkReviewed` |
 | `invalidateCoachingCaches(userId)` | coaching | All 8 coaching mutations |
 | `invalidateDuoCaches(userId)` | duo | `setDuoPartner`, `clearDuoPartner` |
@@ -140,4 +140,4 @@ Cache keys are derived from **function identity + serialized arguments**. Each `
 - `src/app/actions/matches.ts` -- Invalidates review caches
 - `src/app/actions/coaching.ts` -- Invalidates coaching caches
 - `src/app/actions/settings.ts` -- Invalidates duo/all caches
-- `src/app/actions/import.ts` -- Invalidates all caches
+
