@@ -236,7 +236,7 @@ export function CoachingDetailClient({
       relevantHighlights,
       relevantLowlights,
     };
-  }, [progressMatches, progressHighlightsByMatch, actionItemTopics]);
+  }, [progressMatches, progressHighlightsByMatch, actionItemTopics, t]);
 
   function handleDelete() {
     if (!confirm(t("deleteConfirm")))

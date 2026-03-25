@@ -117,7 +117,7 @@ export default async function CoachingDetailPage({
     assists: number;
     gameDurationSeconds: number;
   }> = [];
-  let progressHighlightsByMatch: Record<
+  const progressHighlightsByMatch: Record<
     string,
     Array<{
       type: "highlight" | "lowlight";

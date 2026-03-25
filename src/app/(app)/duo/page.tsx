@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import {
   getDuoPartnerInfo,

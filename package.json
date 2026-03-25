@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "db:pull": "tsx --env-file-if-exists=.env.local scripts/db-pull.ts",
     "db:push": "tsx --env-file-if-exists=.env.local scripts/db-push.ts"
   },

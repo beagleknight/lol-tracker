@@ -84,7 +84,7 @@ export default async function MatchDetailPage({
   }
 
   // Strip rawMatchJson before passing to client — saves 50-100KB from RSC payload
-  const { rawMatchJson: _stripped, ...matchForClient } = match;
+  const { rawMatchJson: _rawJson, ...matchForClient } = match;
 
   // These are independent — run in parallel (ddragonVersion already started above)
   const [ddragonVersion, linkedSessions, highlights] = await Promise.all([

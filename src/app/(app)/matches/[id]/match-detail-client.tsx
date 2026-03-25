@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -39,7 +38,7 @@ import {
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
-import { getKeystoneIconUrl, getChampionIconUrl } from "@/lib/riot-api";
+import { getKeystoneIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 

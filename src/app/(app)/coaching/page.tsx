@@ -1,12 +1,11 @@
 import { db } from "@/db";
 import {
   coachingSessions,
-  coachingSessionMatches,
   coachingActionItems,
   matches,
   matchHighlights,
 } from "@/db/schema";
-import { eq, desc, and, gt, lte, asc, inArray } from "drizzle-orm";
+import { eq, desc, and, gt, lte, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { cacheLife, cacheTag } from "next/cache";

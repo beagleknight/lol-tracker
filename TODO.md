@@ -97,6 +97,8 @@
 
 ## Features — Deployment
 - [x] ~~Wire up `src/proxy.ts` as proper Next.js middleware (defense-in-depth auth guard)~~ (removed — file was dead code, Auth.js handles auth natively)
+- [x] ~~PR-based workflow with CI~~ (GitHub Actions: typecheck, lint, build, changelog check run on every PR to main; `skip-changelog` label bypasses changelog requirement; branch protection configured in GitHub UI)
+- [x] ~~Fix all existing lint errors~~ (13 errors + 22 warnings → 0; added `t` to useMemo/useCallback deps, removed unused imports, suppressed legitimate set-state-in-effect patterns, configured underscore-prefix ignore for unused vars)
 - [ ] Add smoke tests (build check, key routes return 200) and run them before auto-deploy
 
 ## Features — Future Enhancements
