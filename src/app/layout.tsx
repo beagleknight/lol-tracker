@@ -20,11 +20,14 @@ export const metadata: Metadata = {
     "Track your League of Legends games, coaching sessions, and improve your gameplay.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Note: html lang is set dynamically by next-intl's plugin at request time.
+  // We hardcode "en" here to keep the root layout static for PPR compatibility.
+  // The actual locale is determined by the cookie/Accept-Language in i18n/request.ts.
   return (
     <html
       lang="en"

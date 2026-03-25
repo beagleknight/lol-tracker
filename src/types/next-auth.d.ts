@@ -12,6 +12,7 @@ declare module "next-auth" {
       puuid?: string | null;
       role?: string | null;
       locale?: string | null;
+      language?: string | null;
     };
   }
 }

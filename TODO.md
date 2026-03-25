@@ -109,7 +109,7 @@
 
 ## Features — Internationalization (nice to have)
 - [x] ~~Date/time format preference: allow users to pick a locale-aware format (e.g., DD/MM/YYYY vs MM/DD/YYYY) — US date format is confusing for non-US users~~ (added `locale` column to users table, `formatDate`/`formatDuration`/`formatNumber` shared utilities in `src/lib/format.ts`, locale selector in Settings with live preview, all inline `Intl.DateTimeFormat` calls replaced across 13 client components, supports en-GB/en-US/es-ES)
-- [ ] Multi-language support (i18n): start with English + Spanish; translations can be AI-generated and maintained with assistance, so the burden stays low
+- [x] ~~Multi-language support (i18n): start with English + Spanish; translations can be AI-generated and maintained with assistance, so the burden stays low~~ (installed `next-intl` v4.8.3, cookie-based locale detection with Accept-Language fallback, added `language` column to users table, 290+ translated strings in `messages/en.json` + `messages/es.json` across 17 namespaces, all 19 client components use `useTranslations`, Language & Region settings card with independent UI language + date/number format dropdowns, server action errors are code-based and translated client-side, `NextIntlClientProvider` wrapped in `<Suspense>` for PPR/cacheComponents compatibility)
 
 ## Features — Duo Partner Tracking & Synergy
 - [ ] Duo-specific analytics: lane proximity, shared kills/assists, how often you die together vs separately

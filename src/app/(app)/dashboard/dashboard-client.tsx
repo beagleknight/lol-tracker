@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -116,6 +117,7 @@ export function DashboardClient({
   upcomingSession,
   ddragonVersion,
 }: DashboardClientProps) {
+  const t = useTranslations("Dashboard");
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.puuid;
@@ -186,7 +188,7 @@ export function DashboardClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("heading")}</h1>
           {user.riotGameName && (
             <p className="text-muted-foreground">
               {user.riotGameName}#{user.riotTagLine}
@@ -199,11 +201,13 @@ export function DashboardClient({
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
-            Link your Riot account in{" "}
-            <Link href="/settings" className="underline font-medium">
-              Settings
-            </Link>{" "}
-            to get started.
+            {t.rich("linkRiotAccount", {
+              link: (chunks) => (
+                <Link href="/settings" className="underline font-medium">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </div>
       )}
@@ -213,14 +217,14 @@ export function DashboardClient({
         {/* Rank Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Current Rank</CardDescription>
+            <CardDescription>{t("currentRank")}</CardDescription>
           </CardHeader>
           <CardContent>
             {rankInfo ? (
               <div>
                 <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
                 <p className="text-sm text-muted-foreground">
-                  <span className="text-gold/80">{rankInfo.lp} LP</span> &middot; {rankInfo.wins}W {rankInfo.losses}L
+                  <span className="text-gold/80">{t("lpLabel", { lp: rankInfo.lp })}</span> &middot; {rankInfo.wins}W {rankInfo.losses}L
                 </p>
                 {lpTrend !== null && (
                   <p
@@ -233,13 +237,13 @@ export function DashboardClient({
                     ) : (
                       <TrendingDown className="h-3 w-3" />
                     )}
-                    {lpTrend >= 0 ? "+" : ""}{lpTrend} LP recently
+                    {lpTrend >= 0 ? "+" : ""}{t("lpTrendRecently", { lpChange: lpTrend })}
                   </p>
                 )}
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
-                No rank data yet. Update your games to see your rank.
+                {t("noRankData")}
               </p>
             )}
           </CardContent>
@@ -248,7 +252,7 @@ export function DashboardClient({
         {/* Win Rate Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Session Win Rate (Last 10)</CardDescription>
+            <CardDescription>{t("sessionWinRate")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -271,7 +275,7 @@ export function DashboardClient({
         {/* Streak Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Current Streak</CardDescription>
+            <CardDescription>{t("currentStreak")}</CardDescription>
           </CardHeader>
           <CardContent>
             {streak ? (
@@ -286,7 +290,7 @@ export function DashboardClient({
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">No games yet.</p>
+              <p className="text-muted-foreground text-sm">{t("noGamesYet")}</p>
             )}
           </CardContent>
         </Card>
@@ -294,14 +298,14 @@ export function DashboardClient({
         {/* Avg KDA Card */}
         <Card className="hover-lift surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>Avg KDA (Last 10)</CardDescription>
+            <CardDescription>{t("avgKdaLast10")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-mono text-gold">
               {avgKills}/{avgDeaths}/{avgAssists}
             </p>
             <p className="text-sm text-muted-foreground">
-              Avg CS: {avgCS}
+              {t("avgCs", { avgCS })}
             </p>
           </CardContent>
         </Card>
@@ -313,14 +317,14 @@ export function DashboardClient({
         <Card className="lg:col-span-2 surface-glow">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Recent Games</CardTitle>
+              <CardTitle>{t("recentGames")}</CardTitle>
               <CardDescription>
-                {matchStats.total} total &middot; {totalWins}W {totalLosses}L ({totalWinRate}%)
+                {t("recentGamesDescription", { total: matchStats.total, wins: totalWins, losses: totalLosses, winRate: totalWinRate })}
               </CardDescription>
             </div>
             <Link href="/matches">
               <Button variant="ghost" size="sm">
-                View All
+                {t("viewAll")}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
@@ -328,7 +332,7 @@ export function DashboardClient({
           <CardContent>
             {recentMatches.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No matches yet.
+                {t("noMatchesYet")}
               </p>
             ) : (
               <div className="space-y-2">
@@ -358,7 +362,7 @@ export function DashboardClient({
                           {match.championName}
                         </span>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                          vs
+                          {t("vs")}
                           {match.matchupChampionName ? (
                             <ChampionLink
                               champion={match.matchupChampionName}
@@ -388,7 +392,7 @@ export function DashboardClient({
                         {match.kills}/{match.deaths}/{match.assists}
                       </span>
                       <div className="text-xs text-muted-foreground">
-                        {match.cs} CS
+                        {t("csLabel", { cs: match.cs })}
                       </div>
                     </div>
                     <Badge
@@ -397,7 +401,7 @@ export function DashboardClient({
                       }
                       className="text-xs w-6 justify-center"
                     >
-                      {match.result === "Victory" ? "W" : "L"}
+                      {match.result === "Victory" ? t("winShort") : t("lossShort")}
                     </Badge>
                   </Link>
                 ))}
@@ -414,11 +418,11 @@ export function DashboardClient({
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gold" />
-                  Next Session
+                  {t("nextSession")}
                 </CardTitle>
                 <Link href={`/coaching/${upcomingSession.id}`}>
                   <Button variant="ghost" size="sm">
-                    View
+                    {t("view")}
                     <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
                 </Link>
@@ -431,7 +435,7 @@ export function DashboardClient({
                 {!upcomingSession.vodMatchId && (
                   <p className="text-xs text-amber-400 flex items-center gap-1 mt-1">
                     <AlertCircle className="h-3 w-3" />
-                    No VOD selected yet
+                    {t("noVodSelected")}
                   </p>
                 )}
                 {(() => {
@@ -440,7 +444,7 @@ export function DashboardClient({
                   if (diff <= 0) {
                     return (
                       <Badge className="mt-2 text-xs bg-gold/20 text-gold border-gold/30">
-                        Ready to complete
+                        {t("readyToComplete")}
                       </Badge>
                     );
                   }
@@ -449,7 +453,7 @@ export function DashboardClient({
                   const timeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
                   return (
                     <p className="text-xs text-muted-foreground mt-1">
-                      In {timeStr}
+                      {t("sessionIn", { timeStr })}
                     </p>
                   );
                 })()}
@@ -460,13 +464,13 @@ export function DashboardClient({
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  Next Session
+                  {t("nextSession")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">No coaching sessions scheduled.</p>
+                <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
                 <Link href="/coaching/new" className="inline-block mt-2">
-                  <Button variant="outline" size="sm">Schedule one</Button>
+                  <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -475,10 +479,10 @@ export function DashboardClient({
           {/* Action Items Card */}
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base">Action Items</CardTitle>
+              <CardTitle className="text-base">{t("actionItems")}</CardTitle>
               <Link href="/coaching/action-items">
                 <Button variant="ghost" size="sm">
-                  View All
+                  {t("viewAll")}
                   <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
@@ -486,7 +490,7 @@ export function DashboardClient({
             <CardContent>
               {actionItems.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No active action items.
+                  {t("noActiveActionItems")}
                 </p>
               ) : (
                 <div className="space-y-2">

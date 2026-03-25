@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   updateActionItemStatus,
@@ -45,6 +46,7 @@ interface ActionItemsClientProps {
 }
 
 function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: string }) {
+  const t = useTranslations("ActionItems");
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDelete] = useTransition();
 
@@ -59,21 +61,21 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
     startTransition(async () => {
       try {
         await updateActionItemStatus(item.id, next);
-        toast.success(`Updated to ${next.replace("_", " ")}.`);
+        toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
       } catch {
-        toast.error("Failed to update status.");
+        toast.error(t("toasts.statusUpdateError"));
       }
     });
   }
 
   function handleDelete() {
-    if (!confirm("Delete this action item? This cannot be undone.")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     startDelete(async () => {
       try {
         await deleteActionItem(item.id);
-        toast.success("Action item deleted.");
+        toast.success(t("toasts.itemDeleted"));
       } catch {
-        toast.error("Failed to delete action item.");
+        toast.error(t("toasts.deleteError"));
       }
     });
   }
@@ -155,6 +157,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
 export function ActionItemsClient({ items }: ActionItemsClientProps) {
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("ActionItems");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
@@ -179,10 +182,9 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Action Items</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("title")}</h1>
         <p className="text-muted-foreground">
-          {pendingCount} pending · {inProgressCount} in progress ·{" "}
-          {completedCount} completed
+          {t("summary", { pendingCount, inProgressCount, completedCount })}
         </p>
       </div>
 
@@ -193,13 +195,13 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
           onValueChange={(v) => { setStatusFilter(v ?? "all"); setPage(1); }}
         >
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("statusFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="all">{t("allStatuses")}</SelectItem>
+            <SelectItem value="pending">{t("pending")}</SelectItem>
+            <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
+            <SelectItem value="completed">{t("completed")}</SelectItem>
           </SelectContent>
         </Select>
         {topics.length > 0 && (
@@ -208,10 +210,10 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
             onValueChange={(v) => { setTopicFilter(v ?? "all"); setPage(1); }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Topic" />
+              <SelectValue placeholder={t("topicFilterPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Topics</SelectItem>
+              <SelectItem value="all">{t("allTopics")}</SelectItem>
               {topics.map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
@@ -228,13 +230,13 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
           <ListChecks className="h-8 w-8 text-gold mb-3" />
           <p className="text-lg font-medium">
             {items.length === 0
-              ? "No action items yet"
-              : "No items match your filters"}
+              ? t("emptyStateTitle")
+              : t("noFilterMatch")}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             {items.length === 0
-              ? "Create coaching sessions to add action items."
-              : "Try adjusting your filters."}
+              ? t("emptyStateDescription")
+              : t("noFilterMatchDescription")}
           </p>
         </div>
       ) : (

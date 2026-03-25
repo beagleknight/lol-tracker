@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import {
   linkRiotAccount,
   unlinkRiotAccount,
@@ -10,6 +11,7 @@ import {
   setDuoPartner,
   clearDuoPartner,
   updateLocale,
+  updateLanguage,
 } from "@/app/actions/settings";
 import {
   createInvite,
@@ -49,6 +51,7 @@ import {
   Globe,
 } from "lucide-react";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
 
 interface InviteItem {
   id: number;
@@ -61,12 +64,14 @@ interface InviteItem {
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
+  const t = useTranslations("Settings");
   const [riotId, setRiotId] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const isLinked = !!session?.user?.riotGameName;
   const isAdmin = session?.user?.role === "admin";
   const userLocale = (session?.user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
+  const userLanguage = (session?.user?.language as SupportedLanguage) ?? DEFAULT_LANGUAGE;
 
   // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
   const [previewDate, setPreviewDate] = useState<Date | null>(null);
@@ -100,7 +105,7 @@ export default function SettingsPage() {
       setInvitesLoading(true);
       getInvites()
         .then(setInvitesList)
-        .catch(() => toast.error("Couldn't load invite codes."))
+        .catch(() => toast.error(t("toasts.loadInvitesError")))
         .finally(() => setInvitesLoading(false));
     }
   }, [isAdmin]);
@@ -114,7 +119,7 @@ export default function SettingsPage() {
           setDuoPartnerState(partner);
           setRegisteredUsers(users);
         })
-        .catch(() => toast.error("Couldn't load duo partner details."))
+        .catch(() => toast.error(t("toasts.loadDuoPartnerError")))
         .finally(() => setDuoLoading(false));
     }
   }, [isLinked]);
@@ -124,7 +129,7 @@ export default function SettingsPage() {
   function handleLink() {
     if (!riotId.includes("#")) {
       toast.error(
-        "Please enter your Riot ID as GameName#TagLine (e.g. beagleknight#euw)"
+        t("toasts.riotIdFormatError")
       );
       return;
     }
@@ -137,7 +142,7 @@ export default function SettingsPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`Linked to ${result.gameName}#${result.tagLine}`);
+        toast.success(t("toasts.linkSuccess", { gameName: result.gameName ?? "", tagLine: result.tagLine ?? "" }));
         setRiotId("");
         await updateSession();
       }
@@ -149,13 +154,13 @@ export default function SettingsPage() {
       try {
         const result = await unlinkRiotAccount();
         if (result.success) {
-          toast.success("Riot account unlinked.");
+          toast.success(t("toasts.unlinkSuccess"));
           await updateSession();
         } else {
-          toast.error("Failed to unlink Riot account.");
+          toast.error(t("toasts.unlinkError"));
         }
       } catch {
-        toast.error("Failed to unlink Riot account.");
+        toast.error(t("toasts.unlinkError"));
       }
     });
   }
@@ -166,30 +171,30 @@ export default function SettingsPage() {
     startTransition(async () => {
       try {
         const result = await createInvite();
-        toast.success(`Invite code created: ${result.code}`);
+        toast.success(t("toasts.inviteCreated", { code: result.code }));
         // Refresh invites list
         const updated = await getInvites();
         setInvitesList(updated);
       } catch {
-        toast.error("Failed to generate invite code.");
+        toast.error(t("toasts.inviteCreateError"));
       }
     });
   }
 
   function handleCopyCode(code: string) {
     navigator.clipboard.writeText(code);
-    toast.success("Invite code copied to clipboard");
+    toast.success(t("toasts.inviteCopied"));
   }
 
   function handleDeleteInvite(id: number) {
-    if (!confirm("Delete this invite code? This cannot be undone.")) return;
+    if (!confirm(t("toasts.deleteConfirm"))) return;
     startTransition(async () => {
       try {
         await deleteInvite(id);
         setInvitesList((prev) => prev.filter((inv) => inv.id !== id));
-        toast.success("Invite deleted.");
+        toast.success(t("toasts.inviteDeleted"));
       } catch {
-        toast.error("Failed to delete invite.");
+        toast.error(t("toasts.inviteDeleteError"));
       }
     });
   }
@@ -202,7 +207,7 @@ export default function SettingsPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`Duo partner set to ${result.partnerName}`);
+        toast.success(t("toasts.duoPartnerSet", { partnerName: result.partnerName ?? "" }));
         // Refresh duo partner state
         const partner = await getDuoPartner();
         setDuoPartnerState(partner);
@@ -214,7 +219,7 @@ export default function SettingsPage() {
     startTransition(async () => {
       const result = await clearDuoPartner();
       if (result.success) {
-        toast.success("Duo partner cleared.");
+        toast.success(t("toasts.duoPartnerCleared"));
         setDuoPartnerState(null);
       }
     });
@@ -229,7 +234,22 @@ export default function SettingsPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Language & region updated.");
+        toast.success(t("toasts.localeUpdated"));
+        await updateSession();
+      }
+    });
+  }
+
+  // ─── Language handler ───────────────────────────────────────────────────
+
+  function handleLanguageChange(language: string | null) {
+    if (!language) return;
+    startTransition(async () => {
+      const result = await updateLanguage(language as SupportedLanguage);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("toasts.languageUpdated"));
         await updateSession();
       }
     });
@@ -239,10 +259,10 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-          Settings
+          {t("title")}
         </h1>
         <p className="text-muted-foreground">
-          Manage your account and Riot Games integration.
+          {t("description")}
         </p>
       </div>
 
@@ -250,23 +270,22 @@ export default function SettingsPage() {
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Riot Account
+            {t("riotAccount.title")}
             {isLinked ? (
               <Badge
                 variant="default"
                 className="ml-2 bg-gold/20 text-gold border border-gold/30"
               >
-                Linked
+                {t("riotAccount.badgeLinked")}
               </Badge>
             ) : (
               <Badge variant="secondary" className="ml-2">
-                Not Linked
+                {t("riotAccount.badgeNotLinked")}
               </Badge>
             )}
           </CardTitle>
           <CardDescription>
-            Link your Riot Games account to sync your ranked games
-            automatically.
+            {t("riotAccount.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -274,7 +293,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Riot ID</p>
+                  <p className="text-sm text-muted-foreground">{t("riotAccount.riotIdLabel")}</p>
                   <p className="text-lg font-semibold text-gold">
                     {session.user.riotGameName}#{session.user.riotTagLine}
                   </p>
@@ -290,21 +309,21 @@ export default function SettingsPage() {
                   ) : (
                     <Unlink className="mr-2 h-4 w-4" />
                   )}
-                  Unlink
+                  {t("riotAccount.unlinkButton")}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Unlinking will not delete your imported match data.
+                {t("riotAccount.unlinkHelpText")}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="riot-id">Riot ID</Label>
+                <Label htmlFor="riot-id">{t("riotAccount.riotIdLabel")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="riot-id"
-                    placeholder="beagleknight#euw"
+                    placeholder={t("riotAccount.riotIdPlaceholder")}
                     value={riotId}
                     onChange={(e) => setRiotId(e.target.value)}
                     onKeyDown={(e) => {
@@ -318,13 +337,12 @@ export default function SettingsPage() {
                     ) : (
                       <LinkIcon className="mr-2 h-4 w-4" />
                     )}
-                    Link
+                    {t("riotAccount.linkButton")}
                   </Button>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Enter your Riot ID in GameName#TagLine format. This is used to
-                import your ranked match history.
+                {t("riotAccount.linkHelpText")}
               </p>
             </div>
           )}
@@ -336,21 +354,39 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-gold" />
-            Language & Region
+            {t("languageCard.title")}
           </CardTitle>
           <CardDescription>
-            Choose how dates and numbers are displayed across the app.
+            {t("languageCard.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="locale-select">Date & number format</Label>
+            <Label htmlFor="language-select">{t("languageCard.languageLabel")}</Label>
+            <Select
+              value={userLanguage}
+              onValueChange={handleLanguageChange}
+            >
+              <SelectTrigger id="language-select" className="w-full max-w-xs" disabled={isPending}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="locale-select">{t("languageCard.formatLabel")}</Label>
             <Select
               value={userLocale}
               onValueChange={handleLocaleChange}
             >
               <SelectTrigger id="locale-select" className="w-full max-w-xs" disabled={isPending}>
-                <SelectValue placeholder="Select locale" />
+                <SelectValue placeholder={t("languageCard.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {SUPPORTED_LOCALES.map((loc) => (
@@ -362,7 +398,7 @@ export default function SettingsPage() {
             </Select>
           </div>
           <p className="text-xs text-muted-foreground">
-            Preview: {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
+            {t("languageCard.previewPrefix")} {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
           </p>
         </CardContent>
       </Card>
@@ -373,22 +409,22 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gold" />
-              Duo Partner
+              {t("duoPartner.title")}
               {duoPartner ? (
                 <Badge
                   variant="default"
                   className="ml-2 bg-gold/20 text-gold border border-gold/30"
                 >
-                  Set
+                  {t("duoPartner.badgeSet")}
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="ml-2">
-                  Not Set
+                  {t("duoPartner.badgeNotSet")}
                 </Badge>
               )}
             </CardTitle>
             <CardDescription>
-              Choose your duo partner to track shared games and synergy stats.
+              {t("duoPartner.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -404,7 +440,7 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Duo Partner</p>
+                    <p className="text-sm text-muted-foreground">{t("duoPartner.partnerLabel")}</p>
                     <p className="text-lg font-semibold text-gold">
                       {duoPartner.riotGameName}#{duoPartner.riotTagLine}
                     </p>
@@ -420,14 +456,14 @@ export default function SettingsPage() {
                     ) : (
                       <Unlink className="mr-2 h-4 w-4" />
                     )}
-                    Clear
+                    {t("duoPartner.clearButton")}
                   </Button>
                 </div>
               </div>
             ) : registeredUsers.length > 0 ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Select a registered user as your duo partner:
+                  {t("duoPartner.selectPrompt")}
                 </p>
                 <div className="space-y-2">
                   {registeredUsers.map((u) => (
@@ -455,7 +491,7 @@ export default function SettingsPage() {
                         ) : (
                           <Users className="mr-2 h-4 w-4" />
                         )}
-                        Set
+                        {t("duoPartner.setButton")}
                       </Button>
                     </div>
                   ))}
@@ -463,8 +499,7 @@ export default function SettingsPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No other users with linked Riot accounts found. Invite a friend
-                to get started!
+                {t("duoPartner.noUsersFound")}
               </p>
             )}
           </CardContent>
@@ -477,14 +512,14 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Ticket className="h-5 w-5 text-gold" />
-              Invite Friends
+              {t("invites.title")}
               <Badge variant="secondary" className="ml-2">
                 <Shield className="mr-1 h-3 w-3" />
-                Admin
+                {t("invites.badgeAdmin")}
               </Badge>
             </CardTitle>
             <CardDescription>
-              Generate invite codes to let friends create accounts.
+              {t("invites.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -498,7 +533,7 @@ export default function SettingsPage() {
               ) : (
                 <Plus className="mr-2 h-4 w-4" />
               )}
-              Generate Invite Code
+              {t("invites.generateButton")}
             </Button>
 
             {invitesLoading ? (
@@ -524,17 +559,14 @@ export default function SettingsPage() {
                     <div className="flex-1 min-w-0">
                       {invite.usedBy ? (
                         <span className="text-xs text-muted-foreground">
-                          Used by{" "}
-                          <span className="text-foreground">
-                            {invite.usedByName || "Unknown"}
-                          </span>
+                          {t("invites.usedBy", { usedByName: invite.usedByName || t("invites.usedByUnknown") })}
                         </span>
                       ) : (
                         <Badge
                           variant="outline"
                           className="text-xs border-gold/30 text-gold"
                         >
-                          Available
+                          {t("invites.badgeAvailable")}
                         </Badge>
                       )}
                     </div>
@@ -562,7 +594,7 @@ export default function SettingsPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No invite codes yet. Generate one to share with friends.
+                {t("invites.emptyState")}
               </p>
             )}
           </CardContent>

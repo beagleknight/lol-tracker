@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface NavItem {
   label: string;
@@ -33,37 +34,36 @@ interface NavItem {
   badge?: number; // optional counter badge
 }
 
-const dashboardNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-];
-
-const trackerNav: NavItem[] = [
-  { label: "Matches", href: "/matches", icon: Swords },
-  { label: "Review", href: "/review", icon: ClipboardCheck },
-  { label: "Duo", href: "/duo", icon: Users },
-];
-
-const insightsNav: NavItem[] = [
-  { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Matchup Scout", href: "/scout", icon: Crosshair },
-];
-
-const coachingNav: NavItem[] = [
-  { label: "Sessions", href: "/coaching", icon: GraduationCap },
-  { label: "Action Items", href: "/coaching/action-items", icon: ListChecks },
-];
-
-const bottomNav: NavItem[] = [
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+/** Nav definitions without labels — labels are resolved via useTranslations */
+const navDefs = {
+  dashboard: [
+    { key: "navDashboard" as const, href: "/dashboard", icon: LayoutDashboard },
+  ],
+  tracker: [
+    { key: "navMatches" as const, href: "/matches", icon: Swords },
+    { key: "navReview" as const, href: "/review", icon: ClipboardCheck },
+    { key: "navDuo" as const, href: "/duo", icon: Users },
+  ],
+  insights: [
+    { key: "navAnalytics" as const, href: "/analytics", icon: BarChart3 },
+    { key: "navMatchupScout" as const, href: "/scout", icon: Crosshair },
+  ],
+  coaching: [
+    { key: "navSessions" as const, href: "/coaching", icon: GraduationCap },
+    { key: "navActionItems" as const, href: "/coaching/action-items", icon: ListChecks },
+  ],
+  bottom: [
+    { key: "navSettings" as const, href: "/settings", icon: Settings },
+  ],
+} as const;
 
 // All nav hrefs — used to resolve active state conflicts between parent/child routes
 const allNavHrefs = [
-  ...dashboardNav,
-  ...trackerNav,
-  ...insightsNav,
-  ...coachingNav,
-  ...bottomNav,
+  ...navDefs.dashboard,
+  ...navDefs.tracker,
+  ...navDefs.insights,
+  ...navDefs.coaching,
+  ...navDefs.bottom,
 ].map((item) => item.href);
 
 interface SidebarProps {
@@ -125,8 +125,19 @@ function SidebarContent({
   reviewCounts,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
+  const t = useTranslations("Sidebar");
   const { isSyncing, handleSync } = useSyncMatches();
   const isLinked = !!user.puuid;
+
+  // Resolve nav labels from translations
+  const resolve = (defs: readonly { key: string; href: string; icon: React.ComponentType<{ className?: string }> }[]): NavItem[] =>
+    defs.map((d) => ({ label: t(d.key as Parameters<typeof t>[0]), href: d.href, icon: d.icon }));
+
+  const dashboardNav = resolve(navDefs.dashboard);
+  const trackerNav = resolve(navDefs.tracker);
+  const insightsNav = resolve(navDefs.insights);
+  const coachingNav = resolve(navDefs.coaching);
+  const bottomNav = resolve(navDefs.bottom);
 
   // Inject review badge counts into the tracker nav
   const totalReview = (reviewCounts?.postGame ?? 0) + (reviewCounts?.vod ?? 0);
@@ -155,7 +166,7 @@ function SidebarContent({
           )}
           onClick={handleSync}
           disabled={isSyncing || !isLinked}
-          title={isLinked ? "Update games" : "Link Riot account in Settings first"}
+          title={isLinked ? t("updateGamesTooltip") : t("linkRiotAccountTooltip")}
         >
           <RefreshCw
             className={cn("h-4 w-4", isSyncing && "animate-spin")}
@@ -173,7 +184,7 @@ function SidebarContent({
         </div>
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
-          Tracker
+          {t("sectionTracker")}
         </div>
         <div className="space-y-1">
           {trackerNavWithBadges.map((item) => (
@@ -182,7 +193,7 @@ function SidebarContent({
         </div>
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
-          Insights
+          {t("sectionInsights")}
         </div>
         <div className="space-y-1">
           {insightsNav.map((item) => (
@@ -191,7 +202,7 @@ function SidebarContent({
         </div>
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
-          Coaching
+          {t("sectionCoaching")}
         </div>
         <div className="space-y-1">
           {coachingNav.map((item) => (

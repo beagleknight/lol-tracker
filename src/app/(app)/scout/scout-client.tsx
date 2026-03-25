@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   getMatchupReport,
@@ -75,6 +76,7 @@ function ScoutingReport({
   locale: string;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
+  const t = useTranslations("Scout");
 
   // Compute matchup KDA ratio for comparison
   const matchupKdaRatio =
@@ -96,7 +98,7 @@ function ScoutingReport({
           size={56}
         />
         <div>
-          <h2 className="text-xl font-bold">vs {report.matchupChampionName}</h2>
+          <h2 className="text-xl font-bold">{t("vs")} {report.matchupChampionName}</h2>
           <div className="flex items-center gap-3 mt-1">
             <span className="text-lg font-mono">
               <span className="text-green-400">{record.wins}W</span>{" "}
@@ -111,7 +113,7 @@ function ScoutingReport({
           </div>
           {report.lastPlayed && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last played: {formatDate(report.lastPlayed, locale)}
+              {t("lastPlayed", { date: formatDate(report.lastPlayed, locale) })}
             </p>
           )}
         </div>
@@ -123,10 +125,10 @@ function ScoutingReport({
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-neon-purple" />
-          Rune Performance
+          {t("runePerformance")}
         </h3>
         {runeBreakdown.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No rune data.</p>
+          <p className="text-sm text-muted-foreground">{t("noRuneData")}</p>
         ) : (
           <div className="space-y-2">
             {runeBreakdown.map((rune) => (
@@ -143,7 +145,7 @@ function ScoutingReport({
                   </span>
                   <span className="text-muted-foreground font-mono text-xs">
                     {rune.wins}W {rune.losses}L ({rune.winRate}%) &middot;{" "}
-                    {rune.games} game{rune.games !== 1 ? "s" : ""}
+                    {t("gamesCount", { count: rune.games })}
                   </span>
                 </div>
                 <Progress
@@ -163,40 +165,40 @@ function ScoutingReport({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-electric" />
-            Average Stats
+            {t("averageStats")}
           </h3>
           {overallAvgStats.games > 0 && (
             <span className="text-[10px] text-muted-foreground">
-              vs your avg ({overallAvgStats.games} games)
+              {t("vsYourAvg", { count: overallAvgStats.games })}
             </span>
           )}
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           <StatCell
-            label="KDA"
+            label={t("statLabels.kda")}
             value={`${avgStats.kills}/${avgStats.deaths}/${avgStats.assists}`}
           />
           <StatCell
-            label="CS/min"
+            label={t("statLabels.csPerMin")}
             value={String(avgStats.csPerMin)}
             baseline={{ matchup: avgStats.csPerMin, overall: overallAvgStats.csPerMin }}
           />
           <StatCell
-            label="Gold"
+            label={t("statLabels.gold")}
             value={formatNumber(avgStats.goldEarned, locale)}
             baseline={{ matchup: avgStats.goldEarned, overall: overallAvgStats.goldEarned }}
           />
           <StatCell
-            label="Vision"
+            label={t("statLabels.vision")}
             value={String(avgStats.visionScore)}
             baseline={{ matchup: avgStats.visionScore, overall: overallAvgStats.visionScore }}
           />
           <StatCell
-            label="KDA Ratio"
-            value={avgStats.deaths === 0 ? "Perfect" : String(matchupKdaRatio)}
+            label={t("statLabels.kdaRatio")}
+            value={avgStats.deaths === 0 ? t("perfectKda") : String(matchupKdaRatio)}
             baseline={{ matchup: matchupKdaRatio, overall: overallKdaRatio }}
           />
-          <StatCell label="Games" value={String(record.total)} />
+          <StatCell label={t("statLabels.games")} value={String(record.total)} />
         </div>
       </div>
 
@@ -207,7 +209,7 @@ function ScoutingReport({
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
               <Users className="h-4 w-4 text-electric" />
-              Duo Pairs in this Matchup
+              {t("duoPairsTitle")}
             </h3>
             <div className="space-y-2">
               {duoPairs.map((pair) => (
@@ -260,7 +262,7 @@ function ScoutingReport({
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <Swords className="h-4 w-4 text-gold" />
-          Past Games ({games.length})
+          {t("pastGames", { count: games.length })}
         </h3>
         <div className="space-y-2">
           {games.map((game) => (
@@ -312,6 +314,7 @@ function StatCell({
   baseline?: { matchup: number; overall: number };
   invertColor?: boolean; // true for stats where lower is better (e.g. deaths)
 }) {
+  const t = useTranslations("Scout");
   let delta: number | null = null;
   let deltaLabel = "";
   if (baseline && baseline.overall > 0) {
@@ -347,7 +350,7 @@ function StatCell({
       )}
       {delta === 0 && (
         <p className="text-[10px] font-mono mt-0.5 text-muted-foreground">
-          avg
+          {t("avg")}
         </p>
       )}
     </div>
@@ -369,6 +372,7 @@ export function ScoutClient({
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("Scout");
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
@@ -413,17 +417,17 @@ export function ScoutClient({
   const yourChampionRecs: ChampionRecommendations[] = useMemo(
     () =>
       mostPlayed.length > 0
-        ? [{ heading: "Most Played", champions: mostPlayed }]
+        ? [{ heading: t("mostPlayedHeading"), champions: mostPlayed }]
         : [],
-    [mostPlayed]
+    [mostPlayed, t]
   );
 
   const enemyChampionRecs: ChampionRecommendations[] = useMemo(
     () =>
       mostFaced.length > 0
-        ? [{ heading: "Common Matchups", champions: mostFaced }]
+        ? [{ heading: t("commonMatchupsHeading"), champions: mostFaced }]
         : [],
-    [mostFaced]
+    [mostFaced, t]
   );
 
   const loadReport = useCallback(
@@ -437,7 +441,7 @@ export function ScoutClient({
           const result = await getMatchupReport(enemy, yours || undefined);
           setReport(result);
         } catch {
-          toast.error("Couldn't load the scouting report. Please try again.");
+          toast.error(t("toasts.failedToLoadReport"));
         }
       });
     },
@@ -478,10 +482,10 @@ export function ScoutClient({
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gradient-gold flex items-center gap-2">
           <Crosshair className="h-6 w-6" />
-          Matchup Scout
+          {t("pageTitle")}
         </h1>
         <p className="text-muted-foreground">
-          Pre-game scouting report for your matchups.
+          {t("pageDescription")}
         </p>
       </div>
 
@@ -492,21 +496,21 @@ export function ScoutClient({
           onValueChange={handleYourChampionChange}
           champions={allChampions}
           ddragonVersion={ddragonVersion}
-          placeholder="Any champion"
-          label="Your Champion"
+          placeholder={t("yourChampionPlaceholder")}
+          label={t("yourChampionLabel")}
           className="flex-1 sm:max-w-xs"
           recommendations={yourChampionRecs}
         />
         <span className="flex items-center sm:items-end sm:pb-2 text-muted-foreground font-medium text-sm justify-center">
-          vs
+          {t("vs")}
         </span>
         <ChampionCombobox
           value={enemyChampion}
           onValueChange={handleEnemyChange}
           champions={allChampions}
           ddragonVersion={ddragonVersion}
-          placeholder="Select enemy..."
-          label="Enemy Champion"
+          placeholder={t("enemyChampionPlaceholder")}
+          label={t("enemyChampionLabel")}
           className="flex-1 sm:max-w-xs"
           recommendations={enemyChampionRecs}
         />
@@ -516,7 +520,7 @@ export function ScoutClient({
       {isLoadingReport && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-gold" />
-          <span className="ml-2 text-muted-foreground">Loading report...</span>
+          <span className="ml-2 text-muted-foreground">{t("loadingReport")}</span>
         </div>
       )}
 
@@ -530,13 +534,13 @@ export function ScoutClient({
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <Swords className="h-8 w-8 text-muted-foreground mb-2" />
           <p className="text-muted-foreground">
-            No past games found{yourChampion ? ` as ${yourChampion}` : ""} against{" "}
-            {enemyChampion}.
+            {yourChampion
+              ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
+              : t("noGamesFound", { enemyChampion })}
           </p>
           {yourChampion && (
             <p className="text-sm text-muted-foreground mt-1">
-              Try clearing the &quot;Your Champion&quot; filter to see all games
-              against this matchup.
+              {t("clearYourChampionHint")}
             </p>
           )}
         </div>
@@ -547,7 +551,7 @@ export function ScoutClient({
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <Crosshair className="h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-muted-foreground">
-            Select an enemy champion above to view your scouting report.
+            {t("selectEnemyPrompt")}
           </p>
         </div>
       )}

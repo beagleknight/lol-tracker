@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +105,7 @@ function MatchCardHeader({
   ddragonVersion: string;
   locale: string;
 }) {
+  const t = useTranslations("Review");
   return (
     <div className="flex items-center gap-3">
       <div
@@ -127,14 +129,14 @@ function MatchCardHeader({
             }
             className="text-xs"
           >
-            {match.result === "Victory" ? "W" : "L"}
+            {match.result === "Victory" ? t("win") : t("loss")}
           </Badge>
         </div>
         <CardDescription className="inline-flex items-center gap-1 flex-wrap">
           {formatDate(match.gameDate, locale)} &middot;{" "}
           {match.kills}/{match.deaths}/{match.assists} &middot;{" "}
           {formatDuration(match.gameDurationSeconds)} &middot;{" "}
-          vs{" "}
+          {t("vs")}{" "}
           {match.matchupChampionName ? (
             <ChampionLink
               champion={match.matchupChampionName}
@@ -201,6 +203,7 @@ function PostGameCard({
   const [showComment, setShowComment] = useState(!!match.comment);
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("Review");
 
   const hasContent =
     highlights.length > 0 || comment.trim() || vodUrl.trim();
@@ -219,16 +222,16 @@ function PostGameCard({
           if (result.success) {
             toast.success(
               skipReason
-                ? "Review saved & VOD review skipped."
-                : "Post-game review saved!"
+                ? t("toasts.reviewSavedAndSkipped")
+                : t("toasts.postGameReviewSaved")
             );
             // If skipped, move to completed; otherwise move to VOD Review
             onReviewed(match.id);
           } else {
-            toast.error("Failed to save review.");
+            toast.error(t("toasts.failedToSaveReview"));
           }
         } catch {
-          toast.error("Failed to save review.");
+          toast.error(t("toasts.failedToSaveReview"));
         }
       });
     },
@@ -252,7 +255,7 @@ function PostGameCard({
             className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <MessageSquare className="h-3 w-3" />
-            Game Notes (optional)
+            {t("gameNotesOptional")}
             {match.comment && !showComment && (
               <span className="italic text-muted-foreground ml-1 truncate max-w-48">
                 &ldquo;{match.comment}&rdquo;
@@ -268,7 +271,7 @@ function PostGameCard({
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Any additional notes..."
+              placeholder={t("gameNotesPlaceholder")}
               rows={2}
               className="text-sm resize-none"
             />
@@ -279,12 +282,12 @@ function PostGameCard({
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             <LinkIcon className="h-3 w-3" />
-            Ascent VOD Link (optional)
+            {t("ascentVodLinkOptional")}
           </label>
           <Input
             value={vodUrl}
             onChange={(e) => setVodUrl(e.target.value)}
-            placeholder="https://ascent.gg/vod/..."
+            placeholder={t("vodLinkPlaceholder")}
             className="text-sm h-8"
           />
         </div>
@@ -298,7 +301,7 @@ function PostGameCard({
               render={
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <SkipForward className="h-3 w-3" />
-                  Save & Skip VOD
+                  {t("saveAndSkipVod")}
                 </Button>
               }
             />
@@ -325,7 +328,7 @@ function PostGameCard({
             ) : (
               <Save className="mr-2 h-3 w-3" />
             )}
-            Save
+            {t("save")}
           </Button>
         </div>
       </CardContent>
@@ -353,6 +356,7 @@ function VodReviewCard({
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("Review");
 
   const hasContent = vodUrl.trim() || reviewNotes.trim();
 
@@ -371,17 +375,17 @@ function VodReviewCard({
           if (result.success) {
             toast.success(
               skipReason
-                ? "VOD review skipped."
-                : "VOD review saved!"
+                ? t("toasts.vodReviewSkipped")
+                : t("toasts.vodReviewSaved")
             );
             if (skipReason || reviewNotes) {
               onReviewed(match.id);
             }
           } else {
-            toast.error("Failed to save review.");
+            toast.error(t("toasts.failedToSaveReview"));
           }
         } catch {
-          toast.error("Failed to save review.");
+          toast.error(t("toasts.failedToSaveReview"));
         }
       });
     },
@@ -398,7 +402,7 @@ function VodReviewCard({
         {existingHighlights.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">
-              Post-game notes
+              {t("postGameNotes")}
             </p>
             <HighlightsDisplay highlights={existingHighlights} compact />
           </div>
@@ -415,12 +419,12 @@ function VodReviewCard({
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             <LinkIcon className="h-3 w-3" />
-            Ascent VOD Link
+            {t("ascentVodLink")}
           </label>
           <Input
             value={vodUrl}
             onChange={(e) => setVodUrl(e.target.value)}
-            placeholder="https://ascent.gg/vod/..."
+            placeholder={t("vodLinkPlaceholder")}
             className="text-sm h-8"
           />
           {match.vodUrl && (
@@ -431,7 +435,7 @@ function VodReviewCard({
               className="text-xs text-electric hover:underline inline-flex items-center gap-1"
             >
               <ExternalLink className="h-3 w-3" />
-              Open VOD
+              {t("openVod")}
             </a>
           )}
         </div>
@@ -439,12 +443,12 @@ function VodReviewCard({
         {/* VOD Review Notes */}
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground">
-            VOD Review Notes (marks as reviewed)
+            {t("vodReviewNotesLabel")}
           </label>
           <Textarea
             value={reviewNotes}
             onChange={(e) => setReviewNotes(e.target.value)}
-            placeholder="What did you learn from watching the VOD?"
+            placeholder={t("vodReviewNotesPlaceholder")}
             rows={2}
             className="text-sm resize-none"
           />
@@ -459,7 +463,7 @@ function VodReviewCard({
               render={
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <SkipForward className="h-3 w-3" />
-                  Skip VOD
+                  {t("skipVod")}
                 </Button>
               }
             />
@@ -486,7 +490,7 @@ function VodReviewCard({
             ) : (
               <Save className="mr-2 h-3 w-3" />
             )}
-            Save
+            {t("save")}
           </Button>
         </div>
       </CardContent>
@@ -517,6 +521,7 @@ function CompletedCard({
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("Review");
 
   const handleSave = useCallback(() => {
     startTransition(async () => {
@@ -529,14 +534,14 @@ function CompletedCard({
           reviewNotes: reviewNotes || undefined,
         });
         if (result.success) {
-          toast.success("Review updated!");
+          toast.success(t("toasts.reviewUpdated"));
           setIsEditing(false);
           onSaved();
         } else {
-          toast.error("Failed to update review.");
+          toast.error(t("toasts.failedToUpdateReview"));
         }
       } catch {
-        toast.error("Failed to update review.");
+        toast.error(t("toasts.failedToUpdateReview"));
       }
     });
   }, [match.id, highlights, comment, vodUrl, reviewNotes, onSaved]);
@@ -564,12 +569,12 @@ function CompletedCard({
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <MessageSquare className="h-3 w-3" />
-              Game Notes
+              {t("gameNotes")}
             </label>
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Any additional notes..."
+              placeholder={t("gameNotesPlaceholder")}
               rows={2}
               className="text-sm resize-none"
             />
@@ -579,12 +584,12 @@ function CompletedCard({
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <LinkIcon className="h-3 w-3" />
-              Ascent VOD Link
+              {t("ascentVodLink")}
             </label>
             <Input
               value={vodUrl}
               onChange={(e) => setVodUrl(e.target.value)}
-              placeholder="https://ascent.gg/vod/..."
+              placeholder={t("vodLinkPlaceholder")}
               className="text-sm h-8"
             />
           </div>
@@ -592,12 +597,12 @@ function CompletedCard({
           {/* VOD Review Notes */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">
-              VOD Review Notes
+              {t("vodReviewNotes")}
             </label>
             <Textarea
               value={reviewNotes}
               onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder="What did you learn from watching the VOD?"
+              placeholder={t("vodReviewNotesPlaceholder")}
               rows={2}
               className="text-sm resize-none"
             />
@@ -612,7 +617,7 @@ function CompletedCard({
               disabled={isPending}
             >
               <X className="mr-1.5 h-3 w-3" />
-              Cancel
+              {t("cancel")}
             </Button>
             <Button size="sm" onClick={handleSave} disabled={isPending}>
               {isPending ? (
@@ -620,7 +625,7 @@ function CompletedCard({
               ) : (
                 <Save className="mr-2 h-3 w-3" />
               )}
-              Save
+              {t("save")}
             </Button>
           </div>
         </CardContent>
@@ -670,7 +675,7 @@ function CompletedCard({
               className="text-electric hover:underline inline-flex items-center gap-1"
             >
               <ExternalLink className="h-3 w-3" />
-              VOD
+              {t("vod")}
             </a>
           )}
           {match.reviewNotes && (
@@ -684,7 +689,7 @@ function CompletedCard({
           {match.reviewSkippedReason && (
             <span className="inline-flex items-center gap-1 italic">
               <SkipForward className="h-3 w-3" />
-              Skipped: {match.reviewSkippedReason}
+              {t("skippedReason", { reason: match.reviewSkippedReason })}
             </span>
           )}
         </div>
@@ -802,6 +807,7 @@ export function ReviewClient({
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("Review");
 
   // Track which matches have been actioned this session (optimistic removal/movement)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
@@ -890,7 +896,7 @@ export function ReviewClient({
         const result = await bulkMarkReviewed(bulkSkipReason);
         if (result.success) {
           toast.success(
-            `Marked ${result.count} game${result.count !== 1 ? "s" : ""} as reviewed.`
+            t("toasts.bulkMarkReviewed", { count: result.count })
           );
           // Mark all remaining unreviewed as actioned
           setActionedIds((prev) => {
@@ -899,10 +905,10 @@ export function ReviewClient({
             return next;
           });
         } else {
-          toast.error("Failed to mark games as reviewed.");
+          toast.error(t("toasts.failedToMarkReviewed"));
         }
       } catch {
-        toast.error("Failed to mark games as reviewed.");
+        toast.error(t("toasts.failedToMarkReviewed"));
       }
     });
   }, [bulkSkipReason, unreviewedMatches]);
@@ -937,16 +943,15 @@ export function ReviewClient({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            Review
+            {t("pageTitle")}
           </h1>
           {totalUnreviewed === 0 ? (
             <p className="text-muted-foreground">
-              All caught up! No games waiting for review.
+              {t("allCaughtUp")}
             </p>
           ) : (
             <p className="text-muted-foreground">
-              {totalUnreviewed} game{totalUnreviewed !== 1 ? "s" : ""}{" "}
-              waiting for review
+              {t("gamesWaitingForReview", { count: totalUnreviewed })}
             </p>
           )}
         </div>
@@ -962,23 +967,22 @@ export function ReviewClient({
                   className="gap-1.5 shrink-0"
                 >
                   <SkipForward className="h-3 w-3" />
-                  Mark All Reviewed
+                  {t("markAllReviewed")}
                 </Button>
               }
             />
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  Mark all {totalUnreviewed} games as reviewed?
+                  {t("markAllReviewedConfirmTitle", { count: totalUnreviewed })}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will skip VOD review for all remaining games. This
-                  action cannot be undone from this page.
+                  {t("markAllReviewedConfirmDescription")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="px-0">
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  Skip reason
+                  {t("skipReason")}
                 </label>
                 <div className="flex flex-col gap-1.5">
                   {SKIP_REVIEW_REASONS.map((reason) => (
@@ -998,7 +1002,7 @@ export function ReviewClient({
                 </div>
               </div>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleBulkMarkReviewed}
                   disabled={isBulkPending}
@@ -1008,7 +1012,7 @@ export function ReviewClient({
                   ) : (
                     <SkipForward className="mr-2 h-3 w-3" />
                   )}
-                  Mark All Reviewed
+                  {t("markAllReviewed")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -1024,7 +1028,7 @@ export function ReviewClient({
         <TabsList>
           <TabsTrigger value={0}>
             <ClipboardEdit className="h-3.5 w-3.5" />
-            Post-Game
+            {t("tabs.postGame")}
             {postGameMatches.length > 0 && (
               <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
                 {postGameMatches.length}
@@ -1033,7 +1037,7 @@ export function ReviewClient({
           </TabsTrigger>
           <TabsTrigger value={1}>
             <Video className="h-3.5 w-3.5" />
-            VOD Review
+            {t("tabs.vodReview")}
             {vodReviewMatches.length > 0 && (
               <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
                 {vodReviewMatches.length}
@@ -1042,7 +1046,7 @@ export function ReviewClient({
           </TabsTrigger>
           <TabsTrigger value={2}>
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Completed
+            {t("tabs.completed")}
             {completedTotal > 0 && (
               <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
                 {completedTotal}
@@ -1057,14 +1061,13 @@ export function ReviewClient({
             {postGameMatches.length === 0 ? (
               <TabEmptyState
                 icon={CheckCircle2}
-                title="No post-game reviews pending"
-                description="All games have been reviewed or are waiting for VOD review."
+                title={t("emptyStates.noPostGameTitle")}
+                description={t("emptyStates.noPostGameDescription")}
               />
             ) : (
               <>
                 <p className="text-xs text-muted-foreground">
-                  These games haven&apos;t been reviewed yet. Add highlights,
-                  notes, and optionally a VOD link.
+                  {t("postGameHint")}
                 </p>
                 {paginatedPostGame.map((match) => (
                   <PostGameCard
@@ -1092,14 +1095,13 @@ export function ReviewClient({
             {vodReviewMatches.length === 0 ? (
               <TabEmptyState
                 icon={Video}
-                title="No VOD reviews pending"
-                description="Complete post-game reviews first, then they'll appear here for VOD review."
+                title={t("emptyStates.noVodReviewTitle")}
+                description={t("emptyStates.noVodReviewDescription")}
               />
             ) : (
               <>
                 <p className="text-xs text-muted-foreground">
-                  These games have post-game notes but haven&apos;t been
-                  VOD-reviewed yet. Watch the VOD and add your takeaways.
+                  {t("vodReviewHint")}
                 </p>
                 {paginatedVodReview.map((match) => (
                   <VodReviewCard
@@ -1132,13 +1134,13 @@ export function ReviewClient({
             {reviewedMatches.length === 0 && completedTotal === 0 ? (
               <TabEmptyState
                 icon={EyeOff}
-                title="No completed reviews yet"
-                description="Reviewed games will appear here for reference."
+                title={t("emptyStates.noCompletedTitle")}
+                description={t("emptyStates.noCompletedDescription")}
               />
             ) : (
               <div className={isCompletedNavigating ? "opacity-40" : ""}>
                 <p className="text-xs text-muted-foreground">
-                  {completedTotal} reviewed game{completedTotal !== 1 ? "s" : ""}.
+                  {t("reviewedGamesCount", { count: completedTotal })}
                 </p>
                 <div className="space-y-4 mt-4">
                   {reviewedMatches.map((match) => (

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -63,19 +64,20 @@ function ChampionIcon({
 // ─── DuoHeader ───────────────────────────────────────────────────────────────
 
 export function DuoHeader({ partnerName }: { partnerName: string | null }) {
+  const t = useTranslations("Duo");
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-        Duo Partner
+        {t("title")}
       </h1>
       <p className="text-muted-foreground">
         {partnerName ? (
           <>
-            Your performance with{" "}
+            {t("descriptionWithPartner", { partnerName: "" })}
             <span className="text-gold font-medium">{partnerName}</span>
           </>
         ) : (
-          "Track your performance when playing with your duo partner."
+          t("descriptionDefault")
         )}
       </p>
     </div>
@@ -85,19 +87,19 @@ export function DuoHeader({ partnerName }: { partnerName: string | null }) {
 // ─── DuoNoPartner ────────────────────────────────────────────────────────────
 
 export function DuoNoPartner() {
+  const t = useTranslations("Duo");
   return (
     <Card className="surface-glow">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Duo Partner Set</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("noPartner.title")}</h3>
         <p className="text-sm text-muted-foreground mb-4 max-w-md">
-          Configure your duo partner in Settings to start tracking your
-          shared games, win rates, and champion synergies.
+          {t("noPartner.description")}
         </p>
         <Link href="/settings">
           <Button>
             <Settings className="mr-2 h-4 w-4" />
-            Go to Settings
+            {t("noPartner.goToSettings")}
           </Button>
         </Link>
       </CardContent>
@@ -108,16 +110,16 @@ export function DuoNoPartner() {
 // ─── DuoNoGames ──────────────────────────────────────────────────────────────
 
 export function DuoNoGames() {
+  const t = useTranslations("Duo");
   const [isBackfilling, startBackfill] = useTransition();
 
   return (
     <Card className="surface-glow">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <Swords className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Duo Games Found</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("noGames.title")}</h3>
         <p className="text-sm text-muted-foreground max-w-md mb-4">
-          Your synced matches haven&apos;t been scanned for duo games yet.
-          Scan your existing matches or sync new games to get started.
+          {t("noGames.description")}
         </p>
         <div className="flex gap-3">
           <Button
@@ -127,12 +129,12 @@ export function DuoNoGames() {
                 const result = await backfillDuoGames();
                 if (result.duoFound > 0) {
                   toast.success(
-                    `Found ${result.duoFound} duo games out of ${result.processed} matches scanned!`
+                    t("toasts.backfillSuccess", { duoFound: result.duoFound, processed: result.processed })
                   );
                   window.location.reload();
                 } else {
                   toast.info(
-                    `Scanned ${result.processed} matches but no duo games were found. Try syncing more games first.`
+                    t("toasts.backfillNone", { processed: result.processed })
                   );
                 }
               });
@@ -143,7 +145,7 @@ export function DuoNoGames() {
             ) : (
               <Search className="mr-2 h-4 w-4" />
             )}
-            {isBackfilling ? "Scanning..." : "Scan Existing Matches"}
+            {isBackfilling ? t("noGames.scanningButton") : t("noGames.scanButton")}
           </Button>
         </div>
       </CardContent>
@@ -154,13 +156,14 @@ export function DuoNoGames() {
 // ─── DuoStatsCards ───────────────────────────────────────────────────────────
 
 export function DuoStatsCards({ stats }: { stats: DuoStats }) {
+  const t = useTranslations("Duo");
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card className="surface-glow">
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <Swords className="h-4 w-4" />
-            Games Together
+            {t("stats.gamesTogetherLabel")}
           </div>
           <p className="text-2xl font-bold">{stats.totalGames}</p>
         </CardContent>
@@ -170,7 +173,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <Trophy className="h-4 w-4" />
-            Duo Win Rate
+            {t("stats.duoWinRateLabel")}
           </div>
           <p
             className={`text-2xl font-bold ${
@@ -180,7 +183,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
             {stats.winRate}%
           </p>
           <p className="text-xs text-muted-foreground">
-            {stats.wins}W / {stats.losses}L
+            {t("stats.winsLosses", { wins: stats.wins, losses: stats.losses })}
           </p>
         </CardContent>
       </Card>
@@ -189,7 +192,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <TrendingUp className="h-4 w-4" />
-            Solo Win Rate
+            {t("stats.soloWinRateLabel")}
           </div>
           <p
             className={`text-2xl font-bold ${
@@ -199,7 +202,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
             {stats.soloWinRate}%
           </p>
           <p className="text-xs text-muted-foreground">
-            {stats.soloGames} games solo
+            {t("stats.soloGamesCount", { soloGames: stats.soloGames })}
           </p>
         </CardContent>
       </Card>
@@ -214,7 +217,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
             ) : (
               <Swords className="h-4 w-4" />
             )}
-            Duo Diff
+            {t("stats.duoDiffLabel")}
           </div>
           <p
             className={`text-2xl font-bold ${
@@ -228,7 +231,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
             {stats.winRate - stats.soloWinRate > 0 ? "+" : ""}
             {stats.winRate - stats.soloWinRate}%
           </p>
-          <p className="text-xs text-muted-foreground">vs solo</p>
+          <p className="text-xs text-muted-foreground">{t("stats.vsSolo")}</p>
         </CardContent>
       </Card>
     </div>
@@ -244,11 +247,12 @@ export function DuoKdaCards({
   stats: DuoStats;
   partnerName: string;
 }) {
+  const t = useTranslations("Duo");
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle className="text-base">Your Avg KDA (Duo)</CardTitle>
+          <CardTitle className="text-base">{t("kda.yourAvgKdaTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xl font-bold">
@@ -264,7 +268,7 @@ export function DuoKdaCards({
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="text-base">
-            {partnerName}&apos;s Avg KDA (Duo)
+            {t("kda.partnerAvgKdaTitle", { partnerName })}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -293,6 +297,7 @@ export function DuoSynergyCard({
   ddragonVersion: string;
 }) {
   type SynergySortKey = "games" | "winRate" | "wins";
+  const t = useTranslations("Duo");
   const [synergySortKey, setSynergySortKey] = useState<SynergySortKey>("games");
   const [synergySortDesc, setSynergySortDesc] = useState(true);
 
@@ -318,9 +323,9 @@ export function DuoSynergyCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Champion Synergy</CardTitle>
+            <CardTitle>{t("synergy.title")}</CardTitle>
             <CardDescription>
-              Your champion combos with {partnerName}
+              {t("synergy.description", { partnerName })}
             </CardDescription>
           </div>
           <div className="flex items-center gap-1">
@@ -333,10 +338,10 @@ export function DuoSynergyCard({
                 onClick={() => toggleSynergySort(key)}
               >
                 {key === "games"
-                  ? "Games"
+                  ? t("synergy.sortGames")
                   : key === "winRate"
-                    ? "Win %"
-                    : "Wins"}
+                    ? t("synergy.sortWinRate")
+                    : t("synergy.sortWins")}
                 {synergySortKey === key && (
                   <ArrowUpDown className="ml-1 h-3 w-3" />
                 )}
@@ -348,7 +353,7 @@ export function DuoSynergyCard({
       <CardContent>
         {synergy.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            No champion synergy data yet. Play more duo games to see your best champion combos.
+            {t("synergy.emptyState")}
           </p>
         ) : (
         <div className="space-y-2">
@@ -392,7 +397,7 @@ export function DuoSynergyCard({
                   {s.winRate}%
                 </span>
                 <span className="text-muted-foreground ml-1.5">
-                  {s.wins}W / {s.games}G
+                  {t("synergy.winsGames", { wins: s.wins, games: s.games })}
                 </span>
               </div>
             </div>
@@ -422,6 +427,7 @@ export function DuoRecentGames({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isPending, startTransition] = useTransition();
   const { data: authSession } = useSession();
+  const t = useTranslations("Duo");
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
 
   function handlePageChange(page: number) {
@@ -436,9 +442,9 @@ export function DuoRecentGames({
   return (
     <Card className="surface-glow">
       <CardHeader>
-        <CardTitle>Recent Duo Games</CardTitle>
+        <CardTitle>{t("recentGames.title")}</CardTitle>
         <CardDescription>
-          Games played together with {partnerName}
+          {t("recentGames.description", { partnerName })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -460,7 +466,7 @@ export function DuoRecentGames({
                       : ""
                   }`}
                 >
-                  {game.result === "Victory" ? "W" : "L"}
+                  {game.result === "Victory" ? t("recentGames.resultWin") : t("recentGames.resultLoss")}
                 </Badge>
 
                 <div className="flex items-center gap-2 min-w-0">
@@ -516,9 +522,9 @@ export function DuoRecentGames({
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No duo games found yet.</p>
+            <p>{t("recentGames.emptyTitle")}</p>
             <p className="text-sm mt-1">
-              Sync your matches to detect games played with your duo partner.
+              {t("recentGames.emptyDescription")}
             </p>
           </div>
         )}
