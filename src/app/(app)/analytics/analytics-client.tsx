@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import {
   LineChart,
   Line,
@@ -304,6 +305,7 @@ export function AnalyticsClient({
 }: AnalyticsClientProps) {
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("Analytics");
 
   const rollingWR = useMemo(() => computeRollingWinRate(matches, locale), [matches, locale]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
@@ -489,16 +491,16 @@ export function AnalyticsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Analytics</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("pageTitle")}</h1>
           <p className="text-muted-foreground">
-            Import some games first to see your analytics.
+            {t("importGamesFirst")}
           </p>
         </div>
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <BarChart3 className="h-8 w-8 text-muted-foreground mb-3" />
-          <p className="text-lg font-medium">No data yet</p>
+          <p className="text-lg font-medium">{t("noDataYetTitle")}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Fetch your ranked games to see charts and statistics.
+            {t("noDataYetDescription")}
           </p>
         </div>
       </div>
@@ -508,9 +510,9 @@ export function AnalyticsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Analytics</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">
-          {matches.length} games analyzed.
+          {t("gamesAnalyzed", { count: matches.length })}
         </p>
       </div>
 
@@ -521,13 +523,13 @@ export function AnalyticsClient({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-gold" />
-              Rank Journey
+              {t("rankJourney")}
             </CardTitle>
             <CardDescription>
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{rankChartData.length} rank updates tracked</span>
+                <span>{t("rankUpdatesTracked", { count: rankChartData.length })}</span>
                 <span className="font-medium text-foreground/80">
-                  Peak: {lpChartMeta.peakRank}
+                  {t("peakLabel", { rank: lpChartMeta.peakRank })}
                 </span>
                 {lpChartMeta.netChange !== 0 && (
                   <span
@@ -536,7 +538,7 @@ export function AnalyticsClient({
                     }`}
                   >
                     {lpChartMeta.netChange >= 0 ? "+" : ""}
-                    {lpChartMeta.netChange} LP overall
+                    {t("lpOverall", { value: lpChartMeta.netChange })}
                   </span>
                 )}
               </span>
@@ -580,10 +582,10 @@ export function AnalyticsClient({
                       return (
                         <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
                           {isPeak && (
-                            <p className="text-xs font-semibold text-gold mb-1">Peak Rank Achieved</p>
+                            <p className="text-xs font-semibold text-gold mb-1">{t("tooltips.peakRankAchieved")}</p>
                           )}
                           {milestone && (
-                            <p className="text-xs font-semibold text-green-400 mb-1">First time in {milestone.tier}!</p>
+                            <p className="text-xs font-semibold text-green-400 mb-1">{t("tooltips.firstTimeInTier", { tier: milestone.tier })}</p>
                           )}
                           <p className="font-semibold text-gold">
                             {d.tier} {d.division}
@@ -625,7 +627,7 @@ export function AnalyticsClient({
                       }
                       strokeDasharray="4 4"
                       label={{
-                        value: e.type === "promotion" ? `Reached ${e.to.split(" ")[0]}` : `Back to ${e.to.split(" ")[0]}`,
+                        value: e.type === "promotion" ? t("chartLabels.reached", { tier: e.to.split(" ")[0] }) : t("chartLabels.backTo", { tier: e.to.split(" ")[0] }),
                         fill:
                           e.type === "promotion"
                             ? "oklch(0.72 0.15 150)"
@@ -668,7 +670,7 @@ export function AnalyticsClient({
                               fontSize={9}
                               fontWeight="bold"
                             >
-                              Peak
+                              {t("peak")}
                             </text>
                           </g>
                         );
@@ -709,12 +711,12 @@ export function AnalyticsClient({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-gold" />
-              Rank Journey
+              {t("rankJourney")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Not enough rank data yet. Play more ranked games to see your LP journey.
+              {t("notEnoughRankData")}
             </p>
           </CardContent>
         </Card>
@@ -725,12 +727,12 @@ export function AnalyticsClient({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-gold" />
-            Win Rate Over Time (10-game rolling)
+            {t("winRateOverTime")}
           </CardTitle>
           <CardDescription>
             {coachingBands.bands.length > 0
-              ? "Shaded areas show the time between coaching sessions."
-              : "No coaching sessions to show."}
+              ? t("coachingBandsDescription")
+              : t("noCoachingSessions")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -759,12 +761,12 @@ export function AnalyticsClient({
                       <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
                         <p className="text-sm font-semibold text-foreground">{d.date}</p>
                         <p className="text-sm">
-                          Win Rate:{" "}
+                          {t("tooltips.winRate")}{" "}
                           <span className={d.winRate >= 50 ? "text-gold" : "text-red-400"}>
                             {d.winRate}%
                           </span>
                         </p>
-                        <p className="text-xs text-muted-foreground">Game #{d.index}</p>
+                        <p className="text-xs text-muted-foreground">{t("tooltips.gameNumber", { index: d.index })}</p>
                       </div>
                     );
                   }}
@@ -820,12 +822,12 @@ export function AnalyticsClient({
         {/* Matchup Win Rates */}
         <Card className="surface-glow">
           <CardHeader>
-            <CardTitle>Matchup Win Rates</CardTitle>
-            <CardDescription>Top 10 most-played matchups</CardDescription>
+            <CardTitle>{t("matchupWinRates")}</CardTitle>
+            <CardDescription>{t("topMatchupsDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {topMatchups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No matchup data yet. Play more games to see win rates by matchup.</p>
+              <p className="text-sm text-muted-foreground">{t("noMatchupData")}</p>
             ) : (
             <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -909,17 +911,17 @@ export function AnalyticsClient({
         {/* Rune Comparison */}
         <Card className="surface-glow">
           <CardHeader>
-            <CardTitle>Rune Keystones</CardTitle>
-            <CardDescription>Win rate by keystone rune</CardDescription>
+            <CardTitle>{t("runeKeystones")}</CardTitle>
+            <CardDescription>{t("runeKeystonesDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {runeStats.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No rune data available.</p>
+              <p className="text-sm text-muted-foreground">{t("noRuneData")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Keystone</TableHead>
+                    <TableHead>{t("tableHeaders.keystone")}</TableHead>
                     <TableHead className="text-center">
                       <Button
                         variant="ghost"
@@ -927,7 +929,7 @@ export function AnalyticsClient({
                         className="h-6 text-xs px-1.5 -ml-1.5"
                         onClick={() => toggleRuneSort("games")}
                       >
-                        Games
+                        {t("tableHeaders.games")}
                         {runeSortKey === "games" && (
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         )}
@@ -940,13 +942,13 @@ export function AnalyticsClient({
                         className="h-6 text-xs px-1.5 -ml-1.5"
                         onClick={() => toggleRuneSort("winRate")}
                       >
-                        Win Rate
+                        {t("tableHeaders.winRate")}
                         {runeSortKey === "winRate" && (
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         )}
                       </Button>
                     </TableHead>
-                    <TableHead className="text-center">W/L</TableHead>
+                    <TableHead className="text-center">{t("tableHeaders.wl")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -991,17 +993,17 @@ export function AnalyticsClient({
       {/* Champion Stats */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Champion Stats</CardTitle>
-          <CardDescription>Performance by champion</CardDescription>
+          <CardTitle>{t("championStats")}</CardTitle>
+          <CardDescription>{t("championStatsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {sortedChampionStats.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No champion data yet. Play some games to see your champion stats.</p>
+            <p className="text-sm text-muted-foreground">{t("noChampionData")}</p>
           ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Champion</TableHead>
+                <TableHead>{t("tableHeaders.champion")}</TableHead>
                 <TableHead className="text-center">
                   <Button
                     variant="ghost"
@@ -1009,7 +1011,7 @@ export function AnalyticsClient({
                     className="h-6 text-xs px-1.5 -ml-1.5"
                     onClick={() => toggleChampSort("games")}
                   >
-                    Games
+                    {t("tableHeaders.games")}
                     {champSortKey === "games" && (
                       <ArrowUpDown className="ml-1 h-3 w-3" />
                     )}
@@ -1022,13 +1024,13 @@ export function AnalyticsClient({
                     className="h-6 text-xs px-1.5 -ml-1.5"
                     onClick={() => toggleChampSort("winRate")}
                   >
-                    Win Rate
+                    {t("tableHeaders.winRate")}
                     {champSortKey === "winRate" && (
                       <ArrowUpDown className="ml-1 h-3 w-3" />
                     )}
                   </Button>
                 </TableHead>
-                <TableHead className="text-center">W/L</TableHead>
+                <TableHead className="text-center">{t("tableHeaders.wl")}</TableHead>
                 <TableHead className="text-center">
                   <Button
                     variant="ghost"
@@ -1036,7 +1038,7 @@ export function AnalyticsClient({
                     className="h-6 text-xs px-1.5 -ml-1.5"
                     onClick={() => toggleChampSort("avgKDA")}
                   >
-                    Avg KDA
+                    {t("tableHeaders.avgKda")}
                     {champSortKey === "avgKDA" && (
                       <ArrowUpDown className="ml-1 h-3 w-3" />
                     )}
@@ -1073,7 +1075,7 @@ export function AnalyticsClient({
                     {champ.wins}W {champ.losses}L
                   </TableCell>
                   <TableCell className="text-center text-sm font-mono">
-                    {champ.avgKDA}
+                    {champ.avgKDA === "Perfect" ? t("perfectKda") : champ.avgKDA}
                   </TableCell>
                 </TableRow>
               ))}

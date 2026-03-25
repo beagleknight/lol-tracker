@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { requireUser } from "@/lib/session";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SessionProvider } from "next-auth/react";
@@ -47,6 +49,21 @@ async function SidebarWithUser() {
   );
 }
 
+/**
+ * Async server component that fetches i18n messages (reads cookies() internally)
+ * and provides them to client components via NextIntlClientProvider.
+ * Must be wrapped in <Suspense> because getMessages() accesses cookies(),
+ * which is uncached runtime data under cacheComponents: true.
+ */
+async function LocalizedContent({ children }: { children: React.ReactNode }) {
+  const messages = await getMessages();
+  return (
+    <NextIntlClientProvider messages={messages}>
+      {children}
+    </NextIntlClientProvider>
+  );
+}
+
 export default function AppLayout({
   children,
 }: {
@@ -54,17 +71,21 @@ export default function AppLayout({
 }) {
   return (
     <SessionProvider>
-      <div className="flex min-h-screen bg-mesh">
-        <Suspense>
-          <SidebarWithUser />
-        </Suspense>
-        <main className="flex-1 md:ml-64">
-          <div className="container mx-auto max-w-7xl p-6 md:p-8">
-            {children}
+      <Suspense>
+        <LocalizedContent>
+          <div className="flex min-h-screen bg-mesh">
+            <Suspense>
+              <SidebarWithUser />
+            </Suspense>
+            <main className="flex-1 md:ml-64">
+              <div className="container mx-auto max-w-7xl p-6 md:p-8">
+                {children}
+              </div>
+            </main>
           </div>
-        </main>
-      </div>
-      <Toaster />
+          <Toaster />
+        </LocalizedContent>
+      </Suspense>
     </SessionProvider>
   );
 }

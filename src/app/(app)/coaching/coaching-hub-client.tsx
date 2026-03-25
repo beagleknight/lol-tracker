@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { updateActionItemStatus } from "@/app/actions/coaching";
@@ -63,6 +64,7 @@ interface CoachingHubClientProps {
 }
 
 function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
+  const t = useTranslations("Coaching");
   const [isPending, startTransition] = useTransition();
 
   function cycleStatus() {
@@ -79,7 +81,7 @@ function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
       try {
         await updateActionItemStatus(item.id, next);
       } catch {
-        toast.error("Couldn't update the action item. Please try again.");
+        toast.error(t("toasts.updateActionItemError"));
       }
     });
   }
@@ -124,6 +126,7 @@ export function CoachingHubClient({
 }: CoachingHubClientProps) {
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("Coaching");
   const totalSessions = scheduledSessions.length + completedSessions.length;
 
   return (
@@ -132,18 +135,18 @@ export function CoachingHubClient({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            Coaching
+            {t("title")}
           </h1>
           <p className="text-muted-foreground">
             {totalSessions === 0
-              ? "Track your coaching sessions and improvement."
-              : `${totalSessions} session${totalSessions !== 1 ? "s" : ""} · ${activeActionItems.length} active action item${activeActionItems.length !== 1 ? "s" : ""}`}
+              ? t("subtitleEmpty")
+              : t("subtitleSummary", { totalSessions, activeCount: activeActionItems.length })}
           </p>
         </div>
         <Link href="/coaching/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Schedule Session
+            {t("scheduleSessionButton")}
           </Button>
         </Link>
       </div>
@@ -152,15 +155,14 @@ export function CoachingHubClient({
       {totalSessions === 0 && activeActionItems.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <GraduationCap className="h-8 w-8 text-muted-foreground mb-3" />
-          <p className="text-lg font-medium">No coaching sessions yet</p>
+          <p className="text-lg font-medium">{t("emptyStateTitle")}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Schedule your first coaching session to start tracking your
-            improvement.
+            {t("emptyStateDescription")}
           </p>
           <Link href="/coaching/new" className="mt-4">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Schedule Session
+              {t("scheduleSessionButton")}
             </Button>
           </Link>
         </div>
@@ -171,7 +173,7 @@ export function CoachingHubClient({
         <section>
           <div className="flex items-center gap-2 mb-3">
             <CalendarCheck className="h-4 w-4 text-gold" />
-            <h2 className="text-lg font-semibold">Upcoming Sessions</h2>
+            <h2 className="text-lg font-semibold">{t("upcomingSessions")}</h2>
           </div>
           <div className="space-y-3">
             {scheduledSessions.map((session) => {
@@ -201,11 +203,11 @@ export function CoachingHubClient({
                           {!session.vodMatchId && (
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-400">
                               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
-                              No VOD
+                              {t("badgeNoVod")}
                             </Badge>
                           )}
                           <Badge variant="secondary" className="text-xs">
-                            Scheduled
+                            {t("badgeScheduled")}
                           </Badge>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
@@ -228,7 +230,7 @@ export function CoachingHubClient({
                             {vodMatch.championName}
                             {vodMatch.matchupChampionName && (
                               <>
-                                {" vs "}
+                                {" "}{t("vs")}{" "}
                                 <Image
                                   src={getChampionIconUrl(
                                     ddragonVersion,
@@ -246,13 +248,13 @@ export function CoachingHubClient({
                         )}
                         {topics.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {topics.map((t) => (
+                            {topics.map((topic) => (
                               <Badge
-                                key={t}
+                                key={topic}
                                 variant="outline"
                                 className="text-[10px] px-1.5 py-0"
                               >
-                                {t}
+                                {topic}
                               </Badge>
                             ))}
                           </div>
@@ -273,14 +275,14 @@ export function CoachingHubClient({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-gold" />
-              <h2 className="text-lg font-semibold">Active Action Items</h2>
+              <h2 className="text-lg font-semibold">{t("activeActionItems")}</h2>
               <Badge variant="secondary" className="text-xs">
                 {activeActionItems.length}
               </Badge>
             </div>
             <Link href="/coaching/action-items">
               <Button variant="ghost" size="sm" className="text-xs">
-                View All
+                {t("viewAll")}
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Button>
             </Link>
@@ -292,7 +294,7 @@ export function CoachingHubClient({
               ))}
               {activeActionItems.length > 8 && (
                 <p className="text-xs text-muted-foreground pt-2">
-                  +{activeActionItems.length - 8} more
+                  {t("moreItems", { count: activeActionItems.length - 8 })}
                 </p>
               )}
             </CardContent>
@@ -306,7 +308,7 @@ export function CoachingHubClient({
           <Separator className="my-2" />
           <div className="flex items-center gap-2 mb-3 mt-4">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Past Sessions</h2>
+            <h2 className="text-lg font-semibold">{t("pastSessions")}</h2>
           </div>
           <div className="space-y-2">
             {completedSessions.map((session) => {
@@ -333,7 +335,7 @@ export function CoachingHubClient({
                               <CardDescription>
                                 {dateStr}
                                 {session.durationMinutes &&
-                                  ` · ${session.durationMinutes} min`}
+                                  ` · ${t("durationMinutes", { minutes: session.durationMinutes })}`}
                               </CardDescription>
                             </div>
                           </div>
@@ -342,20 +344,19 @@ export function CoachingHubClient({
                       </CardHeader>
                       <CardContent className="pt-0">
                         <div className="flex flex-wrap gap-1.5">
-                          {topics.map((t) => (
+                          {topics.map((topic) => (
                             <Badge
-                              key={t}
+                              key={topic}
                               variant="secondary"
                               className="text-xs"
                             >
-                              {t}
+                              {topic}
                             </Badge>
                           ))}
                         </div>
                         {items && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            {items.completed}/{items.total} action items
-                            completed
+                            {t("actionItemsCompleted", { completed: items.completed, total: items.total })}
                           </p>
                         )}
                         {/* Nudges for incomplete session data */}
@@ -363,10 +364,10 @@ export function CoachingHubClient({
                           <p className="text-xs text-amber-400 flex items-center gap-1 mt-2">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
                             {topics.length === 0 && (!items || items.total === 0)
-                              ? "Missing focus areas and action items"
+                              ? t("missingFocusAreasAndActionItems")
                               : topics.length === 0
-                              ? "Missing focus areas"
-                              : "Missing action items"}
+                              ? t("missingFocusAreas")
+                              : t("missingActionItems")}
                           </p>
                         )}
                       </CardContent>
@@ -379,8 +380,7 @@ export function CoachingHubClient({
                       <div className="w-0.5 h-4 bg-border" />
                       <Swords className="h-3 w-3 shrink-0" />
                       <span>
-                        {interval.matchCount} game
-                        {interval.matchCount !== 1 ? "s" : ""}
+                        {t("intervalGames", { count: interval.matchCount })}
                       </span>
                       <span className="font-mono">
                         <span className="text-green-400">
@@ -392,10 +392,9 @@ export function CoachingHubClient({
                       </span>
                       {interval.matchCount > 0 && (
                         <span>
-                          {Math.round(
+                          {t("intervalWinRate", { winRate: Math.round(
                             (interval.wins / interval.matchCount) * 100
-                          )}
-                          % WR
+                          ) })}
                         </span>
                       )}
                       {interval.relevantNoteCount > 0 && (
@@ -404,8 +403,7 @@ export function CoachingHubClient({
                           className="text-[10px] px-1.5 py-0 border-gold/30 text-gold"
                         >
                           <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
-                          {interval.relevantNoteCount} related note
-                          {interval.relevantNoteCount !== 1 ? "s" : ""}
+                          {t("intervalRelatedNotes", { count: interval.relevantNoteCount })}
                         </Badge>
                       )}
                     </div>
@@ -413,7 +411,7 @@ export function CoachingHubClient({
                   {interval && interval.matchCount === 0 && (
                     <div className="ml-6 flex items-center gap-3 py-1 text-xs text-muted-foreground">
                       <div className="w-0.5 h-4 bg-border" />
-                      <span className="italic">No games played</span>
+                      <span className="italic">{t("noGamesPlayed")}</span>
                     </div>
                   )}
                 </div>

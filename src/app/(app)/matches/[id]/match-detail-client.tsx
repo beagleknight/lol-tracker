@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -91,10 +92,11 @@ function ParticipantRow({
   isUser: boolean;
   isDuoPartner: boolean;
 }) {
+  const t = useTranslations("MatchDetail");
   const cs = participant.totalMinionsKilled + participant.neutralMinionsKilled;
   const kda =
     participant.deaths === 0
-      ? "Perfect"
+      ? t("perfectKda")
       : ((participant.kills + participant.assists) / participant.deaths).toFixed(
           1
         );
@@ -166,7 +168,7 @@ function ParticipantRow({
               <Image
                 key={i}
                 src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${itemId}.png`}
-                alt={`Item ${itemId}`}
+                alt={t("itemAlt", { itemId })}
                 width={24}
                 height={24}
                 className="rounded"
@@ -188,6 +190,7 @@ export function MatchDetailClient({
 }: MatchDetailClientProps) {
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("MatchDetail");
 
   // Split participants into teams
   const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
@@ -241,13 +244,13 @@ export function MatchDetailClient({
                 {match.reviewed && (
                   <Badge variant="secondary" className="gap-1">
                     <Eye className="h-3 w-3" />
-                    Reviewed
+                    {t("reviewed")}
                   </Badge>
                 )}
                 {!match.reviewed && hasAnyNotes && (
                   <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
                     <EyeOff className="h-3 w-3" />
-                    Pending Review
+                    {t("pendingReview")}
                   </Badge>
                 )}
               </div>
@@ -268,7 +271,7 @@ export function MatchDetailClient({
                 )}
                 {match.matchupChampionName && (
                   <>
-                    {" "}vs{" "}
+                    {" "}{t("vs")}{" "}
                     <ChampionLink
                       champion={match.matchupChampionName}
                       ddragonVersion={ddragonVersion}
@@ -291,7 +294,7 @@ export function MatchDetailClient({
             <Link key={s.sessionId} href={`/coaching/${s.sessionId}`}>
               <Badge variant="secondary" className="gap-1">
                 <GraduationCap className="h-3 w-3" />
-                Reviewed with {s.coachName}
+                {t("reviewedWithCoach", { coachName: s.coachName })}
               </Badge>
             </Link>
           ))}
@@ -304,16 +307,16 @@ export function MatchDetailClient({
           <ClipboardEdit className="h-5 w-5 text-gold shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium">
-              {hasAnyNotes ? "This game has notes but hasn't been fully reviewed yet." : "This game hasn't been reviewed yet."}
+              {hasAnyNotes ? t("reviewCtaWithNotes") : t("reviewCtaWithoutNotes")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Head to the Review page to add highlights, notes, and VOD review.
+              {t("reviewCtaSubtext")}
             </p>
           </div>
           <Link href="/review">
             <Button size="sm" className="gap-1.5 shrink-0">
               <ClipboardEdit className="h-3.5 w-3.5" />
-              Review
+              {t("reviewButton")}
             </Button>
           </Link>
         </div>
@@ -326,14 +329,14 @@ export function MatchDetailClient({
             <p className="text-2xl font-bold font-mono text-gold">
               {match.kills}/{match.deaths}/{match.assists}
             </p>
-            <p className="text-xs text-muted-foreground">KDA</p>
+            <p className="text-xs text-muted-foreground">{t("kda")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="text-2xl font-bold text-gold">{match.cs}</p>
             <p className="text-xs text-muted-foreground">
-              CS ({match.csPerMin}/min)
+              {t("csWithPerMin", { csPerMin: match.csPerMin ?? 0 })}
             </p>
           </CardContent>
         </Card>
@@ -342,13 +345,13 @@ export function MatchDetailClient({
             <p className="text-2xl font-bold text-gold">
               {((match.goldEarned || 0) / 1000).toFixed(1)}k
             </p>
-            <p className="text-xs text-muted-foreground">Gold</p>
+            <p className="text-xs text-muted-foreground">{t("gold")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="text-2xl font-bold text-gold">{match.visionScore}</p>
-            <p className="text-xs text-muted-foreground">Vision</p>
+            <p className="text-xs text-muted-foreground">{t("vision")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
@@ -356,7 +359,7 @@ export function MatchDetailClient({
             <p className="text-2xl font-bold">
               {formatDuration(match.gameDurationSeconds)}
             </p>
-            <p className="text-xs text-muted-foreground">Duration</p>
+            <p className="text-xs text-muted-foreground">{t("duration")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
@@ -376,7 +379,7 @@ export function MatchDetailClient({
                 <span className="text-muted-foreground">&mdash;</span>
               )}
             </p>
-            <p className="text-xs text-muted-foreground">Keystone</p>
+            <p className="text-xs text-muted-foreground">{t("keystone")}</p>
           </CardContent>
         </Card>
       </div>
@@ -385,7 +388,7 @@ export function MatchDetailClient({
       {hasHighlights && (
         <Card className="surface-glow">
           <CardHeader>
-            <CardTitle>Highlights & Lowlights</CardTitle>
+            <CardTitle>{t("highlightsAndLowlights")}</CardTitle>
           </CardHeader>
           <CardContent>
             <HighlightsDisplay highlights={highlights} />
@@ -397,8 +400,8 @@ export function MatchDetailClient({
       {participants && (
         <div className="space-y-4">
           {[
-            { team: blueTeam, label: "Blue Team", color: "text-electric" },
-            { team: redTeam, label: "Red Team", color: "text-destructive" },
+            { team: blueTeam, label: t("blueTeam"), color: "text-electric" },
+            { team: redTeam, label: t("redTeam"), color: "text-destructive" },
           ].map(({ team, label, color }) => (
             <Card key={label} className="surface-glow">
               <CardHeader className="pb-2">
@@ -408,14 +411,14 @@ export function MatchDetailClient({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Player</TableHead>
-                      <TableHead className="text-center">KDA</TableHead>
-                      <TableHead className="text-center">Ratio</TableHead>
-                      <TableHead className="text-center">CS</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">Vision</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">Gold</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">Damage</TableHead>
-                      <TableHead>Items</TableHead>
+                      <TableHead>{t("playerColumn")}</TableHead>
+                      <TableHead className="text-center">{t("kdaColumn")}</TableHead>
+                      <TableHead className="text-center">{t("ratioColumn")}</TableHead>
+                      <TableHead className="text-center">{t("csColumn")}</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">{t("visionColumn")}</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">{t("goldColumn")}</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">{t("damageColumn")}</TableHead>
+                      <TableHead>{t("itemsColumn")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -449,7 +452,7 @@ export function MatchDetailClient({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4" />
-                      Game Notes
+                      {t("gameNotes")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -466,7 +469,7 @@ export function MatchDetailClient({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Eye className="h-4 w-4" />
-                      VOD Review
+                      {t("vodReview")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -475,7 +478,7 @@ export function MatchDetailClient({
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                           <LinkIcon className="h-3 w-3" />
-                          Ascent VOD
+                          {t("ascentVod")}
                         </p>
                         <a
                           href={match.vodUrl!}
@@ -484,7 +487,7 @@ export function MatchDetailClient({
                           className="text-sm text-electric hover:underline inline-flex items-center gap-1"
                         >
                           <ExternalLink className="h-3 w-3" />
-                          Open VOD
+                          {t("openVod")}
                         </a>
                       </div>
                     )}
@@ -493,7 +496,7 @@ export function MatchDetailClient({
                     {hasReviewNotes && (
                       <div className="space-y-1.5">
                         <p className="text-xs font-medium text-muted-foreground">
-                          Review Notes
+                          {t("reviewNotes")}
                         </p>
                         <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
                           {match.reviewNotes}
@@ -505,7 +508,7 @@ export function MatchDetailClient({
                     {match.reviewSkippedReason && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
                         <SkipForward className="h-3 w-3" />
-                        Skipped: {match.reviewSkippedReason}
+                        {t("skipped", { reason: match.reviewSkippedReason })}
                       </div>
                     )}
 
@@ -513,7 +516,7 @@ export function MatchDetailClient({
                     {match.reviewed && !hasReviewNotes && !match.reviewSkippedReason && (
                       <p className="text-xs text-green-400 flex items-center gap-1.5">
                         <Eye className="h-3 w-3" />
-                        Marked as reviewed
+                        {t("markedAsReviewed")}
                       </p>
                     )}
                   </CardContent>

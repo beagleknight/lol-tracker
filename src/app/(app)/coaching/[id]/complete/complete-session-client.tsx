@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { completeCoachingSession } from "@/app/actions/coaching";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
@@ -71,6 +72,7 @@ export function CompleteSessionClient({
   const router = useRouter();
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("CompleteSession");
   const [isPending, startTransition] = useTransition();
 
   // Pre-fill topics from focus areas if they were set during scheduling
@@ -125,7 +127,7 @@ export function CompleteSessionClient({
 
   function handleSubmit() {
     if (selectedTopics.length === 0) {
-      toast.error("Please select at least one topic covered.");
+      toast.error(t("toasts.topicRequired"));
       return;
     }
 
@@ -138,10 +140,10 @@ export function CompleteSessionClient({
           actionItems,
         });
 
-        toast.success("Coaching session completed!");
+        toast.success(t("toasts.sessionCompleted"));
         router.push(`/coaching/${session.id}`);
       } catch {
-        toast.error("Failed to complete session.");
+        toast.error(t("toasts.completeError"));
       }
     });
   }
@@ -157,10 +159,10 @@ export function CompleteSessionClient({
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            Complete Coaching Session
+            {t("title")}
           </h1>
           <p className="text-muted-foreground">
-            Fill in what was discussed and create action items.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -188,7 +190,7 @@ export function CompleteSessionClient({
                 />
                 <span className="text-sm">{vodMatch.championName}</span>
                 <span className="text-xs text-muted-foreground">
-                  vs {vodMatch.matchupChampionName || "?"}
+                  {t("vs")} {vodMatch.matchupChampionName || "?"}
                 </span>
                 <Badge
                   variant={
@@ -196,7 +198,7 @@ export function CompleteSessionClient({
                   }
                   className="text-xs"
                 >
-                  {vodMatch.result === "Victory" ? "W" : "L"}
+                  {vodMatch.result === "Victory" ? t("resultWin") : t("resultLoss")}
                 </Badge>
               </div>
             )}
@@ -214,7 +216,7 @@ export function CompleteSessionClient({
                     rel="noopener noreferrer"
                     className="text-xs text-electric hover:underline truncate"
                   >
-                    Watch VOD
+                    {t("watchVod")}
                   </a>
                 </div>
               )}
@@ -229,9 +231,9 @@ export function CompleteSessionClient({
       {/* Topics Covered */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Topics Covered</CardTitle>
+          <CardTitle>{t("topicsCovered")}</CardTitle>
           <CardDescription>
-            Select all topics that were actually covered during the session.
+            {t("topicsCoveredDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -267,7 +269,7 @@ export function CompleteSessionClient({
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Custom topic..."
+              placeholder={t("customTopicPlaceholder")}
               value={customTopic}
               onChange={(e) => setCustomTopic(e.target.value)}
               onKeyDown={(e) => {
@@ -279,7 +281,7 @@ export function CompleteSessionClient({
               className="max-w-xs"
             />
             <Button variant="outline" size="sm" onClick={addCustomTopic}>
-              Add
+              {t("addButton")}
             </Button>
           </div>
         </CardContent>
@@ -288,28 +290,28 @@ export function CompleteSessionClient({
       {/* Session Notes & Duration */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Session Details</CardTitle>
+          <CardTitle>{t("sessionDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="duration" className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              Duration (minutes)
+              {t("durationLabel")}
             </Label>
             <Input
               id="duration"
               type="number"
-              placeholder="60"
+              placeholder={t("durationPlaceholder")}
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               className="max-w-32"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Session Notes</Label>
+            <Label htmlFor="notes">{t("sessionNotesLabel")}</Label>
             <Textarea
               id="notes"
-              placeholder="Key takeaways, what the coach said, areas to focus on..."
+              placeholder={t("sessionNotesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={5}
@@ -321,9 +323,9 @@ export function CompleteSessionClient({
       {/* Action Items */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Action Items</CardTitle>
+          <CardTitle>{t("actionItems")}</CardTitle>
           <CardDescription>
-            What should you work on before the next coaching session?
+            {t("actionItemsDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -357,7 +359,7 @@ export function CompleteSessionClient({
           )}
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
-              placeholder="Action item description..."
+              placeholder={t("actionItemPlaceholder")}
               value={newActionDesc}
               onChange={(e) => setNewActionDesc(e.target.value)}
               onKeyDown={(e) => {
@@ -370,7 +372,7 @@ export function CompleteSessionClient({
             />
             <div className="flex gap-2">
               <Input
-                placeholder="Topic (optional)"
+                placeholder={t("topicPlaceholder")}
                 value={newActionTopic}
                 onChange={(e) => setNewActionTopic(e.target.value)}
                 className="flex-1 sm:w-40"
@@ -386,11 +388,11 @@ export function CompleteSessionClient({
       {/* Submit */}
       <div className="flex justify-end gap-3">
         <Link href={`/coaching/${session.id}`}>
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline">{t("cancelButton")}</Button>
         </Link>
         <Button onClick={handleSubmit} disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Complete Session
+          {t("completeSessionButton")}
         </Button>
       </div>
     </div>

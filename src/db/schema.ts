@@ -14,6 +14,7 @@ export const users = sqliteTable("users", {
   summonerId: text("summoner_id"),
   duoPartnerUserId: text("duo_partner_user_id"),
   locale: text("locale").default("en-GB"),
+  language: text("language").default("en"),
   role: text("role", { enum: ["admin", "user"] })
     .notNull()
     .default("user"),

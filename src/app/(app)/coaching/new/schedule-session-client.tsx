@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { scheduleCoachingSession } from "@/app/actions/coaching";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
@@ -55,6 +56,7 @@ export function ScheduleSessionClient({
   const router = useRouter();
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("ScheduleSession");
   const [isPending, startTransition] = useTransition();
 
   const [coachName, setCoachName] = useState("");
@@ -103,7 +105,7 @@ export function ScheduleSessionClient({
 
   function handleSubmit() {
     if (!coachName.trim()) {
-      toast.error("Please enter a coach name.");
+      toast.error(t("toasts.coachNameRequired"));
       return;
     }
 
@@ -116,10 +118,10 @@ export function ScheduleSessionClient({
           focusAreas: focusAreas.length > 0 ? focusAreas : undefined,
         });
 
-        toast.success("Coaching session scheduled!");
+        toast.success(t("toasts.sessionScheduled"));
         router.push(`/coaching/${result.sessionId}`);
       } catch {
-        toast.error("Failed to schedule session.");
+        toast.error(t("toasts.scheduleError"));
       }
     });
   }
@@ -135,11 +137,10 @@ export function ScheduleSessionClient({
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            Schedule Coaching Session
+            {t("title")}
           </h1>
           <p className="text-muted-foreground">
-            Book a session — you&apos;ll fill in notes and action items after the
-            coaching.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -149,16 +150,16 @@ export function ScheduleSessionClient({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gold" />
-            Session Details
+            {t("sessionDetails")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 relative">
-              <Label htmlFor="coach">Coach Name</Label>
+              <Label htmlFor="coach">{t("coachNameLabel")}</Label>
               <Input
                 id="coach"
-                placeholder="e.g. midlaneacademy"
+                placeholder={t("coachNamePlaceholder")}
                 value={coachName}
                 onChange={(e) => setCoachName(e.target.value)}
                 onFocus={() => setShowCoachSuggestions(true)}
@@ -188,7 +189,7 @@ export function ScheduleSessionClient({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{t("dateLabel")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -203,15 +204,15 @@ export function ScheduleSessionClient({
       {/* VOD / Match to Review */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>VOD to Review</CardTitle>
+          <CardTitle>{t("vodToReview")}</CardTitle>
           <CardDescription>
-            Optionally select the game you want to review — you can add this later.
+            {t("vodToReviewDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {recentMatches.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No matches found. Import your games first.
+              {t("noMatchesFound")}
             </p>
           ) : (
             <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -261,7 +262,7 @@ export function ScheduleSessionClient({
                       {match.championName}
                     </span>
                     <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                      vs
+                      {t("vs")}
                       {match.matchupChampionName ? (
                         <>
                           <Image
@@ -286,8 +287,7 @@ export function ScheduleSessionClient({
                           variant="secondary"
                           className="text-[10px] px-1.5 py-0"
                         >
-                          {matchHL.length} note
-                          {matchHL.length !== 1 ? "s" : ""}
+                          {t("notesBadge", { count: matchHL.length })}
                         </Badge>
                       )}
                       {match.vodUrl && (
@@ -310,9 +310,11 @@ export function ScheduleSessionClient({
           {selectedMatch && (
             <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 space-y-3">
               <p className="text-xs font-medium text-muted-foreground">
-                {selectedMatch.championName} vs{" "}
-                {selectedMatch.matchupChampionName || "?"} —{" "}
-                {selectedMatch.result === "Victory" ? "Win" : "Loss"}
+                {t("matchPreviewLabel", {
+                  championName: selectedMatch.championName,
+                  matchupChampionName: selectedMatch.matchupChampionName || "?",
+                  result: selectedMatch.result === "Victory" ? t("resultWin") : t("resultLoss"),
+                })}
               </p>
 
               {selectedMatch.vodUrl && (
@@ -333,7 +335,7 @@ export function ScheduleSessionClient({
                 <HighlightsDisplay highlights={selectedMatchHighlights} />
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  No highlights or lowlights recorded for this game.
+                  {t("noHighlights")}
                 </p>
               )}
             </div>
@@ -344,10 +346,9 @@ export function ScheduleSessionClient({
       {/* Optional Focus Areas */}
       <Card className="surface-glow">
         <CardHeader>
-          <CardTitle>Focus Areas</CardTitle>
+          <CardTitle>{t("focusAreas")}</CardTitle>
           <CardDescription>
-            Optionally note what you want to focus on — topics will be finalized
-            after the session.
+            {t("focusAreasDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -383,7 +384,7 @@ export function ScheduleSessionClient({
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Custom topic..."
+              placeholder={t("customTopicPlaceholder")}
               value={customTopic}
               onChange={(e) => setCustomTopic(e.target.value)}
               onKeyDown={(e) => {
@@ -395,7 +396,7 @@ export function ScheduleSessionClient({
               className="max-w-xs"
             />
             <Button variant="outline" size="sm" onClick={addCustomTopic}>
-              Add
+              {t("addButton")}
             </Button>
           </div>
         </CardContent>
@@ -404,11 +405,11 @@ export function ScheduleSessionClient({
       {/* Submit */}
       <div className="flex justify-end gap-3">
         <Link href="/coaching">
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline">{t("cancelButton")}</Button>
         </Link>
         <Button onClick={handleSubmit} disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Schedule Session
+          {t("scheduleSessionButton")}
         </Button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ export function HighlightsEditor({
   onChange,
   maxPerType = 3,
 }: HighlightsEditorProps) {
+  const t = useTranslations("HighlightsEditor");
   const [newHighlightText, setNewHighlightText] = useState("");
   const [newHighlightTopic, setNewHighlightTopic] = useState("");
   const [newLowlightText, setNewLowlightText] = useState("");
@@ -86,7 +88,7 @@ export function HighlightsEditor({
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <ThumbsUp className="h-3 w-3 text-green-400" />
-          Highlights — what went well ({highlightItems.length}/{maxPerType})
+          {t("highlightsLabel", { count: highlightItems.length, max: maxPerType })}
         </label>
 
         {/* Existing highlights */}
@@ -123,17 +125,17 @@ export function HighlightsEditor({
               onChange={(e) => setNewHighlightTopic(e.target.value)}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
-              <option value="">Topic...</option>
-              {PREDEFINED_TOPICS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              <option value="">{t("topicPlaceholder")}</option>
+              {PREDEFINED_TOPICS.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
                 </option>
               ))}
             </select>
             <Input
               value={newHighlightText}
               onChange={(e) => setNewHighlightText(e.target.value)}
-              placeholder="Details (optional)"
+              placeholder={t("detailsPlaceholder")}
               className="flex-1 text-sm h-8"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -160,7 +162,7 @@ export function HighlightsEditor({
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <ThumbsDown className="h-3 w-3 text-red-400" />
-          Lowlights — what went wrong ({lowlightItems.length}/{maxPerType})
+          {t("lowlightsLabel", { count: lowlightItems.length, max: maxPerType })}
         </label>
 
         {/* Existing lowlights */}
@@ -197,17 +199,17 @@ export function HighlightsEditor({
               onChange={(e) => setNewLowlightTopic(e.target.value)}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
-              <option value="">Topic...</option>
-              {PREDEFINED_TOPICS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              <option value="">{t("topicPlaceholder")}</option>
+              {PREDEFINED_TOPICS.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
                 </option>
               ))}
             </select>
             <Input
               value={newLowlightText}
               onChange={(e) => setNewLowlightText(e.target.value)}
-              placeholder="Details (optional)"
+              placeholder={t("detailsPlaceholder")}
               className="flex-1 text-sm h-8"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -243,6 +245,7 @@ export function HighlightsDisplay({
   highlights: HighlightItem[];
   compact?: boolean;
 }) {
+  const t = useTranslations("HighlightsEditor");
   const highlightItems = highlights.filter((h) => h.type === "highlight");
   const lowlightItems = highlights.filter((h) => h.type === "lowlight");
 
@@ -307,7 +310,7 @@ export function HighlightsDisplay({
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             <ThumbsUp className="h-3 w-3 text-green-400" />
-            Highlights
+            {t("highlightsHeading")}
           </p>
           {highlightItems.map((item, i) => (
             <div
@@ -328,7 +331,7 @@ export function HighlightsDisplay({
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             <ThumbsDown className="h-3 w-3 text-red-400" />
-            Lowlights
+            {t("lowlightsHeading")}
           </p>
           {lowlightItems.map((item, i) => (
             <div

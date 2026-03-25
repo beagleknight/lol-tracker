@@ -10,6 +10,11 @@ import {
 import { revalidatePath } from "next/cache";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
+import { cookies } from "next/headers";
+import {
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from "@/i18n/request";
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
@@ -204,6 +209,43 @@ export async function updateLocale(locale: SupportedLocale) {
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
+
+  return { success: true };
+}
+
+// ─── Language Preference ────────────────────────────────────────────────────
+
+/**
+ * Update the user's UI language preference.
+ */
+export async function updateLanguage(language: SupportedLanguage) {
+  const user = await requireUser();
+
+  // Validate language is supported
+  const valid = SUPPORTED_LANGUAGES.some((l) => l.value === language);
+  if (!valid) {
+    return { error: "UNSUPPORTED_LANGUAGE" };
+  }
+
+  await db
+    .update(users)
+    .set({
+      language,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  // Set cookie so next-intl picks it up on the next request
+  const cookieStore = await cookies();
+  cookieStore.set("language", language, {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+  });
 
   revalidatePath("/");
   invalidateAllCaches(user.id);

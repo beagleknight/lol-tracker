@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,6 +157,7 @@ export function MatchesClient({
   const router = useRouter();
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("Matches");
   const [isNavigating, startTransition] = useTransition();
 
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
@@ -203,10 +205,9 @@ export function MatchesClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">Matches</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("heading")}</h1>
           <p className="text-muted-foreground">
-            {totalMatches} game{totalMatches !== 1 ? "s" : ""}{" "}
-            &middot; {wins}W {losses}L ({winRate}%)
+            {t("summary", { totalMatches, wins, losses, winRate })}
           </p>
         </div>
       </div>
@@ -215,11 +216,13 @@ export function MatchesClient({
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
-            Link your Riot account in{" "}
-            <Link href="/settings" className="underline font-medium">
-              Settings
-            </Link>{" "}
-            to import games.
+            {t.rich("linkRiotAccount", {
+              link: (chunks) => (
+                <Link href="/settings" className="underline font-medium">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </div>
       )}
@@ -229,7 +232,7 @@ export function MatchesClient({
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search champion, matchup, notes..."
+            placeholder={t("searchPlaceholder")}
             value={searchValue}
             onChange={(e) => {
               setSearchValue(e.target.value);
@@ -240,20 +243,20 @@ export function MatchesClient({
         </div>
         <Select value={filters.result} onValueChange={(v) => navigateWithFilter("result", v ?? "all")}>
           <SelectTrigger className="w-full sm:w-[130px]">
-            <SelectValue placeholder="Result" />
+            <SelectValue placeholder={t("resultFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Results</SelectItem>
-            <SelectItem value="Victory">Victories</SelectItem>
-            <SelectItem value="Defeat">Defeats</SelectItem>
+            <SelectItem value="all">{t("allResults")}</SelectItem>
+            <SelectItem value="Victory">{t("victories")}</SelectItem>
+            <SelectItem value="Defeat">{t("defeats")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
           <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Champion" />
+            <SelectValue placeholder={t("championFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Champions</SelectItem>
+            <SelectItem value="all">{t("allChampions")}</SelectItem>
             {champions.map((c) => (
               <SelectItem key={c} value={c}>
                 <span className="inline-flex items-center gap-1.5">
@@ -272,13 +275,13 @@ export function MatchesClient({
         </Select>
         <Select value={filters.review} onValueChange={(v) => navigateWithFilter("review", v ?? "all")}>
           <SelectTrigger className="w-full sm:w-[160px]">
-            <SelectValue placeholder="Review" />
+            <SelectValue placeholder={t("reviewFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="reviewed">Reviewed</SelectItem>
-            <SelectItem value="unreviewed">Not Reviewed</SelectItem>
-            <SelectItem value="has-notes">Has Notes</SelectItem>
+            <SelectItem value="all">{t("reviewAll")}</SelectItem>
+            <SelectItem value="reviewed">{t("reviewed")}</SelectItem>
+            <SelectItem value="unreviewed">{t("notReviewed")}</SelectItem>
+            <SelectItem value="has-notes">{t("hasNotes")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -288,8 +291,8 @@ export function MatchesClient({
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
             {filters.search || filters.result !== "all" || filters.champion !== "all" || filters.review !== "all"
-              ? "No games match your filters."
-              : "No matches yet. Click Update Games to get started."}
+              ? t("noMatchesFiltered")
+              : t("noMatchesEmpty")}
           </p>
         </div>
       ) : (

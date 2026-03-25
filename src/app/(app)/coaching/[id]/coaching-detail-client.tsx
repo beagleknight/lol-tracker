@@ -2,6 +2,7 @@
 
 import { useMemo, useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -94,6 +95,7 @@ interface CoachingDetailClientProps {
 }
 
 function ActionItemRow({ item }: { item: CoachingActionItem }) {
+  const t = useTranslations("CoachingDetail");
   const [isPending, startTransition] = useTransition();
 
   function cycleStatus() {
@@ -109,9 +111,9 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
     startTransition(async () => {
       try {
         await updateActionItemStatus(item.id, next);
-        toast.success(`Status updated to ${next.replace("_", " ")}.`);
+        toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
       } catch {
-        toast.error("Failed to update status.");
+        toast.error(t("toasts.statusUpdateError"));
       }
     });
   }
@@ -179,6 +181,7 @@ export function CoachingDetailClient({
   const router = useRouter();
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const t = useTranslations("CoachingDetail");
   const [isDeleting, startDelete] = useTransition();
 
   const topics: string[] = session.topics
@@ -228,7 +231,7 @@ export function CoachingDetailClient({
       winRate: Math.round((wins / progressMatches.length) * 100),
       avgKDA:
         totalDeaths === 0
-          ? "Perfect"
+          ? t("perfect")
           : ((totalKills + totalAssists) / totalDeaths).toFixed(1),
       relevantHighlights,
       relevantLowlights,
@@ -236,15 +239,15 @@ export function CoachingDetailClient({
   }, [progressMatches, progressHighlightsByMatch, actionItemTopics]);
 
   function handleDelete() {
-    if (!confirm("Delete this coaching session? This cannot be undone."))
+    if (!confirm(t("deleteConfirm")))
       return;
     startDelete(async () => {
       try {
         await deleteCoachingSession(session.id);
-        toast.success("Session deleted.");
+        toast.success(t("toasts.sessionDeleted"));
         router.push("/coaching");
       } catch {
-        toast.error("Failed to delete session.");
+        toast.error(t("toasts.deleteError"));
       }
     });
   }
@@ -268,7 +271,7 @@ export function CoachingDetailClient({
               variant={isScheduled ? "secondary" : "default"}
               className="text-xs"
             >
-              {isScheduled ? "Scheduled" : "Completed"}
+              {isScheduled ? t("badgeScheduled") : t("badgeCompleted")}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -276,8 +279,7 @@ export function CoachingDetailClient({
             {session.durationMinutes && (
               <>
                 {" "}
-                <Clock className="inline h-3 w-3" /> {session.durationMinutes}{" "}
-                min
+                <Clock className="inline h-3 w-3" /> {t("durationMinutes", { minutes: session.durationMinutes })}
               </>
             )}
           </p>
@@ -305,14 +307,14 @@ export function CoachingDetailClient({
               <div className="flex items-center gap-3">
                 <CalendarCheck className="h-5 w-5 text-gold" />
                 <div>
-                  <p className="font-medium">Session is scheduled</p>
+                  <p className="font-medium">{t("sessionIsScheduled")}</p>
                   <p className="text-sm text-muted-foreground">
-                    After your coaching, fill in notes and action items.
+                    {t("sessionIsScheduledDescription")}
                   </p>
                 </div>
               </div>
               <Link href={`/coaching/${session.id}/complete`}>
-                <Button>Complete Session</Button>
+                <Button>{t("completeSessionButton")}</Button>
               </Link>
             </div>
           </CardContent>
@@ -322,14 +324,14 @@ export function CoachingDetailClient({
       {/* Topics */}
       {topics.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {topics.map((t) => (
-            <Badge key={t} variant="secondary">
-              {t}
+          {topics.map((topic) => (
+            <Badge key={topic} variant="secondary">
+              {topic}
             </Badge>
           ))}
           {isScheduled && (
             <span className="text-xs text-muted-foreground self-center ml-1">
-              (focus areas)
+              {t("focusAreasLabel")}
             </span>
           )}
         </div>
@@ -339,7 +341,7 @@ export function CoachingDetailClient({
       {session.notes && (
         <Card className="surface-glow">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Session Notes</CardTitle>
+            <CardTitle className="text-base">{t("sessionNotes")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
@@ -352,12 +354,11 @@ export function CoachingDetailClient({
         <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
-              {isScheduled ? "VOD to Review" : "Game Reviewed"}
+              {isScheduled ? t("vodToReview") : t("gameReviewed")}
             </CardTitle>
             {!isScheduled && (
               <CardDescription>
-                {linkedMatches.length} game
-                {linkedMatches.length !== 1 ? "s" : ""} discussed
+                {t("gamesDiscussed", { count: linkedMatches.length })}
               </CardDescription>
             )}
           </CardHeader>
@@ -401,7 +402,7 @@ export function CoachingDetailClient({
                           {match.championName}
                         </span>
                         <span className="text-xs text-muted-foreground ml-2 inline-flex items-center gap-1">
-                          vs
+                          {t("vs")}
                           {match.matchupChampionName ? (
                             <>
                               <Image
@@ -435,7 +436,7 @@ export function CoachingDetailClient({
                         }
                         className="text-xs"
                       >
-                        {match.result === "Victory" ? "W" : "L"}
+                        {match.result === "Victory" ? t("resultWin") : t("resultLoss")}
                       </Badge>
                     </Link>
 
@@ -449,7 +450,7 @@ export function CoachingDetailClient({
                           rel="noopener noreferrer"
                           className="text-xs text-electric hover:underline truncate inline-flex items-center gap-1"
                         >
-                          Watch VOD
+                          {t("watchVod")}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
@@ -476,17 +477,15 @@ export function CoachingDetailClient({
 
           <Card className="surface-glow">
             <CardHeader>
-              <CardTitle className="text-base">Action Items</CardTitle>
+              <CardTitle className="text-base">{t("actionItems")}</CardTitle>
               <CardDescription>
-                {completedCount}/{actionItems.length} completed. Click the
-                status icon to cycle through: pending → in progress →
-                completed.
+                {t("actionItemsDescription", { completed: completedCount, total: actionItems.length })}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {actionItems.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No action items for this session.
+                  {t("noActionItems")}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -509,12 +508,10 @@ export function CoachingDetailClient({
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-gold" />
-                Progress Since This Session
+                {t("progressSinceSession")}
               </CardTitle>
               <CardDescription>
-                {progressStats.total} game
-                {progressStats.total !== 1 ? "s" : ""} played since this
-                coaching session.
+                {t("progressDescription", { count: progressStats.total })}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -524,7 +521,7 @@ export function CoachingDetailClient({
                   <p className="text-lg font-bold text-gold">
                     {progressStats.winRate}%
                   </p>
-                  <p className="text-xs text-muted-foreground">Win Rate</p>
+                  <p className="text-xs text-muted-foreground">{t("winRate")}</p>
                   <p className="text-xs text-muted-foreground">
                     {progressStats.wins}W{" "}
                     {progressStats.total - progressStats.wins}L
@@ -534,7 +531,7 @@ export function CoachingDetailClient({
                   <p className="text-lg font-bold text-gold">
                     {progressStats.avgKDA}
                   </p>
-                  <p className="text-xs text-muted-foreground">Avg KDA</p>
+                  <p className="text-xs text-muted-foreground">{t("avgKda")}</p>
                 </div>
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
@@ -556,7 +553,7 @@ export function CoachingDetailClient({
                       )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Related Notes
+                    {t("relatedNotes")}
                   </p>
                 </div>
               </div>
@@ -613,7 +610,7 @@ export function CoachingDetailClient({
                           {match.championName}
                         </span>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                          vs
+                          {t("vs")}
                           {match.matchupChampionName ? (
                             <>
                               <Image
@@ -647,7 +644,7 @@ export function CoachingDetailClient({
                             }
                             className="text-xs"
                           >
-                            {match.result === "Victory" ? "W" : "L"}
+                        {match.result === "Victory" ? t("resultWin") : t("resultLoss")}
                           </Badge>
                         </div>
                       </Link>
@@ -715,7 +712,7 @@ export function CoachingDetailClient({
           <div className="text-center py-6">
             <Swords className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              No games played since this coaching session yet.
+              {t("noGamesSinceSession")}
             </p>
           </div>
         </>

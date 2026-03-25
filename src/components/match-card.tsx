@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -87,12 +88,13 @@ export function MatchCard({
   matchHighlights: MatchHighlightData[];
   locale?: string;
 }) {
+  const t = useTranslations("MatchCard");
   const isWin = match.result === "Victory";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
   const kda =
     match.deaths === 0
-      ? "Perfect"
+      ? t("perfectKda")
       : ((match.kills + match.assists) / match.deaths).toFixed(1);
 
   const highlightItems = matchHighlights.filter((h) => h.type === "highlight");
@@ -102,11 +104,11 @@ export function MatchCard({
   // Review status for tooltip
   const reviewStatusText = match.reviewed
     ? match.reviewSkippedReason
-      ? `Skipped: ${match.reviewSkippedReason}`
+      ? t("reviewSkipped", { reason: match.reviewSkippedReason })
       : hasReviewNotes
       ? match.reviewNotes!
-      : "Reviewed"
-    : "Not reviewed";
+      : t("reviewed")
+    : t("notReviewed");
 
   return (
     <TooltipProvider>
@@ -132,7 +134,7 @@ export function MatchCard({
               <span className="font-medium text-sm">{match.championName}</span>
               {match.matchupChampionName && (
                 <>
-                  <span className="text-muted-foreground text-xs">vs</span>
+                  <span className="text-muted-foreground text-xs">{t("vs")}</span>
                   <span className="inline-flex items-center gap-1 text-sm">
                     <Image
                       src={getChampionIconUrl(
@@ -223,7 +225,7 @@ export function MatchCard({
               </span>
             </span>
             <span className="font-mono text-muted-foreground">
-              {match.cs} CS
+              {t("csLabel", { cs: match.cs })}
             </span>
             <span className="text-muted-foreground">
               {formatDuration(match.gameDurationSeconds)}
@@ -237,7 +239,7 @@ export function MatchCard({
                 <TooltipTrigger className="cursor-default">
                   <Users className="h-3.5 w-3.5 text-electric/70" />
                 </TooltipTrigger>
-                <TooltipContent>Duo game</TooltipContent>
+                <TooltipContent>{t("duoGameTooltip")}</TooltipContent>
               </Tooltip>
             )}
             {hasComment && (
@@ -265,7 +267,7 @@ export function MatchCard({
                 <TooltipTrigger className="cursor-default">
                   <EyeOff className="h-3.5 w-3.5 text-yellow-500/70" />
                 </TooltipTrigger>
-                <TooltipContent>Has notes, not yet reviewed</TooltipContent>
+                <TooltipContent>{t("hasNotesNotReviewed")}</TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -276,7 +278,7 @@ export function MatchCard({
               variant={isWin ? "default" : "destructive"}
               className="text-xs"
             >
-              {isWin ? "W" : "L"}
+              {isWin ? t("win") : t("loss")}
             </Badge>
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
               {formatDate(match.gameDate, locale)}

@@ -34,6 +34,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               updatedAt: new Date(),
             })
             .where(eq(users.discordId, account.providerAccountId));
+
+          // Set language cookie for next-intl (avoids DB query per request)
+          const cookieStore = await cookies();
+          cookieStore.set("language", existing.language || "en", {
+            path: "/",
+            httpOnly: false, // Client JS needs to read it
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 365, // 1 year
+          });
+
           return true;
         }
 
@@ -112,6 +122,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.puuid = dbUser.puuid;
           session.user.role = dbUser.role;
           session.user.locale = dbUser.locale;
+          session.user.language = dbUser.language;
         }
       }
       return session;

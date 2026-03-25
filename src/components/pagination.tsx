@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -18,6 +19,7 @@ export function Pagination({
   pageSize = PAGE_SIZE,
   onPageChange,
 }: PaginationProps) {
+  const t = useTranslations("Pagination");
   const totalPages = Math.ceil(totalItems / pageSize);
 
   if (totalPages <= 1) return null;
@@ -53,7 +55,7 @@ export function Pagination({
             key={`e-${i}`}
             className="px-1 text-xs text-muted-foreground"
           >
-            ...
+            {t("ellipsis")}
           </span>
         ) : (
           <Button
