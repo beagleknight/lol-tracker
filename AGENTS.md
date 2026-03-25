@@ -1,3 +1,18 @@
+<!-- BEGIN:pr-workflow-rules -->
+# PR-based workflow — MANDATORY
+
+**NEVER commit to `main`. NEVER push to `main`.** All changes go through feature branches and pull requests.
+
+Before making ANY code change:
+1. Run `git branch --show-current` to check the current branch
+2. If on `main`, create a feature branch first: `git checkout -b feat/description` (or `fix/`, `refactor/`, `chore/`)
+3. If already on a feature branch, proceed
+
+Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only — in that case add the `skip-changelog` label.
+
+Full workflow details are in the `pr-workflow` OpenCode skill.
+<!-- END:pr-workflow-rules -->
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
