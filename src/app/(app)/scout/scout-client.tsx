@@ -3,7 +3,6 @@
 import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import {
   getMatchupReport,
   type MatchupReport,
@@ -25,7 +24,6 @@ import {
   Users,
   ArrowUp,
   ArrowDown,
-  ClipboardEdit,
 } from "lucide-react";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
@@ -64,7 +62,6 @@ function formatDate(date: Date): string {
 interface ScoutClientProps {
   ddragonVersion: string;
   allChampions: string[];
-  unreviewedCount: number;
   isRiotLinked: boolean;
   initialYourChampion?: string;
   initialEnemyChampion?: string;
@@ -365,7 +362,6 @@ function StatCell({
 export function ScoutClient({
   ddragonVersion,
   allChampions,
-  unreviewedCount,
   isRiotLinked,
   initialYourChampion = "",
   initialEnemyChampion = "",
@@ -489,19 +485,6 @@ export function ScoutClient({
           Pre-game scouting report for your matchups.
         </p>
       </div>
-
-      {/* Unreviewed games banner */}
-      {unreviewedCount > 0 && (
-        <Link
-          href="/review?tab=post-game"
-          className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/5 p-3 text-sm text-gold-light hover:bg-gold/10 transition-colors"
-        >
-          <ClipboardEdit className="h-4 w-4 shrink-0" />
-          <span>
-            You have <strong>{unreviewedCount}</strong> game{unreviewedCount !== 1 ? "s" : ""} waiting for review.
-          </span>
-        </Link>
-      )}
 
       {/* Controls: two champion pickers */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">

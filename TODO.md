@@ -59,6 +59,12 @@
 - [x] ~~Matches page: standardize button sizes, variants, and icons across all forms~~ (moot — no forms on MatchCard anymore)
 - [x] ~~Matches page: ensure PostGameReviewCard (scout) matches the updated MatchCard form style/fields~~ (moot — MatchCard has no form; scout PostGameReviewCard is its own component)
 - [x] Sidebar: review and reorganize — only "Coaching" category visible as the nav has grown; group items into logical categories, improve hierarchy and scannability
+- [x] Sidebar: fix active link highlighting for nested routes — `/coaching/action-items` no longer also highlights the parent "Sessions" link (uses smarter prefix matching that defers to more specific sibling routes)
+- [x] Sidebar: add review counter badge — gold pill on "Review" nav link shows total unreviewed count (fetched in layout); replaces scattered review banners on other pages
+- [x] Sidebar: highlight sync button — gold-tinted ring and hover state when Riot account is linked, so it's more discoverable
+- [x] ~~Matches page: remove duplicate "Update Games" sync button~~ (now only in sidebar)
+- [x] ~~Scout page: remove "games waiting for review" banner~~ (replaced by sidebar review counter)
+- [x] ~~Dashboard: remove Review Card widget~~ (replaced by sidebar review counter; match detail review nudge kept)
 - [x] Color contrast audit: fix poor text-on-background contrast throughout the app (e.g., dark text on bright blue win-row in Duo Recent Games)
 - [x] ~~List/table sort overhaul: audit non-paginated lists across Duo, Analytics, and Dashboard — add sensible default sort order (e.g., win rate or games played) and make sort criteria visible/toggleable. Champion Synergy on Duo page is a good first candidate (currently sorted by games but not obvious).~~
 - [x] ~~Match detail: rune keystone icon in header subtitle renders as broken/garbled emoji — replace with proper DDragon rune image or remove the inline icon~~

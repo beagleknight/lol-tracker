@@ -17,12 +17,9 @@ import {
   TrendingDown,
   Flame,
   Snowflake,
-  Target,
   ChevronRight,
   AlertCircle,
   Calendar,
-  ClipboardEdit,
-  Video,
 } from "lucide-react";
 import type { Match, RankSnapshot, CoachingActionItem } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -162,8 +159,6 @@ export function DashboardClient({
       : "0";
 
   // Games needing review
-  const unreviewedCount = matchStats.unreviewed;
-
   // LP trend: compare latest snapshot to oldest in the recent set
   const lpTrend = (() => {
     if (recentSnapshots.length < 2) return null;
@@ -469,53 +464,6 @@ export function DashboardClient({
               </CardContent>
             </Card>
           )}
-
-          {/* Review Card */}
-          <Card className="surface-glow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base">Review</CardTitle>
-              <Link href="/review">
-                <Button variant="ghost" size="sm">
-                  <Target className="mr-1 h-3 w-3" />
-                  Review
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              {unreviewedCount > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-sm">
-                    <span className="text-2xl font-bold">{unreviewedCount}</span>{" "}
-                    <span className="text-muted-foreground">games to review</span>
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    {matchStats.postGamePending > 0 && (
-                      <Link
-                        href="/review?tab=post-game"
-                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                      >
-                        <ClipboardEdit className="h-3 w-3" />
-                        {matchStats.postGamePending} post-game
-                      </Link>
-                    )}
-                    {matchStats.vodPending > 0 && (
-                      <Link
-                        href="/review?tab=vod"
-                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                      >
-                        <Video className="h-3 w-3" />
-                        {matchStats.vodPending} VOD review
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  All caught up!
-                </p>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Action Items Card */}
           <Card className="surface-glow">

@@ -31,6 +31,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: number; // optional counter badge
 }
 
 const dashboardNav: NavItem[] = [
@@ -58,6 +59,15 @@ const bottomNav: NavItem[] = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
+// All nav hrefs — used to resolve active state conflicts between parent/child routes
+const allNavHrefs = [
+  ...dashboardNav,
+  ...trackerNav,
+  ...insightsNav,
+  ...coachingNav,
+  ...bottomNav,
+].map((item) => item.href);
+
 interface SidebarProps {
   user: {
     name?: string | null;
@@ -66,12 +76,28 @@ interface SidebarProps {
     riotTagLine?: string | null;
     puuid?: string | null;
   };
+  reviewCounts?: {
+    postGame: number;
+    vod: number;
+  };
 }
 
 function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   const pathname = usePathname();
-  const isActive =
-    pathname === item.href || pathname.startsWith(item.href + "/");
+
+  // Active state: exact match always wins. For startsWith, only activate if no
+  // other nav item has a more specific (longer) href that also matches.
+  const isExactMatch = pathname === item.href;
+  const isPrefixMatch = pathname.startsWith(item.href + "/");
+  const hasMoreSpecificSibling =
+    isPrefixMatch &&
+    allNavHrefs.some(
+      (href) =>
+        href !== item.href &&
+        href.startsWith(item.href + "/") &&
+        (pathname === href || pathname.startsWith(href + "/"))
+    );
+  const isActive = isExactMatch || (isPrefixMatch && !hasMoreSpecificSibling);
   const Icon = item.icon;
 
   return (
@@ -86,17 +112,31 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
-      {item.label}
+      <span className="flex-1">{item.label}</span>
+      {item.badge != null && item.badge > 0 && (
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-gold/20 px-1.5 text-xs font-semibold text-gold">
+          {item.badge}
+        </span>
+      )}
     </Link>
   );
 }
 
 function SidebarContent({
   user,
+  reviewCounts,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const { isSyncing, handleSync } = useSyncMatches();
   const isLinked = !!user.puuid;
+
+  // Inject review badge counts into the tracker nav
+  const totalReview = (reviewCounts?.postGame ?? 0) + (reviewCounts?.vod ?? 0);
+  const trackerNavWithBadges = trackerNav.map((item) =>
+    item.href === "/review" && totalReview > 0
+      ? { ...item, badge: totalReview }
+      : item
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -109,7 +149,12 @@ function SidebarContent({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-gold"
+          className={cn(
+            "h-8 w-8",
+            isLinked
+              ? "text-gold/70 hover:text-gold hover:bg-gold/10 ring-1 ring-gold/20"
+              : "text-muted-foreground"
+          )}
           onClick={handleSync}
           disabled={isSyncing || !isLinked}
           title={isLinked ? "Update games" : "Link Riot account in Settings first"}
@@ -133,7 +178,7 @@ function SidebarContent({
           Tracker
         </div>
         <div className="space-y-1">
-          {trackerNav.map((item) => (
+          {trackerNavWithBadges.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
         </div>
@@ -197,7 +242,7 @@ function SidebarContent({
   );
 }
 
-export function AppSidebar({ user }: SidebarProps) {
+export function AppSidebar({ user, reviewCounts }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -233,6 +278,7 @@ export function AppSidebar({ user }: SidebarProps) {
       >
         <SidebarContent
           user={user}
+          reviewCounts={reviewCounts}
           onNavClick={() => setMobileOpen(false)}
         />
       </aside>
