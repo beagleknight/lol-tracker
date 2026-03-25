@@ -13,7 +13,6 @@ import {
   GraduationCap,
   ClipboardCheck,
   Settings,
-  Upload,
   LogOut,
   ListChecks,
   Menu,
@@ -55,7 +54,6 @@ const coachingNav: NavItem[] = [
 ];
 
 const bottomNav: NavItem[] = [
-  { label: "Merge CSV", href: "/import", icon: Upload },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

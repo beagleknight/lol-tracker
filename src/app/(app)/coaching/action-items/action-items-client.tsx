@@ -65,6 +65,7 @@ function ActionItemRow({ item }: { item: ActionItemWithSession }) {
   }
 
   function handleDelete() {
+    if (!confirm("Delete this action item? This cannot be undone.")) return;
     startDelete(async () => {
       try {
         await deleteActionItem(item.id);

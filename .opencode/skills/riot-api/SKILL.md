@@ -230,6 +230,6 @@ The `rawMatchJson` column stores the full Riot match detail response (50-100KB p
 1. **Never SELECT it on list pages** — use explicit `columns` in Drizzle queries to exclude it. 95 matches x 75KB = 7MB of unnecessary data transfer.
 2. **Only SELECT it on detail pages** — where you need the full participant data for a single match.
 3. **When passing to client components, extract slim data** — don't send the full 75KB JSON as a prop. Extract only the fields the client needs (e.g., participant stats, items, runes) server-side, reducing the RSC payload from ~75KB to ~2KB.
-4. **Exclude from CSV import queries** — if a feature reads matches for processing (not display), it likely doesn't need rawMatchJson either.
+4. **Exclude from processing queries** — if a feature reads matches for processing (not display), it likely doesn't need rawMatchJson either.
 
 See `nextjs-performance` skill for the full server-side data extraction pattern.
