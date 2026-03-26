@@ -54,6 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AUTH_SECRET: smoke-test-secret-at-least-32-characters
+      AUTH_TRUST_HOST: "true"
       NEXT_PUBLIC_DEMO_MODE: "true"
       TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
     steps:
