@@ -603,6 +603,20 @@ export function AnalyticsClient({
                         ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
                         : lpChartMeta.yMax,
                     ]}
+                    ticks={(() => {
+                      const lo = goalTargetLP !== null
+                        ? Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100)
+                        : lpChartMeta.yMin;
+                      const hi = goalTargetLP !== null
+                        ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
+                        : lpChartMeta.yMax;
+                      const ticks: number[] = [];
+                      const firstTier = Math.ceil(lo / LP_PER_TIER) * LP_PER_TIER;
+                      for (let v = firstTier; v <= hi; v += LP_PER_TIER) {
+                        ticks.push(v);
+                      }
+                      return ticks;
+                    })()}
                     tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
                   />
                   <Tooltip
@@ -660,12 +674,30 @@ export function AnalyticsClient({
                       stroke={cc.gold}
                       strokeDasharray="8 4"
                       strokeWidth={2}
-                      label={{
-                        value: t("chartLabels.goalTarget", { rank: goalTargetLabel }),
-                        fill: cc.gold,
-                        fontSize: 11,
-                        fontWeight: "bold",
-                        position: "left",
+                      label={({ viewBox }: { viewBox: { x: number; y: number } }) => {
+                        const label = t("chartLabels.goalTarget", { rank: goalTargetLabel });
+                        return (
+                          <g>
+                            {/* Target/crosshair icon */}
+                            <g transform={`translate(${viewBox.x + 4}, ${viewBox.y - 8})`}>
+                              <circle cx="6" cy="6" r="5" fill="none" stroke={cc.gold} strokeWidth="1.5" />
+                              <circle cx="6" cy="6" r="2" fill={cc.gold} />
+                              <line x1="6" y1="0" x2="6" y2="2.5" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="6" y1="9.5" x2="6" y2="12" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="0" y1="6" x2="2.5" y2="6" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="9.5" y1="6" x2="12" y2="6" stroke={cc.gold} strokeWidth="1.5" />
+                            </g>
+                            <text
+                              x={viewBox.x + 20}
+                              y={viewBox.y - 3}
+                              fill={cc.gold}
+                              fontSize={11}
+                              fontWeight="bold"
+                            >
+                              {label}
+                            </text>
+                          </g>
+                        );
                       }}
                     />
                   )}
