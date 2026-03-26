@@ -100,8 +100,8 @@ function ScoutingReport({
           <h2 className="text-xl font-bold">{t("vs")} {report.matchupChampionName}</h2>
           <div className="flex items-center gap-3 mt-1">
             <span className="text-lg font-mono">
-              <span className="text-green-400">{record.wins}W</span>{" "}
-              <span className="text-red-400">{record.losses}L</span>
+              <span className="text-win">{record.wins}W</span>{" "}
+              <span className="text-loss">{record.losses}L</span>
             </span>
             <Badge
               variant={record.winRate >= 50 ? "default" : "destructive"}
@@ -238,8 +238,8 @@ function ScoutingReport({
                     <span
                       className={`font-bold ${
                         pair.winRate >= 50
-                          ? "text-emerald-400"
-                          : "text-red-400"
+                          ? "text-win"
+                          : "text-loss"
                       }`}
                     >
                       {pair.winRate}%
@@ -333,9 +333,9 @@ function StatCell({
         <p
           className={`text-[10px] font-mono mt-0.5 flex items-center justify-center gap-0.5 ${
             isPositive
-              ? "text-green-400"
+              ? "text-win"
               : isNegative
-              ? "text-red-400"
+              ? "text-loss"
               : "text-muted-foreground"
           }`}
         >

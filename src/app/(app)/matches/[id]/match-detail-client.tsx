@@ -247,7 +247,7 @@ export function MatchDetailClient({
                   </Badge>
                 )}
                 {!match.reviewed && hasAnyNotes && (
-                  <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
+                  <Badge variant="outline" className="gap-1 text-warning border-warning/30">
                     <EyeOff className="h-3 w-3" />
                     {t("pendingReview")}
                   </Badge>
@@ -513,7 +513,7 @@ export function MatchDetailClient({
 
                     {/* Review status badge */}
                     {match.reviewed && !hasReviewNotes && !match.reviewSkippedReason && (
-                      <p className="text-xs text-green-400 flex items-center gap-1.5">
+                      <p className="text-xs text-win flex items-center gap-1.5">
                         <Eye className="h-3 w-3" />
                         {t("markedAsReviewed")}
                       </p>

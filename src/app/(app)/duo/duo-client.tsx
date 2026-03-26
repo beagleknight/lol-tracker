@@ -177,7 +177,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
           </div>
           <p
             className={`text-2xl font-bold ${
-              stats.winRate >= 50 ? "text-emerald-400" : "text-red-400"
+              stats.winRate >= 50 ? "text-win" : "text-loss"
             }`}
           >
             {stats.winRate}%
@@ -196,7 +196,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
           </div>
           <p
             className={`text-2xl font-bold ${
-              stats.soloWinRate >= 50 ? "text-emerald-400" : "text-red-400"
+              stats.soloWinRate >= 50 ? "text-win" : "text-loss"
             }`}
           >
             {stats.soloWinRate}%
@@ -211,9 +211,9 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             {stats.winRate > stats.soloWinRate ? (
-              <TrendingUp className="h-4 w-4 text-emerald-400" />
+              <TrendingUp className="h-4 w-4 text-win" />
             ) : stats.winRate < stats.soloWinRate ? (
-              <TrendingDown className="h-4 w-4 text-red-400" />
+              <TrendingDown className="h-4 w-4 text-loss" />
             ) : (
               <Swords className="h-4 w-4" />
             )}
@@ -222,9 +222,9 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
           <p
             className={`text-2xl font-bold ${
               stats.winRate - stats.soloWinRate > 0
-                ? "text-emerald-400"
+                ? "text-win"
                 : stats.winRate - stats.soloWinRate < 0
-                  ? "text-red-400"
+                  ? "text-loss"
                   : ""
             }`}
           >
@@ -256,9 +256,9 @@ export function DuoKdaCards({
         </CardHeader>
         <CardContent>
           <p className="text-xl font-bold">
-            <span className="text-emerald-400">{stats.avgKills}</span>
+            <span className="text-kills">{stats.avgKills}</span>
             {" / "}
-            <span className="text-red-400">{stats.avgDeaths}</span>
+            <span className="text-deaths">{stats.avgDeaths}</span>
             {" / "}
             <span className="text-gold">{stats.avgAssists}</span>
           </p>
@@ -273,9 +273,9 @@ export function DuoKdaCards({
         </CardHeader>
         <CardContent>
           <p className="text-xl font-bold">
-            <span className="text-emerald-400">{stats.partnerAvgKills}</span>
+            <span className="text-kills">{stats.partnerAvgKills}</span>
             {" / "}
-            <span className="text-red-400">{stats.partnerAvgDeaths}</span>
+            <span className="text-deaths">{stats.partnerAvgDeaths}</span>
             {" / "}
             <span className="text-gold">{stats.partnerAvgAssists}</span>
           </p>
@@ -391,7 +391,7 @@ export function DuoSynergyCard({
               <div className="text-right text-sm">
                 <span
                   className={`font-bold ${
-                    s.winRate >= 50 ? "text-emerald-400" : "text-red-400"
+                    s.winRate >= 50 ? "text-win" : "text-loss"
                   }`}
                 >
                   {s.winRate}%
@@ -462,7 +462,7 @@ export function DuoRecentGames({
                   }
                   className={`w-12 justify-center text-xs ${
                     game.result === "Victory"
-                      ? "bg-emerald-400/20 text-emerald-400 border-emerald-400/30"
+                      ? "bg-win/20 text-win border-win/30"
                       : ""
                   }`}
                 >

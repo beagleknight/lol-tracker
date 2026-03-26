@@ -116,8 +116,8 @@ export function MatchCard({
         href={`/matches/${match.id}`}
         className={`block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${
           isWin
-            ? "border-l-[3px] border-l-green-500/60"
-            : "border-l-[3px] border-l-red-500/60"
+            ? "border-l-[3px] border-l-win/60"
+            : "border-l-[3px] border-l-loss/60"
         }`}
       >
         <div className="flex items-center gap-3 px-4 py-3">
@@ -165,8 +165,8 @@ export function MatchCard({
                       <TooltipTrigger
                         className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
                           hasText
-                            ? "bg-green-400/20 text-green-300"
-                            : "bg-green-400/10 text-green-400"
+                            ? "bg-win/20 text-win-muted"
+                            : "bg-win/10 text-win"
                         }`}
                       >
                         <ThumbsUp className="h-2.5 w-2.5" />
@@ -187,8 +187,8 @@ export function MatchCard({
                       <TooltipTrigger
                         className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
                           hasText
-                            ? "bg-red-400/20 text-red-300"
-                            : "bg-red-400/10 text-red-400"
+                            ? "bg-loss/20 text-loss-muted"
+                            : "bg-loss/10 text-loss"
                         }`}
                       >
                         <ThumbsDown className="h-2.5 w-2.5" />
@@ -255,7 +255,7 @@ export function MatchCard({
             {match.reviewed && (
               <Tooltip>
                 <TooltipTrigger className="cursor-default">
-                  <Eye className="h-3.5 w-3.5 text-green-400/70" />
+                  <Eye className="h-3.5 w-3.5 text-win/70" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-sm">
                   <p className="line-clamp-4 whitespace-pre-wrap">{reviewStatusText}</p>
@@ -265,7 +265,7 @@ export function MatchCard({
             {!match.reviewed && (hasReviewNotes || hasHighlights || hasComment) && (
               <Tooltip>
                 <TooltipTrigger className="cursor-default">
-                  <EyeOff className="h-3.5 w-3.5 text-yellow-500/70" />
+                  <EyeOff className="h-3.5 w-3.5 text-warning/70" />
                 </TooltipTrigger>
                 <TooltipContent>{t("hasNotesNotReviewed")}</TooltipContent>
               </Tooltip>

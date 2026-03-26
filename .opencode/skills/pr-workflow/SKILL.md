@@ -89,9 +89,16 @@ Create the PR with `gh pr create`. The PR body should follow this format:
 ## Summary
 - Brief description of changes
 
+Fixes #N
+<!-- Use "Fixes #N" for each GitHub issue this PR resolves. -->
+<!-- GitHub auto-closes the issue when the PR merges. -->
+<!-- Use "Relates to #N" if the PR partially addresses but doesn't fully close an issue. -->
+
 ## Changelog
 - Version X.Y.Z: <what changed for users>
 ```
+
+**Issue linking is mandatory.** Before creating a PR, check `gh issue list` for related issues. If the PR resolves one or more issues, include `Fixes #N` (one per line) in the PR body. If it partially addresses an issue, use `Relates to #N` instead.
 
 ### 5. CI checks
 
