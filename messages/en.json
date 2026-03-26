@@ -104,7 +104,8 @@
     "notReviewed": "Not Reviewed",
     "hasNotes": "Has Notes",
     "noMatchesFiltered": "No games match your filters.",
-    "noMatchesEmpty": "No matches yet. Click Update Games to get started."
+    "noMatchesEmpty": "No matches yet. Click Update Games to get started.",
+    "exportCsv": "Export CSV"
   },
   "MatchDetail": {
     "reviewed": "Reviewed",
