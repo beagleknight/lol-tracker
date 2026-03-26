@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,6 +21,7 @@ import {
   AlertCircle,
   ChevronRight,
   ChevronLeft,
+  Download,
 } from "lucide-react";
 import type { Match } from "@/db/schema";
 import { getChampionIconUrl } from "@/lib/riot-api";
@@ -66,6 +67,21 @@ function buildMatchesUrl(
   }
   const qs = sp.toString();
   return `/matches${qs ? `?${qs}` : ""}`;
+}
+
+function buildExportUrl(filters: {
+  search: string;
+  result: string;
+  champion: string;
+  review: string;
+}): string {
+  const sp = new URLSearchParams();
+  if (filters.search) sp.set("search", filters.search);
+  if (filters.result !== "all") sp.set("result", filters.result);
+  if (filters.champion !== "all") sp.set("champion", filters.champion);
+  if (filters.review !== "all") sp.set("review", filters.review);
+  const qs = sp.toString();
+  return `/api/export/matches${qs ? `?${qs}` : ""}`;
 }
 
 // ─── Server Pagination ──────────────────────────────────────────────────────
@@ -210,6 +226,16 @@ export function MatchesClient({
             {t("summary", { totalMatches, wins, losses, winRate })}
           </p>
         </div>
+        {totalMatches > 0 && (
+          <a
+            href={buildExportUrl(filters)}
+            download
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {t("exportCsv")}
+          </a>
+        )}
       </div>
 
       {!isRiotLinked && (

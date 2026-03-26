@@ -104,7 +104,8 @@
     "notReviewed": "Sin revisar",
     "hasNotes": "Con notas",
     "noMatchesFiltered": "Ninguna partida coincide con tus filtros.",
-    "noMatchesEmpty": "Sin partidas aún. Haz clic en Actualizar Partidas para empezar."
+    "noMatchesEmpty": "Sin partidas aún. Haz clic en Actualizar Partidas para empezar.",
+    "exportCsv": "Exportar CSV"
   },
   "MatchDetail": {
     "reviewed": "Revisada",
