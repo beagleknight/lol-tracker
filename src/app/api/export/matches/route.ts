@@ -111,7 +111,7 @@ export async function GET(request: Request) {
 
   // Build WHERE conditions
   const conditions = [eq(matches.userId, user.id)];
-  if (result === "Victory" || result === "Defeat") {
+  if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));
   }
   if (champion !== "all") {

@@ -35,7 +35,7 @@ export const matches = sqliteTable("matches", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   gameDate: integer("game_date", { mode: "timestamp" }).notNull(),
-  result: text("result", { enum: ["Victory", "Defeat"] }).notNull(),
+  result: text("result", { enum: ["Victory", "Defeat", "Remake"] }).notNull(),
   championId: integer("champion_id").notNull(),
   championName: text("champion_name").notNull(),
   runeKeystoneId: integer("rune_keystone_id"),

@@ -1,0 +1,12 @@
+---
+version: "1.6.1"
+date: "2026-03-26"
+title: "Remake Detection"
+---
+
+Games that ended as **remakes** (early surrenders before 5 minutes) are now correctly identified and excluded from your stats.
+
+- **Automatic detection** during sync — remakes show a grey "R" badge instead of a win/loss
+- **Excluded from all stats** — win rates, streaks, matchup analytics, duo stats, and coaching progress no longer count remakes
+- **Filterable** — use the "Remakes" option in the result filter on the Matches page
+- **Backfill script** included — run `npx tsx scripts/backfill-remakes.ts` to retroactively fix existing matches

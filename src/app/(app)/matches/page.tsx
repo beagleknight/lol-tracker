@@ -24,7 +24,7 @@ export default async function MatchesPage({
 
   // Build WHERE conditions
   const conditions = [eq(matches.userId, user.id)];
-  if (result === "Victory" || result === "Defeat") {
+  if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));
   }
   if (champion !== "all") {
@@ -103,6 +103,7 @@ export default async function MatchesPage({
       .select({
         wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
         losses: sql<number>`SUM(CASE WHEN ${matches.result} = 'Defeat' THEN 1 ELSE 0 END)`,
+        remakes: sql<number>`SUM(CASE WHEN ${matches.result} = 'Remake' THEN 1 ELSE 0 END)`,
       })
       .from(matches)
       .where(whereClause),

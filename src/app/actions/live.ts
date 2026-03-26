@@ -16,7 +16,7 @@ import { scoutTag } from "@/lib/cache";
 interface MatchupGameDetail {
   matchId: string;
   gameDate: Date;
-  result: "Victory" | "Defeat";
+  result: "Victory" | "Defeat" | "Remake";
   championName: string;
   matchupChampionName: string | null;
   kills: number;
@@ -122,14 +122,15 @@ async function getCachedMatchupReport(
     return null;
   }
 
-  // Build record
-  const wins = matchRows.filter((m) => m.result === "Victory").length;
-  const losses = matchRows.length - wins;
+  // Build record (exclude remakes)
+  const meaningfulMatches = matchRows.filter((m) => m.result !== "Remake");
+  const wins = meaningfulMatches.filter((m) => m.result === "Victory").length;
+  const losses = meaningfulMatches.length - wins;
   const record = {
     wins,
     losses,
-    total: matchRows.length,
-    winRate: Math.round((wins / matchRows.length) * 100),
+    total: meaningfulMatches.length,
+    winRate: meaningfulMatches.length > 0 ? Math.round((wins / meaningfulMatches.length) * 100) : 0,
   };
 
   // Last played
@@ -141,6 +142,7 @@ async function getCachedMatchupReport(
     { games: number; wins: number; losses: number }
   >();
   for (const m of matchRows) {
+    if (m.result === "Remake") continue; // Skip remakes from rune stats
     const rune = m.runeKeystoneName || "Unknown";
     const existing = runeMap.get(rune) || { games: 0, wins: 0, losses: 0 };
     existing.games++;
@@ -298,6 +300,7 @@ async function getCachedMatchupReport(
     { yourChampion: string; duoChampion: string; games: number; wins: number }
   >();
   for (const g of games) {
+    if (g.result === "Remake") continue; // Skip remakes
     if (g.duoPartnerPuuid && g.duoPartnerChampionName) {
       const key = `${g.championName}|${g.duoPartnerChampionName}`;
       const existing = duoPairMap.get(key) || {

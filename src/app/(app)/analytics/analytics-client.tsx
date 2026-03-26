@@ -201,13 +201,15 @@ function computeRollingWinRate(
   locale: string,
   window = 10
 ): Array<{ index: number; date: string; winRate: number }> {
+  // Exclude remakes from rolling win rate
+  const meaningful = matches.filter((m) => m.result !== "Remake");
   const data: Array<{ index: number; date: string; winRate: number }> = [];
-  for (let i = 0; i < matches.length; i++) {
+  for (let i = 0; i < meaningful.length; i++) {
     const start = Math.max(0, i - window + 1);
-    const slice = matches.slice(start, i + 1);
+    const slice = meaningful.slice(start, i + 1);
     const wins = slice.filter((m) => m.result === "Victory").length;
     const wr = Math.round((wins / slice.length) * 100);
-    const dateStr = formatDate(matches[i].gameDate, locale, "short-compact");
+    const dateStr = formatDate(meaningful[i].gameDate, locale, "short-compact");
     data.push({ index: i + 1, date: dateStr, winRate: wr });
   }
   return data;
@@ -219,6 +221,7 @@ function computeMatchupStats(matches: AnalyticsMatch[]) {
     { wins: number; losses: number; games: number }
   >();
   for (const m of matches) {
+    if (m.result === "Remake") continue; // Skip remakes
     const name = m.matchupChampionName || "Unknown";
     const existing = stats.get(name) || { wins: 0, losses: 0, games: 0 };
     existing.games++;
@@ -241,6 +244,7 @@ function computeRuneStats(matches: AnalyticsMatch[]) {
     { wins: number; losses: number; games: number }
   >();
   for (const m of matches) {
+    if (m.result === "Remake") continue; // Skip remakes
     const name = m.runeKeystoneName || "Unknown";
     const existing = stats.get(name) || { wins: 0, losses: 0, games: 0 };
     existing.games++;
@@ -270,6 +274,7 @@ function computeChampionStats(matches: AnalyticsMatch[]) {
     }
   >();
   for (const m of matches) {
+    if (m.result === "Remake") continue; // Skip remakes
     const existing = stats.get(m.championName) || {
       wins: 0,
       losses: 0,

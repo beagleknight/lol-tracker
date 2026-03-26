@@ -85,9 +85,14 @@ export default async function DashboardPage() {
     // Aggregate stats instead of fetching ALL matches
     db
       .select({
-        total: count(),
+        total: count(
+          sql`CASE WHEN ${matches.result} != 'Remake' THEN 1 END`
+        ),
         wins: count(
           sql`CASE WHEN ${matches.result} = 'Victory' THEN 1 END`
+        ),
+        remakes: count(
+          sql`CASE WHEN ${matches.result} = 'Remake' THEN 1 END`
         ),
         unreviewed: count(
           sql`CASE WHEN ${matches.reviewed} = 0 THEN 1 END`
@@ -125,9 +130,10 @@ export default async function DashboardPage() {
   ]);
 
   const latestRankOrUndef = latestRank ?? null;
-  const { total, wins, unreviewed, vodPending } = matchStats[0] ?? {
+  const { total, wins, remakes: _remakes, unreviewed, vodPending } = matchStats[0] ?? {
     total: 0,
     wins: 0,
+    remakes: 0,
     unreviewed: 0,
     vodPending: 0,
   };
