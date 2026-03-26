@@ -9,6 +9,7 @@ export const duoTag = (userId: string) => `duo-${userId}`;
 export const analyticsTag = (userId: string) => `analytics-${userId}`;
 export const coachingTag = (userId: string) => `coaching-${userId}`;
 export const scoutTag = (userId: string) => `scout-${userId}`;
+export const goalsTag = (userId: string) => `goals-${userId}`;
 
 // ─── Invalidation Helpers ───────────────────────────────────────────────────
 // Call these from mutation actions / API routes after writing to the DB.
@@ -20,6 +21,7 @@ export function invalidateAllCaches(userId: string) {
   revalidateTag(analyticsTag(userId), "max");
   revalidateTag(coachingTag(userId), "max");
   revalidateTag(scoutTag(userId), "max");
+  revalidateTag(goalsTag(userId), "max");
 }
 
 /** Invalidate caches affected by match review changes. */
@@ -44,4 +46,9 @@ export function invalidateDuoBackfillCaches(userId: string) {
   revalidateTag(duoTag(userId), "max");
   revalidateTag(analyticsTag(userId), "max");
   revalidateTag(scoutTag(userId), "max");
+}
+
+/** Invalidate caches affected by goal mutations. */
+export function invalidateGoalsCaches(userId: string) {
+  revalidateTag(goalsTag(userId), "max");
 }

@@ -201,9 +201,41 @@ export const matchHighlights = sqliteTable("match_highlights", {
   index("match_highlights_user_idx").on(table.userId),
 ]);
 
+// ─── Goals ───────────────────────────────────────────────────────────────────
+
+export const goals = sqliteTable("goals", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(), // e.g. "Reach Platinum IV"
+  // Target rank
+  targetTier: text("target_tier").notNull(), // e.g. "PLATINUM"
+  targetDivision: text("target_division"), // e.g. "IV" (null for Master+)
+  // Starting rank (captured at goal creation for progress calculation)
+  startTier: text("start_tier").notNull(),
+  startDivision: text("start_division"),
+  startLp: integer("start_lp").notNull().default(0),
+  // Status lifecycle: active → achieved | retired
+  status: text("status", { enum: ["active", "achieved", "retired"] })
+    .notNull()
+    .default("active"),
+  // Optional soft deadline
+  deadline: integer("deadline", { mode: "timestamp" }),
+  // Timestamps
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  achievedAt: integer("achieved_at", { mode: "timestamp" }),
+  retiredAt: integer("retired_at", { mode: "timestamp" }),
+}, (table) => [
+  index("goals_user_status_idx").on(table.userId, table.status),
+]);
+
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type Match = typeof matches.$inferSelect;
 export type RankSnapshot = typeof rankSnapshots.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
+export type Goal = typeof goals.$inferSelect;

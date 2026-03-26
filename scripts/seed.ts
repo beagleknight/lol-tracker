@@ -298,11 +298,27 @@ async function seed() {
       topic TEXT,
       created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      target_tier TEXT NOT NULL,
+      target_division TEXT,
+      start_tier TEXT NOT NULL,
+      start_division TEXT,
+      start_lp INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active',
+      deadline INTEGER,
+      created_at INTEGER NOT NULL,
+      achieved_at INTEGER,
+      retired_at INTEGER
+    );
   `);
 
   // Clear existing data (order matters for foreign keys)
   console.log("Clearing existing data...");
   await client.executeMultiple(`
+    DELETE FROM goals;
     DELETE FROM match_highlights;
     DELETE FROM coaching_action_items;
     DELETE FROM coaching_session_matches;
@@ -634,6 +650,37 @@ async function seed() {
     });
   }
 
+  // ─── Goals ────────────────────────────────────────────────────────────────
+  console.log("Creating goals...");
+
+  // Goal 1: Achieved — "Reach Gold IV" (started in Silver I, achieved ~Feb 7)
+  await client.execute({
+    sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_USER_ID, "Reach Gold IV", "GOLD", "IV",
+      "SILVER", "I", 50, "achieved",
+      null,
+      ts(new Date("2026-01-10T18:00:00Z")), // created when season started
+      ts(new Date("2026-02-07T14:30:00Z")), // achieved when hit Gold IV
+      null,
+    ],
+  });
+
+  // Goal 2: Active — "Reach Platinum IV" (started in Gold III)
+  await client.execute({
+    sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_USER_ID, "Reach Platinum IV", "PLATINUM", "IV",
+      "GOLD", "III", 5, "active",
+      ts(new Date("2026-06-30T23:59:59Z")), // end of Split 2 deadline
+      ts(new Date("2026-03-10T10:00:00Z")), // created mid-March
+      null,
+      null,
+    ],
+  });
+
   // ─── Summary ─────────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
   console.log(`  Users:            2`);
@@ -642,6 +689,7 @@ async function seed() {
   console.log(`  Coaching sessions: ${sessions.length}`);
   console.log(`  Action items:     ${actionItems.length}`);
   console.log(`  Highlights:       ${highlights.length}`);
+  console.log(`  Goals:            2`);
   console.log(`  Invites:          1`);
   console.log(`\nDemo user login:`);
   console.log(`  Name: ${MAIN_USER.name}`);

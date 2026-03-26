@@ -5,10 +5,12 @@ import {
   rankSnapshots,
   coachingActionItems,
   coachingSessions,
+  goals,
 } from "@/db/schema";
 import { eq, desc, and, count, sql, asc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
+import { toCumulativeLP } from "@/lib/rank";
 import { DashboardClient } from "./dashboard-client";
 
 export default async function DashboardPage() {
@@ -23,6 +25,7 @@ export default async function DashboardPage() {
     inProgressActionItems,
     matchStats,
     upcomingSession,
+    activeGoal,
   ] = await Promise.all([
     getLatestVersion(),
 
@@ -114,6 +117,11 @@ export default async function DashboardPage() {
         vodMatchId: true,
       },
     }),
+
+    // Active goal (for dashboard widget)
+    db.query.goals.findFirst({
+      where: and(eq(goals.userId, user.id), eq(goals.status, "active")),
+    }),
   ]);
 
   const latestRankOrUndef = latestRank ?? null;
@@ -144,18 +152,9 @@ export default async function DashboardPage() {
     });
 
     if (baseline?.tier && baseline.id !== latestRankOrUndef.id) {
-      const TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
-      const DIV_ORDER = ["IV", "III", "II", "I"];
-      function toCumLP(tier: string, division: string | null, lp: number) {
-        const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase());
-        if (tierIdx === -1) return 0;
-        const isMaster = tierIdx >= TIER_ORDER.indexOf("MASTER");
-        const divIdx = isMaster ? 0 : DIV_ORDER.indexOf(division || "IV");
-        return tierIdx * 400 + (divIdx < 0 ? 0 : divIdx) * 100 + lp;
-      }
-      const newLP = toCumLP(latestRankOrUndef.tier!, latestRankOrUndef.division, latestRankOrUndef.lp || 0);
-      const oldLP = toCumLP(baseline.tier, baseline.division, baseline.lp || 0);
-      lpTrend = newLP - oldLP;
+      const newLP = toCumulativeLP(latestRankOrUndef.tier!, latestRankOrUndef.division, latestRankOrUndef.lp || 0);
+      const oldLP = toCumulativeLP(baseline.tier, baseline.division, baseline.lp || 0);
+      lpTrend = (newLP ?? 0) - (oldLP ?? 0);
     }
   }
 
@@ -173,6 +172,12 @@ export default async function DashboardPage() {
       lpTrend={lpTrend}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
+      activeGoal={activeGoal ?? null}
+      currentRank={latestRankOrUndef?.tier ? {
+        tier: latestRankOrUndef.tier,
+        division: latestRankOrUndef.division,
+        lp: latestRankOrUndef.lp ?? 0,
+      } : null}
       ddragonVersion={ddragonVersion}
     />
   );
