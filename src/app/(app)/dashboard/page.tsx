@@ -95,11 +95,11 @@ export default async function DashboardPage() {
           sql`CASE WHEN ${matches.result} = 'Remake' THEN 1 END`
         ),
         unreviewed: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 THEN 1 END`
+          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 END`
         ),
         // VOD-pending: unreviewed games that already have post-game notes (comment or highlights)
         vodPending: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 AND (
+          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
             ${matches.comment} IS NOT NULL
             OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
           ) THEN 1 END`

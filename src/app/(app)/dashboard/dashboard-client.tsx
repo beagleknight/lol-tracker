@@ -153,22 +153,23 @@ export function DashboardClient({
       ? Math.round((totalWins / matchStats.total) * 100)
       : 0;
 
-  // Average KDA from recent matches
+  // Average KDA from recent matches (excluding remakes)
+  const meaningfulRecent = recentMatches.filter((m) => m.result !== "Remake");
   const avgKills =
-    recentMatches.length > 0
-      ? (recentMatches.reduce((s, m) => s + m.kills, 0) / recentMatches.length).toFixed(1)
+    meaningfulRecent.length > 0
+      ? (meaningfulRecent.reduce((s, m) => s + m.kills, 0) / meaningfulRecent.length).toFixed(1)
       : "0";
   const avgDeaths =
-    recentMatches.length > 0
-      ? (recentMatches.reduce((s, m) => s + m.deaths, 0) / recentMatches.length).toFixed(1)
+    meaningfulRecent.length > 0
+      ? (meaningfulRecent.reduce((s, m) => s + m.deaths, 0) / meaningfulRecent.length).toFixed(1)
       : "0";
   const avgAssists =
-    recentMatches.length > 0
-      ? (recentMatches.reduce((s, m) => s + m.assists, 0) / recentMatches.length).toFixed(1)
+    meaningfulRecent.length > 0
+      ? (meaningfulRecent.reduce((s, m) => s + m.assists, 0) / meaningfulRecent.length).toFixed(1)
       : "0";
   const avgCS =
-    recentMatches.length > 0
-      ? (recentMatches.reduce((s, m) => s + m.cs, 0) / recentMatches.length).toFixed(0)
+    meaningfulRecent.length > 0
+      ? (meaningfulRecent.reduce((s, m) => s + m.cs, 0) / meaningfulRecent.length).toFixed(0)
       : "0";
 
   // Games needing review
@@ -336,7 +337,9 @@ export function DashboardClient({
                       className={`w-1 h-8 rounded-full ${
                          match.result === "Victory"
                           ? "bg-win"
-                          : "bg-loss"
+                          : match.result === "Remake"
+                            ? "bg-muted-foreground/40"
+                            : "bg-loss"
                       }`}
                     />
                     <Image
@@ -387,11 +390,11 @@ export function DashboardClient({
                     </div>
                     <Badge
                       variant={
-                        match.result === "Victory" ? "default" : "destructive"
+                        match.result === "Victory" ? "default" : match.result === "Remake" ? "secondary" : "destructive"
                       }
                       className="text-xs w-6 justify-center"
                     >
-                      {match.result === "Victory" ? t("winShort") : t("lossShort")}
+                      {match.result === "Victory" ? t("winShort") : match.result === "Remake" ? t("remakeShort") : t("lossShort")}
                     </Badge>
                   </Link>
                 ))}
