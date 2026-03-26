@@ -42,93 +42,9 @@ import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
 import type { RankSnapshot } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { toCumulativeLP, getTierBoundaries, formatRank } from "@/lib/rank";
+import { filterMeaningful } from "@/lib/match-result";
 import { ChampionLink } from "@/components/champion-link";
-
-// ─── LP / Rank Utilities ─────────────────────────────────────────────────────
-
-const TIER_ORDER = [
-  "IRON",
-  "BRONZE",
-  "SILVER",
-  "GOLD",
-  "PLATINUM",
-  "EMERALD",
-  "DIAMOND",
-  "MASTER",
-  "GRANDMASTER",
-  "CHALLENGER",
-] as const;
-
-const DIVISION_ORDER = ["IV", "III", "II", "I"] as const;
-
-// LP per division = 100, 4 divisions per tier (except Master+ which has no divisions)
-const LP_PER_DIVISION = 100;
-const DIVISIONS_PER_TIER = 4;
-const LP_PER_TIER = LP_PER_DIVISION * DIVISIONS_PER_TIER; // 400
-
-/**
- * Convert tier + division + lp into a single cumulative LP number.
- * Iron IV 0 LP = 0, Iron III 0 LP = 100, Bronze IV 0 LP = 400, etc.
- * Master+ tiers have no divisions, treated as division I.
- */
-function toCumulativeLP(
-  tier: string | null | undefined,
-  division: string | null | undefined,
-  lp: number | null | undefined
-): number | null {
-  if (!tier) return null;
-  const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase() as typeof TIER_ORDER[number]);
-  if (tierIdx === -1) return null;
-
-  // Master+ have no divisions — treat as single division
-  const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
-  const divIdx = isMasterPlus
-    ? 0
-    : DIVISION_ORDER.indexOf((division || "IV") as typeof DIVISION_ORDER[number]);
-
-  const baseLp = tierIdx * LP_PER_TIER;
-  const divLp = (divIdx < 0 ? 0 : divIdx) * LP_PER_DIVISION;
-  return baseLp + divLp + (lp || 0);
-}
-
-/** Get tier boundaries for reference lines within a given LP range */
-function getTierBoundaries(
-  minLP: number,
-  maxLP: number
-): Array<{ lp: number; label: string }> {
-  const boundaries: Array<{ lp: number; label: string }> = [];
-  for (let i = 0; i < TIER_ORDER.length; i++) {
-    const boundary = i * LP_PER_TIER;
-    if (boundary > minLP && boundary < maxLP) {
-      const tierName =
-        TIER_ORDER[i].charAt(0) + TIER_ORDER[i].slice(1).toLowerCase();
-      boundaries.push({ lp: boundary, label: tierName });
-    }
-  }
-  return boundaries;
-}
-
-/** Format cumulative LP back to human-readable rank string */
-function formatRank(cumulativeLP: number): string {
-  const tierIdx = Math.min(
-    Math.floor(cumulativeLP / LP_PER_TIER),
-    TIER_ORDER.length - 1
-  );
-  const tier = TIER_ORDER[tierIdx];
-  const tierName = tier.charAt(0) + tier.slice(1).toLowerCase();
-
-  const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
-  if (isMasterPlus) {
-    const lp = cumulativeLP - tierIdx * LP_PER_TIER;
-    return `${tierName} ${lp} LP`;
-  }
-
-  const lpInTier = cumulativeLP - tierIdx * LP_PER_TIER;
-  const divIdx = Math.min(Math.floor(lpInTier / LP_PER_DIVISION), 3);
-  const division = DIVISION_ORDER[divIdx];
-  const lp = lpInTier - divIdx * LP_PER_DIVISION;
-  return `${tierName} ${division} — ${lp} LP`;
-}
 
 /** Prepare rank snapshot data for the LP chart */
 function prepareRankChartData(snapshots: RankSnapshot[], locale: string) {
@@ -394,14 +310,17 @@ export function AnalyticsClient({
   }
 
   // Coaching session indices for shaded bands between consecutive sessions
+  // Must use the same filtered (remake-excluded) array that rollingWR uses,
+  // so band indices align with chart x-axis values.
   const coachingBands = useMemo(() => {
-    // Map each session to its closest match index
+    const meaningful = matches.filter((m) => m.result !== "Remake");
+    // Map each session to its closest match index in the filtered array
     const sessionIndices = coachingSessions.map((s) => {
       const sessionTime = s.date.getTime();
       let closestIdx = 0;
       let closestDiff = Infinity;
-      for (let i = 0; i < matches.length; i++) {
-        const diff = Math.abs(matches[i].gameDate.getTime() - sessionTime);
+      for (let i = 0; i < meaningful.length; i++) {
+        const diff = Math.abs(meaningful[i].gameDate.getTime() - sessionTime);
         if (diff < closestDiff) {
           closestDiff = diff;
           closestIdx = i;
@@ -524,6 +443,8 @@ export function AnalyticsClient({
     return null; // Use original
   }, [lpChartMeta, goalTargetLP]);
 
+  const meaningfulCount = useMemo(() => filterMeaningful(matches).length, [matches]);
+
   if (matches.length === 0) {
     return (
       <div className="space-y-6">
@@ -549,7 +470,7 @@ export function AnalyticsClient({
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">
-          {t("gamesAnalyzed", { count: matches.length })}
+          {t("gamesAnalyzed", { count: meaningfulCount })}
         </p>
       </div>
 

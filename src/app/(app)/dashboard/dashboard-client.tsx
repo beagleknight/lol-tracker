@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Card,
@@ -24,7 +25,7 @@ import {
   Calendar,
   Target,
 } from "lucide-react";
-import type { RankSnapshot, CoachingActionItem, Goal } from "@/db/schema";
+import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { formatDuration, formatDate, DEFAULT_LOCALE } from "@/lib/format";
@@ -36,7 +37,7 @@ import {
 interface DashboardMatch {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat" | "Remake";
+  result: MatchResult;
   championId: number;
   championName: string;
   runeKeystoneId: number | null;
@@ -333,15 +334,7 @@ export function DashboardClient({
                     href={`/matches/${match.id}`}
                     className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
                   >
-                    <div
-                      className={`w-1 h-8 rounded-full ${
-                         match.result === "Victory"
-                          ? "bg-win"
-                          : match.result === "Remake"
-                            ? "bg-muted-foreground/40"
-                            : "bg-loss"
-                      }`}
-                    />
+                    <ResultBar result={match.result} />
                     <Image
                       src={getChampionIconUrl(ddragonVersion, match.championName)}
                       alt={match.championName}
@@ -388,14 +381,7 @@ export function DashboardClient({
                         {t("csLabel", { cs: match.cs })}
                       </div>
                     </div>
-                    <Badge
-                      variant={
-                        match.result === "Victory" ? "default" : match.result === "Remake" ? "secondary" : "destructive"
-                      }
-                      className="text-xs w-6 justify-center"
-                    >
-                      {match.result === "Victory" ? t("winShort") : match.result === "Remake" ? t("remakeShort") : t("lossShort")}
-                    </Badge>
+                    <ResultBadge result={match.result} className="w-6 justify-center" />
                   </Link>
                 ))}
               </div>

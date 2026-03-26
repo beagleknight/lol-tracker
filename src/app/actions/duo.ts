@@ -1,13 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { matches, users } from "@/db/schema";
+import { matches, users, type MatchResult } from "@/db/schema";
 import { eq, and, isNotNull, desc, sql, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { cacheLife, cacheTag } from "next/cache";
 import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
 import type { RiotMatch } from "@/lib/riot-api";
+import { duoStatsSelect, championSynergySelect } from "@/lib/match-queries";
 
 const PAGE_SIZE = 10;
 
@@ -40,7 +41,7 @@ export interface DuoStats {
 export interface DuoGameRow {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat" | "Remake";
+  result: MatchResult;
   championName: string;
   kills: number;
   deaths: number;
@@ -95,19 +96,10 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
   });
   if (!user?.duoPartnerUserId) return null;
 
-  // Run duo + solo aggregations in parallel — no rawMatchJson needed
+  // Run duo + solo aggregations in parallel — excludes remakes from totals
   const [duoAgg, soloAgg] = await Promise.all([
     db
-      .select({
-        totalGames: count(),
-        wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
-        avgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.kills} END)`,
-        avgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.deaths} END)`,
-        avgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.assists} END)`,
-        partnerAvgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerKills} END)`,
-        partnerAvgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerDeaths} END)`,
-        partnerAvgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerAssists} END)`,
-      })
+      .select(duoStatsSelect())
       .from(matches)
       .where(
         and(
@@ -117,7 +109,7 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
       ),
     db
       .select({
-        totalGames: count(),
+        totalGames: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`,
         wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
       })
       .from(matches)
@@ -278,8 +270,7 @@ async function getCachedChampionSynergy(
     .select({
       yourChampion: matches.championName,
       partnerChampion: matches.duoPartnerChampionName,
-      games: sql<number>`count(*)`.as("games"),
-      wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
+      ...championSynergySelect,
     })
     .from(matches)
     .where(
@@ -290,7 +281,7 @@ async function getCachedChampionSynergy(
       )
     )
     .groupBy(matches.championName, matches.duoPartnerChampionName)
-    .orderBy(sql`count(*) desc`)
+    .orderBy(sql`games desc`)
     .limit(15);
 
   return rows

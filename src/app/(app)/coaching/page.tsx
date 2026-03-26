@@ -8,6 +8,7 @@ import {
 import { eq, desc, and, gt, lte, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
+import { isMeaningful } from "@/lib/match-result";
 import { cacheLife, cacheTag } from "next/cache";
 import { coachingTag } from "@/lib/cache";
 import { CoachingHubClient } from "./coaching-hub-client";
@@ -123,10 +124,11 @@ async function getCachedCoachingHubData(userId: string) {
         },
       });
 
-      const wins = intervalMatches.filter(
+      const meaningfulGames = intervalMatches.filter((m) => isMeaningful(m.result));
+      const wins = meaningfulGames.filter(
         (m) => m.result === "Victory"
       ).length;
-      const losses = intervalMatches.length - wins;
+      const losses = meaningfulGames.length - wins;
 
       // Count relevant highlights in these matches
       let relevantNoteCount = 0;
@@ -147,7 +149,7 @@ async function getCachedCoachingHubData(userId: string) {
 
       intervals.set(current.id, {
         sessionId: current.id,
-        matchCount: intervalMatches.length,
+        matchCount: meaningfulGames.length,
         wins,
         losses,
         relevantNoteCount,

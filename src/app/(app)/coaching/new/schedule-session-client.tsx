@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ResultBar } from "@/components/result-badge";
 import {
   Card,
   CardContent,
@@ -57,6 +58,7 @@ export function ScheduleSessionClient({
   const { data: authSession } = useSession();
   const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("ScheduleSession");
+  const tCommon = useTranslations("Common");
   const [isPending, startTransition] = useTransition();
 
   const [coachName, setCoachName] = useState("");
@@ -241,13 +243,7 @@ export function ScheduleSessionClient({
                     >
                       {isSelected && <Check className="h-3 w-3" />}
                     </div>
-                    <div
-                      className={`w-1 h-6 rounded-full ${
-                         match.result === "Victory"
-                          ? "bg-win"
-                          : "bg-loss"
-                      }`}
-                    />
+                    <ResultBar result={match.result} size="sm" />
                     <span className="text-sm font-medium inline-flex items-center gap-1.5">
                       <Image
                         src={getChampionIconUrl(
@@ -313,7 +309,7 @@ export function ScheduleSessionClient({
                 {t("matchPreviewLabel", {
                   championName: selectedMatch.championName,
                   matchupChampionName: selectedMatch.matchupChampionName || "?",
-                  result: selectedMatch.result === "Victory" ? t("resultWin") : t("resultLoss"),
+                  result: selectedMatch.result === "Victory" ? tCommon("resultW") : selectedMatch.result === "Remake" ? tCommon("resultR") : tCommon("resultL"),
                 })}
               </p>
 

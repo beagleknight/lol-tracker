@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
+import { ResultBadge } from "@/components/result-badge";
 import {
   Tooltip,
   TooltipTrigger,
@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import type { MatchResult } from "@/lib/match-result";
+import { resultBorderColor } from "@/lib/match-result";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +36,7 @@ export interface MatchHighlightData {
 interface MatchCardData {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat" | "Remake" | string;
+  result: MatchResult;
   championName: string;
   matchupChampionName: string | null;
   kills: number;
@@ -89,8 +91,6 @@ export function MatchCard({
   locale?: string;
 }) {
   const t = useTranslations("MatchCard");
-  const isWin = match.result === "Victory";
-  const isRemake = match.result === "Remake";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
   const kda =
@@ -115,13 +115,7 @@ export function MatchCard({
     <TooltipProvider>
       <Link
         href={`/matches/${match.id}`}
-        className={`block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${
-          isRemake
-            ? "border-l-[3px] border-l-muted-foreground/40"
-            : isWin
-            ? "border-l-[3px] border-l-win/60"
-            : "border-l-[3px] border-l-loss/60"
-        }`}
+        className={`block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 border-l-[3px] ${resultBorderColor(match.result)}`}
       >
         <div className="flex items-center gap-3 px-4 py-3">
           {/* Champion */}
@@ -277,12 +271,7 @@ export function MatchCard({
 
           {/* Result + Date */}
           <div className="flex flex-col items-end gap-0.5 shrink-0">
-            <Badge
-              variant={isRemake ? "secondary" : isWin ? "default" : "destructive"}
-              className="text-xs"
-            >
-              {isRemake ? t("remake") : isWin ? t("win") : t("loss")}
-            </Badge>
+            <ResultBadge result={match.result} />
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
               {formatDate(match.gameDate, locale)}
             </span>

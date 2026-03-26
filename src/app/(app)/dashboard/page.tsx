@@ -139,20 +139,23 @@ export default async function DashboardPage() {
   };
   const postGamePending = unreviewed - vodPending;
 
-  // LP trend: compare latest rank snapshot vs. an older one.
-  // Each sync creates 1-2 snapshots (timestamped at sync time, not match time).
-  // We skip back ~20 snapshots (~10 syncs) to find the baseline rank, giving
-  // a "LP change over recent sessions" indicator.
+  // LP trend: compare first vs. last rank snapshot within the timeframe of
+  // the last 10 games, giving a consistent "LP change over recent games"
+  // indicator that aligns with the analytics page.
   let lpTrend: number | null = null;
   if (latestRankOrUndef?.tier && recentMatches.length >= 2) {
-    const baseSnapshot = await db.query.rankSnapshots.findFirst({
-      where: eq(rankSnapshots.userId, user.id),
-      orderBy: desc(rankSnapshots.capturedAt),
-      offset: 20,
-    });
+    // Find the oldest game date in recent matches for the baseline window
+    const oldestGameDate = recentMatches[recentMatches.length - 1].gameDate;
 
-    // Fall back to the very oldest snapshot if we don't have 20+ yet
-    const baseline = baseSnapshot ?? await db.query.rankSnapshots.findFirst({
+    // Baseline: the latest snapshot captured at or before the oldest recent game
+    const baseline = await db.query.rankSnapshots.findFirst({
+      where: and(
+        eq(rankSnapshots.userId, user.id),
+        sql`${rankSnapshots.capturedAt} <= ${oldestGameDate}`
+      ),
+      orderBy: desc(rankSnapshots.capturedAt),
+    }) ?? await db.query.rankSnapshots.findFirst({
+      // Fall back to the very oldest snapshot if none predates the window
       where: eq(rankSnapshots.userId, user.id),
       orderBy: asc(rankSnapshots.capturedAt),
     });

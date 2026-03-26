@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ResultBadge } from "@/components/result-badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/pagination";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
@@ -456,22 +456,14 @@ export function DuoRecentGames({
                 href={`/matches/${game.id}`}
                 className="flex items-center gap-3 flex-wrap sm:flex-nowrap rounded-lg border border-border/50 p-3 bg-surface-elevated hover:bg-accent transition-colors"
               >
-                <Badge
-                  variant={
-                    game.result === "Remake"
-                      ? "secondary"
-                      : game.result === "Victory"
-                      ? "default"
-                      : "destructive"
-                  }
-                  className={`w-12 justify-center text-xs ${
+                <ResultBadge
+                  result={game.result}
+                  className={`w-12 justify-center ${
                     game.result === "Victory"
                       ? "bg-win/20 text-win border-win/30"
                       : ""
                   }`}
-                >
-                  {game.result === "Remake" ? t("recentGames.resultRemake") : game.result === "Victory" ? t("recentGames.resultWin") : t("recentGames.resultLoss")}
-                </Badge>
+                />
 
                 <div className="flex items-center gap-2 min-w-0">
                   <ChampionIcon

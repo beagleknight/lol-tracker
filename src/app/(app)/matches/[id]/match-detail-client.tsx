@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ResultBadge } from "@/components/result-badge";
 import {
   Card,
   CardContent,
@@ -233,17 +234,7 @@ export function MatchDetailClient({
                     className="hover:bg-accent/30"
                   />
                 </h1>
-                <Badge
-                  variant={
-                    match.result === "Remake"
-                      ? "secondary"
-                      : match.result === "Victory"
-                      ? "default"
-                      : "destructive"
-                  }
-                >
-                  {match.result}
-                </Badge>
+                <ResultBadge result={match.result} format="long" />
                 {match.reviewed && (
                   <Badge variant="secondary" className="gap-1">
                     <Eye className="h-3 w-3" />

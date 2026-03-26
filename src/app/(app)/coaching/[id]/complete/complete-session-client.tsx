@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ResultBadge } from "@/components/result-badge";
 import {
   Card,
   CardContent,
@@ -203,14 +204,7 @@ export function CompleteSessionClient({
                 <span className="text-xs text-muted-foreground">
                   {t("vs")} {vodMatch.matchupChampionName || "?"}
                 </span>
-                <Badge
-                  variant={
-                    vodMatch.result === "Victory" ? "default" : "destructive"
-                  }
-                  className="text-xs"
-                >
-                  {vodMatch.result === "Victory" ? t("resultWin") : t("resultLoss")}
-                </Badge>
+                <ResultBadge result={vodMatch.result} />
               </div>
             )}
           </div>
