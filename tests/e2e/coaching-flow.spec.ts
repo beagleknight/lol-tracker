@@ -175,17 +175,18 @@ test.describe("Coaching flow", () => {
       page.locator('[data-slot="badge"]:has-text("Completed")').first()
     ).toBeVisible();
 
-    // Verify notes are displayed
+    // Verify notes are displayed (may appear in both the notes card and
+    // highlight sections — use .first() to avoid strict mode violation)
     await expect(
-      page.getByText("Great session on wave management fundamentals.")
+      page.getByText("Great session on wave management fundamentals.").first()
     ).toBeVisible();
 
     // Verify action items are shown
     await expect(
-      page.getByText("Practice freezing near tower for 5 games")
+      page.getByText("Practice freezing near tower for 5 games").first()
     ).toBeVisible();
     await expect(
-      page.getByText("Watch 2 VODs focusing on ward placement")
+      page.getByText("Watch 2 VODs focusing on ward placement").first()
     ).toBeVisible();
   });
 

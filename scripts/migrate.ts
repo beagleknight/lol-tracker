@@ -56,6 +56,71 @@ async function migrate() {
     )
   `);
 
+  // ─── Backfill: detect existing DB that predates this migrate script ───────
+  //
+  // Migrations 0000–0010 were applied to production/preview via drizzle-kit push
+  // BEFORE this migrate script existed. If we detect an existing database with
+  // an empty tracking table, we backfill tracking rows so those migrations are
+  // never replayed.
+  //
+  // WHY THIS MATTERS: Migration 0002 contains DROP TABLE + table rebuilds that
+  // would destroy columns added by later migrations (0003–0010), causing
+  // permanent data loss if replayed.
+  //
+  // Detection: __drizzle_migrations is empty AND the `users` table already
+  // exists. On a truly fresh DB (new Preview env), `users` won't exist yet,
+  // so the backfill is skipped and all migrations run normally.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const trackingCount = await client.execute(
+    "SELECT count(*) as cnt FROM __drizzle_migrations"
+  );
+  const hasTrackingRows = Number(trackingCount.rows[0].cnt) > 0;
+
+  if (!hasTrackingRows) {
+    const tableCheck = await client.execute(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+    );
+    const isExistingDb = tableCheck.rows.length > 0;
+
+    if (isExistingDb) {
+      // These are the exact migration tags from drizzle/meta/_journal.json
+      // entries 0–10, all of which were applied before this script existed.
+      const preExistingTags = [
+        "0000_dusty_khan",
+        "0001_worried_guardian",
+        "0002_mushy_jackpot",
+        "0003_tiresome_hardball",
+        "0004_abnormal_alex_wilder",
+        "0005_smart_randall_flagg",
+        "0006_little_sheva_callister",
+        "0007_lively_vampiro",
+        "0008_complete_dakota_north",
+        "0009_lumpy_dragon_lord",
+        "0010_curved_gladiator",
+      ];
+
+      console.log(
+        `[migrate] Detected existing database with empty migration tracking.`
+      );
+      console.log(
+        `[migrate] Backfilling ${preExistingTags.length} pre-existing migrations...`
+      );
+
+      for (const tag of preExistingTags) {
+        await client.execute({
+          sql: "INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)",
+          args: [tag, Date.now()],
+        });
+        console.log(`[migrate]   ✓ Backfilled ${tag}`);
+      }
+
+      console.log(
+        `[migrate] Backfill complete. Only new migrations will be applied.`
+      );
+    }
+  }
+
   // Load the journal
   const journalPath = path.resolve(__dirname, "../drizzle/meta/_journal.json");
   const journal: Journal = JSON.parse(fs.readFileSync(journalPath, "utf-8"));
