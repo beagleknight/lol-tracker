@@ -95,7 +95,7 @@ test.describe("Settings flow", () => {
 
     // Wait for toast
     await expect(
-      page.getByText("Language & region updated")
+      page.getByText("Language & region updated").first()
     ).toBeVisible({ timeout: 10_000 });
 
     // The preview should show a date
@@ -108,8 +108,10 @@ test.describe("Settings flow", () => {
       .filter({ hasText: "English (UK)" })
       .click();
 
+    // The previous toast may still be visible, so use .first() to avoid
+    // strict mode violations when two toasts are stacked
     await expect(
-      page.getByText("Language & region updated")
+      page.getByText("Language & region updated").first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
