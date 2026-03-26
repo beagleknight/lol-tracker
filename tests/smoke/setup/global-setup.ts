@@ -16,7 +16,9 @@ export default async function globalSetup(_config: FullConfig) {
   const projectRoot = path.resolve(__dirname, "../../..");
 
   // ─── 1. Remove stale DB so seed creates tables with latest schema ────────
-  const dbPath = path.join(projectRoot, "data", "lol-tracker.db");
+  const dataDir = path.join(projectRoot, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const dbPath = path.join(dataDir, "lol-tracker.db");
   for (const suffix of ["", "-wal", "-shm"]) {
     const file = dbPath + suffix;
     if (fs.existsSync(file)) fs.unlinkSync(file);
