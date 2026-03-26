@@ -69,10 +69,13 @@ export async function getChangelogEntries(
     })
   );
 
-  // Filter nulls and sort newest-first by date
+  // Filter nulls and sort newest-first by date, then by version as tiebreaker
   return entries
     .filter((e): e is ChangelogEntry => e !== null)
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) || b.version.localeCompare(a.version)
+    );
 }
 
 /**

@@ -35,7 +35,9 @@ test.describe("Settings flow", () => {
     await page.goto("/settings");
 
     // ----- Switch to Spanish -----
-    const languageTrigger = page.locator("#language-select");
+    // Use role-based selector instead of #id to avoid strict mode violations
+    // from SSR hydration briefly producing duplicate DOM nodes on CI
+    const languageTrigger = page.getByRole("combobox", { name: "UI Language" });
     await languageTrigger.click();
 
     // Select "Español" from the Base UI Select popup
@@ -56,7 +58,8 @@ test.describe("Settings flow", () => {
     });
 
     // ----- Switch back to English -----
-    const languageTriggerEs = page.locator("#language-select");
+    // In Spanish, the label is "Idioma de la interfaz"
+    const languageTriggerEs = page.getByRole("combobox", { name: "Idioma de la interfaz" });
     await languageTriggerEs.click();
 
     await page
@@ -83,8 +86,9 @@ test.describe("Settings flow", () => {
   }) => {
     await page.goto("/settings");
 
-    // Click the locale select trigger
-    const localeTrigger = page.locator("#locale-select");
+    // Click the locale select trigger — use role-based selector to avoid
+    // strict mode violations from SSR hydration duplicating DOM nodes on CI
+    const localeTrigger = page.getByRole("combobox", { name: "Date & number format" });
     await localeTrigger.click();
 
     // Select US format from the Base UI Select popup
