@@ -28,7 +28,8 @@
     "notReviewed": "Sin revisar",
     "hasNotesNotReviewed": "Tiene notas, aún sin revisar",
     "win": "V",
-    "loss": "D"
+    "loss": "D",
+    "remake": "R"
   },
   "Pagination": {
     "ellipsis": "..."
@@ -100,6 +101,7 @@
     "allResults": "Todos los resultados",
     "victories": "Victorias",
     "defeats": "Derrotas",
+    "remakes": "Remakes",
     "championFilterPlaceholder": "Campeón",
     "allChampions": "Todos los campeones",
     "reviewFilterPlaceholder": "Revisión",
@@ -154,6 +156,7 @@
     "vs": "vs",
     "win": "V",
     "loss": "D",
+    "remake": "R",
     "gameNotesOptional": "Notas de partida (opcional)",
     "gameNotes": "Notas de partida",
     "gameNotesPlaceholder": "Notas adicionales...",
@@ -329,6 +332,7 @@
     "vs": "vs",
     "resultWin": "V",
     "resultLoss": "D",
+    "resultRemake": "R",
     "actionItems": "Tareas",
     "actionItemsDescription": "{completed}/{total} completadas. Haz clic en el icono de estado para cambiar: pendiente → en progreso → completada.",
     "noActionItems": "No hay tareas para esta sesión.",
@@ -467,6 +471,7 @@
       "description": "Partidas jugadas con {partnerName}",
       "resultWin": "V",
       "resultLoss": "D",
+      "resultRemake": "R",
       "emptyTitle": "Sin partidas de dúo encontradas aún.",
       "emptyDescription": "Sincroniza tus partidas para detectar partidas jugadas con tu compañero de dúo."
     },

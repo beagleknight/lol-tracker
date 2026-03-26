@@ -208,6 +208,9 @@ export function CoachingDetailClient({
     const wins = progressMatches.filter(
       (m) => m.result === "Victory"
     ).length;
+    const meaningful = progressMatches.filter(
+      (m) => m.result !== "Remake"
+    ).length;
     const totalKills = progressMatches.reduce((s, m) => s + m.kills, 0);
     const totalDeaths = progressMatches.reduce((s, m) => s + m.deaths, 0);
     const totalAssists = progressMatches.reduce((s, m) => s + m.assists, 0);
@@ -226,9 +229,9 @@ export function CoachingDetailClient({
     }
 
     return {
-      total: progressMatches.length,
+      total: meaningful,
       wins,
-      winRate: Math.round((wins / progressMatches.length) * 100),
+      winRate: meaningful > 0 ? Math.round((wins / meaningful) * 100) : 0,
       avgKDA:
         totalDeaths === 0
           ? t("perfect")
@@ -382,7 +385,9 @@ export function CoachingDetailClient({
                     >
                       <div
                         className={`w-1 h-8 rounded-full ${
-                          match.result === "Victory"
+                          match.result === "Remake"
+                            ? "bg-muted-foreground/40"
+                            : match.result === "Victory"
                             ? "bg-win"
                             : "bg-loss"
                         }`}
@@ -430,13 +435,15 @@ export function CoachingDetailClient({
                       </span>
                       <Badge
                         variant={
-                          match.result === "Victory"
+                          match.result === "Remake"
+                            ? "secondary"
+                            : match.result === "Victory"
                             ? "default"
                             : "destructive"
                         }
                         className="text-xs"
                       >
-                        {match.result === "Victory" ? t("resultWin") : t("resultLoss")}
+                        {match.result === "Remake" ? t("resultRemake") : match.result === "Victory" ? t("resultWin") : t("resultLoss")}
                       </Badge>
                     </Link>
 
@@ -638,13 +645,15 @@ export function CoachingDetailClient({
                           </span>
                           <Badge
                             variant={
-                              match.result === "Victory"
+                              match.result === "Remake"
+                                ? "secondary"
+                                : match.result === "Victory"
                                 ? "default"
                                 : "destructive"
                             }
                             className="text-xs"
                           >
-                        {match.result === "Victory" ? t("resultWin") : t("resultLoss")}
+                        {match.result === "Remake" ? t("resultRemake") : match.result === "Victory" ? t("resultWin") : t("resultLoss")}
                           </Badge>
                         </div>
                       </Link>

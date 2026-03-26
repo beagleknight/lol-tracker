@@ -34,7 +34,7 @@ export interface MatchHighlightData {
 interface MatchCardData {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat" | string;
+  result: "Victory" | "Defeat" | "Remake" | string;
   championName: string;
   matchupChampionName: string | null;
   kills: number;
@@ -90,6 +90,7 @@ export function MatchCard({
 }) {
   const t = useTranslations("MatchCard");
   const isWin = match.result === "Victory";
+  const isRemake = match.result === "Remake";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
   const kda =
@@ -115,7 +116,9 @@ export function MatchCard({
       <Link
         href={`/matches/${match.id}`}
         className={`block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${
-          isWin
+          isRemake
+            ? "border-l-[3px] border-l-muted-foreground/40"
+            : isWin
             ? "border-l-[3px] border-l-win/60"
             : "border-l-[3px] border-l-loss/60"
         }`}
@@ -275,10 +278,10 @@ export function MatchCard({
           {/* Result + Date */}
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             <Badge
-              variant={isWin ? "default" : "destructive"}
+              variant={isRemake ? "secondary" : isWin ? "default" : "destructive"}
               className="text-xs"
             >
-              {isWin ? t("win") : t("loss")}
+              {isRemake ? t("remake") : isWin ? t("win") : t("loss")}
             </Badge>
             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
               {formatDate(match.gameDate, locale)}

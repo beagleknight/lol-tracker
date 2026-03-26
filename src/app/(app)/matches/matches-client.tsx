@@ -176,7 +176,8 @@ export function MatchesClient({
   const t = useTranslations("Matches");
   const [isNavigating, startTransition] = useTransition();
 
-  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+  const meaningfulGames = wins + losses;
+  const winRate = meaningfulGames > 0 ? Math.round((wins / meaningfulGames) * 100) : 0;
 
   // Current filter params for URL building
   const currentParams: Record<string, string> = {
@@ -275,6 +276,7 @@ export function MatchesClient({
             <SelectItem value="all">{t("allResults")}</SelectItem>
             <SelectItem value="Victory">{t("victories")}</SelectItem>
             <SelectItem value="Defeat">{t("defeats")}</SelectItem>
+            <SelectItem value="Remake">{t("remakes")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
