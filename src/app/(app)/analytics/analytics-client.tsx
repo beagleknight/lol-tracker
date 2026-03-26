@@ -603,20 +603,6 @@ export function AnalyticsClient({
                         ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
                         : lpChartMeta.yMax,
                     ]}
-                    ticks={(() => {
-                      const lo = goalTargetLP !== null
-                        ? Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100)
-                        : lpChartMeta.yMin;
-                      const hi = goalTargetLP !== null
-                        ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
-                        : lpChartMeta.yMax;
-                      const ticks: number[] = [];
-                      const firstTier = Math.ceil(lo / LP_PER_TIER) * LP_PER_TIER;
-                      for (let v = firstTier; v <= hi; v += LP_PER_TIER) {
-                        ticks.push(v);
-                      }
-                      return ticks;
-                    })()}
                     tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
                   />
                   <Tooltip
