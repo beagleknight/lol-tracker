@@ -79,6 +79,7 @@
     "csLabel": "{cs} CS",
     "winShort": "V",
     "lossShort": "D",
+    "remakeShort": "R",
     "nextSession": "Próxima sesión",
     "view": "Ver",
     "noVodSelected": "Sin VOD seleccionado aún",
