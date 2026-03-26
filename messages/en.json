@@ -272,7 +272,8 @@
     },
     "chartLabels": {
       "reached": "Reached {tier}",
-      "backTo": "Back to {tier}"
+      "backTo": "Back to {tier}",
+      "goalTarget": "Goal: {rank}"
     },
     "tableHeaders": {
       "keystone": "Keystone",

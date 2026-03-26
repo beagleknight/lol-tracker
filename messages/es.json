@@ -272,7 +272,8 @@
     },
     "chartLabels": {
       "reached": "Alcanzó {tier}",
-      "backTo": "Volvió a {tier}"
+      "backTo": "Volvió a {tier}",
+      "goalTarget": "Meta: {rank}"
     },
     "tableHeaders": {
       "keystone": "Runa",
