@@ -162,8 +162,9 @@ export async function updateActionItemStatus(
       )
     );
 
-  revalidatePath("/coaching/action-items");
-  revalidatePath("/coaching");
+  // Use "layout" type to revalidate the entire /coaching tree,
+  // including /coaching/[id] detail pages that display action items.
+  revalidatePath("/coaching", "layout");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
 
@@ -182,8 +183,9 @@ export async function deleteActionItem(itemId: number) {
       )
     );
 
-  revalidatePath("/coaching/action-items");
-  revalidatePath("/coaching");
+  // Use "layout" type to revalidate the entire /coaching tree,
+  // including /coaching/[id] detail pages that display action items.
+  revalidatePath("/coaching", "layout");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
 

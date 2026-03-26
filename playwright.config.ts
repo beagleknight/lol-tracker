@@ -3,7 +3,7 @@ import { defineConfig } from "@playwright/test";
 const isCI = !!process.env.CI;
 
 /**
- * Smoke test configuration.
+ * Test configuration for smoke and E2E tests.
  *
  * Starts the Next.js production server in demo mode and verifies
  * that all routes respond correctly. Uses a local SQLite database
@@ -13,32 +13,6 @@ const isCI = !!process.env.CI;
  * Future Vitest unit tests will use *.test.ts (colocated in src/).
  */
 export default defineConfig({
-  testDir: "tests/smoke",
-
-  /* Fail fast — these are smoke tests, not a full E2E suite */
-  retries: 0,
-
-  /* Run tests in parallel within each file */
-  fullyParallel: true,
-
-  projects: [
-    /* Setup project: logs in and saves auth state */
-    {
-      name: "setup",
-      testMatch: "**/*.setup.ts",
-    },
-    /* Smoke tests: reuse saved auth state */
-    {
-      name: "smoke",
-      testMatch: "**/*.spec.ts",
-      dependencies: ["setup"],
-      use: {
-        browserName: "chromium",
-        storageState: "tests/smoke/setup/.auth/demo-user.json",
-      },
-    },
-  ],
-
   /* Seed the DB before all tests */
   globalSetup: "tests/smoke/setup/global-setup.ts",
 
@@ -58,7 +32,47 @@ export default defineConfig({
     },
   },
 
-  /* Reasonable timeout for smoke tests */
-  timeout: 30_000,
-  expect: { timeout: 10_000 },
+  projects: [
+    /* ── Setup: logs in and saves auth state ─────────────────────── */
+    {
+      name: "setup",
+      testDir: "tests/smoke",
+      testMatch: "**/*.setup.ts",
+    },
+
+    /* ── Smoke tests: fast, parallel, reuse saved auth state ─────── */
+    {
+      name: "smoke",
+      testDir: "tests/smoke",
+      testMatch: "**/*.spec.ts",
+      dependencies: ["setup"],
+      fullyParallel: true,
+      retries: 0,
+      timeout: 30_000,
+      expect: { timeout: 10_000 },
+      use: {
+        browserName: "chromium",
+        storageState: "tests/smoke/setup/.auth/demo-user.json",
+      },
+    },
+
+    /* ── E2E tests: serial, fresh DB per file, reuse saved auth ──── */
+    {
+      name: "e2e",
+      testDir: "tests/e2e",
+      testMatch: "**/*.spec.ts",
+      dependencies: ["setup"],
+      fullyParallel: false,
+      /* Single worker — spec files share a SQLite DB and reseed in
+         beforeAll, so concurrent workers would cause SQLITE_BUSY. */
+      workers: 1,
+      retries: 0,
+      timeout: 60_000,
+      expect: { timeout: 15_000 },
+      use: {
+        browserName: "chromium",
+        storageState: "tests/smoke/setup/.auth/demo-user.json",
+      },
+    },
+  ],
 });
