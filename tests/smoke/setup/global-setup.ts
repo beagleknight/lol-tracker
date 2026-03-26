@@ -5,17 +5,21 @@ import fs from "fs";
 
 /**
  * Global setup for smoke tests:
- * 1. Removes any stale local SQLite database
- * 2. Seeds the database with demo data
- * 3. Builds the Next.js app in demo mode
+ * 1. Ensures the data/ directory exists
+ * 2. Removes any stale local SQLite database
+ * 3. Seeds the database with demo data
  *
- * After this runs, Playwright's webServer config starts the production server,
+ * The Next.js build is handled externally:
+ * - Locally: Playwright's webServer.command builds + starts the app
+ * - CI: the workflow builds before running tests
+ *
+ * After this runs, Playwright's webServer starts the production server,
  * and the "setup" project performs demo login to save auth state.
  */
 export default async function globalSetup(_config: FullConfig) {
   const projectRoot = path.resolve(__dirname, "../../..");
 
-  // ─── 1. Remove stale DB so seed creates tables with latest schema ────────
+  // ─── 1. Ensure data directory + remove stale DB ──────────────────────────
   const dataDir = path.join(projectRoot, "data");
   fs.mkdirSync(dataDir, { recursive: true });
   const dbPath = path.join(dataDir, "lol-tracker.db");
@@ -31,20 +35,6 @@ export default async function globalSetup(_config: FullConfig) {
     stdio: "inherit",
     env: {
       ...process.env,
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
-      TURSO_AUTH_TOKEN: "",
-    },
-  });
-
-  // ─── 3. Build the app ────────────────────────────────────────────────────
-  console.log("[smoke] Building Next.js app...");
-  execSync("npm run build", {
-    cwd: projectRoot,
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      NEXT_PUBLIC_DEMO_MODE: "true",
-      AUTH_SECRET: "smoke-test-secret-at-least-32-characters",
       TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
       TURSO_AUTH_TOKEN: "",
     },

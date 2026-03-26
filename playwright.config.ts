@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
+const isCI = !!process.env.CI;
+
 /**
  * Smoke test configuration.
  *
@@ -37,14 +39,16 @@ export default defineConfig({
     },
   ],
 
-  /* Seed the DB and build the app before all tests */
+  /* Seed the DB before all tests */
   globalSetup: "tests/smoke/setup/global-setup.ts",
 
-  /* Start the production server for tests */
+  /* Start the production server for tests.
+   * - Locally: build + start (may already be built, Next.js skips if .next exists)
+   * - CI: just start (build is a separate workflow step for reliability) */
   webServer: {
-    command: "npm run start",
+    command: isCI ? "npm run start" : "npm run build && npm run start",
     port: 3000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
     env: {
       NEXT_PUBLIC_DEMO_MODE: "true",
       AUTH_SECRET: "smoke-test-secret-at-least-32-characters",
