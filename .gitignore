@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+tests/smoke/setup/.auth/
 
 # next.js
 /.next/

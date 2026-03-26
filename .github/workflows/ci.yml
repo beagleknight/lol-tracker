@@ -49,6 +49,32 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    env:
+      AUTH_SECRET: smoke-test-secret-at-least-32-characters
+      NEXT_PUBLIC_DEMO_MODE: "true"
+      TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Run smoke tests
+        run: npm run test:smoke
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-report
+          path: playwright-report/
+          retention-days: 7
+
   changelog:
     name: Changelog
     runs-on: ubuntu-latest

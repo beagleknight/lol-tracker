@@ -1,0 +1,12 @@
+---
+version: "1.6.0"
+date: "2026-03-26"
+title: "Smoke Tests CI Gate"
+---
+
+Added **Playwright smoke tests** that run in CI before every merge.
+
+- **18 smoke tests** verify all page routes and API endpoints return 200 — catches runtime errors that build alone can't detect
+- Tests run in **demo mode** with seeded data, no external credentials required
+- New `npm run test:smoke` command for local testing
+- CI uploads a test report on failure for easy debugging
