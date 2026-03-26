@@ -165,6 +165,13 @@ async function seed() {
   const dbToken = process.env.TURSO_AUTH_TOKEN;
   const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
   const forceRemote = process.argv.includes("--force-remote");
+  const vercelEnv = process.env.VERCEL_ENV;
+
+  // Hard block: NEVER seed production, regardless of flags
+  if (vercelEnv === "production") {
+    console.error("ERROR: Seeding is forbidden in production. Aborting.");
+    process.exit(1);
+  }
 
   // Safety guard: refuse to seed a remote database without explicit opt-in
   if (isRemote && !forceRemote) {
