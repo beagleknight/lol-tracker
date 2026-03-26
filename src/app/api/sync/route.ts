@@ -14,6 +14,7 @@ import {
   RiotApiError,
 } from "@/lib/riot-api";
 import { invalidateAllCaches } from "@/lib/cache";
+import { checkGoalAchievement } from "@/app/actions/goals";
 
 function sseMessage(data: Record<string, unknown>): string {
   return `data: ${JSON.stringify(data)}\n\n`;
@@ -95,6 +96,8 @@ export async function GET() {
         if (newMatchIds.length === 0) {
           // Still capture rank snapshot
           const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
+          // Check if rank goal was achieved
+          await checkGoalAchievement(user.id);
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
@@ -240,6 +243,9 @@ export async function GET() {
 
         // Capture rank snapshot
         const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
+
+        // Check if rank goal was achieved after syncing
+        await checkGoalAchievement(user.id);
 
         // Invalidate all cached data for this user after syncing new matches
         if (syncedCount > 0) {
