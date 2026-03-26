@@ -192,6 +192,7 @@ interface AnalyticsClientProps {
   coachingSessions: CoachingSessionSummary[];
   rankSnapshots: RankSnapshot[];
   ddragonVersion: string;
+  activeGoal: { targetTier: string; targetDivision: string | null } | null;
 }
 
 // Rolling win rate: for each match, calculate win rate of last N games
@@ -303,6 +304,7 @@ export function AnalyticsClient({
   coachingSessions,
   rankSnapshots,
   ddragonVersion,
+  activeGoal,
 }: AnalyticsClientProps) {
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
@@ -320,6 +322,22 @@ export function AnalyticsClient({
     () => prepareRankChartData(rankSnapshots, locale),
     [rankSnapshots, locale]
   );
+
+  // Compute goal target cumulative LP for chart reference line
+  const goalTargetLP = useMemo(() => {
+    if (!activeGoal) return null;
+    return toCumulativeLP(activeGoal.targetTier, activeGoal.targetDivision, 0);
+  }, [activeGoal]);
+
+  const goalTargetLabel = useMemo(() => {
+    if (!activeGoal) return "";
+    const tierName =
+      activeGoal.targetTier.charAt(0) +
+      activeGoal.targetTier.slice(1).toLowerCase();
+    return activeGoal.targetDivision
+      ? `${tierName} ${activeGoal.targetDivision}`
+      : tierName;
+  }, [activeGoal]);
 
   // ─── Sort state for Rune Keystones table ──────────────────────────────────
   type RuneSortKey = "games" | "winRate";
@@ -489,6 +507,18 @@ export function AnalyticsClient({
     return { yMin, yMax, tierBoundaries, events, netChange, peakIndex, peakRank, milestones };
   }, [rankChartData]);
 
+  // Adjusted tier boundaries — extends range to include goal target if present
+  const adjustedTierBoundaries = useMemo(() => {
+    if (!lpChartMeta || goalTargetLP === null) return null;
+    const yMin = Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100);
+    const yMax = Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100);
+    // Only recompute if range actually expanded
+    if (yMin < lpChartMeta.yMin || yMax > lpChartMeta.yMax) {
+      return getTierBoundaries(yMin, yMax);
+    }
+    return null; // Use original
+  }, [lpChartMeta, goalTargetLP]);
+
   if (matches.length === 0) {
     return (
       <div className="space-y-6">
@@ -565,7 +595,14 @@ export function AnalyticsClient({
                   <YAxis
                     stroke={cc.chartAxis}
                     fontSize={12}
-                    domain={[lpChartMeta.yMin, lpChartMeta.yMax]}
+                    domain={[
+                      goalTargetLP !== null
+                        ? Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100)
+                        : lpChartMeta.yMin,
+                      goalTargetLP !== null
+                        ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
+                        : lpChartMeta.yMax,
+                    ]}
                     tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
                   />
                   <Tooltip
@@ -602,7 +639,7 @@ export function AnalyticsClient({
                     }}
                   />
                   {/* Tier boundary reference lines */}
-                  {lpChartMeta.tierBoundaries.map((b) => (
+                  {(adjustedTierBoundaries ?? lpChartMeta.tierBoundaries).map((b) => (
                     <ReferenceLine
                       key={b.label}
                       y={b.lp}
@@ -616,6 +653,40 @@ export function AnalyticsClient({
                       }}
                     />
                   ))}
+                  {/* Goal target reference line */}
+                  {goalTargetLP !== null && (
+                    <ReferenceLine
+                      y={goalTargetLP}
+                      stroke={cc.gold}
+                      strokeDasharray="8 4"
+                      strokeWidth={2}
+                      label={({ viewBox }: { viewBox: { x: number; y: number } }) => {
+                        const label = t("chartLabels.goalTarget", { rank: goalTargetLabel });
+                        return (
+                          <g>
+                            {/* Target/crosshair icon */}
+                            <g transform={`translate(${viewBox.x + 4}, ${viewBox.y - 8})`}>
+                              <circle cx="6" cy="6" r="5" fill="none" stroke={cc.gold} strokeWidth="1.5" />
+                              <circle cx="6" cy="6" r="2" fill={cc.gold} />
+                              <line x1="6" y1="0" x2="6" y2="2.5" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="6" y1="9.5" x2="6" y2="12" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="0" y1="6" x2="2.5" y2="6" stroke={cc.gold} strokeWidth="1.5" />
+                              <line x1="9.5" y1="6" x2="12" y2="6" stroke={cc.gold} strokeWidth="1.5" />
+                            </g>
+                            <text
+                              x={viewBox.x + 20}
+                              y={viewBox.y - 3}
+                              fill={cc.gold}
+                              fontSize={11}
+                              fontWeight="bold"
+                            >
+                              {label}
+                            </text>
+                          </g>
+                        );
+                      }}
+                    />
+                  )}
                   {/* Promotion/demotion markers */}
                   {lpChartMeta.events.map((e, i) => (
                     <ReferenceLine

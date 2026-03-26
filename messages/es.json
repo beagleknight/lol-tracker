@@ -7,6 +7,7 @@
     "navMatches": "Partidas",
     "navReview": "Revisión",
     "navDuo": "Dúo",
+    "navGoals": "Objetivos",
     "navAnalytics": "Estadísticas",
     "navMatchupScout": "Explorador",
     "navSessions": "Sesiones",
@@ -85,7 +86,10 @@
     "noCoachingSessions": "No hay sesiones de coaching programadas.",
     "scheduleOne": "Programar una",
     "actionItems": "Tareas",
-    "noActiveActionItems": "No hay tareas activas."
+    "noActiveActionItems": "No hay tareas activas.",
+    "goalWidget": "Objetivo",
+    "noActiveGoal": "Sin objetivo activo.",
+    "setGoal": "Establecer objetivo"
   },
   "Matches": {
     "heading": "Partidas",
@@ -268,7 +272,8 @@
     },
     "chartLabels": {
       "reached": "Alcanzó {tier}",
-      "backTo": "Volvió a {tier}"
+      "backTo": "Volvió a {tier}",
+      "goalTarget": "Meta: {rank}"
     },
     "tableHeaders": {
       "keystone": "Runa",
@@ -551,5 +556,53 @@
     "title": "Novedades",
     "subtitle": "Últimas actualizaciones y mejoras de LoL Tracker",
     "empty": "Aún no hay actualizaciones. ¡Vuelve pronto!"
+  },
+  "Goals": {
+    "title": "Objetivos",
+    "subtitle": "Establece metas de rango y sigue tu progreso.",
+    "newGoal": "Nuevo objetivo",
+    "noActiveGoal": "Sin objetivo activo",
+    "noActiveGoalDescription": "Establece una meta de rango para seguir tu escalada.",
+    "setGoal": "Establecer objetivo",
+    "pastGoals": "Objetivos anteriores",
+    "active": "Activo",
+    "achieved": "Logrado",
+    "retired": "Retirado",
+    "startedFrom": "Empezó desde {rank}",
+    "progress": "Progreso",
+    "currentRank": "Actualmente en {rank} — {lp} LP",
+    "overdue": "La fecha límite pasó el {date} — el objetivo sigue activo.",
+    "deadline": "Fecha objetivo: {date}",
+    "retire": "Retirar",
+    "retireConfirm": "¿Retirar este objetivo? Podrás crear uno nuevo después.",
+    "deleteConfirm": "¿Eliminar este objetivo? No se puede deshacer.",
+    "achievedOn": "Logrado el {date}",
+    "retiredOn": "Retirado el {date}",
+    "newGoalTitle": "Nuevo objetivo",
+    "newGoalSubtitle": "Establece una meta de rango para seguir tu escalada.",
+    "noRankData": "Sin datos de rango disponibles. Sincroniza tu cuenta primero para establecer un objetivo.",
+    "currentRankLabel": "Rango actual",
+    "targetRank": "Rango objetivo",
+    "targetRankDescription": "Elige el rango que quieres alcanzar.",
+    "tier": "División",
+    "selectTier": "Seleccionar división...",
+    "division": "Subdivisión",
+    "selectDivision": "Seleccionar subdivisión...",
+    "goalPreview": "Tu objetivo",
+    "reachTarget": "Alcanzar {target}",
+    "targetMustBeHigher": "El rango objetivo debe ser mayor que tu rango actual.",
+    "deadlineLabel": "Fecha objetivo (opcional)",
+    "deadlineHelp": "Una fecha orientativa — tu objetivo sigue activo incluso después de esta fecha.",
+    "createGoal": "Crear objetivo",
+    "cancel": "Cancelar",
+    "toasts": {
+      "goalCreated": "¡Objetivo creado!",
+      "createError": "Error al crear el objetivo.",
+      "goalRetired": "Objetivo retirado.",
+      "retireError": "Error al retirar el objetivo.",
+      "goalDeleted": "Objetivo eliminado.",
+      "deleteError": "Error al eliminar el objetivo.",
+      "goalAchieved": "¡Objetivo logrado! ¡Felicidades!"
+    }
   }
 }

@@ -22,11 +22,16 @@ import {
   ChevronRight,
   AlertCircle,
   Calendar,
+  Target,
 } from "lucide-react";
-import type { RankSnapshot, CoachingActionItem } from "@/db/schema";
+import type { RankSnapshot, CoachingActionItem, Goal } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { formatDuration, formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import {
+  formatTierDivision,
+  calculateProgress,
+} from "@/lib/rank";
 
 interface DashboardMatch {
   id: string;
@@ -80,6 +85,8 @@ interface DashboardClientProps {
   lpTrend: number | null;
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
+  activeGoal: Goal | null;
+  currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
 }
 
@@ -115,6 +122,8 @@ export function DashboardClient({
   lpTrend,
   actionItems,
   upcomingSession,
+  activeGoal,
+  currentRank,
   ddragonVersion,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
@@ -448,6 +457,61 @@ export function DashboardClient({
                 <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
                 <Link href="/coaching/new" className="inline-block mt-2">
                   <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Goal Widget */}
+          {activeGoal && currentRank ? (() => {
+            const progress = calculateProgress(
+              activeGoal.startTier,
+              activeGoal.startDivision,
+              activeGoal.startLp,
+              currentRank.tier,
+              currentRank.division,
+              currentRank.lp,
+              activeGoal.targetTier,
+              activeGoal.targetDivision
+            );
+            return (
+              <Card className="surface-glow border-gold/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Target className="h-4 w-4 text-gold" />
+                    {activeGoal.title}
+                  </CardTitle>
+                  <Link href="/goals">
+                    <Button variant="ghost" size="sm">
+                      {t("view")}
+                      <ChevronRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </Link>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Progress value={progress}>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTierDivision(currentRank.tier, currentRank.division)}
+                    </span>
+                    <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                      {progress}%
+                    </span>
+                  </Progress>
+                </CardContent>
+              </Card>
+            );
+          })() : (
+            <Card className="surface-glow border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                  {t("goalWidget")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{t("noActiveGoal")}</p>
+                <Link href="/goals/new" className="inline-block mt-2">
+                  <Button variant="outline" size="sm">{t("setGoal")}</Button>
                 </Link>
               </CardContent>
             </Card>
