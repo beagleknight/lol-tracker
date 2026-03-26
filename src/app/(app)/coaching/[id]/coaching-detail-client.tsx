@@ -13,6 +13,7 @@ import {
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ResultBadge, ResultBar } from "@/components/result-badge";
 import {
   Card,
   CardContent,
@@ -383,15 +384,7 @@ export function CoachingDetailClient({
                       href={`/matches/${match.id}`}
                       className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
                     >
-                      <div
-                        className={`w-1 h-8 rounded-full ${
-                          match.result === "Remake"
-                            ? "bg-muted-foreground/40"
-                            : match.result === "Victory"
-                            ? "bg-win"
-                            : "bg-loss"
-                        }`}
-                      />
+                      <ResultBar result={match.result} />
                       <Image
                         src={getChampionIconUrl(
                           ddragonVersion,
@@ -433,18 +426,7 @@ export function CoachingDetailClient({
                       <span className="text-xs text-muted-foreground">
                         {formatDuration(match.gameDurationSeconds)}
                       </span>
-                      <Badge
-                        variant={
-                          match.result === "Remake"
-                            ? "secondary"
-                            : match.result === "Victory"
-                            ? "default"
-                            : "destructive"
-                        }
-                        className="text-xs"
-                      >
-                        {match.result === "Remake" ? t("resultRemake") : match.result === "Victory" ? t("resultWin") : t("resultLoss")}
-                      </Badge>
+                      <ResultBadge result={match.result} />
                     </Link>
 
                     {/* VOD link */}
@@ -596,13 +578,7 @@ export function CoachingDetailClient({
                         href={`/matches/${match.id}`}
                         className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                       >
-                        <div
-                          className={`w-1 h-6 rounded-full ${
-                            match.result === "Victory"
-                              ? "bg-win"
-                              : "bg-loss"
-                          }`}
-                        />
+                        <ResultBar result={match.result} size="sm" />
                         <Image
                           src={getChampionIconUrl(
                             ddragonVersion,
@@ -643,18 +619,7 @@ export function CoachingDetailClient({
                           <span className="text-xs text-muted-foreground">
                             {matchDateStr}
                           </span>
-                          <Badge
-                            variant={
-                              match.result === "Remake"
-                                ? "secondary"
-                                : match.result === "Victory"
-                                ? "default"
-                                : "destructive"
-                            }
-                            className="text-xs"
-                          >
-                        {match.result === "Remake" ? t("resultRemake") : match.result === "Victory" ? t("resultWin") : t("resultLoss")}
-                          </Badge>
+                          <ResultBadge result={match.result} />
                         </div>
                       </Link>
 

@@ -235,6 +235,8 @@ export const goals = sqliteTable("goals", {
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type Match = typeof matches.$inferSelect;
+/** The result column's union type, derived from the schema enum. */
+export type MatchResult = Match["result"];
 export type RankSnapshot = typeof rankSnapshots.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;

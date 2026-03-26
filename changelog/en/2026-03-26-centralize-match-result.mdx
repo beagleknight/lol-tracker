@@ -1,0 +1,17 @@
+---
+version: "1.8.0"
+date: "2026-03-26"
+title: "Centralized Match Result Handling"
+---
+
+Major refactor to centralize all match result logic (Victory/Defeat/Remake) into shared helpers, fixing 12 bugs and removing duplicated code across the codebase.
+
+- **Remakes no longer counted as losses** — duo stats, coaching intervals, sidebar review counts, and scout averages now correctly exclude remakes instead of silently counting them as defeats
+- **Coaching chart bands fixed** — coaching session markers on the win rate chart now align correctly with the remake-filtered data points
+- **LP trend improved** — the dashboard LP trend now uses the rank snapshot closest to the oldest of your last 10 games, giving consistent numbers that match the analytics page
+- **"Games analyzed" count fixed** — the analytics page header now shows only meaningful (non-remake) games
+- **Shared UI components** — new `ResultBadge` and `ResultBar` components replace 12+ scattered ternary expressions with consistent remake-aware rendering
+- **Duplicated rank utilities removed** — analytics page no longer maintains its own copy of LP/rank calculation functions
+- **Dead i18n keys cleaned up** — removed unused result translation keys from Coaching and Duo namespaces in favor of the shared Common namespace
+- **Seed data generates remakes** — the seed script now produces ~5% remakes with realistic short duration and minimal stats
+- **Export route typed** — the CSV export route now uses the shared `MatchResult` type

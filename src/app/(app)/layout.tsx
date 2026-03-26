@@ -7,30 +7,19 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
-import { matches, matchHighlights } from "@/db/schema";
-import { eq, count, sql } from "drizzle-orm";
+import { matches } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { getLatestChangelogVersion } from "@/lib/changelog";
+import { sidebarReviewCountsSelect } from "@/lib/match-queries";
 
 async function SidebarWithUser() {
   await connection();
   const user = await requireUser();
 
-  // Lightweight count for sidebar review badges
+  // Lightweight count for sidebar review badges (excludes remakes)
   const [reviewCounts, latestVersion] = await Promise.all([
     db
-      .select({
-        postGame: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.comment} IS NULL AND NOT EXISTS (
-            SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id}
-          ) THEN 1 END`
-        ),
-        vod: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 AND (
-            ${matches.comment} IS NOT NULL
-            OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
-          ) THEN 1 END`
-        ),
-      })
+      .select(sidebarReviewCountsSelect())
       .from(matches)
       .where(eq(matches.userId, user.id))
       .then((rows) => rows[0]),

@@ -331,9 +331,6 @@
     "gamesDiscussed": "{count, plural, one {# partida discutida} other {# partidas discutidas}}",
     "watchVod": "Ver VOD",
     "vs": "vs",
-    "resultWin": "V",
-    "resultLoss": "D",
-    "resultRemake": "R",
     "actionItems": "Tareas",
     "actionItemsDescription": "{completed}/{total} completadas. Haz clic en el icono de estado para cambiar: pendiente → en progreso → completada.",
     "noActionItems": "No hay tareas para esta sesión.",
@@ -470,9 +467,6 @@
     "recentGames": {
       "title": "Partidas de dúo recientes",
       "description": "Partidas jugadas con {partnerName}",
-      "resultWin": "V",
-      "resultLoss": "D",
-      "resultRemake": "R",
       "emptyTitle": "Sin partidas de dúo encontradas aún.",
       "emptyDescription": "Sincroniza tus partidas para detectar partidas jugadas con tu compañero de dúo."
     },
@@ -562,6 +556,16 @@
     "title": "Novedades",
     "subtitle": "Últimas actualizaciones y mejoras de LoL Tracker",
     "empty": "Aún no hay actualizaciones. ¡Vuelve pronto!"
+  },
+  "Common": {
+    "resultW": "V",
+    "resultL": "D",
+    "resultR": "R",
+    "resultVictory": "Victoria",
+    "resultDefeat": "Derrota",
+    "resultRemake": "Remake",
+    "resultWin": "Victoria",
+    "resultLoss": "Derrota"
   },
   "Goals": {
     "title": "Objetivos",

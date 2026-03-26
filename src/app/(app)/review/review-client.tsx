@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
@@ -108,15 +109,7 @@ function MatchCardHeader({
   const t = useTranslations("Review");
   return (
     <div className="flex items-center gap-3">
-      <div
-        className={`w-1 h-10 rounded-full ${
-          match.result === "Remake"
-            ? "bg-muted-foreground/40"
-            : match.result === "Victory"
-            ? "bg-win"
-            : "bg-loss"
-        }`}
-      />
+      <ResultBar result={match.result} size="lg" />
       <Image
         src={getChampionIconUrl(ddragonVersion, match.championName)}
         alt={match.championName}
@@ -127,18 +120,7 @@ function MatchCardHeader({
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">{match.championName}</CardTitle>
-          <Badge
-            variant={
-              match.result === "Remake"
-                ? "secondary"
-                : match.result === "Victory"
-                ? "default"
-                : "destructive"
-            }
-            className="text-xs"
-          >
-            {match.result === "Remake" ? t("remake") : match.result === "Victory" ? t("win") : t("loss")}
-          </Badge>
+          <ResultBadge result={match.result} />
         </div>
         <CardDescription className="inline-flex items-center gap-1 flex-wrap">
           {formatDate(match.gameDate, locale)} &middot;{" "}

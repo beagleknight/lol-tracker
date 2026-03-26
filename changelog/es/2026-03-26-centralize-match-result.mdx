@@ -1,0 +1,17 @@
+---
+version: "1.8.0"
+date: "2026-03-26"
+title: "Manejo Centralizado de Resultados de Partida"
+---
+
+Refactorizacion mayor para centralizar toda la logica de resultados de partida (Victoria/Derrota/Remake) en helpers compartidos, corrigiendo 12 bugs y eliminando codigo duplicado en todo el proyecto.
+
+- **Los remakes ya no cuentan como derrotas** — las estadisticas de duo, intervalos de coaching, conteos de revision en la barra lateral y promedios de scout ahora excluyen correctamente los remakes en lugar de contarlos silenciosamente como derrotas
+- **Bandas del grafico de coaching corregidas** — los marcadores de sesiones de coaching en el grafico de win rate ahora se alinean correctamente con los datos filtrados sin remakes
+- **Tendencia de LP mejorada** — la tendencia de LP del dashboard ahora usa la captura de rango mas cercana a la partida mas antigua de tus ultimas 10, dando numeros consistentes con la pagina de analiticas
+- **Conteo de "partidas analizadas" corregido** — el encabezado de la pagina de analiticas ahora muestra solo partidas significativas (sin remakes)
+- **Componentes UI compartidos** — nuevos componentes `ResultBadge` y `ResultBar` reemplazan mas de 12 expresiones ternarias dispersas con renderizado consistente que maneja remakes
+- **Utilidades de rango duplicadas eliminadas** — la pagina de analiticas ya no mantiene su propia copia de funciones de calculo de LP/rango
+- **Claves i18n muertas eliminadas** — se eliminaron claves de traduccion de resultados no utilizadas de los namespaces Coaching y Duo en favor del namespace compartido Common
+- **Los datos de seed generan remakes** — el script de seed ahora produce ~5% de remakes con duracion corta realista y estadisticas minimas
+- **Ruta de exportacion tipada** — la ruta de exportacion CSV ahora usa el tipo compartido `MatchResult`
