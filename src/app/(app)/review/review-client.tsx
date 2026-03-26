@@ -309,7 +309,7 @@ function PostGameCard({
               {SKIP_REVIEW_REASONS.map((reason) => (
                 <DropdownMenuItem
                   key={reason}
-                  onSelect={() => handleSave(reason)}
+                  onClick={() => handleSave(reason)}
                 >
                   {reason}
                 </DropdownMenuItem>
@@ -471,7 +471,7 @@ function VodReviewCard({
               {SKIP_REVIEW_REASONS.map((reason) => (
                 <DropdownMenuItem
                   key={reason}
-                  onSelect={() => handleSave(reason)}
+                  onClick={() => handleSave(reason)}
                 >
                   {reason}
                 </DropdownMenuItem>

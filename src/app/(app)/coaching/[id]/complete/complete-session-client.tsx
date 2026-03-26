@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { completeCoachingSession } from "@/app/actions/coaching";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -133,16 +134,26 @@ export function CompleteSessionClient({
 
     startTransition(async () => {
       try {
-        await completeCoachingSession(session.id, {
+        const result = await completeCoachingSession(session.id, {
           durationMinutes: duration ? parseInt(duration) : undefined,
           topics: selectedTopics,
           notes: notes || undefined,
           actionItems,
         });
 
+        if (result && "error" in result) {
+          toast.error(result.error);
+          return;
+        }
+
         toast.success(t("toasts.sessionCompleted"));
         router.push(`/coaching/${session.id}`);
-      } catch {
+      } catch (error) {
+        // After completing the session, revalidatePath re-renders this page's
+        // server component which calls redirect() (status is now "completed").
+        // Next.js throws a NEXT_REDIRECT error — let it propagate so the
+        // redirect actually happens instead of showing a false error toast.
+        if (isRedirectError(error)) throw error;
         toast.error(t("toasts.completeError"));
       }
     });
