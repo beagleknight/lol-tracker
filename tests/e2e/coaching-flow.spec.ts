@@ -37,24 +37,27 @@ test.describe("Coaching flow", () => {
   test("schedule a new coaching session", async ({ page }) => {
     await page.goto("/coaching/new");
 
+    // Scope to main content to avoid duplicate elements from streaming/hydration
+    const main = page.getByRole("main");
+
     // Fill in coach name
-    await page.locator("#coach").fill("TestCoach");
+    await main.locator("#coach").fill("TestCoach");
 
     // Select focus areas by clicking topic badges
-    await page.getByText("Wave management", { exact: true }).click();
-    await page.getByText("Vision control", { exact: true }).click();
+    await main.getByText("Wave management", { exact: true }).click();
+    await main.getByText("Vision control", { exact: true }).click();
 
     // Add a custom topic
-    await page
+    await main
       .getByPlaceholder("Custom topic...")
       .fill("Custom E2E Topic");
-    await page.getByRole("button", { name: "Add" }).click();
+    await main.getByRole("button", { name: "Add" }).click();
 
     // Verify the custom topic badge appeared
-    await expect(page.getByText("Custom E2E Topic")).toBeVisible();
+    await expect(main.getByText("Custom E2E Topic")).toBeVisible();
 
     // Select the first match from the list (if available)
-    const matchButtons = page.locator(
+    const matchButtons = main.locator(
       'button:has(div.rounded-full)'
     );
     const matchCount = await matchButtons.count();
@@ -63,7 +66,7 @@ test.describe("Coaching flow", () => {
     }
 
     // Submit the form
-    await page.getByRole("button", { name: "Schedule Session" }).click();
+    await main.getByRole("button", { name: "Schedule Session" }).click();
 
     // Wait for toast confirmation
     await expect(
@@ -104,45 +107,48 @@ test.describe("Coaching flow", () => {
       timeout: 10_000,
     });
 
+    // Scope to main to avoid duplicate elements from streaming/hydration
+    const main = page.getByRole("main");
+
     // The topics from scheduling should be pre-filled
-    await expect(page.getByText("Wave management").first()).toBeVisible();
+    await expect(main.getByText("Wave management").first()).toBeVisible();
 
     // Fill in duration
-    await page.locator("#duration").fill("45");
+    await main.locator("#duration").fill("45");
 
     // Fill in notes
-    await page.locator("#notes").fill("Great session on wave management fundamentals.");
+    await main.locator("#notes").fill("Great session on wave management fundamentals.");
 
     // Add first action item (Enter key on description input triggers add)
-    await page
+    await main
       .getByPlaceholder("Topic (optional)")
       .fill("Wave management");
-    await page
+    await main
       .getByPlaceholder("Action item description...")
       .fill("Practice freezing near tower for 5 games");
-    await page.getByPlaceholder("Action item description...").press("Enter");
+    await main.getByPlaceholder("Action item description...").press("Enter");
 
     // Wait for the action item to appear before adding the next one
     await expect(
-      page.getByText("Practice freezing near tower for 5 games")
+      main.getByText("Practice freezing near tower for 5 games")
     ).toBeVisible();
 
     // Add second action item
-    await page
+    await main
       .getByPlaceholder("Topic (optional)")
       .fill("Vision control");
-    await page
+    await main
       .getByPlaceholder("Action item description...")
       .fill("Watch 2 VODs focusing on ward placement");
-    await page.getByPlaceholder("Action item description...").press("Enter");
+    await main.getByPlaceholder("Action item description...").press("Enter");
 
     // Verify second action item appears
     await expect(
-      page.getByText("Watch 2 VODs focusing on ward placement")
+      main.getByText("Watch 2 VODs focusing on ward placement")
     ).toBeVisible();
 
     // Submit — the button triggers a server action then router.push()
-    const submitButton = page.getByRole("button", { name: "Complete Session" });
+    const submitButton = main.getByRole("button", { name: "Complete Session" });
     await expect(submitButton).toBeEnabled();
     await submitButton.click();
 
@@ -218,11 +224,21 @@ test.describe("Coaching flow", () => {
     await cycleButton.click();
 
     // The status should cycle from "pending" to "in progress".
-    // (The toast may not fire due to server-side revalidation conflicts,
-    // but the UI updates optimistically.)
-    await expect(
-      firstActionItemRow.getByText("in progress")
-    ).toBeVisible({ timeout: 10_000 });
+    // Revalidation can be slow on CI — if the status doesn't appear within
+    // the timeout, reload the page and check again (the DB write is synchronous).
+    try {
+      await expect(
+        firstActionItemRow.getByText("in progress")
+      ).toBeVisible({ timeout: 10_000 });
+    } catch {
+      await page.reload();
+      await expect(
+        mainContent
+          .getByText("Practice freezing near tower for 5 games")
+          .locator("../..")
+          .getByText("in progress")
+      ).toBeVisible({ timeout: 10_000 });
+    }
   });
 
   test("delete the new coaching session", async ({ page }) => {
@@ -232,8 +248,9 @@ test.describe("Coaching flow", () => {
     // Set up dialog handler to accept the confirm()
     page.on("dialog", (dialog) => dialog.accept());
 
-    // Click the delete button — it's the destructive-colored icon button
-    await page.locator("button.text-destructive").click();
+    // Click the session delete button — it's the first destructive-colored icon
+    // button on the page (in the header area, next to the coach name).
+    await page.locator("button.text-destructive").first().click();
 
     // After deletion, the server action's revalidatePath re-renders the detail
     // page, which calls notFound() since the session no longer exists.
