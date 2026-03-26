@@ -87,7 +87,7 @@ export function HighlightsEditor({
       {/* Highlights */}
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <ThumbsUp className="h-3 w-3 text-green-400" />
+          <ThumbsUp className="h-3 w-3 text-win" />
           {t("highlightsLabel", { count: highlightItems.length, max: maxPerType })}
         </label>
 
@@ -97,7 +97,7 @@ export function HighlightsEditor({
           return (
             <div
               key={idx}
-              className="flex items-center gap-2 rounded-md border border-green-400/20 bg-green-400/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-win/20 bg-win/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -161,7 +161,7 @@ export function HighlightsEditor({
       {/* Lowlights */}
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <ThumbsDown className="h-3 w-3 text-red-400" />
+          <ThumbsDown className="h-3 w-3 text-loss" />
           {t("lowlightsLabel", { count: lowlightItems.length, max: maxPerType })}
         </label>
 
@@ -171,7 +171,7 @@ export function HighlightsEditor({
           return (
             <div
               key={idx}
-              className="flex items-center gap-2 rounded-md border border-red-400/20 bg-red-400/5 px-3 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md border border-loss/20 bg-loss/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
                 <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -262,8 +262,8 @@ export function HighlightsDisplay({
                 <TooltipTrigger
                   className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] cursor-default ${
                     hasText
-                      ? "bg-green-400/20 text-green-300"
-                      : "bg-green-400/10 text-green-400"
+                      ? "bg-win/20 text-win-muted"
+                      : "bg-win/10 text-win"
                   }`}
                 >
                   <ThumbsUp className="h-2.5 w-2.5" />
@@ -284,8 +284,8 @@ export function HighlightsDisplay({
                 <TooltipTrigger
                   className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] cursor-default ${
                     hasText
-                      ? "bg-red-400/20 text-red-300"
-                      : "bg-red-400/10 text-red-400"
+                      ? "bg-loss/20 text-loss-muted"
+                      : "bg-loss/10 text-loss"
                   }`}
                 >
                   <ThumbsDown className="h-2.5 w-2.5" />
@@ -309,16 +309,16 @@ export function HighlightsDisplay({
       {highlightItems.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <ThumbsUp className="h-3 w-3 text-green-400" />
+            <ThumbsUp className="h-3 w-3 text-win" />
             {t("highlightsHeading")}
           </p>
           {highlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-md border border-green-400/20 border-l-2 border-l-green-400/50 bg-green-400/5 px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-md border border-win/20 border-l-2 border-l-win/50 bg-win/5 px-3 py-2 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-green-400/10 text-green-300 border-green-400/20">
+                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-win/10 text-win-muted border-win/20">
                   {item.topic}
                 </Badge>
               )}
@@ -330,16 +330,16 @@ export function HighlightsDisplay({
       {lowlightItems.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <ThumbsDown className="h-3 w-3 text-red-400" />
+            <ThumbsDown className="h-3 w-3 text-loss" />
             {t("lowlightsHeading")}
           </p>
           {lowlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-md border border-red-400/20 border-l-2 border-l-red-400/50 bg-red-400/5 px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-md border border-loss/20 border-l-2 border-l-loss/50 bg-loss/5 px-3 py-2 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-red-400/10 text-red-300 border-red-400/20">
+                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-loss/10 text-loss-muted border-loss/20">
                   {item.topic}
                 </Badge>
               )}

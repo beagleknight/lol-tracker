@@ -110,7 +110,7 @@ function MatchCardHeader({
     <div className="flex items-center gap-3">
       <div
         className={`w-1 h-10 rounded-full ${
-          match.result === "Victory" ? "bg-green-500" : "bg-red-500"
+          match.result === "Victory" ? "bg-win" : "bg-loss"
         }`}
       />
       <Image

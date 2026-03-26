@@ -82,8 +82,8 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
 
   const icons: Record<string, React.ReactNode> = {
     pending: <Circle className="h-4 w-4 text-muted-foreground" />,
-    in_progress: <Play className="h-4 w-4 text-yellow-500" />,
-    completed: <CheckCircle2 className="h-4 w-4 text-green-400" />,
+    in_progress: <Play className="h-4 w-4 text-status-progress" />,
+    completed: <CheckCircle2 className="h-4 w-4 text-win" />,
   };
 
   const dateStr = formatDate(item.sessionDate, locale, "short-compact");
