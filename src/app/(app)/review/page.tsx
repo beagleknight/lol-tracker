@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and, asc, desc, inArray, count } from "drizzle-orm";
+import { eq, ne, and, asc, desc, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { ReviewClient } from "./review-client";
@@ -27,7 +27,8 @@ export default async function ReviewPage({
 
   const reviewedWhere = and(
     eq(matches.userId, user.id),
-    eq(matches.reviewed, true)
+    eq(matches.reviewed, true),
+    ne(matches.result, "Remake")
   );
 
   const matchColumns = {
@@ -68,7 +69,8 @@ export default async function ReviewPage({
       db.query.matches.findMany({
         where: and(
           eq(matches.userId, user.id),
-          eq(matches.reviewed, false)
+          eq(matches.reviewed, false),
+          ne(matches.result, "Remake")
         ),
         orderBy: asc(matches.gameDate),
         limit: 50,
