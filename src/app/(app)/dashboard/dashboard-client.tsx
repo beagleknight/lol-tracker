@@ -36,7 +36,7 @@ import {
 interface DashboardMatch {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat";
+  result: "Victory" | "Defeat" | "Remake";
   championId: number;
   championName: string;
   runeKeystoneId: number | null;
@@ -92,9 +92,12 @@ interface DashboardClientProps {
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
   if (matches.length === 0) return null;
-  const first = matches[0].result;
+  // Skip remakes — they don't affect streaks
+  const meaningful = matches.filter((m) => m.result !== "Remake");
+  if (meaningful.length === 0) return null;
+  const first = meaningful[0].result;
   let count = 0;
-  for (const m of matches) {
+  for (const m of meaningful) {
     if (m.result === first) count++;
     else break;
   }
@@ -133,12 +136,13 @@ export function DashboardClient({
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
 
-  // Session stats (last 10 games)
-  const sessionWins = recentMatches.filter((m) => m.result === "Victory").length;
-  const sessionLosses = recentMatches.filter((m) => m.result === "Defeat").length;
+  // Session stats (last 10 games, excluding remakes)
+  const sessionGames = recentMatches.filter((m) => m.result !== "Remake");
+  const sessionWins = sessionGames.filter((m) => m.result === "Victory").length;
+  const sessionLosses = sessionGames.filter((m) => m.result === "Defeat").length;
   const sessionWinRate =
-    recentMatches.length > 0
-      ? Math.round((sessionWins / recentMatches.length) * 100)
+    sessionGames.length > 0
+      ? Math.round((sessionWins / sessionGames.length) * 100)
       : 0;
 
   // Overall stats from aggregates

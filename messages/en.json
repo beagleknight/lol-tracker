@@ -28,7 +28,8 @@
     "notReviewed": "Not reviewed",
     "hasNotesNotReviewed": "Has notes, not yet reviewed",
     "win": "W",
-    "loss": "L"
+    "loss": "L",
+    "remake": "R"
   },
   "Pagination": {
     "ellipsis": "..."
@@ -100,6 +101,7 @@
     "allResults": "All Results",
     "victories": "Victories",
     "defeats": "Defeats",
+    "remakes": "Remakes",
     "championFilterPlaceholder": "Champion",
     "allChampions": "All Champions",
     "reviewFilterPlaceholder": "Review",
@@ -154,6 +156,7 @@
     "vs": "vs",
     "win": "W",
     "loss": "L",
+    "remake": "R",
     "gameNotesOptional": "Game Notes (optional)",
     "gameNotes": "Game Notes",
     "gameNotesPlaceholder": "Any additional notes...",
@@ -329,6 +332,7 @@
     "vs": "vs",
     "resultWin": "W",
     "resultLoss": "L",
+    "resultRemake": "R",
     "actionItems": "Action Items",
     "actionItemsDescription": "{completed}/{total} completed. Click the status icon to cycle through: pending → in progress → completed.",
     "noActionItems": "No action items for this session.",
@@ -467,6 +471,7 @@
       "description": "Games played together with {partnerName}",
       "resultWin": "W",
       "resultLoss": "L",
+      "resultRemake": "R",
       "emptyTitle": "No duo games found yet.",
       "emptyDescription": "Sync your matches to detect games played with your duo partner."
     },

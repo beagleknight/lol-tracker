@@ -80,6 +80,7 @@ export interface RiotMatchParticipant {
 interface RiotMatchInfo {
   gameCreation: number;
   gameDuration: number; // seconds
+  gameEndedInEarlySurrender: boolean;
   gameId: number;
   gameMode: string;
   gameType: string;
@@ -264,7 +265,11 @@ export function extractPlayerData(match: RiotMatch, puuid: string) {
   return {
     matchId: match.metadata.matchId,
     gameDate: new Date(match.info.gameCreation),
-    result: participant.win ? ("Victory" as const) : ("Defeat" as const),
+    result: match.info.gameEndedInEarlySurrender || match.info.gameDuration < 300
+      ? ("Remake" as const)
+      : participant.win
+        ? ("Victory" as const)
+        : ("Defeat" as const),
     championId: participant.championId,
     championName: participant.championName,
     runeKeystoneId: keystoneId || null,

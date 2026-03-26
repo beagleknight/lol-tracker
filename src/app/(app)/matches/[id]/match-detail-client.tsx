@@ -235,7 +235,11 @@ export function MatchDetailClient({
                 </h1>
                 <Badge
                   variant={
-                    match.result === "Victory" ? "default" : "destructive"
+                    match.result === "Remake"
+                      ? "secondary"
+                      : match.result === "Victory"
+                      ? "default"
+                      : "destructive"
                   }
                 >
                   {match.result}

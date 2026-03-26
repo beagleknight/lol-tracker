@@ -40,7 +40,7 @@ export interface DuoStats {
 export interface DuoGameRow {
   id: string;
   gameDate: Date;
-  result: "Victory" | "Defeat";
+  result: "Victory" | "Defeat" | "Remake";
   championName: string;
   kills: number;
   deaths: number;
@@ -101,12 +101,12 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
       .select({
         totalGames: count(),
         wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
-        avgKills: sql<number>`AVG(${matches.kills})`,
-        avgDeaths: sql<number>`AVG(${matches.deaths})`,
-        avgAssists: sql<number>`AVG(${matches.assists})`,
-        partnerAvgKills: sql<number>`AVG(${matches.duoPartnerKills})`,
-        partnerAvgDeaths: sql<number>`AVG(${matches.duoPartnerDeaths})`,
-        partnerAvgAssists: sql<number>`AVG(${matches.duoPartnerAssists})`,
+        avgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.kills} END)`,
+        avgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.deaths} END)`,
+        avgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.assists} END)`,
+        partnerAvgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerKills} END)`,
+        partnerAvgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerDeaths} END)`,
+        partnerAvgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerAssists} END)`,
       })
       .from(matches)
       .where(

@@ -458,7 +458,11 @@ export function DuoRecentGames({
               >
                 <Badge
                   variant={
-                    game.result === "Victory" ? "default" : "destructive"
+                    game.result === "Remake"
+                      ? "secondary"
+                      : game.result === "Victory"
+                      ? "default"
+                      : "destructive"
                   }
                   className={`w-12 justify-center text-xs ${
                     game.result === "Victory"
@@ -466,7 +470,7 @@ export function DuoRecentGames({
                       : ""
                   }`}
                 >
-                  {game.result === "Victory" ? t("recentGames.resultWin") : t("recentGames.resultLoss")}
+                  {game.result === "Remake" ? t("recentGames.resultRemake") : game.result === "Victory" ? t("recentGames.resultWin") : t("recentGames.resultLoss")}
                 </Badge>
 
                 <div className="flex items-center gap-2 min-w-0">

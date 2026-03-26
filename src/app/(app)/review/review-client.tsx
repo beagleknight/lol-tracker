@@ -110,7 +110,11 @@ function MatchCardHeader({
     <div className="flex items-center gap-3">
       <div
         className={`w-1 h-10 rounded-full ${
-          match.result === "Victory" ? "bg-win" : "bg-loss"
+          match.result === "Remake"
+            ? "bg-muted-foreground/40"
+            : match.result === "Victory"
+            ? "bg-win"
+            : "bg-loss"
         }`}
       />
       <Image
@@ -125,11 +129,15 @@ function MatchCardHeader({
           <CardTitle className="text-base">{match.championName}</CardTitle>
           <Badge
             variant={
-              match.result === "Victory" ? "default" : "destructive"
+              match.result === "Remake"
+                ? "secondary"
+                : match.result === "Victory"
+                ? "default"
+                : "destructive"
             }
             className="text-xs"
           >
-            {match.result === "Victory" ? t("win") : t("loss")}
+            {match.result === "Remake" ? t("remake") : match.result === "Victory" ? t("win") : t("loss")}
           </Badge>
         </div>
         <CardDescription className="inline-flex items-center gap-1 flex-wrap">

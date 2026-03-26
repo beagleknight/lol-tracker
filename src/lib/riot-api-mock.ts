@@ -100,6 +100,7 @@ export async function mockGetMatch(matchId: string): Promise<RiotMatch> {
     info: {
       gameCreation: Date.now(),
       gameDuration: 1800,
+      gameEndedInEarlySurrender: false,
       gameId: parseInt(matchId.replace("EUW1_", ""), 10) || 0,
       gameMode: "CLASSIC",
       gameType: "MATCHED_GAME",
