@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { matches } from "@/db/schema";
+import { matches, type MatchResult } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/session";
 
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
   // Build WHERE conditions
   const conditions = [eq(matches.userId, user.id)];
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
-    conditions.push(eq(matches.result, result));
+    conditions.push(eq(matches.result, result as MatchResult));
   }
   if (champion !== "all") {
     conditions.push(eq(matches.championName, champion));

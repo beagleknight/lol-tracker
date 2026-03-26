@@ -4,6 +4,7 @@ import { eq, and, desc, sql, inArray, count } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { MatchesClient } from "./matches-client";
+import { winLossRemakeSelect } from "@/lib/match-queries";
 
 const PAGE_SIZE = 10;
 
@@ -100,11 +101,7 @@ export default async function MatchesPage({
     getLatestVersion(),
     // Win/loss stats for the filtered set
     db
-      .select({
-        wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
-        losses: sql<number>`SUM(CASE WHEN ${matches.result} = 'Defeat' THEN 1 ELSE 0 END)`,
-        remakes: sql<number>`SUM(CASE WHEN ${matches.result} = 'Remake' THEN 1 ELSE 0 END)`,
-      })
+      .select(winLossRemakeSelect)
       .from(matches)
       .where(whereClause),
   ]);

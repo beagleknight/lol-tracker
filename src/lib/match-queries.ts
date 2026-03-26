@@ -1,0 +1,90 @@
+// Shared Drizzle SQL fragments for match result filtering and aggregation.
+// Keeps all remake-aware query logic in one place.
+
+import { sql, type SQL } from "drizzle-orm";
+import { matches, matchHighlights } from "@/db/schema";
+
+// ─── SQL Fragments ───────────────────────────────────────────────────────────
+
+/** SQL condition: result is NOT 'Remake'. Use in WHERE clauses. */
+export const notRemake: SQL = sql`${matches.result} != 'Remake'`;
+
+// ─── Aggregate Helpers ───────────────────────────────────────────────────────
+
+/**
+ * Build a SELECT that returns win/loss/remake/unreviewed/vodPending counts.
+ * Use with `db.select(matchStatCountsSelect).from(matches).where(...)`.
+ */
+export const matchStatCountsSelect = {
+  total: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("total"),
+  wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
+  remakes: sql<number>`SUM(CASE WHEN ${matches.result} = 'Remake' THEN 1 ELSE 0 END)`.as("remakes"),
+  unreviewed: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("unreviewed"),
+  vodPending: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
+    ${matches.comment} IS NOT NULL
+    OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
+  ) THEN 1 ELSE 0 END)`.as("vod_pending"),
+};
+
+/**
+ * Returns win/loss/remake counts for a result-aware query.
+ * Use: `db.select(winLossRemakeSelect).from(matches).where(...)`
+ */
+export const winLossRemakeSelect = {
+  wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
+  losses: sql<number>`SUM(CASE WHEN ${matches.result} = 'Defeat' THEN 1 ELSE 0 END)`.as("losses"),
+  remakes: sql<number>`SUM(CASE WHEN ${matches.result} = 'Remake' THEN 1 ELSE 0 END)`.as("remakes"),
+};
+
+/**
+ * Average performance stats excluding remakes.
+ * Use: `db.select(avgPerformanceSelect).from(matches).where(...)`
+ */
+export const avgPerformanceSelect = {
+  avgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.kills} END)`.as("avg_kills"),
+  avgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.deaths} END)`.as("avg_deaths"),
+  avgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.assists} END)`.as("avg_assists"),
+  avgCsPerMin: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.csPerMin} END)`.as("avg_cs_per_min"),
+  avgGold: sql<number>`ROUND(AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.goldEarned} END))`.as("avg_gold"),
+  avgVision: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.visionScore} END)`.as("avg_vision"),
+  total: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("total_meaningful"),
+};
+
+/**
+ * Duo-specific aggregate counts that exclude remakes from totals.
+ */
+export function duoStatsSelect() {
+  return {
+    totalGames: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("total_games"),
+    wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
+    avgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.kills} END)`.as("avg_kills"),
+    avgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.deaths} END)`.as("avg_deaths"),
+    avgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.assists} END)`.as("avg_assists"),
+    partnerAvgKills: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerKills} END)`.as("partner_avg_kills"),
+    partnerAvgDeaths: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerDeaths} END)`.as("partner_avg_deaths"),
+    partnerAvgAssists: sql<number>`AVG(CASE WHEN ${matches.result} != 'Remake' THEN ${matches.duoPartnerAssists} END)`.as("partner_avg_assists"),
+  };
+}
+
+/**
+ * Champion synergy counts that exclude remakes.
+ */
+export const championSynergySelect = {
+  games: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("games"),
+  wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
+};
+
+/**
+ * Sidebar/layout review badge query: counts unreviewed games excluding remakes.
+ */
+export function sidebarReviewCountsSelect() {
+  return {
+    postGame: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND ${matches.comment} IS NULL AND NOT EXISTS (
+      SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id}
+    ) THEN 1 ELSE 0 END)`.as("post_game"),
+    vod: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
+      ${matches.comment} IS NOT NULL
+      OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
+    ) THEN 1 ELSE 0 END)`.as("vod"),
+  };
+}

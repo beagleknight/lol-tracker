@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { matches, matchHighlights } from "@/db/schema";
+import { matches, matchHighlights, type MatchResult } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import {
@@ -10,13 +10,14 @@ import {
 } from "@/lib/riot-api";
 import { cacheLife, cacheTag } from "next/cache";
 import { scoutTag } from "@/lib/cache";
+import { notRemake } from "@/lib/match-queries";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface MatchupGameDetail {
   matchId: string;
   gameDate: Date;
-  result: "Victory" | "Defeat" | "Remake";
+  result: MatchResult;
   championName: string;
   matchupChampionName: string | null;
   kills: number;
@@ -158,20 +159,21 @@ async function getCachedMatchupReport(
     }))
     .sort((a, b) => b.games - a.games);
 
-  // Average stats
-  const totalKills = matchRows.reduce((sum, m) => sum + m.kills, 0);
-  const totalDeaths = matchRows.reduce((sum, m) => sum + m.deaths, 0);
-  const totalAssists = matchRows.reduce((sum, m) => sum + m.assists, 0);
-  const totalCsPerMin = matchRows.reduce(
+  // Average stats (exclude remakes)
+  const meaningful = matchRows.filter((m) => m.result !== "Remake");
+  const totalKills = meaningful.reduce((sum, m) => sum + m.kills, 0);
+  const totalDeaths = meaningful.reduce((sum, m) => sum + m.deaths, 0);
+  const totalAssists = meaningful.reduce((sum, m) => sum + m.assists, 0);
+  const totalCsPerMin = meaningful.reduce(
     (sum, m) => sum + (m.csPerMin || 0),
     0
   );
-  const totalGold = matchRows.reduce((sum, m) => sum + (m.goldEarned || 0), 0);
-  const totalVision = matchRows.reduce(
+  const totalGold = meaningful.reduce((sum, m) => sum + (m.goldEarned || 0), 0);
+  const totalVision = meaningful.reduce(
     (sum, m) => sum + (m.visionScore || 0),
     0
   );
-  const n = matchRows.length;
+  const n = meaningful.length || 1; // Avoid division by zero
 
   const avgStats = {
     kills: Math.round((totalKills / n) * 10) / 10,
@@ -240,7 +242,7 @@ async function getCachedMatchupReport(
     return {
       matchId: m.id,
       gameDate: m.gameDate,
-      result: m.result as "Victory" | "Defeat",
+      result: m.result,
       championName: m.championName,
       matchupChampionName: m.matchupChampionName ?? null,
       kills: m.kills,
@@ -263,10 +265,10 @@ async function getCachedMatchupReport(
     };
   });
 
-  // ─── Overall average stats (for comparison baseline) ────────────────────
+  // ─── Overall average stats (for comparison baseline, excludes remakes) ──
   // If yourChampionName is set, compare against all games as that champion.
   // Otherwise, compare against all user games.
-  const overallConditions = [eq(matches.userId, userId)];
+  const overallConditions = [eq(matches.userId, userId), notRemake];
   if (yourChampionName) {
     overallConditions.push(eq(matches.championName, yourChampionName));
   }

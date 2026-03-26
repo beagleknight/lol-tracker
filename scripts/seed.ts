@@ -375,7 +375,7 @@ async function seed() {
     gameDate: Date;
     champion: { id: number; name: string };
     keystone: { id: number; name: string };
-    result: "Victory" | "Defeat";
+    result: "Victory" | "Defeat" | "Remake";
     kills: number;
     deaths: number;
     assists: number;
@@ -403,7 +403,14 @@ async function seed() {
     const gameDate = new Date(
       matchStart.getTime() + (timeSpan / totalMatches) * i + randInt(0, 3600000)
     );
-    const durationSeconds = randInt(1200, 2400); // 20–40 min
+    // ~5% remakes, then ~55% win rate among non-remakes (slightly positive, climbing)
+    const resultRoll = rand();
+    const result: "Victory" | "Defeat" | "Remake" =
+      resultRoll < 0.05 ? "Remake" : resultRoll < 0.05 + 0.95 * 0.55 ? "Victory" : "Defeat";
+    const isRemake = result === "Remake";
+
+    // Remakes are very short (2-3 min); real games 20-40 min
+    const durationSeconds = isRemake ? randInt(120, 210) : randInt(1200, 2400);
     const durationMin = durationSeconds / 60;
 
     // Main user plays from their pool 70% of the time
@@ -411,25 +418,23 @@ async function seed() {
     const keystone = pick(KEYSTONES);
     const matchup = pick(CHAMPIONS.filter((c) => c.id !== champion.id));
 
-    // ~55% win rate (slightly positive, climbing)
-    const result: "Victory" | "Defeat" = rand() < 0.55 ? "Victory" : "Defeat";
-
-    const kills = randInt(1, 15);
-    const deaths = randInt(0, 10);
-    const assists = randInt(1, 18);
-    const cs = Math.round(durationMin * (5 + rand() * 4)); // 5–9 cs/min
-    const csPerMin = Math.round((cs / durationMin) * 10) / 10;
-    const goldEarned = randInt(7000, 18000);
-    const visionScore = randInt(10, 50);
+    // Remakes have minimal stats
+    const kills = isRemake ? 0 : randInt(1, 15);
+    const deaths = isRemake ? 0 : randInt(0, 10);
+    const assists = isRemake ? 0 : randInt(1, 18);
+    const cs = isRemake ? 0 : Math.round(durationMin * (5 + rand() * 4)); // 5–9 cs/min
+    const csPerMin = isRemake ? 0 : Math.round((cs / durationMin) * 10) / 10;
+    const goldEarned = isRemake ? randInt(500, 1000) : randInt(7000, 18000);
+    const visionScore = isRemake ? randInt(0, 3) : randInt(10, 50);
 
     // Duo partner appears in ~40% of matches
     const hasDuo = rand() < 0.4;
     const duoChampion = hasDuo ? pick(SUPPORT_CHAMPIONS) : null;
 
-    // ~30% reviewed, ~10% skipped, rest unreviewed
+    // ~30% reviewed, ~10% skipped, rest unreviewed (remakes never reviewed)
     const reviewRoll = rand();
-    const reviewed = reviewRoll < 0.3;
-    const skipped = reviewRoll >= 0.3 && reviewRoll < 0.4;
+    const reviewed = isRemake ? false : reviewRoll < 0.3;
+    const skipped = isRemake ? false : reviewRoll >= 0.3 && reviewRoll < 0.4;
 
     seedMatches.push({
       matchId: `EUW1_${7000000000 + i}`,
