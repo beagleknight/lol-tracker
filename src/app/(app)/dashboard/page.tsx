@@ -198,6 +198,13 @@ export default async function DashboardPage() {
       upcomingSession={upcomingSession ?? null}
       activeGoal={activeGoal ?? null}
       lastCompletedSession={lastCompletedSession ?? null}
+      daysSinceLastCoaching={
+        lastCompletedSession
+          ? Math.floor(
+              (Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24)
+            )
+          : null
+      }
       currentRank={latestRankOrUndef?.tier ? {
         tier: latestRankOrUndef.tier,
         division: latestRankOrUndef.division,

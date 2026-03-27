@@ -95,6 +95,7 @@ interface DashboardClientProps {
   upcomingSession: UpcomingSession | null;
   activeGoal: Goal | null;
   lastCompletedSession: LastCompletedSession | null;
+  daysSinceLastCoaching: number | null;
   currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
 }
@@ -136,6 +137,7 @@ export function DashboardClient({
   upcomingSession,
   activeGoal,
   lastCompletedSession,
+  daysSinceLastCoaching,
   currentRank,
   ddragonVersion,
 }: DashboardClientProps) {
@@ -145,6 +147,16 @@ export function DashboardClient({
   const isLinked = !!user.puuid;
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
+
+  // Coaching cadence
+  const coachingCadence: "good" | "warning" | "overdue" | null =
+    daysSinceLastCoaching !== null
+      ? daysSinceLastCoaching < 14
+        ? "good"
+        : daysSinceLastCoaching <= 21
+          ? "warning"
+          : "overdue"
+      : null;
 
   // Session stats (last 10 games, excluding remakes)
   const sessionGames = recentMatches.filter((m) => m.result !== "Remake");
@@ -465,12 +477,7 @@ export function DashboardClient({
           )}
 
           {/* Last Coaching Session — cadence indicator */}
-          {lastCompletedSession ? (() => {
-            const daysSince = Math.floor(
-              (Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24)
-            );
-            const cadence: "good" | "warning" | "overdue" =
-              daysSince < 14 ? "good" : daysSince <= 21 ? "warning" : "overdue";
+          {lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null ? (() => {
             const cadenceColors = {
               good: "text-win",
               warning: "text-warning",
@@ -487,10 +494,10 @@ export function DashboardClient({
               overdue: "bg-loss/20 text-loss border-loss/30",
             };
             return (
-              <Card className={`surface-glow ${borderColors[cadence]}`}>
+              <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <GraduationCap className={`h-4 w-4 ${cadenceColors[cadence]}`} />
+                    <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
                     {t("lastCoaching")}
                   </CardTitle>
                   <Link href={`/coaching/${lastCompletedSession.id}`}>
@@ -501,14 +508,14 @@ export function DashboardClient({
                   </Link>
                 </CardHeader>
                 <CardContent>
-                  <p className={`text-lg font-bold ${cadenceColors[cadence]}`}>
-                    {daysSince === 0 ? t("today") : t("daysAgo", { days: daysSince })}
+                  <p className={`text-lg font-bold ${cadenceColors[coachingCadence]}`}>
+                    {daysSinceLastCoaching === 0 ? t("today") : t("daysAgo", { days: daysSinceLastCoaching })}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {lastCompletedSession.coachName}
                   </p>
-                  <Badge className={`mt-2 text-xs ${badgeClasses[cadence]}`}>
-                    {t(`cadence.${cadence}`)}
+                  <Badge className={`mt-2 text-xs ${badgeClasses[coachingCadence]}`}>
+                    {t(`cadence.${coachingCadence}`)}
                   </Badge>
                 </CardContent>
               </Card>
