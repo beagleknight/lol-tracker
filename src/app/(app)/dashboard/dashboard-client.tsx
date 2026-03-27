@@ -476,8 +476,8 @@ export function DashboardClient({
             </Card>
           )}
 
-          {/* Last Coaching Session — cadence indicator */}
-          {lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null ? (() => {
+          {/* Last Coaching Session — cadence indicator (hidden when there's an upcoming session) */}
+          {!upcomingSession && lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null ? (() => {
             const cadenceColors = {
               good: "text-win",
               warning: "text-warning",
@@ -520,7 +520,7 @@ export function DashboardClient({
                 </CardContent>
               </Card>
             );
-          })() : (
+          })() : !upcomingSession ? (
             <Card className="surface-glow border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -535,7 +535,7 @@ export function DashboardClient({
                 </Link>
               </CardContent>
             </Card>
-          )}
+          ) : null}
 
           {/* Goal Widget */}
           {activeGoal && currentRank ? (() => {
