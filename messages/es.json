@@ -253,6 +253,26 @@
       "failedToLoadReport": "No se pudo cargar el informe de scouting. Inténtalo de nuevo."
     }
   },
+  "MatchupNotes": {
+    "sectionTitle": "Notas de matchup",
+    "generalNoteTitle": "vs {enemy}",
+    "specificNoteTitle": "{champion} vs {enemy}",
+    "addNotes": "Añadir notas...",
+    "editTooltip": "Editar nota",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "placeholder": "Escribe tus notas sobre este matchup...",
+    "savedAt": "Actualizado {date}",
+    "viewInScout": "Ver en Scout",
+    "readOnlyTitle": "Tus notas",
+    "noNotes": "Sin notas de matchup aún. Usa la página de Scout para añadir notas.",
+    "toasts": {
+      "saved": "Nota de matchup guardada.",
+      "deleted": "Nota de matchup eliminada.",
+      "saveError": "Error al guardar la nota de matchup.",
+      "deleteError": "Error al eliminar la nota de matchup."
+    }
+  },
   "Analytics": {
     "pageTitle": "Estadísticas",
     "gamesAnalyzed": "{count, plural, one {# partida} other {# partidas}} analizadas.",

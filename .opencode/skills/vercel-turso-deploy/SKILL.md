@@ -134,64 +134,33 @@ Use `npm run db:pull` (production -> local) and `npm run db:push` (local -> prod
 
 ## Turso / Drizzle migration workflow
 
-When you modify `src/db/schema.ts` (add columns, create tables, change indexes, etc.), the production Turso database will NOT update automatically. **You must run the migration against production before pushing code that references new schema.**
+Migrations are **auto-applied on every Vercel deploy**. The `vercel.json` `buildCommand` runs `scripts/migrate.ts` before `next build`, which reads the Drizzle journal (`drizzle/meta/_journal.json`) and applies any pending `.sql` migration files. This is idempotent — already-applied migrations are skipped.
 
 ### Steps after any schema change
 
 1. Generate migration: `npx drizzle-kit generate`
 2. Review the generated SQL in `drizzle/XXXX_*.sql`
-3. **Apply migration against production Turso**: Create a standalone script (see "`drizzle-kit migrate` fails or hangs with dotenvx" section below) and run it via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`
-4. Verify migration succeeded (e.g., `PRAGMA table_info(tablename)`) before pushing code
+3. Apply locally: `sqlite3 ./data/lol-tracker.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
+4. Commit the migration files alongside your code
+5. Push / merge — the migration will be applied to production Turso automatically during the Vercel build
+
+### How `scripts/migrate.ts` works
+
+- Creates a `__drizzle_migrations` tracking table if it doesn't exist
+- Has a backfill mechanism for databases that predate the script (migrations 0000-0010 applied via the old manual approach)
+- Reads the Drizzle journal, splits each `.sql` file by `"--> statement-breakpoint"`, and executes statements sequentially
+- Skips "already exists" errors for idempotency
+- Records each applied migration in the tracking table
+- Falls back to local SQLite (`file:./data/lol-tracker.db`) if no `TURSO_DATABASE_URL` is set
+- Has a `cleanEnv()` helper to strip dotenvx banners from env vars
 
 ### `drizzle-kit migrate` fails or hangs with dotenvx
 
-`drizzle-kit migrate` reads `drizzle.config.ts` at module scope, which means env vars are consumed **before** any banner-stripping can run. When invoked via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx drizzle-kit migrate`, the `TURSO_DATABASE_URL` value is corrupted by the dotenvx banner and the command fails silently or with a cryptic error.
+`drizzle-kit migrate` reads `drizzle.config.ts` at module scope, which means env vars are consumed **before** any banner-stripping can run. This is why the project uses a custom `scripts/migrate.ts` instead of the built-in Drizzle migrator.
 
-**Workaround**: Write a standalone `.ts` migration script that strips the banner itself, then run it with `npx tsx`. See `scripts/apply-migration-0006.ts` for an example. The pattern:
+### Historical: manual migration scripts
 
-```ts
-// scripts/apply-migration-XXXX.ts
-import { createClient } from "@libsql/client";
-
-function cleanEnv(key: string): string | undefined {
-  const val = process.env[key];
-  if (!val) return undefined;
-  return val.replace(/^\[dotenv@[^\]]+\][^\n]*\n/, "");
-}
-
-const db = createClient({
-  url: cleanEnv("TURSO_DATABASE_URL")!,
-  authToken: cleanEnv("TURSO_AUTH_TOKEN"),
-});
-
-async function run() {
-  // Copy statements from the generated drizzle/XXXX_*.sql file:
-  await db.execute("ALTER TABLE `matches` ADD `new_column` text");
-  console.log("Done!");
-}
-run().catch(console.error);
-```
-
-Run with:
-```bash
-npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts
-```
-
-**Important**: Do NOT use `node --env-file` with `require('@libsql/client')` — `@libsql/client` is ESM-only and won't work with `require()`.
-
-After applying manually, the drizzle `__drizzle_migrations` table in Turso will be out of sync with the applied state. This is acceptable for this project since migrations are applied manually anyway. If needed, you can insert a record into `__drizzle_migrations` to mark it as applied.
-
-### If `.env.local` doesn't have Turso credentials
-
-Pull them with:
-```bash
-npx vercel env pull .env.local
-```
-Note: env vars are scoped to **Production** on Vercel. If `vercel env pull` returns empty values, manually copy `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` from the Vercel dashboard into `.env.local`.
-
-### Why this matters
-
-The Vercel deployment auto-builds on push but does NOT run migrations. If new code references columns/tables that don't exist in production yet, every page that touches those columns will return a 500 error.
+The `scripts/apply-migration-*.ts` files are one-off scripts from before the automated `scripts/migrate.ts` approach was adopted. They are no longer needed for new migrations but are kept for reference.
 
 ### Config
 
