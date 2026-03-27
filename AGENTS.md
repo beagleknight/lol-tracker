@@ -10,6 +10,8 @@ Before making ANY code change:
 
 Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only — in that case add the `skip-changelog` label.
 
+**MANDATORY: Run `npm run lint` and `npm run build` locally BEFORE pushing.** Do not rely on CI as the first lint/build check — catch errors locally first.
+
 Full workflow details are in the `pr-workflow` OpenCode skill.
 <!-- END:pr-workflow-rules -->
 

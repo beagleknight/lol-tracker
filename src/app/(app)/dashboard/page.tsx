@@ -26,6 +26,7 @@ export default async function DashboardPage() {
     matchStats,
     upcomingSession,
     activeGoal,
+    lastCompletedSession,
   ] = await Promise.all([
     getLatestVersion(),
 
@@ -127,6 +128,20 @@ export default async function DashboardPage() {
     db.query.goals.findFirst({
       where: and(eq(goals.userId, user.id), eq(goals.status, "active")),
     }),
+
+    // Last completed coaching session (for "days since" widget)
+    db.query.coachingSessions.findFirst({
+      where: and(
+        eq(coachingSessions.userId, user.id),
+        eq(coachingSessions.status, "completed")
+      ),
+      orderBy: desc(coachingSessions.date),
+      columns: {
+        id: true,
+        coachName: true,
+        date: true,
+      },
+    }),
   ]);
 
   const latestRankOrUndef = latestRank ?? null;
@@ -182,6 +197,14 @@ export default async function DashboardPage() {
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
       activeGoal={activeGoal ?? null}
+      lastCompletedSession={lastCompletedSession ?? null}
+      daysSinceLastCoaching={
+        lastCompletedSession
+          ? Math.floor(
+              (Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24)
+            )
+          : null
+      }
       currentRank={latestRankOrUndef?.tier ? {
         tier: latestRankOrUndef.tier,
         division: latestRankOrUndef.division,

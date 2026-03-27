@@ -41,12 +41,13 @@ Branch naming conventions:
 ### 2. Implement the changes
 
 - Make commits on the feature branch
-- Run checks locally before pushing:
+- **MANDATORY: Run lint locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
   ```bash
-  npm run typecheck
   npm run lint
   npm run build
   ```
+  Fix any errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
+- `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
 
 ### 3. Write a changelog entry
 
@@ -126,7 +127,7 @@ Vercel auto-deploys on merge to main — no manual deploy step needed.
 git checkout main && git pull
 git checkout -b fix/description
 # make changes
-npm run typecheck && npm run lint
+npm run lint && npm run build
 git add -A && git commit -m "fix: description"
 # add changelog entry
 git add -A && git commit -m "docs: add changelog entry"
@@ -139,6 +140,7 @@ gh pr create --title "fix: description" --body "..."
 git checkout main && git pull
 git checkout -b feat/description
 # implement in logical commits
+npm run lint && npm run build
 # add changelog at the end
 git push -u origin feat/description
 gh pr create --title "feat: description" --body "..."
@@ -149,6 +151,7 @@ gh pr create --title "feat: description" --body "..."
 git checkout main && git pull
 git checkout -b chore/description
 # make changes
+npm run lint && npm run build
 git push -u origin chore/description
 gh pr create --title "chore: description" --body "..." --label skip-changelog
 ```
