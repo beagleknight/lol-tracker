@@ -24,6 +24,7 @@ import {
   AlertCircle,
   Calendar,
   Target,
+  GraduationCap,
 } from "lucide-react";
 import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -73,6 +74,12 @@ interface UpcomingSession {
   vodMatchId: string | null;
 }
 
+interface LastCompletedSession {
+  id: number;
+  coachName: string;
+  date: Date;
+}
+
 interface DashboardClientProps {
   user: {
     name?: string | null;
@@ -87,6 +94,7 @@ interface DashboardClientProps {
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
   activeGoal: Goal | null;
+  lastCompletedSession: LastCompletedSession | null;
   currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
 }
@@ -127,6 +135,7 @@ export function DashboardClient({
   actionItems,
   upcomingSession,
   activeGoal,
+  lastCompletedSession,
   currentRank,
   ddragonVersion,
 }: DashboardClientProps) {
@@ -448,6 +457,72 @@ export function DashboardClient({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
+                <Link href="/coaching/new" className="inline-block mt-2">
+                  <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Last Coaching Session — cadence indicator */}
+          {lastCompletedSession ? (() => {
+            const daysSince = Math.floor(
+              (Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            const cadence: "good" | "warning" | "overdue" =
+              daysSince < 14 ? "good" : daysSince <= 21 ? "warning" : "overdue";
+            const cadenceColors = {
+              good: "text-win",
+              warning: "text-warning",
+              overdue: "text-loss",
+            };
+            const borderColors = {
+              good: "border-win/20",
+              warning: "border-warning/20",
+              overdue: "border-loss/20",
+            };
+            const badgeClasses = {
+              good: "bg-win/20 text-win border-win/30",
+              warning: "bg-warning/20 text-warning border-warning/30",
+              overdue: "bg-loss/20 text-loss border-loss/30",
+            };
+            return (
+              <Card className={`surface-glow ${borderColors[cadence]}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <GraduationCap className={`h-4 w-4 ${cadenceColors[cadence]}`} />
+                    {t("lastCoaching")}
+                  </CardTitle>
+                  <Link href={`/coaching/${lastCompletedSession.id}`}>
+                    <Button variant="ghost" size="sm">
+                      {t("view")}
+                      <ChevronRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </Link>
+                </CardHeader>
+                <CardContent>
+                  <p className={`text-lg font-bold ${cadenceColors[cadence]}`}>
+                    {daysSince === 0 ? t("today") : t("daysAgo", { days: daysSince })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {lastCompletedSession.coachName}
+                  </p>
+                  <Badge className={`mt-2 text-xs ${badgeClasses[cadence]}`}>
+                    {t(`cadence.${cadence}`)}
+                  </Badge>
+                </CardContent>
+              </Card>
+            );
+          })() : (
+            <Card className="surface-glow border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  {t("lastCoaching")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{t("noCompletedSessions")}</p>
                 <Link href="/coaching/new" className="inline-block mt-2">
                   <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
                 </Link>

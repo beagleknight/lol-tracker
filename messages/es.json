@@ -91,7 +91,16 @@
     "noActiveActionItems": "No hay tareas activas.",
     "goalWidget": "Objetivo",
     "noActiveGoal": "Sin objetivo activo.",
-    "setGoal": "Establecer objetivo"
+    "setGoal": "Establecer objetivo",
+    "lastCoaching": "Último coaching",
+    "today": "Hoy",
+    "daysAgo": "Hace {days, plural, one {# día} other {# días}}",
+    "cadence": {
+      "good": "Al día",
+      "warning": "Próximamente",
+      "overdue": "Atrasado"
+    },
+    "noCompletedSessions": "Sin sesiones completadas aún."
   },
   "Matches": {
     "heading": "Partidas",
@@ -375,6 +384,39 @@
       "topicRequired": "Selecciona al menos un tema tratado.",
       "sessionCompleted": "¡Sesión de coaching completada!",
       "completeError": "Error al completar la sesión."
+    }
+  },
+  "EditSession": {
+    "title": "Editar sesión de coaching",
+    "subtitle": "Actualiza los detalles de la sesión.",
+    "sessionDetails": "Detalles de la sesión",
+    "coachNameLabel": "Nombre del coach",
+    "coachNamePlaceholder": "ej. Coach Kim",
+    "dateTimeLabel": "Fecha y hora",
+    "vodToReview": "VOD / Partida a revisar",
+    "vodToReviewDescription": "Selecciona una partida para revisar durante la sesión.",
+    "noMatchesFound": "No se encontraron partidas recientes.",
+    "vs": "vs",
+    "notesBadge": "{count, plural, one {# nota} other {# notas}}",
+    "matchPreviewLabel": "{championName} vs {matchupChampionName} — {result}",
+    "noHighlights": "Sin highlights ni lowlights registrados para esta partida.",
+    "focusAreas": "Áreas de enfoque",
+    "focusAreasDescription": "Temas en los que quieres enfocarte durante la sesión.",
+    "topicsCovered": "Temas tratados",
+    "topicsCoveredDescription": "Temas que se trataron durante la sesión.",
+    "customTopicPlaceholder": "Tema personalizado...",
+    "addButton": "Añadir",
+    "sessionNotesTitle": "Detalles de la sesión",
+    "durationLabel": "Duración (minutos)",
+    "durationPlaceholder": "60",
+    "sessionNotesLabel": "Notas de sesión",
+    "sessionNotesPlaceholder": "Puntos clave, lo que dijo el coach, áreas en las que enfocarse...",
+    "cancelButton": "Cancelar",
+    "saveChangesButton": "Guardar cambios",
+    "toasts": {
+      "coachNameRequired": "Introduce el nombre del coach.",
+      "sessionUpdated": "¡Sesión actualizada correctamente!",
+      "updateError": "Error al actualizar la sesión."
     }
   },
   "ActionItems": {
