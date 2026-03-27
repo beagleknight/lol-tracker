@@ -598,7 +598,20 @@
   "Changelog": {
     "title": "Novedades",
     "subtitle": "Últimas actualizaciones y mejoras de LoL Tracker",
-    "empty": "Aún no hay actualizaciones. ¡Vuelve pronto!"
+    "empty": "Aún no hay actualizaciones. ¡Vuelve pronto!",
+    "noFilterResults": "No hay entradas que coincidan con este filtro.",
+    "filterAll": "Todas",
+    "filterFeature": "Funcionalidades",
+    "filterFix": "Correcciones",
+    "filterImprovement": "Mejoras",
+    "filterRefactor": "Refactorizaciones",
+    "tagFeature": "Funcionalidad",
+    "tagFix": "Corrección",
+    "tagImprovement": "Mejora",
+    "tagRefactor": "Refactorización",
+    "previousPage": "Anterior",
+    "nextPage": "Siguiente",
+    "pageIndicator": "Página {current} de {total}"
   },
   "Common": {
     "resultW": "V",
