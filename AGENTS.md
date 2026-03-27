@@ -22,11 +22,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 <!-- BEGIN:turso-migration-rules -->
-# Turso migration reminder
+# Turso migration workflow
 
-**Run migrations against production Turso BEFORE pushing code that references new schema.** Vercel does NOT run migrations on deploy.
+Migrations are **auto-applied on every Vercel deploy** via `scripts/migrate.ts` (runs before `next build` in `vercel.json`'s `buildCommand`). You do NOT need to apply migrations manually before pushing.
 
-Steps: `npx drizzle-kit generate` -> review SQL -> apply via standalone script (see `vercel-turso-deploy` skill — `drizzle-kit migrate` does NOT work with dotenvx) -> verify -> push code.
+Steps after any schema change:
+1. `npx drizzle-kit generate` — generates SQL in `drizzle/`
+2. Review the generated SQL
+3. Apply locally: `sqlite3 ./data/lol-tracker.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
+4. Commit the migration files alongside your code — they will be applied to production automatically on deploy
 
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 <!-- END:turso-migration-rules -->

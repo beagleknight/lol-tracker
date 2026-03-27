@@ -232,6 +232,31 @@ export const goals = sqliteTable("goals", {
   index("goals_user_status_idx").on(table.userId, table.status),
 ]);
 
+// ─── Matchup Notes ──────────────────────────────────────────────────────────
+
+export const matchupNotes = sqliteTable("matchup_notes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  championName: text("champion_name"), // null = general note for this enemy
+  matchupChampionName: text("matchup_champion_name").notNull(), // the enemy champion
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+}, (table) => [
+  unique("matchup_notes_user_champ_matchup_unq").on(
+    table.userId,
+    table.championName,
+    table.matchupChampionName
+  ),
+  index("matchup_notes_user_matchup_idx").on(table.userId, table.matchupChampionName),
+]);
+
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type Match = typeof matches.$inferSelect;
@@ -241,3 +266,4 @@ export type RankSnapshot = typeof rankSnapshots.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
+export type MatchupNote = typeof matchupNotes.$inferSelect;

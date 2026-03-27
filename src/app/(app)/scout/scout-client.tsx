@@ -9,6 +9,11 @@ import {
   getMatchupReport,
   type MatchupReport,
 } from "@/app/actions/live";
+import {
+  getMatchupNotes,
+  type MatchupNoteData,
+} from "@/app/actions/matchup-notes";
+import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -69,13 +74,23 @@ function ScoutingReport({
   report,
   ddragonVersion,
   locale,
+  matchupNotes,
+  yourChampionName,
+  onNotesChanged,
 }: {
   report: MatchupReport;
   ddragonVersion: string;
   locale: string;
+  matchupNotes: MatchupNoteData[];
+  yourChampionName?: string;
+  onNotesChanged?: () => void;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
+  const [notesOpen, setNotesOpen] = useState(false);
+
+  const { activeNote, activeChampionName } = pickActiveNote(matchupNotes, yourChampionName);
+  const hasNote = !!activeNote?.content;
 
   // Compute matchup KDA ratio for comparison
   const matchupKdaRatio =
@@ -90,32 +105,75 @@ function ScoutingReport({
   return (
     <div className="space-y-6">
       {/* Header: Record summary */}
-      <div className="flex items-center gap-4">
-        <ChampionIcon
-          championName={report.matchupChampionName}
-          version={ddragonVersion}
-          size={56}
-        />
-        <div>
-          <h2 className="text-xl font-bold">{t("vs")} {report.matchupChampionName}</h2>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-lg font-mono">
-              <span className="text-win">{record.wins}W</span>{" "}
-              <span className="text-loss">{record.losses}L</span>
-            </span>
-            <Badge
-              variant={record.winRate >= 50 ? "default" : "destructive"}
-              className="text-sm"
-            >
-              {record.winRate}%
-            </Badge>
-          </div>
-          {report.lastPlayed && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("lastPlayed", { date: formatDate(report.lastPlayed, locale) })}
-            </p>
+      <div>
+        <div className="flex items-center gap-4">
+          {yourChampionName ? (
+            <div className="flex items-center gap-2">
+              <ChampionIcon
+                championName={yourChampionName}
+                version={ddragonVersion}
+                size={48}
+              />
+              <span className="text-muted-foreground text-sm font-medium">{t("vs")}</span>
+              <ChampionIcon
+                championName={report.matchupChampionName}
+                version={ddragonVersion}
+                size={48}
+              />
+            </div>
+          ) : (
+            <ChampionIcon
+              championName={report.matchupChampionName}
+              version={ddragonVersion}
+              size={56}
+            />
           )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">
+                {yourChampionName
+                  ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
+                  : `${t("vs")} ${report.matchupChampionName}`}
+              </h2>
+              <MatchupNotesTrigger
+                hasNote={hasNote}
+                isOpen={notesOpen}
+                onToggle={() => setNotesOpen(!notesOpen)}
+              />
+            </div>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-lg font-mono">
+                <span className="text-win">{record.wins}W</span>{" "}
+                <span className="text-loss">{record.losses}L</span>
+              </span>
+              <Badge
+                variant={record.winRate >= 50 ? "default" : "destructive"}
+                className="text-sm"
+              >
+                {record.winRate}%
+              </Badge>
+            </div>
+            {report.lastPlayed && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("lastPlayed", { date: formatDate(report.lastPlayed, locale) })}
+              </p>
+            )}
+          </div>
         </div>
+
+        {/* Notes panel — renders below the header row */}
+        {notesOpen && (
+          <div className="mt-3">
+            <MatchupNotesPanel
+              note={activeNote}
+              championName={activeChampionName}
+              matchupChampionName={report.matchupChampionName}
+              locale={locale}
+              onSaved={() => onNotesChanged?.()}
+              onClose={() => setNotesOpen(false)}
+            />
+          </div>
+        )}
       </div>
 
       <Separator />
@@ -356,6 +414,48 @@ function StatCell({
   );
 }
 
+// ─── Standalone Notes Bubble (for no-data state) ────────────────────────────
+
+function NoDataNotesBubble({
+  notes,
+  matchupChampionName,
+  yourChampionName,
+  locale,
+  onNotesChanged,
+}: {
+  notes: MatchupNoteData[];
+  matchupChampionName: string;
+  yourChampionName?: string;
+  locale: string;
+  onNotesChanged?: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { activeNote, activeChampionName } = pickActiveNote(notes, yourChampionName);
+  const hasNote = !!activeNote?.content;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <MatchupNotesTrigger
+        hasNote={hasNote}
+        isOpen={isOpen}
+        onToggle={() => setIsOpen(!isOpen)}
+      />
+      {isOpen && (
+        <div className="w-full">
+          <MatchupNotesPanel
+            note={activeNote}
+            championName={activeChampionName}
+            matchupChampionName={matchupChampionName}
+            locale={locale}
+            onSaved={() => onNotesChanged?.()}
+            onClose={() => setIsOpen(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Scout Client ──────────────────────────────────────────────────────
 
 export function ScoutClient({
@@ -375,6 +475,7 @@ export function ScoutClient({
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
+  const [matchupNotesList, setMatchupNotesList] = useState<MatchupNoteData[]>([]);
   const [isLoadingReport, startReportTransition] = useTransition();
 
   // Sync URL params -> local state when browser back/forward navigation occurs
@@ -393,6 +494,7 @@ export function ScoutClient({
         loadReport(urlEnemy, urlYour || undefined);
       } else {
         setReport(null);
+        setMatchupNotesList([]);
       }
     }
     // Only react to searchParams changes (browser navigation)
@@ -433,12 +535,17 @@ export function ScoutClient({
     (enemy: string, yours?: string) => {
       if (!enemy) {
         setReport(null);
+        setMatchupNotesList([]);
         return;
       }
       startReportTransition(async () => {
         try {
-          const result = await getMatchupReport(enemy, yours || undefined);
+          const [result, notes] = await Promise.all([
+            getMatchupReport(enemy, yours || undefined),
+            getMatchupNotes(enemy, yours || undefined),
+          ]);
           setReport(result);
+          setMatchupNotesList(notes);
         } catch {
           toast.error(t("toasts.failedToLoadReport"));
         }
@@ -446,6 +553,19 @@ export function ScoutClient({
     },
     [t]
   );
+
+  /** Re-fetch only notes (called after save/delete) */
+  const refreshNotes = useCallback(() => {
+    if (!enemyChampion) return;
+    startReportTransition(async () => {
+      try {
+        const notes = await getMatchupNotes(enemyChampion, yourChampion || undefined);
+        setMatchupNotesList(notes);
+      } catch {
+        // silent — the notes just won't refresh
+      }
+    });
+  }, [enemyChampion, yourChampion]);
 
   // Auto-load report on mount if initial champions are provided via URL params
   useEffect(() => {
@@ -525,23 +645,41 @@ export function ScoutClient({
 
       {/* Scouting report */}
       {!isLoadingReport && report && (
-        <ScoutingReport report={report} ddragonVersion={ddragonVersion} locale={locale} />
+        <ScoutingReport
+          report={report}
+          ddragonVersion={ddragonVersion}
+          locale={locale}
+          matchupNotes={matchupNotesList}
+          yourChampionName={yourChampion || undefined}
+          onNotesChanged={refreshNotes}
+        />
       )}
 
       {/* No historical data state */}
       {!isLoadingReport && !report && enemyChampion && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-          <Swords className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground">
-            {yourChampion
-              ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
-              : t("noGamesFound", { enemyChampion })}
-          </p>
-          {yourChampion && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("clearYourChampionHint")}
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <Swords className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">
+              {yourChampion
+                ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
+                : t("noGamesFound", { enemyChampion })}
             </p>
-          )}
+            {yourChampion && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("clearYourChampionHint")}
+              </p>
+            )}
+          </div>
+
+          {/* Still allow adding notes even without match history */}
+          <NoDataNotesBubble
+            notes={matchupNotesList}
+            matchupChampionName={enemyChampion}
+            yourChampionName={yourChampion || undefined}
+            locale={locale}
+            onNotesChanged={refreshNotes}
+          />
         </div>
       )}
 
