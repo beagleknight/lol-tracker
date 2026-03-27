@@ -41,13 +41,27 @@ Branch naming conventions:
 ### 2. Implement the changes
 
 - Make commits on the feature branch
-- **MANDATORY: Run lint locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
+- **MANDATORY: Run lint and build locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
   ```bash
   npm run lint
   npm run build
   ```
   Fix any errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
 - `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
+- **MANDATORY: Verify the lockfile before every push.** Local Node 24 / npm 11 generates lockfiles incompatible with CI's Node 22 / npm 10. Always run:
+  ```bash
+  npx -y npm@10 ci
+  ```
+  If this fails, regenerate the lockfile:
+  ```bash
+  git checkout origin/main -- package-lock.json
+  npx -y npm@10 install --package-lock-only
+  npx -y npm@10 ci   # verify it works now
+  ```
+  If you did NOT change `package.json` dependencies, just restore the lockfile from main:
+  ```bash
+  git checkout origin/main -- package-lock.json
+  ```
 
 ### 3. Write a changelog entry
 
@@ -108,16 +122,18 @@ Fixes #N
 
 ### 5. CI checks
 
-Four checks run automatically on every PR to `main`:
+Six checks run automatically on every PR to `main`:
 
 | Check | Command | What it catches |
 |---|---|---|
 | **Typecheck** | `tsc --noEmit` | Type errors |
-| **Lint** | `eslint` | Code style, unused vars, React rules |
+| **Lint** | `eslint` | Code style, unused vars, React rules, jsx-a11y |
 | **Build** | `next build --webpack` | Compilation errors, broken imports |
+| **Smoke** | `playwright test --project=smoke` | Axe-core a11y violations on every page |
+| **E2E** | `playwright test --project=e2e` | End-to-end user flows |
 | **Changelog** | `git diff` on `changelog/` | Missing changelog entry (skipped with `skip-changelog` label) |
 
-All four must pass before merging.
+All six must pass before merging.
 
 ### 6. Merge
 

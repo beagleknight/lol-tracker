@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
   return (
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control -- Base component: association via htmlFor or nesting is established at usage site
     <label
       data-slot="label"
       className={cn(

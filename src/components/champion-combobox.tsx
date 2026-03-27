@@ -84,6 +84,7 @@ export function ChampionCombobox({
               variant="outline"
               role="combobox"
               aria-expanded={open}
+              aria-label={label || placeholder}
               className="w-full justify-between font-normal"
             />
           }

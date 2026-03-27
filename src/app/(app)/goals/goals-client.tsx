@@ -288,6 +288,7 @@ function PastGoalCard({ goal, locale }: { goal: Goal; locale: string }) {
           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
           onClick={handleDelete}
           disabled={isDeleting}
+          aria-label="Delete goal"
         >
           {isDeleting ? (
             <Loader2 className="h-3 w-3 animate-spin" />

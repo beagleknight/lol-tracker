@@ -111,7 +111,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/goals">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to goals">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -174,7 +174,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Select tier">
                   <SelectValue placeholder={t("selectTier")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,7 +195,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                   value={selectedDivision}
                   onValueChange={(v) => v && setSelectedDivision(v)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Select division">
                     <SelectValue placeholder={t("selectDivision")} />
                   </SelectTrigger>
                   <SelectContent>

@@ -1,0 +1,14 @@
+---
+version: "2026.03.13"
+date: "2026-03-27"
+title: "Base de Accesibilidad"
+tags: ["improvement"]
+---
+
+La aplicacion ahora cumple con los estandares de accesibilidad **WCAG 2.1 AA** con herramientas automatizadas para mantenerlo asi.
+
+- **Soporte para lectores de pantalla** — todos los botones con solo icono ahora tienen etiquetas descriptivas, las barras de progreso se anuncian correctamente y los elementos interactivos usan roles ARIA correctos
+- **Contraste de color** — los encabezados de la barra lateral, las etiquetas de victoria/derrota y los botones destructivos ahora cumplen con la relacion de contraste de 4.5:1
+- **Navegacion por teclado** — se agrego un enlace "Saltar al contenido principal", indicadores de foco visibles en todos los elementos interactivos y las insignias de temas/areas de enfoque ahora son operables por teclado
+- **Movimiento reducido** — las animaciones, transiciones y efectos hover se desactivan automaticamente cuando tu sistema operativo esta configurado para reducir el movimiento
+- **Escaneo automatizado** — nuevas pruebas de Playwright con axe-core escanean cada pagina en busca de violaciones, y las reglas de ESLint jsx-a11y detectan problemas en tiempo de compilacion

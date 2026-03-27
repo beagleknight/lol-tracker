@@ -94,6 +94,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
         onClick={cycleStatus}
         disabled={isPending}
         className="shrink-0 cursor-pointer"
+        aria-label="Toggle action item status"
       >
         {isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -143,6 +144,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
         className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
         onClick={handleDelete}
         disabled={isDeleting}
+        aria-label="Delete action item"
       >
         {isDeleting ? (
           <Loader2 className="h-3 w-3 animate-spin" />
@@ -194,7 +196,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
           value={statusFilter}
           onValueChange={(v) => { setStatusFilter(v ?? "all"); setPage(1); }}
         >
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[150px]" aria-label="Filter by status">
             <SelectValue placeholder={t("statusFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -209,7 +211,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
             value={topicFilter}
             onValueChange={(v) => { setTopicFilter(v ?? "all"); setPage(1); }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" aria-label="Filter by topic">
               <SelectValue placeholder={t("topicFilterPlaceholder")} />
             </SelectTrigger>
             <SelectContent>

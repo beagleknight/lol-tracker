@@ -139,7 +139,7 @@ export function ScheduleSessionClient({
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/coaching">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to coaching">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -362,6 +362,7 @@ export function ScheduleSessionClient({
                   focusAreas.includes(topic) ? "default" : "secondary"
                 }
                 className="cursor-pointer"
+                render={<button type="button" />}
                 onClick={() => toggleFocusArea(topic)}
               >
                 {topic}
@@ -377,6 +378,7 @@ export function ScheduleSessionClient({
                   key={topic}
                   variant="default"
                   className="cursor-pointer"
+                  render={<button type="button" />}
                   onClick={() => toggleFocusArea(topic)}
                 >
                   {topic}

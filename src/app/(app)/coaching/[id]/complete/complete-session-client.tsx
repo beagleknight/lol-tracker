@@ -165,7 +165,7 @@ export function CompleteSessionClient({
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href={`/coaching/${session.id}`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to session">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -250,6 +250,7 @@ export function CompleteSessionClient({
                   selectedTopics.includes(topic) ? "default" : "secondary"
                 }
                 className="cursor-pointer"
+                render={<button type="button" />}
                 onClick={() => toggleTopic(topic)}
               >
                 {topic}
@@ -265,6 +266,7 @@ export function CompleteSessionClient({
                   key={topic}
                   variant="default"
                   className="cursor-pointer"
+                  render={<button type="button" />}
                   onClick={() => toggleTopic(topic)}
                 >
                   {topic}
@@ -355,6 +357,7 @@ export function CompleteSessionClient({
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => removeActionItem(i)}
+                    aria-label="Remove action item"
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -382,7 +385,7 @@ export function CompleteSessionClient({
                 onChange={(e) => setNewActionTopic(e.target.value)}
                 className="flex-1 sm:w-40"
               />
-              <Button variant="outline" size="icon" onClick={addActionItem} className="shrink-0">
+              <Button variant="outline" size="icon" onClick={addActionItem} className="shrink-0" aria-label="Add action item">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>

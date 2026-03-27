@@ -40,7 +40,9 @@
     "topicPlaceholder": "Tema...",
     "detailsPlaceholder": "Detalles (opcional)",
     "highlightsHeading": "Aciertos",
-    "lowlightsHeading": "Errores"
+    "lowlightsHeading": "Errores",
+    "highlightTopicLabel": "Tema del acierto",
+    "lowlightTopicLabel": "Tema del error"
   },
   "Login": {
     "title": "LoL Tracker",
@@ -599,7 +601,9 @@
       "usedBy": "Usado por {usedByName}",
       "usedByUnknown": "Desconocido",
       "badgeAvailable": "Disponible",
-      "emptyState": "Sin códigos de invitación aún. Genera uno para compartir con amigos."
+      "emptyState": "Sin códigos de invitación aún. Genera uno para compartir con amigos.",
+      "copyCode": "Copiar código de invitación",
+      "deleteInvite": "Eliminar invitación"
     },
     "toasts": {
       "loadInvitesError": "No se pudieron cargar los códigos de invitación.",

@@ -282,7 +282,7 @@ export function DashboardClient({
               {sessionWins}W {sessionLosses}L
             </p>
             {recentMatches.length > 0 && (
-              <Progress value={sessionWinRate} className="mt-2 h-2" />
+              <Progress value={sessionWinRate} className="mt-2 h-2" aria-label={`Win rate: ${sessionWinRate}%`} />
             )}
           </CardContent>
         </Card>
@@ -520,7 +520,7 @@ export function DashboardClient({
                   </Link>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Progress value={progress}>
+                  <Progress value={progress} aria-label={`Goal progress: ${progress}%`}>
                     <span className="text-xs text-muted-foreground">
                       {formatTierDivision(currentRank.tier, currentRank.division)}
                     </span>
