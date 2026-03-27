@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
-import { AiInsightCard } from "@/components/ai-insight-card";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-insights";
 import {
   ArrowLeft,
@@ -255,6 +255,15 @@ export function MatchDetailClient({
                     {t("pendingReview")}
                   </Badge>
                 )}
+                <AiInsightDrawer
+                  title={tAi("postGameTitle")}
+                  cachedInsight={cachedAiInsight}
+                  isConfigured={isAiConfigured}
+                  locale={locale}
+                  onGenerate={(forceRegenerate) =>
+                    generatePostGameInsight(match.id, forceRegenerate)
+                  }
+                />
               </div>
               <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
                 {formatDate(match.gameDate, locale, "datetime")} &middot;{" "}
@@ -411,17 +420,6 @@ export function MatchDetailClient({
           </CardContent>
         </Card>
       )}
-
-      {/* AI Post-Game Insight */}
-      <AiInsightCard
-        title={tAi("postGameTitle")}
-        cachedInsight={cachedAiInsight}
-        isConfigured={isAiConfigured}
-        locale={locale}
-        onGenerate={(forceRegenerate) =>
-          generatePostGameInsight(match.id, forceRegenerate)
-        }
-      />
 
       {/* All 10 Players */}
       {participants && (

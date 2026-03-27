@@ -15,7 +15,7 @@ import {
 } from "@/app/actions/matchup-notes";
 import { generateMatchupInsight } from "@/app/actions/ai-insights";
 import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
-import { AiInsightCard } from "@/components/ai-insight-card";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -145,6 +145,19 @@ function ScoutingReport({
                 hasNote={hasNote}
                 isOpen={notesOpen}
                 onToggle={() => setNotesOpen(!notesOpen)}
+              />
+              <AiInsightDrawer
+                title={tAi("matchupTitle")}
+                isConfigured={isAiConfigured}
+                locale={locale}
+                onGenerate={(forceRegenerate) =>
+                  generateMatchupInsight(
+                    report.matchupChampionName,
+                    yourChampionName,
+                    report,
+                    forceRegenerate,
+                  )
+                }
               />
             </div>
             <div className="flex items-center gap-3 mt-1">
@@ -362,22 +375,6 @@ function ScoutingReport({
           ))}
         </div>
       </div>
-
-      {/* AI Matchup Insight */}
-      <Separator />
-      <AiInsightCard
-        title={tAi("matchupTitle")}
-        isConfigured={isAiConfigured}
-        locale={locale}
-        onGenerate={(forceRegenerate) =>
-          generateMatchupInsight(
-            report.matchupChampionName,
-            yourChampionName,
-            report,
-            forceRegenerate
-          )
-        }
-      />
     </div>
   );
 }

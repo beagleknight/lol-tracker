@@ -283,6 +283,9 @@
     "generatedAt": "Generated {date}",
     "dailyLimitReached": "Daily insight limit reached.",
     "noApiKey": "AI insights are not configured. Add a Google Gemini API key to enable this feature.",
+    "triggerLabel": "AI Insight",
+    "triggerTooltip": "Get AI-powered analysis",
+    "viewInsight": "View Insight",
     "toasts": {
       "generated": "AI insight generated.",
       "error": "Failed to generate insight.",
