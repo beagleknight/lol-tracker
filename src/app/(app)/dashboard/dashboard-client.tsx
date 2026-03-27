@@ -350,7 +350,7 @@ export function DashboardClient({
                 {t("noMatchesYet")}
               </p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recentMatches.slice(0, 10).map((match) => (
                   <MatchCard
                     key={match.id}
