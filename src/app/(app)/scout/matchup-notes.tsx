@@ -13,23 +13,58 @@ import {
 } from "@/app/actions/matchup-notes";
 import { formatDate } from "@/lib/format";
 
-// ─── Note Editor Panel (shown when bubble is open) ──────────────────────────
+// ─── Trigger Button (inline in header) ──────────────────────────────────────
 
-function NoteEditorPanel({
-  note,
-  championName,
-  matchupChampionName,
-  locale,
-  onSaved,
-  onClose,
-}: {
+interface MatchupNotesTriggerProps {
+  hasNote: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export function MatchupNotesTrigger({
+  hasNote,
+  isOpen,
+  onToggle,
+}: MatchupNotesTriggerProps) {
+  const t = useTranslations("MatchupNotes");
+
+  return (
+    <button
+      onClick={onToggle}
+      className={`relative p-1.5 rounded-md transition-colors ${
+        isOpen
+          ? "text-gold bg-gold/10"
+          : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
+      }`}
+      title={t("sectionTitle")}
+    >
+      <MessageSquareText className="h-4 w-4" />
+      {hasNote && !isOpen && (
+        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-gold" />
+      )}
+    </button>
+  );
+}
+
+// ─── Editor Panel (rendered below header, outside flex) ─────────────────────
+
+interface MatchupNotesPanelProps {
   note: MatchupNoteData | null;
   championName: string | null;
   matchupChampionName: string;
   locale: string;
   onSaved: () => void;
   onClose: () => void;
-}) {
+}
+
+export function MatchupNotesPanel({
+  note,
+  championName,
+  matchupChampionName,
+  locale,
+  onSaved,
+  onClose,
+}: MatchupNotesPanelProps) {
   const t = useTranslations("MatchupNotes");
   const [isEditing, setIsEditing] = useState(!note?.content);
   const [content, setContent] = useState(note?.content ?? "");
@@ -46,7 +81,6 @@ function NoteEditorPanel({
         toast.success(content.trim() ? t("toasts.saved") : t("toasts.deleted"));
         setIsEditing(false);
         onSaved();
-        // Close if saved empty (deleted)
         if (!content.trim()) onClose();
       } else {
         toast.error(result.error ?? t("toasts.saveError"));
@@ -81,7 +115,7 @@ function NoteEditorPanel({
 
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-border/40 bg-surface-elevated p-3 space-y-2 mt-3">
+      <div className="rounded-lg border border-border/40 bg-surface-elevated p-3 space-y-2">
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -120,7 +154,7 @@ function NoteEditorPanel({
   // Read mode — show content, click to edit
   return (
     <div
-      className="rounded-lg border border-border/40 bg-surface-elevated p-3 mt-3 cursor-pointer hover:border-border/60 transition-colors"
+      className="rounded-lg border border-border/40 bg-surface-elevated p-3 cursor-pointer hover:border-border/60 transition-colors"
       onClick={() => setIsEditing(true)}
       role="button"
       tabIndex={0}
@@ -136,65 +170,21 @@ function NoteEditorPanel({
   );
 }
 
-// ─── Matchup Notes Bubble (for Scout page header) ───────────────────────────
+// ─── Helper: pick the active note from the list ─────────────────────────────
 
-interface MatchupNotesBubbleProps {
-  notes: MatchupNoteData[];
-  matchupChampionName: string;
-  yourChampionName?: string;
-  locale: string;
-  onNotesChanged?: () => void;
-}
-
-export function MatchupNotesBubble({
-  notes,
-  matchupChampionName,
-  yourChampionName,
-  locale,
-  onNotesChanged,
-}: MatchupNotesBubbleProps) {
-  const t = useTranslations("MatchupNotes");
-  const [isOpen, setIsOpen] = useState(false);
-
+export function pickActiveNote(
+  notes: MatchupNoteData[],
+  yourChampionName?: string
+): { activeNote: MatchupNoteData | null; activeChampionName: string | null } {
   const generalNote = notes.find((n) => n.championName === null) ?? null;
   const specificNote = yourChampionName
     ? notes.find((n) => n.championName === yourChampionName) ?? null
     : null;
 
-  // Pick the active note based on champion selection
-  const activeNote = yourChampionName ? specificNote : generalNote;
-  const activeChampionName = yourChampionName ?? null;
-  const hasNote = !!activeNote?.content;
-
-  const handleSaved = useCallback(() => {
-    onNotesChanged?.();
-  }, [onNotesChanged]);
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-colors"
-        title={t("sectionTitle")}
-      >
-        <MessageSquareText className="h-4 w-4" />
-        {hasNote && (
-          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-gold" />
-        )}
-      </button>
-
-      {isOpen && (
-        <NoteEditorPanel
-          note={activeNote}
-          championName={activeChampionName}
-          matchupChampionName={matchupChampionName}
-          locale={locale}
-          onSaved={handleSaved}
-          onClose={() => setIsOpen(false)}
-        />
-      )}
-    </div>
-  );
+  return {
+    activeNote: yourChampionName ? specificNote : generalNote,
+    activeChampionName: yourChampionName ?? null,
+  };
 }
 
 // ─── Read-Only Matchup Notes (for Match Detail page) ────────────────────────
