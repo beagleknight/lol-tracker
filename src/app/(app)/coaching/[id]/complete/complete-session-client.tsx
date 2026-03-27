@@ -92,7 +92,7 @@ export function CompleteSessionClient({
   const [newActionDesc, setNewActionDesc] = useState("");
   const [newActionTopic, setNewActionTopic] = useState("");
 
-  const dateStr = formatDate(session.date, locale, "long");
+  const dateStr = formatDate(session.date, locale, "datetime");
 
   const highlights: HighlightItem[] = vodHighlights.map((h) => ({
     type: h.type,

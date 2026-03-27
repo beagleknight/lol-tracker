@@ -189,13 +189,13 @@ export function CoachingDetailClient({
     ? JSON.parse(session.topics)
     : [];
 
-  const dateStr = formatDate(session.date, locale, "long");
+  const isScheduled = session.status === "scheduled";
+
+  const dateStr = formatDate(session.date, locale, isScheduled ? "datetime" : "long");
 
   const completedCount = actionItems.filter(
     (i) => i.status === "completed"
   ).length;
-
-  const isScheduled = session.status === "scheduled";
 
   // Collect action item topics for highlighting in progress matches
   const actionItemTopics = useMemo(

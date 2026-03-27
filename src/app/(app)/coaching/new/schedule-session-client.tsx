@@ -62,7 +62,13 @@ export function ScheduleSessionClient({
   const [isPending, startTransition] = useTransition();
 
   const [coachName, setCoachName] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  // Default to the next full hour in local time (format required by datetime-local: "YYYY-MM-DDTHH:MM")
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1, 0, 0, 0);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  });
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [customTopic, setCustomTopic] = useState("");
@@ -191,10 +197,10 @@ export function ScheduleSessionClient({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">{t("dateLabel")}</Label>
+              <Label htmlFor="date">{t("dateTimeLabel")}</Label>
               <Input
                 id="date"
-                type="date"
+                type="datetime-local"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />

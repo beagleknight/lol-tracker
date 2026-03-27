@@ -1,0 +1,11 @@
+---
+version: "1.8.1"
+date: "2026-03-27"
+title: "LP trend fix & coaching date/time picker"
+---
+
+### Bug fixes
+
+- **LP trend indicator restored on dashboard**: The "recently gained/lost LP" indicator was missing from the rank card after a recent refactor. The root cause was a type mismatch in a database query — a Date object was being compared against a Unix timestamp column via raw SQL. Replaced with Drizzle's type-safe `lte()` operator.
+
+- **Coaching session scheduling now includes time**: Previously only a date picker was shown, causing sessions to default to midnight UTC (which displayed as 1 AM in CET). The form now uses a full date & time picker (`datetime-local`), and coaching views display the scheduled time where relevant.
