@@ -41,13 +41,27 @@ Branch naming conventions:
 ### 2. Implement the changes
 
 - Make commits on the feature branch
-- **MANDATORY: Run lint locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
+- **MANDATORY: Run lint and build locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
   ```bash
   npm run lint
   npm run build
   ```
   Fix any errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
 - `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
+- **MANDATORY: Verify the lockfile before every push.** Local Node 24 / npm 11 generates lockfiles incompatible with CI's Node 22 / npm 10. Always run:
+  ```bash
+  npx -y npm@10 ci
+  ```
+  If this fails, regenerate the lockfile:
+  ```bash
+  git checkout origin/main -- package-lock.json
+  npx -y npm@10 install --package-lock-only
+  npx -y npm@10 ci   # verify it works now
+  ```
+  If you did NOT change `package.json` dependencies, just restore the lockfile from main:
+  ```bash
+  git checkout origin/main -- package-lock.json
+  ```
 
 ### 3. Write a changelog entry
 
