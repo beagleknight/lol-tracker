@@ -121,15 +121,26 @@ All four must pass before merging.
 
 ### 6. Merge
 
-**MANDATORY: Wait for CI checks to pass BEFORE merging.** Even if checks are not required by branch protection, always confirm all checks pass first:
+**MANDATORY: NEVER merge a PR without the user's explicit permission.** Even if the user says "proceed" or "do it", that means implement + push — NOT merge. Only merge when the user explicitly says "merge it" (or equivalent).
+
+**MANDATORY: Wait for CI checks to pass BEFORE merging.** Even after receiving merge permission, always confirm all checks pass first:
 
 ```bash
 gh pr checks <number> --watch
 ```
 
-After CI passes, merge the PR via GitHub (squash merge preferred for clean history).
+After the user grants permission AND CI passes, merge the PR via GitHub (squash merge preferred for clean history).
 
 Vercel auto-deploys on merge to main — no manual deploy step needed.
+
+### 7. Flaky tests
+
+**MANDATORY: Flaky tests are unacceptable.** Whenever a CI check passes only on re-run (i.e., a test is flaky), immediately open a GitHub issue with the `flaky-test` label. The issue should describe:
+- Which test flaked (full test name)
+- What the failure looked like (error message / timeout)
+- In which PR/run it was observed (link to the CI run)
+
+Do this even if the overall CI run eventually passes on retry. Flaky tests erode trust in the test suite and must be tracked and fixed.
 
 ## Common scenarios
 
