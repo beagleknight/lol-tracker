@@ -12,6 +12,8 @@ Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.
 
 **MANDATORY: Run `npm run lint` and `npm run build` locally BEFORE pushing.** Do not rely on CI as the first lint/build check — catch errors locally first.
 
+**MANDATORY: Wait for CI checks to pass BEFORE merging a PR.** Even if checks are not required by branch protection, always run `gh pr checks <number> --watch` (or poll) and confirm all checks pass before merging.
+
 Full workflow details are in the `pr-workflow` OpenCode skill.
 <!-- END:pr-workflow-rules -->
 
