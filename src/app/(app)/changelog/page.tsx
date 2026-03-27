@@ -1,5 +1,5 @@
 import { getLocale } from "next-intl/server";
-import { getChangelogEntries } from "@/lib/changelog";
+import { getChangelogEntries, type ChangelogTag } from "@/lib/changelog";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { getTranslations } from "next-intl/server";
 import {
@@ -11,17 +11,64 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { ChangelogSeenMarker } from "./changelog-seen-marker";
+import { ChangelogFilter } from "./changelog-filter";
+import { ChangelogPagination } from "./changelog-pagination";
 
-export default async function ChangelogRoute() {
+const ENTRIES_PER_PAGE = 5;
+const VALID_TAGS: ChangelogTag[] = ["feature", "fix", "improvement", "refactor"];
+
+const TAG_STYLES: Record<ChangelogTag, string> = {
+  feature:
+    "bg-blue-500/10 text-blue-400 border-blue-500/30",
+  fix: "bg-red-500/10 text-red-400 border-red-500/30",
+  improvement:
+    "bg-green-500/10 text-green-400 border-green-500/30",
+  refactor:
+    "bg-purple-500/10 text-purple-400 border-purple-500/30",
+};
+
+export default async function ChangelogRoute({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
   const locale = await getLocale();
-  const entries = await getChangelogEntries(locale);
   const t = await getTranslations("Changelog");
+
+  // Parse tag filter
+  const tagParam = typeof params.tag === "string" ? params.tag : undefined;
+  const activeTag =
+    tagParam && VALID_TAGS.includes(tagParam as ChangelogTag)
+      ? (tagParam as ChangelogTag)
+      : undefined;
+
+  // Get entries (optionally filtered by tag)
+  const allEntries = await getChangelogEntries(locale, activeTag);
+
+  // Parse page
+  const page = Math.max(
+    1,
+    parseInt(String(params.page ?? "1"), 10) || 1
+  );
+  const totalPages = Math.max(1, Math.ceil(allEntries.length / ENTRIES_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * ENTRIES_PER_PAGE;
+  const pageEntries = allEntries.slice(
+    startIndex,
+    startIndex + ENTRIES_PER_PAGE
+  );
+
+  // We need the unfiltered latest version for the "seen" marker
+  const unfilteredEntries = activeTag
+    ? await getChangelogEntries(locale)
+    : allEntries;
 
   return (
     <div className="space-y-6">
       {/* Mark latest version as seen (client-side localStorage) */}
-      {entries.length > 0 && (
-        <ChangelogSeenMarker version={entries[0].version} />
+      {unfilteredEntries.length > 0 && (
+        <ChangelogSeenMarker version={unfilteredEntries[0].version} />
       )}
 
       <div>
@@ -31,22 +78,29 @@ export default async function ChangelogRoute() {
         <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
-      {entries.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+      {/* Tag filter bar */}
+      <ChangelogFilter activeTag={activeTag} />
+
+      {allEntries.length === 0 ? (
+        <p className="text-muted-foreground">
+          {activeTag ? t("noFilterResults") : t("empty")}
+        </p>
       ) : (
         <div className="space-y-6">
           {await Promise.all(
-            entries.map(async (entry, index) => {
+            pageEntries.map(async (entry, index) => {
               const { content } = await compileMDX({
                 source: entry.source,
                 options: { parseFrontmatter: false },
               });
 
+              const isNewest = currentPage === 1 && index === 0 && !activeTag;
+
               return (
                 <Card
                   key={entry.slug}
                   className={
-                    index === 0
+                    isNewest
                       ? "border-gold/30 surface-glow"
                       : "border-border/50"
                   }
@@ -56,12 +110,12 @@ export default async function ChangelogRoute() {
                       <Badge
                         variant="outline"
                         className={
-                          index === 0
+                          isNewest
                             ? "border-gold/50 text-gold"
                             : "border-border text-muted-foreground"
                         }
                       >
-                        {index === 0 && (
+                        {isNewest && (
                           <Sparkles className="h-3 w-3 mr-1" />
                         )}
                         v{entry.version}
@@ -73,6 +127,15 @@ export default async function ChangelogRoute() {
                           day: "numeric",
                         })}
                       </span>
+                      {entry.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className={`text-xs ${TAG_STYLES[tag]}`}
+                        >
+                          {t(`tag${tag.charAt(0).toUpperCase()}${tag.slice(1)}` as "tagFeature" | "tagFix" | "tagImprovement" | "tagRefactor")}
+                        </Badge>
+                      ))}
                     </div>
                     <CardTitle className="text-xl mt-2">
                       {entry.title}
@@ -84,6 +147,15 @@ export default async function ChangelogRoute() {
                 </Card>
               );
             })
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <ChangelogPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              activeTag={activeTag}
+            />
           )}
         </div>
       )}
