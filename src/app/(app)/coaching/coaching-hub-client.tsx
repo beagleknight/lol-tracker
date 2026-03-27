@@ -98,6 +98,7 @@ function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
         onClick={cycleStatus}
         disabled={isPending}
         className="shrink-0 cursor-pointer"
+        aria-label="Toggle action item status"
       >
         {isPending ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />

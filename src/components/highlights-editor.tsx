@@ -110,6 +110,7 @@ export function HighlightsEditor({
                 type="button"
                 onClick={() => removeItem(globalIdx)}
                 className="text-muted-foreground hover:text-foreground shrink-0"
+                aria-label="Remove highlight"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -123,6 +124,7 @@ export function HighlightsEditor({
             <select
               value={newHighlightTopic}
               onChange={(e) => setNewHighlightTopic(e.target.value)}
+              aria-label={t("highlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>
@@ -151,6 +153,7 @@ export function HighlightsEditor({
               className="h-8 px-2 shrink-0"
               onClick={() => addItem("highlight")}
               disabled={!newHighlightText.trim() && !newHighlightTopic}
+              aria-label="Add highlight"
             >
               <Plus className="h-3 w-3" />
             </Button>
@@ -184,6 +187,7 @@ export function HighlightsEditor({
                 type="button"
                 onClick={() => removeItem(globalIdx)}
                 className="text-muted-foreground hover:text-foreground shrink-0"
+                aria-label="Remove lowlight"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -197,6 +201,7 @@ export function HighlightsEditor({
             <select
               value={newLowlightTopic}
               onChange={(e) => setNewLowlightTopic(e.target.value)}
+              aria-label={t("lowlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>
@@ -225,6 +230,7 @@ export function HighlightsEditor({
               className="h-8 px-2 shrink-0"
               onClick={() => addItem("lowlight")}
               disabled={!newLowlightText.trim() && !newLowlightTopic}
+              aria-label="Add lowlight"
             >
               <Plus className="h-3 w-3" />
             </Button>

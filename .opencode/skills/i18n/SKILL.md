@@ -54,3 +54,15 @@ Each component file uses a single namespace via `useTranslations("NamespaceName"
 - **Rich text format**: Use `<tag>content</tag>` in JSON, NOT `{variable}` for inline components
 - **Variable shadowing**: Never name a `.map()` callback parameter `t` — it shadows the translation function. Use descriptive names like `topic`, `item`, etc.
 - **No `new Date()` in client components** at module level — causes Next.js prerender errors. Use `useEffect` to initialize.
+
+## CRITICAL: i18n keys for aria-labels
+
+When adding `aria-label={t("key")}` (or any new `t()` call) for accessibility fixes, you **MUST** immediately add the translation key to **BOTH** `messages/en.json` and `messages/es.json`. Missing keys cause runtime crashes — the app will throw a missing translation error.
+
+This is the most commonly forgotten step when fixing accessibility violations. Every `aria-label`, `aria-labelledby`, or other ARIA attribute that uses `t()` requires a corresponding entry in both message files.
+
+Checklist for every new `t()` call:
+1. Identify the namespace (from `useTranslations("NamespaceName")` in the same file)
+2. Add the key to `messages/en.json` under that namespace
+3. Add the Spanish translation to `messages/es.json` under the same namespace
+4. Verify with `npm run build` — the type system catches missing keys at build time
