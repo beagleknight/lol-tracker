@@ -210,7 +210,9 @@ export function MatchupNotesSection({
     onNotesChanged?.();
   }, [onNotesChanged]);
 
-  const hasAnyNote = !!generalNote?.content || !!specificNote?.content;
+  const hasAnyNote = yourChampionName
+    ? !!specificNote?.content
+    : !!generalNote?.content;
 
   return (
     <div className="space-y-2">
@@ -223,8 +225,8 @@ export function MatchupNotesSection({
       </h3>
 
       <div className="space-y-2 rounded-lg border border-border/30 bg-surface-elevated/50 p-3">
-        {/* Champion-specific note — shown prominently when Your Champion is set */}
-        {yourChampionName && (
+        {yourChampionName ? (
+          /* Champion-specific note only when Your Champion is set */
           <InlineNoteEditor
             note={specificNote}
             title={t("specificNoteTitle", {
@@ -237,23 +239,18 @@ export function MatchupNotesSection({
             onSaved={handleSaved}
             defaultExpanded
           />
+        ) : (
+          /* General note only when Any Champion is selected */
+          <InlineNoteEditor
+            note={generalNote}
+            title={t("generalNoteTitle", { enemy: matchupChampionName })}
+            championName={null}
+            matchupChampionName={matchupChampionName}
+            locale={locale}
+            onSaved={handleSaved}
+            defaultExpanded
+          />
         )}
-
-        {/* Separator between notes when both are shown */}
-        {yourChampionName && (
-          <div className="border-t border-border/20" />
-        )}
-
-        {/* General note — secondary (collapsed by default) when specific note exists */}
-        <InlineNoteEditor
-          note={generalNote}
-          title={t("generalNoteTitle", { enemy: matchupChampionName })}
-          championName={null}
-          matchupChampionName={matchupChampionName}
-          locale={locale}
-          onSaved={handleSaved}
-          defaultExpanded={!yourChampionName}
-        />
       </div>
     </div>
   );
