@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Card,
@@ -27,9 +25,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
-import { ChampionLink } from "@/components/champion-link";
-import { formatDuration, formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { MatchCard, type MatchHighlightData } from "@/components/match-card";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import {
   formatTierDivision,
   calculateProgress,
@@ -54,7 +51,10 @@ interface DashboardMatch {
   goldEarned: number | null;
   visionScore: number | null;
   reviewed: boolean;
+  reviewNotes: string | null;
+  reviewSkippedReason: string | null;
   comment: string | null;
+  duoPartnerPuuid: string | null;
   queueId: number | null;
 }
 
@@ -88,6 +88,7 @@ interface DashboardClientProps {
     puuid?: string | null;
   };
   recentMatches: DashboardMatch[];
+  highlightsPerMatch: Record<string, MatchHighlightData[]>;
   matchStats: MatchStats;
   latestRank: RankSnapshot | null;
   lpTrend: number | null;
@@ -130,6 +131,7 @@ function getRankDisplay(rank: RankSnapshot | null) {
 export function DashboardClient({
   user,
   recentMatches,
+  highlightsPerMatch,
   matchStats,
   latestRank,
   lpTrend,
@@ -348,62 +350,16 @@ export function DashboardClient({
                 {t("noMatchesYet")}
               </p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recentMatches.slice(0, 10).map((match) => (
-                  <Link
+                  <MatchCard
                     key={match.id}
-                    href={`/matches/${match.id}`}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface-elevated transition-colors"
-                  >
-                    <ResultBar result={match.result} />
-                    <Image
-                      src={getChampionIconUrl(ddragonVersion, match.championName)}
-                      alt={match.championName}
-                      width={32}
-                      height={32}
-                      className="rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {match.championName}
-                        </span>
-                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                          {t("vs")}
-                          {match.matchupChampionName ? (
-                            <ChampionLink
-                              champion={match.matchupChampionName}
-                              ddragonVersion={ddragonVersion}
-                              linkTo="scout-enemy"
-                              yourChampion={match.championName}
-                              iconSize={16}
-                              textClassName="text-xs text-muted-foreground"
-                              stopPropagation
-                            />
-                          ) : "?"}
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                        {match.runeKeystoneName && (() => {
-                          const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
-                          return iconUrl ? (
-                            <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
-                          ) : null;
-                        })()}
-                        {match.runeKeystoneName || "—"} &middot;{" "}
-                        {formatDuration(match.gameDurationSeconds)}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm font-mono">
-                        {match.kills}/{match.deaths}/{match.assists}
-                      </span>
-                      <div className="text-xs text-muted-foreground">
-                        {t("csLabel", { cs: match.cs })}
-                      </div>
-                    </div>
-                    <ResultBadge result={match.result} className="w-6 justify-center" />
-                  </Link>
+                    match={match}
+                    ddragonVersion={ddragonVersion}
+                    matchHighlights={highlightsPerMatch[match.id] || []}
+                    variant="compact"
+                    showScoutLink
+                  />
                 ))}
               </div>
             )}

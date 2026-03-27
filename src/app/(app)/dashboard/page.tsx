@@ -7,7 +7,7 @@ import {
   coachingSessions,
   goals,
 } from "@/db/schema";
-import { eq, desc, and, count, sql, asc, lte } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc, lte, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { toCumulativeLP } from "@/lib/rank";
@@ -54,7 +54,10 @@ export default async function DashboardPage() {
         goldEarned: true,
         visionScore: true,
         reviewed: true,
+        reviewNotes: true,
+        reviewSkippedReason: true,
         comment: true,
+        duoPartnerPuuid: true,
         queueId: true,
       },
     }),
@@ -154,6 +157,39 @@ export default async function DashboardPage() {
   };
   const postGamePending = unreviewed - vodPending;
 
+  // Fetch highlights for the recent matches
+  const recentMatchIds = recentMatches.map((m) => m.id);
+  const recentHighlights =
+    recentMatchIds.length > 0
+      ? await db.query.matchHighlights.findMany({
+          where: and(
+            eq(matchHighlights.userId, user.id),
+            inArray(matchHighlights.matchId, recentMatchIds),
+          ),
+          columns: {
+            matchId: true,
+            type: true,
+            text: true,
+            topic: true,
+          },
+        })
+      : [];
+
+  const highlightsPerMatch: Record<
+    string,
+    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+  > = {};
+  for (const h of recentHighlights) {
+    if (!highlightsPerMatch[h.matchId]) {
+      highlightsPerMatch[h.matchId] = [];
+    }
+    highlightsPerMatch[h.matchId].push({
+      type: h.type as "highlight" | "lowlight",
+      text: h.text,
+      topic: h.topic,
+    });
+  }
+
   // LP trend: compare first vs. last rank snapshot within the timeframe of
   // the last 10 games, giving a consistent "LP change over recent games"
   // indicator that aligns with the analytics page.
@@ -191,6 +227,7 @@ export default async function DashboardPage() {
         puuid: user.puuid,
       }}
       recentMatches={recentMatches}
+      highlightsPerMatch={highlightsPerMatch}
       matchStats={{ total, wins, losses: total - wins, unreviewed, postGamePending, vodPending }}
       latestRank={latestRankOrUndef}
       lpTrend={lpTrend}
