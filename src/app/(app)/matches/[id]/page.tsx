@@ -6,6 +6,7 @@ import { getLatestVersion } from "@/lib/riot-api";
 import { notFound } from "next/navigation";
 import { MatchDetailClient } from "./match-detail-client";
 import type { RiotMatch } from "@/lib/riot-api";
+import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
 
 /** Slim participant shape — only the fields used by the client component */
 function slimParticipants(raw: RiotMatch) {
@@ -87,7 +88,7 @@ export default async function MatchDetailPage({
   const { rawMatchJson: _rawJson, ...matchForClient } = match;
 
   // These are independent — run in parallel (ddragonVersion already started above)
-  const [ddragonVersion, linkedSessions, highlights] = await Promise.all([
+  const [ddragonVersion, linkedSessions, highlights, matchupNotesData] = await Promise.all([
     ddragonVersionPromise,
     db
       .select({
@@ -113,6 +114,9 @@ export default async function MatchDetailPage({
           eq(matchHighlights.userId, user.id),
         )
       ),
+    match.matchupChampionName
+      ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
+      : Promise.resolve([]),
   ]);
 
   const highlightItems = highlights.map((h) => ({
@@ -127,6 +131,7 @@ export default async function MatchDetailPage({
       participants={participants}
       linkedSessions={linkedSessions}
       highlights={highlightItems}
+      matchupNotes={matchupNotesData}
       ddragonVersion={ddragonVersion}
       userPuuid={matchPuuid}
     />

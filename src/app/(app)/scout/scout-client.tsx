@@ -9,6 +9,11 @@ import {
   getMatchupReport,
   type MatchupReport,
 } from "@/app/actions/live";
+import {
+  getMatchupNotes,
+  type MatchupNoteData,
+} from "@/app/actions/matchup-notes";
+import { MatchupNotesSection } from "./matchup-notes";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -69,10 +74,14 @@ function ScoutingReport({
   report,
   ddragonVersion,
   locale,
+  matchupNotes,
+  yourChampionName,
 }: {
   report: MatchupReport;
   ddragonVersion: string;
   locale: string;
+  matchupNotes: MatchupNoteData[];
+  yourChampionName?: string;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
@@ -117,6 +126,16 @@ function ScoutingReport({
           )}
         </div>
       </div>
+
+      <Separator />
+
+      {/* Matchup Notes */}
+      <MatchupNotesSection
+        notes={matchupNotes}
+        matchupChampionName={report.matchupChampionName}
+        yourChampionName={yourChampionName}
+        locale={locale}
+      />
 
       <Separator />
 
@@ -375,6 +394,7 @@ export function ScoutClient({
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
+  const [matchupNotesList, setMatchupNotesList] = useState<MatchupNoteData[]>([]);
   const [isLoadingReport, startReportTransition] = useTransition();
 
   // Sync URL params -> local state when browser back/forward navigation occurs
@@ -393,6 +413,7 @@ export function ScoutClient({
         loadReport(urlEnemy, urlYour || undefined);
       } else {
         setReport(null);
+        setMatchupNotesList([]);
       }
     }
     // Only react to searchParams changes (browser navigation)
@@ -433,12 +454,17 @@ export function ScoutClient({
     (enemy: string, yours?: string) => {
       if (!enemy) {
         setReport(null);
+        setMatchupNotesList([]);
         return;
       }
       startReportTransition(async () => {
         try {
-          const result = await getMatchupReport(enemy, yours || undefined);
+          const [result, notes] = await Promise.all([
+            getMatchupReport(enemy, yours || undefined),
+            getMatchupNotes(enemy, yours || undefined),
+          ]);
           setReport(result);
+          setMatchupNotesList(notes);
         } catch {
           toast.error(t("toasts.failedToLoadReport"));
         }
@@ -525,23 +551,39 @@ export function ScoutClient({
 
       {/* Scouting report */}
       {!isLoadingReport && report && (
-        <ScoutingReport report={report} ddragonVersion={ddragonVersion} locale={locale} />
+        <ScoutingReport
+          report={report}
+          ddragonVersion={ddragonVersion}
+          locale={locale}
+          matchupNotes={matchupNotesList}
+          yourChampionName={yourChampion || undefined}
+        />
       )}
 
       {/* No historical data state */}
       {!isLoadingReport && !report && enemyChampion && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-          <Swords className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground">
-            {yourChampion
-              ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
-              : t("noGamesFound", { enemyChampion })}
-          </p>
-          {yourChampion && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("clearYourChampionHint")}
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <Swords className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">
+              {yourChampion
+                ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
+                : t("noGamesFound", { enemyChampion })}
             </p>
-          )}
+            {yourChampion && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("clearYourChampionHint")}
+              </p>
+            )}
+          </div>
+
+          {/* Still show matchup notes even without match history */}
+          <MatchupNotesSection
+            notes={matchupNotesList}
+            matchupChampionName={enemyChampion}
+            yourChampionName={yourChampion || undefined}
+            locale={locale}
+          />
         </div>
       )}
 

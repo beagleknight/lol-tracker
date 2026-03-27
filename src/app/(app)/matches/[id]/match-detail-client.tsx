@@ -42,6 +42,8 @@ import type { RiotMatchParticipant } from "@/lib/riot-api";
 import { getKeystoneIconUrl } from "@/lib/riot-api";
 import { ChampionLink } from "@/components/champion-link";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { ReadOnlyMatchupNotes } from "@/app/(app)/scout/matchup-notes";
+import type { MatchupNoteData } from "@/app/actions/matchup-notes";
 
 /** Slim participant — only fields needed for the match detail view */
 type SlimParticipant = Pick<
@@ -77,6 +79,7 @@ interface MatchDetailClientProps {
     date: Date;
   }>;
   highlights: HighlightItem[];
+  matchupNotes: MatchupNoteData[];
   ddragonVersion: string;
   userPuuid: string;
 }
@@ -185,6 +188,7 @@ export function MatchDetailClient({
   participants,
   linkedSessions,
   highlights,
+  matchupNotes,
   ddragonVersion,
   userPuuid,
 }: MatchDetailClientProps) {
@@ -386,6 +390,20 @@ export function MatchDetailClient({
           </CardHeader>
           <CardContent>
             <HighlightsDisplay highlights={highlights} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Matchup Notes — read-only reference */}
+      {matchupNotes.length > 0 && match.matchupChampionName && (
+        <Card className="surface-glow">
+          <CardContent className="pt-5">
+            <ReadOnlyMatchupNotes
+              notes={matchupNotes}
+              matchupChampionName={match.matchupChampionName}
+              yourChampionName={match.championName}
+              locale={locale}
+            />
           </CardContent>
         </Card>
       )}
