@@ -273,6 +273,25 @@
       "deleteError": "Error al eliminar la nota de matchup."
     }
   },
+  "AiInsights": {
+    "generateButton": "Obtener análisis IA",
+    "regenerateButton": "Regenerar",
+    "loading": "Analizando...",
+    "matchupTitle": "Consejo IA de Matchup",
+    "postGameTitle": "Análisis IA de Partida",
+    "cached": "En caché",
+    "generatedAt": "Generado {date}",
+    "dailyLimitReached": "Límite diario de análisis alcanzado.",
+    "noApiKey": "Los análisis IA no están configurados. Añade una clave API de Google Gemini para habilitar esta función.",
+    "triggerLabel": "Análisis IA",
+    "triggerTooltip": "Obtener análisis con IA",
+    "viewInsight": "Ver análisis",
+    "toasts": {
+      "generated": "Análisis IA generado.",
+      "error": "Error al generar el análisis.",
+      "limitReached": "Límite diario de análisis alcanzado."
+    }
+  },
   "Analytics": {
     "pageTitle": "Estadísticas",
     "gamesAnalyzed": "{count, plural, one {# partida} other {# partidas}} analizadas.",

@@ -13,7 +13,9 @@ import {
   getMatchupNotes,
   type MatchupNoteData,
 } from "@/app/actions/matchup-notes";
+import { generateMatchupInsight } from "@/app/actions/ai-insights";
 import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -62,6 +64,7 @@ interface ScoutClientProps {
   ddragonVersion: string;
   allChampions: string[];
   isRiotLinked: boolean;
+  isAiConfigured: boolean;
   initialYourChampion?: string;
   initialEnemyChampion?: string;
   mostPlayed?: ChampionPickCount[];
@@ -76,6 +79,7 @@ function ScoutingReport({
   locale,
   matchupNotes,
   yourChampionName,
+  isAiConfigured,
   onNotesChanged,
 }: {
   report: MatchupReport;
@@ -83,10 +87,12 @@ function ScoutingReport({
   locale: string;
   matchupNotes: MatchupNoteData[];
   yourChampionName?: string;
+  isAiConfigured: boolean;
   onNotesChanged?: () => void;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
+  const tAi = useTranslations("AiInsights");
   const [notesOpen, setNotesOpen] = useState(false);
 
   const { activeNote, activeChampionName } = pickActiveNote(matchupNotes, yourChampionName);
@@ -139,6 +145,19 @@ function ScoutingReport({
                 hasNote={hasNote}
                 isOpen={notesOpen}
                 onToggle={() => setNotesOpen(!notesOpen)}
+              />
+              <AiInsightDrawer
+                title={tAi("matchupTitle")}
+                isConfigured={isAiConfigured}
+                locale={locale}
+                onGenerate={(forceRegenerate) =>
+                  generateMatchupInsight(
+                    report.matchupChampionName,
+                    yourChampionName,
+                    report,
+                    forceRegenerate,
+                  )
+                }
               />
             </div>
             <div className="flex items-center gap-3 mt-1">
@@ -462,6 +481,7 @@ export function ScoutClient({
   ddragonVersion,
   allChampions,
   isRiotLinked: _isRiotLinked,
+  isAiConfigured,
   initialYourChampion = "",
   initialEnemyChampion = "",
   mostPlayed = [],
@@ -651,6 +671,7 @@ export function ScoutClient({
           locale={locale}
           matchupNotes={matchupNotesList}
           yourChampionName={yourChampion || undefined}
+          isAiConfigured={isAiConfigured}
           onNotesChanged={refreshNotes}
         />
       )}
