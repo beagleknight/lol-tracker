@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { MatchDetailClient } from "./match-detail-client";
 import type { RiotMatch } from "@/lib/riot-api";
 import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
-import { isAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
+import { checkAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
 
 /** Slim participant shape — only the fields used by the client component */
 function slimParticipants(raw: RiotMatch) {
@@ -118,7 +118,7 @@ export default async function MatchDetailPage({
     match.matchupChampionName
       ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
       : Promise.resolve([]),
-    isAiConfigured(),
+    checkAiConfigured(),
     getCachedInsight("post-game", { matchId: match.id }),
   ]);
 

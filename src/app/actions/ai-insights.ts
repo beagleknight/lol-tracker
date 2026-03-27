@@ -4,8 +4,8 @@ import { db } from "@/db";
 import { aiInsights } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
-import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
+import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
 import { buildMatchupContext } from "@/lib/ai/context";
 import { buildPostGameContext } from "@/lib/ai/context";
 import { buildMatchupPrompt, buildPostGamePrompt } from "@/lib/ai/prompts";
@@ -14,7 +14,6 @@ import type { MatchupReport } from "@/app/actions/live";
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const DAILY_LIMIT = 10;
-const MODEL_ID = "gemini-2.5-flash";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -66,8 +65,8 @@ async function getDailyUsage(userId: string): Promise<number> {
 
 // ─── Check if AI is configured ──────────────────────────────────────────────
 
-export async function isAiConfigured(): Promise<boolean> {
-  return !!process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+export async function checkAiConfigured(): Promise<boolean> {
+  return isAiConfigured();
 }
 
 // ─── Get daily usage stats ──────────────────────────────────────────────────
@@ -117,7 +116,7 @@ export async function generateMatchupInsight(
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
 
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!isAiConfigured()) {
     return { error: "AI insights are not configured." };
   }
 
@@ -172,7 +171,7 @@ export async function generateMatchupInsight(
 
   try {
     const result = await generateText({
-      model: google(MODEL_ID),
+      model: aiModel,
       system,
       prompt,
     });
@@ -185,7 +184,7 @@ export async function generateMatchupInsight(
         type: "matchup",
         contextKey: key,
         content: result.text,
-        model: MODEL_ID,
+        model: AI_MODEL_ID,
         promptTokens: result.usage?.inputTokens ?? null,
         completionTokens: result.usage?.outputTokens ?? null,
       })
@@ -193,7 +192,7 @@ export async function generateMatchupInsight(
         target: [aiInsights.userId, aiInsights.type, aiInsights.contextKey],
         set: {
           content: result.text,
-          model: MODEL_ID,
+          model: AI_MODEL_ID,
           promptTokens: result.usage?.inputTokens ?? null,
           completionTokens: result.usage?.outputTokens ?? null,
           createdAt: new Date(),
@@ -204,7 +203,7 @@ export async function generateMatchupInsight(
       content: result.text,
       cached: false,
       createdAt: new Date(),
-      model: MODEL_ID,
+      model: AI_MODEL_ID,
       promptTokens: result.usage?.inputTokens,
       completionTokens: result.usage?.outputTokens,
     };
@@ -222,7 +221,7 @@ export async function generatePostGameInsight(
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
 
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!isAiConfigured()) {
     return { error: "AI insights are not configured." };
   }
 
@@ -271,7 +270,7 @@ export async function generatePostGameInsight(
 
   try {
     const result = await generateText({
-      model: google(MODEL_ID),
+      model: aiModel,
       system,
       prompt,
     });
@@ -284,7 +283,7 @@ export async function generatePostGameInsight(
         type: "post-game",
         contextKey: key,
         content: result.text,
-        model: MODEL_ID,
+        model: AI_MODEL_ID,
         promptTokens: result.usage?.inputTokens ?? null,
         completionTokens: result.usage?.outputTokens ?? null,
       })
@@ -292,7 +291,7 @@ export async function generatePostGameInsight(
         target: [aiInsights.userId, aiInsights.type, aiInsights.contextKey],
         set: {
           content: result.text,
-          model: MODEL_ID,
+          model: AI_MODEL_ID,
           promptTokens: result.usage?.inputTokens ?? null,
           completionTokens: result.usage?.outputTokens ?? null,
           createdAt: new Date(),
@@ -303,7 +302,7 @@ export async function generatePostGameInsight(
       content: result.text,
       cached: false,
       createdAt: new Date(),
-      model: MODEL_ID,
+      model: AI_MODEL_ID,
       promptTokens: result.usage?.inputTokens,
       completionTokens: result.usage?.outputTokens,
     };

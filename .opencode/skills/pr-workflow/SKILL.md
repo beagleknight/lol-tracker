@@ -121,6 +121,12 @@ All four must pass before merging.
 
 ### 6. Merge
 
+**MANDATORY: Wait for CI checks to pass BEFORE merging.** Even if checks are not required by branch protection, always confirm all checks pass first:
+
+```bash
+gh pr checks <number> --watch
+```
+
 After CI passes, merge the PR via GitHub (squash merge preferred for clean history).
 
 Vercel auto-deploys on merge to main — no manual deploy step needed.
