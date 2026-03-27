@@ -120,7 +120,76 @@ export async function completeCoachingSession(
   return { success: true };
 }
 
-// ─── Update / Delete session ─────────────────────────────────────────────────
+// ─── Update / Edit session ───────────────────────────────────────────────────
+
+export async function updateCoachingSession(
+  sessionId: number,
+  data: {
+    coachName: string;
+    date: string; // ISO string
+    vodMatchId?: string | null;
+    topics?: string[];
+    // Only for completed sessions:
+    durationMinutes?: number | null;
+    notes?: string | null;
+  }
+) {
+  const user = await requireUser();
+
+  const session = await db.query.coachingSessions.findFirst({
+    where: and(
+      eq(coachingSessions.id, sessionId),
+      eq(coachingSessions.userId, user.id)
+    ),
+  });
+
+  if (!session) {
+    return { error: "Session not found." };
+  }
+
+  // Update session fields
+  await db
+    .update(coachingSessions)
+    .set({
+      coachName: data.coachName,
+      date: new Date(data.date),
+      vodMatchId: data.vodMatchId ?? null,
+      topics: data.topics?.length ? JSON.stringify(data.topics) : null,
+      ...(session.status === "completed" && {
+        durationMinutes: data.durationMinutes ?? null,
+        notes: data.notes ?? null,
+      }),
+      updatedAt: new Date(),
+    })
+    .where(eq(coachingSessions.id, sessionId));
+
+  // Update VOD match link: delete old link, insert new if provided
+  await db
+    .delete(coachingSessionMatches)
+    .where(
+      and(
+        eq(coachingSessionMatches.sessionId, sessionId),
+        eq(coachingSessionMatches.userId, user.id)
+      )
+    );
+
+  if (data.vodMatchId) {
+    await db.insert(coachingSessionMatches).values({
+      sessionId,
+      matchId: data.vodMatchId,
+      userId: user.id,
+    });
+  }
+
+  revalidatePath("/coaching");
+  revalidatePath(`/coaching/${sessionId}`);
+  revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
+
+  return { success: true };
+}
+
+// ─── Delete session ──────────────────────────────────────────────────────────
 
 export async function deleteCoachingSession(sessionId: number) {
   const user = await requireUser();

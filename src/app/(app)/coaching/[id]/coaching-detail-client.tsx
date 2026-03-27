@@ -42,6 +42,7 @@ import {
   CalendarCheck,
   TrendingUp,
   Swords,
+  Pencil,
 } from "lucide-react";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
@@ -288,6 +289,11 @@ export function CoachingDetailClient({
             )}
           </p>
         </div>
+        <Link href={`/coaching/${session.id}/edit`}>
+          <Button variant="ghost" size="icon">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="icon"

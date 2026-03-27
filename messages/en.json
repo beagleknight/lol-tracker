@@ -91,7 +91,16 @@
     "noActiveActionItems": "No active action items.",
     "goalWidget": "Goal",
     "noActiveGoal": "No active goal set.",
-    "setGoal": "Set a goal"
+    "setGoal": "Set a goal",
+    "lastCoaching": "Last Coaching",
+    "today": "Today",
+    "daysAgo": "{days, plural, one {# day} other {# days}} ago",
+    "cadence": {
+      "good": "On track",
+      "warning": "Due soon",
+      "overdue": "Overdue"
+    },
+    "noCompletedSessions": "No completed sessions yet."
   },
   "Matches": {
     "heading": "Matches",
@@ -375,6 +384,39 @@
       "topicRequired": "Please select at least one topic covered.",
       "sessionCompleted": "Coaching session completed!",
       "completeError": "Failed to complete session."
+    }
+  },
+  "EditSession": {
+    "title": "Edit Coaching Session",
+    "subtitle": "Update session details.",
+    "sessionDetails": "Session Details",
+    "coachNameLabel": "Coach Name",
+    "coachNamePlaceholder": "e.g. Coach Kim",
+    "dateTimeLabel": "Date & Time",
+    "vodToReview": "VOD / Match to Review",
+    "vodToReviewDescription": "Select a game to review during the session.",
+    "noMatchesFound": "No recent matches found.",
+    "vs": "vs",
+    "notesBadge": "{count, plural, one {# note} other {# notes}}",
+    "matchPreviewLabel": "{championName} vs {matchupChampionName} — {result}",
+    "noHighlights": "No highlights or lowlights recorded for this match.",
+    "focusAreas": "Focus Areas",
+    "focusAreasDescription": "Topics you want to focus on during the session.",
+    "topicsCovered": "Topics Covered",
+    "topicsCoveredDescription": "Topics that were covered during the session.",
+    "customTopicPlaceholder": "Custom topic...",
+    "addButton": "Add",
+    "sessionNotesTitle": "Session Details",
+    "durationLabel": "Duration (minutes)",
+    "durationPlaceholder": "60",
+    "sessionNotesLabel": "Session Notes",
+    "sessionNotesPlaceholder": "Key takeaways, what the coach said, areas to focus on...",
+    "cancelButton": "Cancel",
+    "saveChangesButton": "Save Changes",
+    "toasts": {
+      "coachNameRequired": "Please enter a coach name.",
+      "sessionUpdated": "Session updated successfully!",
+      "updateError": "Failed to update session."
     }
   },
   "ActionItems": {
