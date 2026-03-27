@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Pencil, StickyNote, Trash2 } from "lucide-react";
+import { MessageSquareText, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -13,25 +13,32 @@ import {
 } from "@/app/actions/matchup-notes";
 import { formatDate } from "@/lib/format";
 
-// ─── Single Note Card ───────────────────────────────────────────────────────
+// ─── Inline Note Editor ─────────────────────────────────────────────────────
 
-function NoteCard({
+function InlineNoteEditor({
   note,
   title,
   championName,
   matchupChampionName,
   locale,
+  onSaved,
+  defaultExpanded,
 }: {
   note: MatchupNoteData | null;
   title: string;
   championName: string | null;
   matchupChampionName: string;
   locale: string;
+  onSaved: () => void;
+  defaultExpanded?: boolean;
 }) {
   const t = useTranslations("MatchupNotes");
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded ?? false);
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(note?.content ?? "");
   const [isSaving, startSaveTransition] = useTransition();
+
+  const hasContent = !!note?.content;
 
   const handleSave = useCallback(() => {
     startSaveTransition(async () => {
@@ -43,11 +50,12 @@ function NoteCard({
       if (result.success) {
         toast.success(content.trim() ? t("toasts.saved") : t("toasts.deleted"));
         setIsEditing(false);
+        onSaved();
       } else {
         toast.error(result.error ?? t("toasts.saveError"));
       }
     });
-  }, [championName, matchupChampionName, content, t]);
+  }, [championName, matchupChampionName, content, t, onSaved]);
 
   const handleDelete = useCallback(() => {
     if (!note) return;
@@ -57,34 +65,32 @@ function NoteCard({
         toast.success(t("toasts.deleted"));
         setContent("");
         setIsEditing(false);
+        onSaved();
       } else {
         toast.error(t("toasts.deleteError"));
       }
     });
-  }, [note, t]);
+  }, [note, t, onSaved]);
 
   const handleCancel = useCallback(() => {
     setContent(note?.content ?? "");
     setIsEditing(false);
   }, [note]);
 
+  // Editing mode — inline textarea
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 space-y-3">
-        <p className="text-sm font-medium">{title}</p>
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">{title}</p>
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={t("placeholder")}
-          className="min-h-24"
+          className="min-h-20 text-sm"
           autoFocus
         />
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
+          <Button size="sm" onClick={handleSave} disabled={isSaving}>
             {t("save")}
           </Button>
           <Button
@@ -111,42 +117,66 @@ function NoteCard({
     );
   }
 
+  // Collapsed — just a clickable row
+  if (!isExpanded && hasContent) {
+    return (
+      <button
+        className="flex items-center gap-2 w-full text-left group"
+        onClick={() => setIsExpanded(true)}
+      >
+        <ChevronDown className="h-3 w-3 text-muted-foreground -rotate-90 transition-transform group-hover:rotate-0" />
+        <span className="text-xs font-medium text-muted-foreground truncate flex-1">
+          {title}
+        </span>
+        <span className="text-[10px] text-muted-foreground/60">
+          {formatDate(note!.updatedAt, locale)}
+        </span>
+      </button>
+    );
+  }
+
+  // Expanded or empty — show content + edit trigger
   return (
-    <div
-      className="rounded-lg border border-border/50 bg-surface-elevated p-3 group cursor-pointer hover:border-border transition-colors"
-      onClick={() => setIsEditing(true)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setIsEditing(true);
-      }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium">{title}</p>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
         <button
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
+          className="flex items-center gap-2 text-left group"
+          onClick={() => hasContent && setIsExpanded(false)}
+        >
+          {hasContent && (
+            <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform" />
+          )}
+          <span className="text-xs font-medium text-muted-foreground">
+            {title}
+          </span>
+        </button>
+        <button
+          className="text-muted-foreground/50 hover:text-foreground transition-colors"
+          onClick={() => setIsEditing(true)}
           title={t("editTooltip")}
         >
-          <Pencil className="h-3.5 w-3.5" />
+          <Pencil className="h-3 w-3" />
         </button>
       </div>
-      {note?.content ? (
-        <>
-          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
-            {note.content}
-          </p>
-          <p className="text-[10px] text-muted-foreground/70 mt-2">
-            {t("savedAt", { date: formatDate(note.updatedAt, locale) })}
-          </p>
-        </>
+      {hasContent ? (
+        <div
+          className="text-sm text-muted-foreground whitespace-pre-wrap pl-5 cursor-pointer hover:text-foreground transition-colors"
+          onClick={() => setIsEditing(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setIsEditing(true);
+          }}
+        >
+          {note!.content}
+        </div>
       ) : (
-        <p className="text-sm text-muted-foreground/50 italic mt-1">
+        <button
+          className="text-xs text-muted-foreground/40 italic hover:text-muted-foreground transition-colors pl-5"
+          onClick={() => setIsEditing(true)}
+        >
           {t("addNotes")}
-        </p>
+        </button>
       )}
     </div>
   );
@@ -159,6 +189,7 @@ interface MatchupNotesSectionProps {
   matchupChampionName: string;
   yourChampionName?: string;
   locale: string;
+  onNotesChanged?: () => void;
 }
 
 export function MatchupNotesSection({
@@ -166,6 +197,7 @@ export function MatchupNotesSection({
   matchupChampionName,
   yourChampionName,
   locale,
+  onNotesChanged,
 }: MatchupNotesSectionProps) {
   const t = useTranslations("MatchupNotes");
 
@@ -174,17 +206,26 @@ export function MatchupNotesSection({
     ? notes.find((n) => n.championName === yourChampionName) ?? null
     : null;
 
+  const handleSaved = useCallback(() => {
+    onNotesChanged?.();
+  }, [onNotesChanged]);
+
+  const hasAnyNote = !!generalNote?.content || !!specificNote?.content;
+
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium flex items-center gap-2">
-        <StickyNote className="h-4 w-4 text-gold" />
+    <div className="space-y-2">
+      <h3 className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+        <MessageSquareText className="h-3.5 w-3.5 text-gold" />
         {t("sectionTitle")}
+        {hasAnyNote && (
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" />
+        )}
       </h3>
 
-      <div className="space-y-2">
-        {/* Champion-specific note (only when Your Champion is selected) */}
+      <div className="space-y-2 rounded-lg border border-border/30 bg-surface-elevated/50 p-3">
+        {/* Champion-specific note — shown prominently when Your Champion is set */}
         {yourChampionName && (
-          <NoteCard
+          <InlineNoteEditor
             note={specificNote}
             title={t("specificNoteTitle", {
               champion: yourChampionName,
@@ -193,16 +234,25 @@ export function MatchupNotesSection({
             championName={yourChampionName}
             matchupChampionName={matchupChampionName}
             locale={locale}
+            onSaved={handleSaved}
+            defaultExpanded
           />
         )}
 
-        {/* General note (always shown) */}
-        <NoteCard
+        {/* Separator between notes when both are shown */}
+        {yourChampionName && (
+          <div className="border-t border-border/20" />
+        )}
+
+        {/* General note — secondary (collapsed by default) when specific note exists */}
+        <InlineNoteEditor
           note={generalNote}
           title={t("generalNoteTitle", { enemy: matchupChampionName })}
           championName={null}
           matchupChampionName={matchupChampionName}
           locale={locale}
+          onSaved={handleSaved}
+          defaultExpanded={!yourChampionName}
         />
       </div>
     </div>
@@ -232,10 +282,10 @@ export function ReadOnlyMatchupNotes({
   const specificNote = notes.find((n) => n.championName === yourChampionName);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium flex items-center gap-2">
-          <StickyNote className="h-4 w-4 text-gold" />
+        <h3 className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+          <MessageSquareText className="h-3.5 w-3.5 text-gold" />
           {t("readOnlyTitle")}
         </h3>
         <a
@@ -246,33 +296,37 @@ export function ReadOnlyMatchupNotes({
         </a>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-lg border border-border/30 bg-surface-elevated/50 p-3">
         {specificNote && (
-          <div className="rounded-lg border border-border/50 bg-surface-elevated p-3">
+          <div>
             <p className="text-xs font-medium text-muted-foreground">
               {t("specificNoteTitle", {
                 champion: yourChampionName,
                 enemy: matchupChampionName,
               })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap">
+            <p className="text-sm mt-1 whitespace-pre-wrap pl-0">
               {specificNote.content}
             </p>
-            <p className="text-[10px] text-muted-foreground/70 mt-2">
+            <p className="text-[10px] text-muted-foreground/60 mt-1">
               {t("savedAt", { date: formatDate(specificNote.updatedAt, locale) })}
             </p>
           </div>
         )}
 
+        {specificNote && generalNote && (
+          <div className="border-t border-border/20" />
+        )}
+
         {generalNote && (
-          <div className="rounded-lg border border-border/50 bg-surface-elevated p-3">
+          <div>
             <p className="text-xs font-medium text-muted-foreground">
               {t("generalNoteTitle", { enemy: matchupChampionName })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap">
+            <p className="text-sm mt-1 whitespace-pre-wrap pl-0">
               {generalNote.content}
             </p>
-            <p className="text-[10px] text-muted-foreground/70 mt-2">
+            <p className="text-[10px] text-muted-foreground/60 mt-1">
               {t("savedAt", { date: formatDate(generalNote.updatedAt, locale) })}
             </p>
           </div>

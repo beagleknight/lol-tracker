@@ -76,12 +76,14 @@ function ScoutingReport({
   locale,
   matchupNotes,
   yourChampionName,
+  onNotesChanged,
 }: {
   report: MatchupReport;
   ddragonVersion: string;
   locale: string;
   matchupNotes: MatchupNoteData[];
   yourChampionName?: string;
+  onNotesChanged?: () => void;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
@@ -100,13 +102,33 @@ function ScoutingReport({
     <div className="space-y-6">
       {/* Header: Record summary */}
       <div className="flex items-center gap-4">
-        <ChampionIcon
-          championName={report.matchupChampionName}
-          version={ddragonVersion}
-          size={56}
-        />
+        {yourChampionName ? (
+          <div className="flex items-center gap-2">
+            <ChampionIcon
+              championName={yourChampionName}
+              version={ddragonVersion}
+              size={48}
+            />
+            <span className="text-muted-foreground text-sm font-medium">{t("vs")}</span>
+            <ChampionIcon
+              championName={report.matchupChampionName}
+              version={ddragonVersion}
+              size={48}
+            />
+          </div>
+        ) : (
+          <ChampionIcon
+            championName={report.matchupChampionName}
+            version={ddragonVersion}
+            size={56}
+          />
+        )}
         <div>
-          <h2 className="text-xl font-bold">{t("vs")} {report.matchupChampionName}</h2>
+          <h2 className="text-xl font-bold">
+            {yourChampionName
+              ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
+              : `${t("vs")} ${report.matchupChampionName}`}
+          </h2>
           <div className="flex items-center gap-3 mt-1">
             <span className="text-lg font-mono">
               <span className="text-win">{record.wins}W</span>{" "}
@@ -135,6 +157,7 @@ function ScoutingReport({
         matchupChampionName={report.matchupChampionName}
         yourChampionName={yourChampionName}
         locale={locale}
+        onNotesChanged={onNotesChanged}
       />
 
       <Separator />
@@ -473,6 +496,17 @@ export function ScoutClient({
     [t]
   );
 
+  /** Re-fetch only notes (called after save/delete) */
+  const refreshNotes = useCallback(async () => {
+    if (!enemyChampion) return;
+    try {
+      const notes = await getMatchupNotes(enemyChampion, yourChampion || undefined);
+      setMatchupNotesList(notes);
+    } catch {
+      // silent — the notes just won't refresh
+    }
+  }, [enemyChampion, yourChampion]);
+
   // Auto-load report on mount if initial champions are provided via URL params
   useEffect(() => {
     if (initialEnemyChampion) {
@@ -557,6 +591,7 @@ export function ScoutClient({
           locale={locale}
           matchupNotes={matchupNotesList}
           yourChampionName={yourChampion || undefined}
+          onNotesChanged={refreshNotes}
         />
       )}
 
@@ -583,6 +618,7 @@ export function ScoutClient({
             matchupChampionName={enemyChampion}
             yourChampionName={yourChampion || undefined}
             locale={locale}
+            onNotesChanged={refreshNotes}
           />
         </div>
       )}
