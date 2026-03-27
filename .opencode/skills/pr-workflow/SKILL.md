@@ -61,20 +61,25 @@ changelog/es/YYYY-MM-DD-slug.mdx
 Frontmatter format:
 ```yaml
 ---
-version: "X.Y.Z"
+version: "YYYY.MM.N"
 date: "YYYY-MM-DD"
 title: "Human-readable title"
+tags: ["feature"]
 ---
 ```
 
 Body uses standard Markdown: **bold**, lists, `### headings`.
 
-Version bumping:
-- **Patch** (X.Y.Z+1): bug fixes, small polish
-- **Minor** (X.Y+1.0): new features, significant changes
-- **Major** (X+1.0.0): breaking changes (unlikely for this project)
+Version scheme — **CalVer** (`YYYY.MM.N`):
+- `YYYY` = calendar year (e.g. 2026)
+- `MM` = calendar month, zero-padded (e.g. 03)
+- `N` = sequential release number within that month, starting at 1
 
-To determine the next version, check the latest `version` in `changelog/en/` files.
+To determine the next version, check the latest `version` in `changelog/en/` files and increment `N`. If the month changed, reset `N` to 1.
+
+Available tags: `feature`, `fix`, `improvement`, `refactor`. Every entry must have at least one tag.
+
+Also update `package.json` `version` to match the latest CalVer version.
 
 If the PR is purely infrastructure (CI, skills, config) and has no user-facing changes, skip the changelog and add the `skip-changelog` label to the PR instead.
 
@@ -96,7 +101,7 @@ Fixes #N
 <!-- Use "Relates to #N" if the PR partially addresses but doesn't fully close an issue. -->
 
 ## Changelog
-- Version X.Y.Z: <what changed for users>
+- Version YYYY.MM.N: <what changed for users>
 ```
 
 **Issue linking is mandatory.** Before creating a PR, check `gh issue list` for related issues. If the PR resolves one or more issues, include `Fixes #N` (one per line) in the PR body. If it partially addresses an issue, use `Relates to #N` instead.
