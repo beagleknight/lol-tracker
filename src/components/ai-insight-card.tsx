@@ -153,7 +153,21 @@ export function AiInsightCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="prose prose-sm prose-invert max-w-none text-foreground/80 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm [&>h1]:font-semibold [&>h2]:font-semibold [&>h3]:font-medium [&>h1]:text-foreground [&>h2]:text-foreground [&>h3]:text-foreground [&>ul]:space-y-0.5 [&>ol]:space-y-0.5 [&_li]:text-foreground/80 [&>p]:leading-relaxed [&>hr]:border-border/50">
+        <div className={[
+          "prose prose-sm prose-invert max-w-none",
+          // Headings
+          "[&>h2]:text-sm [&>h2]:font-semibold [&>h2]:text-gold [&>h2]:mt-5 [&>h2]:mb-2 [&>h2]:first:mt-0",
+          "[&>h3]:text-sm [&>h3]:font-medium [&>h3]:text-foreground [&>h3]:mt-4 [&>h3]:mb-1.5",
+          // Lists
+          "[&>ul]:space-y-1.5 [&>ul]:mb-3 [&>ol]:space-y-1.5 [&>ol]:mb-3",
+          "[&_li]:text-foreground/80 [&_li]:leading-relaxed",
+          // Paragraphs
+          "[&>p]:text-foreground/80 [&>p]:leading-relaxed [&>p]:mb-3",
+          // Dividers
+          "[&>hr]:border-border/50 [&>hr]:my-4",
+          // Bold emphasis
+          "[&_strong]:text-foreground [&_strong]:font-semibold",
+        ].join(" ")}>
           <ReactMarkdown>{insight.content}</ReactMarkdown>
         </div>
         {error && (
