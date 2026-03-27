@@ -406,6 +406,7 @@
     "coachNameLabel": "Nombre del coach",
     "coachNamePlaceholder": "ej. midlaneacademy",
     "dateLabel": "Fecha",
+    "dateTimeLabel": "Fecha y hora",
     "vodToReview": "VOD a revisar",
     "vodToReviewDescription": "Opcionalmente selecciona la partida que quieres revisar — puedes añadirla después.",
     "noMatchesFound": "No se encontraron partidas. Importa tus partidas primero.",
