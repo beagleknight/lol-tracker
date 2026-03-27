@@ -124,6 +124,7 @@ export function HighlightsEditor({
             <select
               value={newHighlightTopic}
               onChange={(e) => setNewHighlightTopic(e.target.value)}
+              aria-label={t("highlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>
@@ -200,6 +201,7 @@ export function HighlightsEditor({
             <select
               value={newLowlightTopic}
               onChange={(e) => setNewLowlightTopic(e.target.value)}
+              aria-label={t("lowlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>

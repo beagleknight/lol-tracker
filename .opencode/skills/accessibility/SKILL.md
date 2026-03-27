@@ -174,3 +174,4 @@ When adding a new interactive component:
 9. [ ] Animations respect `prefers-reduced-motion` (handled globally)
 10. [ ] Run `npm run lint` — jsx-a11y rules catch many issues at compile time
 11. [ ] Run `npm run test:smoke` — axe-core catches runtime violations
+12. [ ] **i18n: Every `aria-label={t("key")}` has matching keys in BOTH `messages/en.json` AND `messages/es.json`** — see the `i18n` skill for details. Missing keys crash the app at runtime.

@@ -579,6 +579,7 @@ export default function SettingsPage() {
                         size="sm"
                         onClick={() => handleCopyCode(invite.code)}
                         className="h-8 w-8 p-0"
+                        aria-label={t("invites.copyCode")}
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
@@ -589,6 +590,7 @@ export default function SettingsPage() {
                       onClick={() => handleDeleteInvite(invite.id)}
                       disabled={isPending}
                       className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      aria-label={t("invites.deleteInvite")}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

@@ -40,7 +40,9 @@
     "topicPlaceholder": "Topic...",
     "detailsPlaceholder": "Details (optional)",
     "highlightsHeading": "Highlights",
-    "lowlightsHeading": "Lowlights"
+    "lowlightsHeading": "Lowlights",
+    "highlightTopicLabel": "Highlight topic",
+    "lowlightTopicLabel": "Lowlight topic"
   },
   "Login": {
     "title": "LoL Tracker",
@@ -599,7 +601,9 @@
       "usedBy": "Used by {usedByName}",
       "usedByUnknown": "Unknown",
       "badgeAvailable": "Available",
-      "emptyState": "No invite codes yet. Generate one to share with friends."
+      "emptyState": "No invite codes yet. Generate one to share with friends.",
+      "copyCode": "Copy invite code",
+      "deleteInvite": "Delete invite"
     },
     "toasts": {
       "loadInvitesError": "Couldn't load invite codes.",

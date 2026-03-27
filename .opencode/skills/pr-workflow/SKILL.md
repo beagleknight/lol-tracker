@@ -122,16 +122,18 @@ Fixes #N
 
 ### 5. CI checks
 
-Four checks run automatically on every PR to `main`:
+Six checks run automatically on every PR to `main`:
 
 | Check | Command | What it catches |
 |---|---|---|
 | **Typecheck** | `tsc --noEmit` | Type errors |
-| **Lint** | `eslint` | Code style, unused vars, React rules |
+| **Lint** | `eslint` | Code style, unused vars, React rules, jsx-a11y |
 | **Build** | `next build --webpack` | Compilation errors, broken imports |
+| **Smoke** | `playwright test --project=smoke` | Axe-core a11y violations on every page |
+| **E2E** | `playwright test --project=e2e` | End-to-end user flows |
 | **Changelog** | `git diff` on `changelog/` | Missing changelog entry (skipped with `skip-changelog` label) |
 
-All four must pass before merging.
+All six must pass before merging.
 
 ### 6. Merge
 

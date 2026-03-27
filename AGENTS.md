@@ -101,3 +101,15 @@ Reference issues in commit messages when relevant.
 
 Full PR conventions are in the `pr-workflow` OpenCode skill.
 <!-- END:github-issues-rules -->
+
+<!-- BEGIN:i18n-aria-rules -->
+# i18n + accessibility — MANDATORY
+
+**Every `aria-label={t("key")}` requires translation keys in BOTH `messages/en.json` AND `messages/es.json`.** Missing keys crash the app at runtime. This is the most commonly forgotten step when fixing accessibility violations.
+
+Before committing any file that adds a new `t()` call:
+1. Identify the namespace (from `useTranslations("Namespace")`)
+2. Add the key to `messages/en.json` under that namespace
+3. Add the Spanish translation to `messages/es.json` under the same namespace
+4. Verify with `npm run build` — the type system catches missing keys at build time
+<!-- END:i18n-aria-rules -->
