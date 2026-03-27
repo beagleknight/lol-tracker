@@ -22,10 +22,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import {
-  HighlightsDisplay,
-  type HighlightItem,
-} from "@/components/highlights-editor";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
+import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-insights";
 import {
   ArrowLeft,
   GraduationCap,
@@ -82,6 +81,8 @@ interface MatchDetailClientProps {
   matchupNotes: MatchupNoteData[];
   ddragonVersion: string;
   userPuuid: string;
+  isAiConfigured: boolean;
+  cachedAiInsight: InsightResult | null;
 }
 
 function ParticipantRow({
@@ -191,10 +192,13 @@ export function MatchDetailClient({
   matchupNotes,
   ddragonVersion,
   userPuuid,
+  isAiConfigured,
+  cachedAiInsight,
 }: MatchDetailClientProps) {
   const { data: session } = useSession();
   const locale = session?.user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
+  const tAi = useTranslations("AiInsights");
 
   // Split participants into teams
   const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
@@ -251,6 +255,15 @@ export function MatchDetailClient({
                     {t("pendingReview")}
                   </Badge>
                 )}
+                <AiInsightDrawer
+                  title={tAi("postGameTitle")}
+                  cachedInsight={cachedAiInsight}
+                  isConfigured={isAiConfigured}
+                  locale={locale}
+                  onGenerate={(forceRegenerate) =>
+                    generatePostGameInsight(match.id, forceRegenerate)
+                  }
+                />
               </div>
               <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
                 {formatDate(match.gameDate, locale, "datetime")} &middot;{" "}
