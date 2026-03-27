@@ -5,6 +5,7 @@ import {
   getMostPlayedChampions,
   getMostFacedOpponents,
 } from "@/app/actions/live";
+import { isAiConfigured } from "@/app/actions/ai-insights";
 import { ScoutClient } from "./scout-client";
 
 export default async function ScoutPage({
@@ -20,11 +21,13 @@ export default async function ScoutPage({
     allChampions,
     mostPlayed,
     mostFaced,
+    aiConfigured,
   ] = await Promise.all([
     getLatestVersion(),
     getAllChampionNames(),
     getMostPlayedChampions(8),
     getMostFacedOpponents(8),
+    isAiConfigured(),
   ]);
 
   const isRiotLinked = !!user.puuid;
@@ -38,6 +41,7 @@ export default async function ScoutPage({
       initialEnemyChampion={params.enemy || ""}
       mostPlayed={mostPlayed}
       mostFaced={mostFaced}
+      isAiConfigured={aiConfigured}
     />
   );
 }

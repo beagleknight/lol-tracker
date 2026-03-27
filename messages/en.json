@@ -273,6 +273,22 @@
       "deleteError": "Failed to delete matchup note."
     }
   },
+  "AiInsights": {
+    "generateButton": "Get AI Insight",
+    "regenerateButton": "Regenerate",
+    "loading": "Analyzing...",
+    "matchupTitle": "AI Matchup Advice",
+    "postGameTitle": "AI Match Review",
+    "cached": "Cached",
+    "generatedAt": "Generated {date}",
+    "dailyLimitReached": "Daily insight limit reached.",
+    "noApiKey": "AI insights are not configured. Add a Google Gemini API key to enable this feature.",
+    "toasts": {
+      "generated": "AI insight generated.",
+      "error": "Failed to generate insight.",
+      "limitReached": "Daily insight limit reached."
+    }
+  },
   "Analytics": {
     "pageTitle": "Analytics",
     "gamesAnalyzed": "{count, plural, one {# game} other {# games}} analyzed.",

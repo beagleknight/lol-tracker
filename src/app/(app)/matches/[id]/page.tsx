@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { MatchDetailClient } from "./match-detail-client";
 import type { RiotMatch } from "@/lib/riot-api";
 import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
+import { isAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
 
 /** Slim participant shape — only the fields used by the client component */
 function slimParticipants(raw: RiotMatch) {
@@ -88,7 +89,7 @@ export default async function MatchDetailPage({
   const { rawMatchJson: _rawJson, ...matchForClient } = match;
 
   // These are independent — run in parallel (ddragonVersion already started above)
-  const [ddragonVersion, linkedSessions, highlights, matchupNotesData] = await Promise.all([
+  const [ddragonVersion, linkedSessions, highlights, matchupNotesData, aiConfigured, cachedAiInsight] = await Promise.all([
     ddragonVersionPromise,
     db
       .select({
@@ -117,6 +118,8 @@ export default async function MatchDetailPage({
     match.matchupChampionName
       ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
       : Promise.resolve([]),
+    isAiConfigured(),
+    getCachedInsight("post-game", { matchId: match.id }),
   ]);
 
   const highlightItems = highlights.map((h) => ({
@@ -134,6 +137,8 @@ export default async function MatchDetailPage({
       matchupNotes={matchupNotesData}
       ddragonVersion={ddragonVersion}
       userPuuid={matchPuuid}
+      isAiConfigured={aiConfigured}
+      cachedAiInsight={cachedAiInsight}
     />
   );
 }
