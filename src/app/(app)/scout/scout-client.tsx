@@ -13,7 +13,7 @@ import {
   getMatchupNotes,
   type MatchupNoteData,
 } from "@/app/actions/matchup-notes";
-import { MatchupNotesSection } from "./matchup-notes";
+import { MatchupNotesBubble } from "./matchup-notes";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -123,12 +123,21 @@ function ScoutingReport({
             size={56}
           />
         )}
-        <div>
-          <h2 className="text-xl font-bold">
-            {yourChampionName
-              ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
-              : `${t("vs")} ${report.matchupChampionName}`}
-          </h2>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold">
+              {yourChampionName
+                ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
+                : `${t("vs")} ${report.matchupChampionName}`}
+            </h2>
+            <MatchupNotesBubble
+              notes={matchupNotes}
+              matchupChampionName={report.matchupChampionName}
+              yourChampionName={yourChampionName}
+              locale={locale}
+              onNotesChanged={onNotesChanged}
+            />
+          </div>
           <div className="flex items-center gap-3 mt-1">
             <span className="text-lg font-mono">
               <span className="text-win">{record.wins}W</span>{" "}
@@ -148,17 +157,6 @@ function ScoutingReport({
           )}
         </div>
       </div>
-
-      <Separator />
-
-      {/* Matchup Notes */}
-      <MatchupNotesSection
-        notes={matchupNotes}
-        matchupChampionName={report.matchupChampionName}
-        yourChampionName={yourChampionName}
-        locale={locale}
-        onNotesChanged={onNotesChanged}
-      />
 
       <Separator />
 
@@ -612,8 +610,8 @@ export function ScoutClient({
             )}
           </div>
 
-          {/* Still show matchup notes even without match history */}
-          <MatchupNotesSection
+          {/* Still allow adding notes even without match history */}
+          <MatchupNotesBubble
             notes={matchupNotesList}
             matchupChampionName={enemyChampion}
             yourChampionName={yourChampion || undefined}

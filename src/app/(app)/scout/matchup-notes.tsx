@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { MessageSquareText, Pencil, Trash2, ChevronDown } from "lucide-react";
+import { MessageSquareText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -13,32 +13,27 @@ import {
 } from "@/app/actions/matchup-notes";
 import { formatDate } from "@/lib/format";
 
-// ─── Inline Note Editor ─────────────────────────────────────────────────────
+// ─── Note Editor Panel (shown when bubble is open) ──────────────────────────
 
-function InlineNoteEditor({
+function NoteEditorPanel({
   note,
-  title,
   championName,
   matchupChampionName,
   locale,
   onSaved,
-  defaultExpanded,
+  onClose,
 }: {
   note: MatchupNoteData | null;
-  title: string;
   championName: string | null;
   matchupChampionName: string;
   locale: string;
   onSaved: () => void;
-  defaultExpanded?: boolean;
+  onClose: () => void;
 }) {
   const t = useTranslations("MatchupNotes");
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded ?? false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(!note?.content);
   const [content, setContent] = useState(note?.content ?? "");
   const [isSaving, startSaveTransition] = useTransition();
-
-  const hasContent = !!note?.content;
 
   const handleSave = useCallback(() => {
     startSaveTransition(async () => {
@@ -51,11 +46,13 @@ function InlineNoteEditor({
         toast.success(content.trim() ? t("toasts.saved") : t("toasts.deleted"));
         setIsEditing(false);
         onSaved();
+        // Close if saved empty (deleted)
+        if (!content.trim()) onClose();
       } else {
         toast.error(result.error ?? t("toasts.saveError"));
       }
     });
-  }, [championName, matchupChampionName, content, t, onSaved]);
+  }, [championName, matchupChampionName, content, t, onSaved, onClose]);
 
   const handleDelete = useCallback(() => {
     if (!note) return;
@@ -66,22 +63,25 @@ function InlineNoteEditor({
         setContent("");
         setIsEditing(false);
         onSaved();
+        onClose();
       } else {
         toast.error(t("toasts.deleteError"));
       }
     });
-  }, [note, t, onSaved]);
+  }, [note, t, onSaved, onClose]);
 
   const handleCancel = useCallback(() => {
     setContent(note?.content ?? "");
-    setIsEditing(false);
-  }, [note]);
+    if (note?.content) {
+      setIsEditing(false);
+    } else {
+      onClose();
+    }
+  }, [note, onClose]);
 
-  // Editing mode — inline textarea
   if (isEditing) {
     return (
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+      <div className="rounded-lg border border-border/40 bg-surface-elevated p-3 space-y-2 mt-3">
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -117,74 +117,28 @@ function InlineNoteEditor({
     );
   }
 
-  // Collapsed — just a clickable row
-  if (!isExpanded && hasContent) {
-    return (
-      <button
-        className="flex items-center gap-2 w-full text-left group"
-        onClick={() => setIsExpanded(true)}
-      >
-        <ChevronDown className="h-3 w-3 text-muted-foreground -rotate-90 transition-transform group-hover:rotate-0" />
-        <span className="text-xs font-medium text-muted-foreground truncate flex-1">
-          {title}
-        </span>
-        <span className="text-[10px] text-muted-foreground/60">
-          {formatDate(note!.updatedAt, locale)}
-        </span>
-      </button>
-    );
-  }
-
-  // Expanded or empty — show content + edit trigger
+  // Read mode — show content, click to edit
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <button
-          className="flex items-center gap-2 text-left group"
-          onClick={() => hasContent && setIsExpanded(false)}
-        >
-          {hasContent && (
-            <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform" />
-          )}
-          <span className="text-xs font-medium text-muted-foreground">
-            {title}
-          </span>
-        </button>
-        <button
-          className="text-muted-foreground/50 hover:text-foreground transition-colors"
-          onClick={() => setIsEditing(true)}
-          title={t("editTooltip")}
-        >
-          <Pencil className="h-3 w-3" />
-        </button>
-      </div>
-      {hasContent ? (
-        <div
-          className="text-sm text-muted-foreground whitespace-pre-wrap pl-5 cursor-pointer hover:text-foreground transition-colors"
-          onClick={() => setIsEditing(true)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setIsEditing(true);
-          }}
-        >
-          {note!.content}
-        </div>
-      ) : (
-        <button
-          className="text-xs text-muted-foreground/40 italic hover:text-muted-foreground transition-colors pl-5"
-          onClick={() => setIsEditing(true)}
-        >
-          {t("addNotes")}
-        </button>
-      )}
+    <div
+      className="rounded-lg border border-border/40 bg-surface-elevated p-3 mt-3 cursor-pointer hover:border-border/60 transition-colors"
+      onClick={() => setIsEditing(true)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") setIsEditing(true);
+      }}
+    >
+      <p className="text-sm whitespace-pre-wrap">{note!.content}</p>
+      <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+        {t("savedAt", { date: formatDate(note!.updatedAt, locale) })}
+      </p>
     </div>
   );
 }
 
-// ─── Matchup Notes Section (for Scout page) ─────────────────────────────────
+// ─── Matchup Notes Bubble (for Scout page header) ───────────────────────────
 
-interface MatchupNotesSectionProps {
+interface MatchupNotesBubbleProps {
   notes: MatchupNoteData[];
   matchupChampionName: string;
   yourChampionName?: string;
@@ -192,66 +146,53 @@ interface MatchupNotesSectionProps {
   onNotesChanged?: () => void;
 }
 
-export function MatchupNotesSection({
+export function MatchupNotesBubble({
   notes,
   matchupChampionName,
   yourChampionName,
   locale,
   onNotesChanged,
-}: MatchupNotesSectionProps) {
+}: MatchupNotesBubbleProps) {
   const t = useTranslations("MatchupNotes");
+  const [isOpen, setIsOpen] = useState(false);
 
   const generalNote = notes.find((n) => n.championName === null) ?? null;
   const specificNote = yourChampionName
     ? notes.find((n) => n.championName === yourChampionName) ?? null
     : null;
 
+  // Pick the active note based on champion selection
+  const activeNote = yourChampionName ? specificNote : generalNote;
+  const activeChampionName = yourChampionName ?? null;
+  const hasNote = !!activeNote?.content;
+
   const handleSaved = useCallback(() => {
     onNotesChanged?.();
   }, [onNotesChanged]);
 
-  const hasAnyNote = yourChampionName
-    ? !!specificNote?.content
-    : !!generalNote?.content;
-
   return (
-    <div className="space-y-2">
-      <h3 className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-        <MessageSquareText className="h-3.5 w-3.5 text-gold" />
-        {t("sectionTitle")}
-        {hasAnyNote && (
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" />
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-colors"
+        title={t("sectionTitle")}
+      >
+        <MessageSquareText className="h-4 w-4" />
+        {hasNote && (
+          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-gold" />
         )}
-      </h3>
+      </button>
 
-      <div className="space-y-2 rounded-lg border border-border/30 bg-surface-elevated/50 p-3">
-        {yourChampionName ? (
-          /* Champion-specific note only when Your Champion is set */
-          <InlineNoteEditor
-            note={specificNote}
-            title={t("specificNoteTitle", {
-              champion: yourChampionName,
-              enemy: matchupChampionName,
-            })}
-            championName={yourChampionName}
-            matchupChampionName={matchupChampionName}
-            locale={locale}
-            onSaved={handleSaved}
-            defaultExpanded
-          />
-        ) : (
-          /* General note only when Any Champion is selected */
-          <InlineNoteEditor
-            note={generalNote}
-            title={t("generalNoteTitle", { enemy: matchupChampionName })}
-            championName={null}
-            matchupChampionName={matchupChampionName}
-            locale={locale}
-            onSaved={handleSaved}
-            defaultExpanded
-          />
-        )}
-      </div>
+      {isOpen && (
+        <NoteEditorPanel
+          note={activeNote}
+          championName={activeChampionName}
+          matchupChampionName={matchupChampionName}
+          locale={locale}
+          onSaved={handleSaved}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -302,7 +243,7 @@ export function ReadOnlyMatchupNotes({
                 enemy: matchupChampionName,
               })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap pl-0">
+            <p className="text-sm mt-1 whitespace-pre-wrap">
               {specificNote.content}
             </p>
             <p className="text-[10px] text-muted-foreground/60 mt-1">
@@ -320,7 +261,7 @@ export function ReadOnlyMatchupNotes({
             <p className="text-xs font-medium text-muted-foreground">
               {t("generalNoteTitle", { enemy: matchupChampionName })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap pl-0">
+            <p className="text-sm mt-1 whitespace-pre-wrap">
               {generalNote.content}
             </p>
             <p className="text-[10px] text-muted-foreground/60 mt-1">
