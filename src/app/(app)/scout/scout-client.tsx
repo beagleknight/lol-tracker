@@ -555,14 +555,16 @@ export function ScoutClient({
   );
 
   /** Re-fetch only notes (called after save/delete) */
-  const refreshNotes = useCallback(async () => {
+  const refreshNotes = useCallback(() => {
     if (!enemyChampion) return;
-    try {
-      const notes = await getMatchupNotes(enemyChampion, yourChampion || undefined);
-      setMatchupNotesList(notes);
-    } catch {
-      // silent — the notes just won't refresh
-    }
+    startReportTransition(async () => {
+      try {
+        const notes = await getMatchupNotes(enemyChampion, yourChampion || undefined);
+        setMatchupNotesList(notes);
+      } catch {
+        // silent — the notes just won't refresh
+      }
+    });
   }, [enemyChampion, yourChampion]);
 
   // Auto-load report on mount if initial champions are provided via URL params
