@@ -132,6 +132,7 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
         onClick={cycleStatus}
         disabled={isPending}
         className="shrink-0 cursor-pointer"
+        aria-label="Toggle action item status"
       >
         {isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -262,7 +263,7 @@ export function CoachingDetailClient({
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/coaching">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to coaching">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -290,7 +291,7 @@ export function CoachingDetailClient({
           </p>
         </div>
         <Link href={`/coaching/${session.id}/edit`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Edit session">
             <Pencil className="h-4 w-4" />
           </Button>
         </Link>
@@ -300,6 +301,7 @@ export function CoachingDetailClient({
           onClick={handleDelete}
           disabled={isDeleting}
           className="text-destructive"
+          aria-label="Delete session"
         >
           {isDeleting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

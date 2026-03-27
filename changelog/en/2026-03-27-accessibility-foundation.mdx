@@ -1,0 +1,14 @@
+---
+version: "2026.03.13"
+date: "2026-03-27"
+title: "Accessibility Foundation"
+tags: ["improvement"]
+---
+
+The app now meets **WCAG 2.1 AA** accessibility standards with automated tooling to keep it that way.
+
+- **Screen reader support** — all icon-only buttons now have descriptive labels, progress bars are properly announced, and interactive elements use correct ARIA roles
+- **Color contrast** — sidebar headings, win/loss pills, and destructive buttons now meet the 4.5:1 contrast ratio requirement
+- **Keyboard navigation** — added a "Skip to main content" link, visible focus indicators on all interactive elements, and topic/focus-area badges are now keyboard-operable
+- **Reduced motion** — animations, transitions, and hover effects are automatically disabled when your OS is set to reduce motion
+- **Automated scanning** — new axe-core Playwright tests scan every page for violations, and ESLint jsx-a11y rules catch issues at compile time

@@ -162,7 +162,7 @@ function MatchCardHeader({
         </CardDescription>
       </div>
       <Link href={`/matches/${match.id}`}>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View match details">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </Link>
@@ -635,6 +635,7 @@ function CompletedCard({
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={() => setIsEditing(true)}
+            aria-label="Edit review"
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
@@ -744,6 +745,7 @@ function CompletedPagination({
         className="h-8 w-8"
         disabled={currentPage === 1 || disabled}
         onClick={() => onPageChange(currentPage - 1)}
+        aria-label="Previous page"
       >
         <ChevronRight className="h-4 w-4 rotate-180" />
       </Button>
@@ -774,6 +776,7 @@ function CompletedPagination({
         className="h-8 w-8"
         disabled={currentPage === totalPages || disabled}
         onClick={() => onPageChange(currentPage + 1)}
+        aria-label="Next page"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

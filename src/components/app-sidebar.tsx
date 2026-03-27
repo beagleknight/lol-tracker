@@ -210,7 +210,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
           {t("sectionTracker")}
         </div>
         <div className="space-y-1">
@@ -219,7 +219,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
           {t("sectionInsights")}
         </div>
         <div className="space-y-1">
@@ -228,7 +228,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/50">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
           {t("sectionCoaching")}
         </div>
         <div className="space-y-1">
@@ -259,7 +259,7 @@ function SidebarContent({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user.name}</p>
             {user.riotGameName && (
-              <p className="text-xs text-gold/60 truncate">
+              <p className="text-xs text-gold/70 truncate">
                 {user.riotGameName}#{user.riotTagLine}
               </p>
             )}
@@ -271,6 +271,7 @@ function SidebarContent({
               size="icon"
               className="h-8 w-8 shrink-0 hover:text-destructive"
               onClick={() => signOut({ callbackUrl: "/login" })}
+              aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
             </Button>
@@ -292,6 +293,7 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
         size="icon"
         className="fixed top-3 left-3 z-50 md:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
+        aria-label={mobileOpen ? "Close menu" : "Open menu"}
       >
         {mobileOpen ? (
           <X className="h-5 w-5" />
@@ -304,7 +306,15 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+          role="button"
+          tabIndex={0}
+          aria-label="Close sidebar"
           onClick={() => setMobileOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setMobileOpen(false);
+            }
+          }}
         />
       )}
 

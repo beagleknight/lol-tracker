@@ -208,7 +208,7 @@ export function AiInsightDrawer({
                   </Button>
                 </>
               )}
-              <DialogPrimitive.Close render={<Button variant="ghost" size="icon-xs" />}>
+              <DialogPrimitive.Close render={<Button variant="ghost" size="icon-xs" aria-label="Close" />}>
                 <X className="h-3.5 w-3.5" />
               </DialogPrimitive.Close>
             </div>

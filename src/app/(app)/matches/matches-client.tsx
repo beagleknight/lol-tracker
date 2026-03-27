@@ -121,6 +121,7 @@ function ServerPagination({
         className="h-8 w-8"
         disabled={currentPage === 1 || disabled}
         onClick={() => onPageChange(currentPage - 1)}
+        aria-label="Previous page"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -148,6 +149,7 @@ function ServerPagination({
         className="h-8 w-8"
         disabled={currentPage === totalPages || disabled}
         onClick={() => onPageChange(currentPage + 1)}
+        aria-label="Next page"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
@@ -269,7 +271,7 @@ export function MatchesClient({
           />
         </div>
         <Select value={filters.result} onValueChange={(v) => navigateWithFilter("result", v ?? "all")}>
-          <SelectTrigger className="w-full sm:w-[130px]">
+          <SelectTrigger className="w-full sm:w-[130px]" aria-label="Filter by result">
             <SelectValue placeholder={t("resultFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -280,7 +282,7 @@ export function MatchesClient({
           </SelectContent>
         </Select>
         <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
-          <SelectTrigger className="w-full sm:w-[150px]">
+          <SelectTrigger className="w-full sm:w-[150px]" aria-label="Filter by champion">
             <SelectValue placeholder={t("championFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -302,7 +304,7 @@ export function MatchesClient({
           </SelectContent>
         </Select>
         <Select value={filters.review} onValueChange={(v) => navigateWithFilter("review", v ?? "all")}>
-          <SelectTrigger className="w-full sm:w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by review status">
             <SelectValue placeholder={t("reviewFilterPlaceholder")} />
           </SelectTrigger>
           <SelectContent>

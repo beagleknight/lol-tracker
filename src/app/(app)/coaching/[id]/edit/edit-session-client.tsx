@@ -174,7 +174,7 @@ export function EditSessionClient({
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href={`/coaching/${session.id}`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to session">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -388,6 +388,7 @@ export function EditSessionClient({
                 key={topic}
                 variant={topics.includes(topic) ? "default" : "secondary"}
                 className="cursor-pointer"
+                render={<button type="button" />}
                 onClick={() => toggleTopic(topic)}
               >
                 {topic}
@@ -402,6 +403,7 @@ export function EditSessionClient({
                   key={topic}
                   variant="default"
                   className="cursor-pointer"
+                  render={<button type="button" />}
                   onClick={() => toggleTopic(topic)}
                 >
                   {topic}

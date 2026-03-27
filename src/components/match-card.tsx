@@ -342,7 +342,7 @@ export function MatchCard({
           <div className="flex items-center gap-1.5 shrink-0">
             {!isCompact && match.duoPartnerPuuid && (
               <Tooltip>
-                <TooltipTrigger className="cursor-default">
+                <TooltipTrigger className="cursor-default" aria-label="Duo game">
                   <Users className="h-3.5 w-3.5 text-electric/70" />
                 </TooltipTrigger>
                 <TooltipContent>{t("duoGameTooltip")}</TooltipContent>
@@ -350,7 +350,7 @@ export function MatchCard({
             )}
             {!isCompact && hasComment && (
               <Tooltip>
-                <TooltipTrigger className="cursor-default">
+                <TooltipTrigger className="cursor-default" aria-label="Has comment">
                   <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-sm">
@@ -360,7 +360,7 @@ export function MatchCard({
             )}
             {match.reviewed && (
               <Tooltip>
-                <TooltipTrigger className="cursor-default">
+                <TooltipTrigger className="cursor-default" aria-label="Reviewed">
                   <Eye className="h-3.5 w-3.5 text-win/70" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-sm">
@@ -370,7 +370,7 @@ export function MatchCard({
             )}
             {!match.reviewed && (hasReviewNotes || hasHighlights || hasComment) && (
               <Tooltip>
-                <TooltipTrigger className="cursor-default">
+                <TooltipTrigger className="cursor-default" aria-label="Not reviewed">
                   <EyeOff className="h-3.5 w-3.5 text-warning/70" />
                 </TooltipTrigger>
                 <TooltipContent>{t("hasNotesNotReviewed")}</TooltipContent>

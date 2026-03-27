@@ -223,3 +223,64 @@ It's a separate job from smoke tests. Both require the build to succeed first.
 5. [ ] Server action assertions use reload fallbacks, not toast messages
 6. [ ] Tested locally with `npm run test:e2e`
 7. [ ] If adding new server actions: verified `revalidatePath` covers all pages that display the affected data
+
+## Accessibility (a11y) testing with axe-core
+
+The project includes automated WCAG 2.1 AA accessibility scanning via `@axe-core/playwright`.
+
+### Test file
+
+`tests/smoke/a11y.spec.ts` — scans all key pages (authenticated + public) for violations.
+
+### How it works
+
+```ts
+import AxeBuilder from "@axe-core/playwright";
+
+const results = await new AxeBuilder({ page })
+  .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+  .analyze();
+
+expect(results.violations, formatViolations(results.violations)).toEqual([]);
+```
+
+### When to run
+
+- After adding new interactive components (buttons, forms, modals)
+- After changing color tokens or opacity values
+- After adding new pages or routes
+- Before any PR that touches UI
+
+### Common violation types
+
+| Violation ID | Severity | Typical cause |
+|---|---|---|
+| `button-name` | Critical | Icon-only buttons missing `aria-label` |
+| `color-contrast` | Serious | Text color + background combo below 4.5:1 ratio |
+| `aria-progressbar-name` | Serious | `<Progress>` component missing `aria-label` |
+| `label` | Serious | Form inputs without associated `<label>` |
+| `image-alt` | Critical | `<img>` without `alt` attribute |
+
+### Adding a11y tests for new pages
+
+Add the page to the `authenticatedPages` or `publicPages` array in `tests/smoke/a11y.spec.ts`:
+
+```ts
+const authenticatedPages = [
+  // ... existing pages
+  { name: "MyNewPage", path: "/my-new-page" },
+];
+```
+
+### Excluding known issues (temporary)
+
+If a violation cannot be fixed immediately, exclude it by rule ID:
+
+```ts
+const results = await new AxeBuilder({ page })
+  .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+  .disableRules(["specific-rule-id"]) // TODO: fix and re-enable
+  .analyze();
+```
+
+Always leave a TODO comment and track the exclusion in a GitHub issue.
