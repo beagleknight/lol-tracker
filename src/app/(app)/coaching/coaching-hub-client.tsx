@@ -177,7 +177,7 @@ export function CoachingHubClient({
           </div>
           <div className="space-y-3">
             {scheduledSessions.map((session) => {
-              const dateStr = formatDate(session.date, locale, "medium");
+              const dateStr = formatDate(session.date, locale, "datetime-short");
               const vodMatch = session.vodMatchId
                 ? vodMatchMap[session.vodMatchId]
                 : null;

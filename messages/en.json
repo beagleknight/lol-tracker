@@ -406,6 +406,7 @@
     "coachNameLabel": "Coach Name",
     "coachNamePlaceholder": "e.g. midlaneacademy",
     "dateLabel": "Date",
+    "dateTimeLabel": "Date & Time",
     "vodToReview": "VOD to Review",
     "vodToReviewDescription": "Optionally select the game you want to review — you can add this later.",
     "noMatchesFound": "No matches found. Import your games first.",

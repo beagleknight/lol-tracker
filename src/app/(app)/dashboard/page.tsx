@@ -7,7 +7,7 @@ import {
   coachingSessions,
   goals,
 } from "@/db/schema";
-import { eq, desc, and, count, sql, asc } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc, lte } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
 import { toCumulativeLP } from "@/lib/rank";
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
     const baseline = await db.query.rankSnapshots.findFirst({
       where: and(
         eq(rankSnapshots.userId, user.id),
-        sql`${rankSnapshots.capturedAt} <= ${oldestGameDate}`
+        lte(rankSnapshots.capturedAt, oldestGameDate)
       ),
       orderBy: desc(rankSnapshots.capturedAt),
     }) ?? await db.query.rankSnapshots.findFirst({
