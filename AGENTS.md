@@ -14,6 +14,10 @@ Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.
 
 **MANDATORY: Wait for CI checks to pass BEFORE merging a PR.** Even if checks are not required by branch protection, always run `gh pr checks <number> --watch` (or poll) and confirm all checks pass before merging.
 
+**MANDATORY: NEVER merge a PR without the user's explicit permission.** Even if the user says "proceed" or "do it", that means implement + push — NOT merge. Only merge when the user explicitly says "merge it" (or equivalent). If the user grants permission to merge, verify CI checks are green first.
+
+**MANDATORY: Flaky tests are unacceptable.** Whenever a CI check passes only on re-run (i.e., a test is flaky), immediately open a GitHub issue labeled `flaky-test` describing which test flaked, what the failure looked like, and in which PR/run it was observed. Do this even if the overall CI run eventually passes. Flaky tests must be tracked and fixed.
+
 Full workflow details are in the `pr-workflow` OpenCode skill.
 <!-- END:pr-workflow-rules -->
 
