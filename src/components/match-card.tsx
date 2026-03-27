@@ -181,17 +181,21 @@ export function MatchCard({
               )}
             </div>
 
-            {/* Rune keystone — compact variant only */}
-            {isCompact && match.runeKeystoneName && (
+            {/* Rune keystone + stats — compact variant only */}
+            {isCompact && (
               <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                {(() => {
+                {match.runeKeystoneName && (() => {
                   const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
                   return iconUrl ? (
                     <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
                   ) : null;
                 })()}
-                {match.runeKeystoneName} &middot;{" "}
-                {formatDuration(match.gameDurationSeconds)}
+                {match.runeKeystoneName || "\u2014"} &middot;{" "}
+                {formatDuration(match.gameDurationSeconds)} &middot;{" "}
+                <span className="font-mono">
+                  {match.kills}/{match.deaths}/{match.assists}
+                </span>{" "}
+                &middot; {t("csLabel", { cs: match.cs })}
               </div>
             )}
 
@@ -258,17 +262,8 @@ export function MatchCard({
             )}
           </div>
 
-          {/* Stats — compact on mobile, full on sm+ */}
-          {isCompact ? (
-            <div className="text-right shrink-0">
-              <span className="text-sm font-mono">
-                {match.kills}/{match.deaths}/{match.assists}
-              </span>
-              <div className="text-xs text-muted-foreground">
-                {t("csLabel", { cs: match.cs })}
-              </div>
-            </div>
-          ) : (
+          {/* Stats — default variant only (compact stats are inline above) */}
+          {!isCompact && (
             <>
               <span className="sm:hidden font-mono text-xs text-muted-foreground shrink-0">
                 {match.kills}/{match.deaths}/{match.assists}
