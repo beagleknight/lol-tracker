@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-export type ChangelogTag = "feature" | "fix" | "improvement" | "refactor";
+export type ChangelogTag = "feature" | "fix" | "improvement";
 
 export interface ChangelogEntry {
   slug: string;

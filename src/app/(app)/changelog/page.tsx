@@ -15,7 +15,7 @@ import { ChangelogFilter } from "./changelog-filter";
 import { ChangelogPagination } from "./changelog-pagination";
 
 const ENTRIES_PER_PAGE = 5;
-const VALID_TAGS: ChangelogTag[] = ["feature", "fix", "improvement", "refactor"];
+const VALID_TAGS: ChangelogTag[] = ["feature", "fix", "improvement"];
 
 const TAG_STYLES: Record<ChangelogTag, string> = {
   feature:
@@ -23,8 +23,6 @@ const TAG_STYLES: Record<ChangelogTag, string> = {
   fix: "bg-red-500/10 text-red-400 border-red-500/30",
   improvement:
     "bg-green-500/10 text-green-400 border-green-500/30",
-  refactor:
-    "bg-purple-500/10 text-purple-400 border-purple-500/30",
 };
 
 export default async function ChangelogRoute({
@@ -133,7 +131,7 @@ export default async function ChangelogRoute({
                           variant="outline"
                           className={`text-xs ${TAG_STYLES[tag]}`}
                         >
-                          {t(`tag${tag.charAt(0).toUpperCase()}${tag.slice(1)}` as "tagFeature" | "tagFix" | "tagImprovement" | "tagRefactor")}
+                          {t(`tag${tag.charAt(0).toUpperCase()}${tag.slice(1)}` as "tagFeature" | "tagFix" | "tagImprovement")}
                         </Badge>
                       ))}
                     </div>
