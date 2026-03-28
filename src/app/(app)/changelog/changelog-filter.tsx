@@ -10,18 +10,16 @@ const TAGS: (ChangelogTag | "all")[] = [
   "feature",
   "fix",
   "improvement",
-  "refactor",
 ];
 
 const TAG_FILTER_KEYS: Record<
   "all" | ChangelogTag,
-  "filterAll" | "filterFeature" | "filterFix" | "filterImprovement" | "filterRefactor"
+  "filterAll" | "filterFeature" | "filterFix" | "filterImprovement"
 > = {
   all: "filterAll",
   feature: "filterFeature",
   fix: "filterFix",
   improvement: "filterImprovement",
-  refactor: "filterRefactor",
 };
 
 export function ChangelogFilter({

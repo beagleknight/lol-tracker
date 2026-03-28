@@ -647,11 +647,9 @@
     "filterFeature": "Features",
     "filterFix": "Fixes",
     "filterImprovement": "Improvements",
-    "filterRefactor": "Refactors",
     "tagFeature": "Feature",
     "tagFix": "Fix",
     "tagImprovement": "Improvement",
-    "tagRefactor": "Refactor",
     "previousPage": "Previous",
     "nextPage": "Next",
     "pageIndicator": "Page {current} of {total}"
