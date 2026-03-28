@@ -91,7 +91,7 @@ Version scheme — **CalVer** (`YYYY.MM.N`):
 
 To determine the next version, check the latest `version` in `changelog/en/` files and increment `N`. If the month changed, reset `N` to 1.
 
-Available tags: `feature`, `fix`, `improvement`, `refactor`. Every entry must have at least one tag.
+Available tags: `feature` (new capability), `fix` (bug fix), `improvement` (enhancement to existing feature). Every entry must have at least one tag. Internal-only changes (CI, refactors, config) should use the `skip-changelog` label instead.
 
 Also update `package.json` `version` to match the latest CalVer version.
 

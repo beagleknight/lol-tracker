@@ -647,11 +647,9 @@
     "filterFeature": "Funcionalidades",
     "filterFix": "Correcciones",
     "filterImprovement": "Mejoras",
-    "filterRefactor": "Refactorizaciones",
     "tagFeature": "Funcionalidad",
     "tagFix": "Corrección",
     "tagImprovement": "Mejora",
-    "tagRefactor": "Refactorización",
     "previousPage": "Anterior",
     "nextPage": "Siguiente",
     "pageIndicator": "Página {current} de {total}"
