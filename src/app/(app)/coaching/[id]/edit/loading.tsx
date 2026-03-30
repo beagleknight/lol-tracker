@@ -1,9 +1,9 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditSessionLoading() {
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Skeleton className="h-9 w-9 rounded-md" />

@@ -1,11 +1,12 @@
-import { requireUser } from "@/lib/session";
-import { getLatestVersion } from "@/lib/riot-api";
+import { checkAiConfigured } from "@/app/actions/ai-insights";
 import {
   getAllChampionNames,
   getMostPlayedChampions,
   getMostFacedOpponents,
 } from "@/app/actions/live";
-import { checkAiConfigured } from "@/app/actions/ai-insights";
+import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { ScoutClient } from "./scout-client";
 
 export default async function ScoutPage({
@@ -16,13 +17,7 @@ export default async function ScoutPage({
   const user = await requireUser();
   const params = await searchParams;
 
-  const [
-    ddragonVersion,
-    allChampions,
-    mostPlayed,
-    mostFaced,
-    aiConfigured,
-  ] = await Promise.all([
+  const [ddragonVersion, allChampions, mostPlayed, mostFaced, aiConfigured] = await Promise.all([
     getLatestVersion(),
     getAllChampionNames(),
     getMostPlayedChampions(8),

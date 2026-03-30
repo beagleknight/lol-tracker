@@ -1,9 +1,10 @@
-import { cache } from "react";
-import { auth } from "@/lib/auth";
-import { db } from "@/db";
-import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { cache } from "react";
+
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { auth } from "@/lib/auth";
 
 // cache() deduplicates this call within a single request,
 // so layout + page calling requireUser() only hits the DB once.

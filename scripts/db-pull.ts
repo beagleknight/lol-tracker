@@ -45,9 +45,7 @@ async function main() {
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
   if (!tursoUrl || !tursoToken) {
-    console.error(
-      "Error: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in .env.local"
-    );
+    console.error("Error: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in .env.local");
     process.exit(1);
   }
 
@@ -74,9 +72,7 @@ async function main() {
   let localTotalRows = 0;
 
   for (const table of TABLES_ORDERED) {
-    const result = await local.execute(
-      `SELECT COUNT(*) as count FROM ${table}`
-    );
+    const result = await local.execute(`SELECT COUNT(*) as count FROM ${table}`);
     const count = Number((result.rows[0] as Record<string, unknown>).count);
     localTotalRows += count;
     console.log(`  ${table}: ${count} rows`);
@@ -85,20 +81,16 @@ async function main() {
   // Safety check: warn if local has more data than production
   if (localTotalRows > 0 && remoteTotalRows < localTotalRows) {
     console.log(
-      `\n⚠ WARNING: Local has ${localTotalRows} rows but production only has ${remoteTotalRows}.`
+      `\n⚠ WARNING: Local has ${localTotalRows} rows but production only has ${remoteTotalRows}.`,
     );
-    console.log(
-      "  Pulling will DELETE local data that does not exist in production."
-    );
-    console.log(
-      "  If you want to preserve local data, use db:push first."
-    );
+    console.log("  Pulling will DELETE local data that does not exist in production.");
+    console.log("  If you want to preserve local data, use db:push first.");
   }
 
   // Confirm before overwriting
   if (!process.argv.includes("--yes")) {
     const ok = await confirm(
-      `\nReplace all local data with ${remoteTotalRows} rows from production? [y/N] `
+      `\nReplace all local data with ${remoteTotalRows} rows from production? [y/N] `,
     );
     if (!ok) {
       console.log("Aborted.");

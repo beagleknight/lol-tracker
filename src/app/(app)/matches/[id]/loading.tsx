@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MatchDetailLoading() {
   return (
@@ -22,9 +22,9 @@ export default function MatchDetailLoading() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="hover-lift surface-glow">
-            <CardContent className="pt-4 pb-3 text-center space-y-2">
-              <Skeleton className="h-7 w-16 mx-auto" />
-              <Skeleton className="h-3 w-12 mx-auto" />
+            <CardContent className="space-y-2 pt-4 pb-3 text-center">
+              <Skeleton className="mx-auto h-7 w-16" />
+              <Skeleton className="mx-auto h-3 w-12" />
             </CardContent>
           </Card>
         ))}
@@ -42,7 +42,7 @@ export default function MatchDetailLoading() {
                 <div key={j} className="flex items-center gap-3 py-1">
                   <Skeleton className="h-7 w-7 rounded" />
                   <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-4 w-16 ml-auto" />
+                  <Skeleton className="ml-auto h-4 w-16" />
                   <Skeleton className="h-4 w-12" />
                   <Skeleton className="h-4 w-12" />
                 </div>
@@ -60,7 +60,7 @@ export default function MatchDetailLoading() {
           <Card key={i} className="surface-glow">
             <CardHeader>
               <Skeleton className="h-5 w-28" />
-              <Skeleton className="h-3 w-48 mt-1" />
+              <Skeleton className="mt-1 h-3 w-48" />
             </CardHeader>
             <CardContent className="space-y-3">
               <Skeleton className="h-24 w-full" />

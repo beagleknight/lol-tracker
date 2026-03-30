@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+
 import { reseedDatabase } from "./helpers/reseed";
 
 /**
@@ -23,9 +24,7 @@ test.describe("Goals flow", () => {
 
     // Active goal: "Reach Platinum IV" with Active badge
     await expect(main.getByText("Reach Platinum IV")).toBeVisible();
-    await expect(
-      main.locator('[data-slot="badge"]:has-text("Active")')
-    ).toBeVisible();
+    await expect(main.locator('[data-slot="badge"]:has-text("Active")')).toBeVisible();
 
     // Progress bar should be visible (use .first() since "progress" appears in subtitle too)
     await expect(main.getByText("Progress").first()).toBeVisible();
@@ -33,14 +32,10 @@ test.describe("Goals flow", () => {
     // Past goals section should show the achieved goal
     await expect(main.getByText("Past Goals")).toBeVisible();
     await expect(main.getByText("Reach Gold IV")).toBeVisible();
-    await expect(
-      main.locator('[data-slot="badge"]:has-text("Achieved")')
-    ).toBeVisible();
+    await expect(main.locator('[data-slot="badge"]:has-text("Achieved")')).toBeVisible();
 
     // Should NOT show "New Goal" button since there's an active goal
-    await expect(
-      main.getByRole("link", { name: "New Goal" })
-    ).not.toBeVisible();
+    await expect(main.getByRole("link", { name: "New Goal" })).not.toBeVisible();
   });
 
   test("dashboard shows active goal widget", async ({ page }) => {
@@ -64,24 +59,22 @@ test.describe("Goals flow", () => {
     // Verify the goal moved to past goals with "Retired" badge.
     // Use reload fallback for revalidation timing.
     try {
-      await expect(
-        main.locator('[data-slot="badge"]:has-text("Retired")').first()
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(main.locator('[data-slot="badge"]:has-text("Retired")').first()).toBeVisible({
+        timeout: 10_000,
+      });
     } catch {
       await page.reload();
       await expect(
-        page.getByRole("main").locator('[data-slot="badge"]:has-text("Retired")').first()
+        page.getByRole("main").locator('[data-slot="badge"]:has-text("Retired")').first(),
       ).toBeVisible({ timeout: 10_000 });
     }
 
     // "New Goal" button should appear now
-    await expect(
-      page.getByRole("main").getByRole("link", { name: "New Goal" })
-    ).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: "New Goal" })).toBeVisible();
 
     // Active badge should be gone
     await expect(
-      page.getByRole("main").locator('[data-slot="badge"]:has-text("Active")')
+      page.getByRole("main").locator('[data-slot="badge"]:has-text("Active")'),
     ).not.toBeVisible();
   });
 
@@ -129,9 +122,7 @@ test.describe("Goals flow", () => {
     // Verify the new goal is active on the goals page
     const goalsMain = page.getByRole("main");
     await expect(goalsMain.getByText("Reach Platinum III").first()).toBeVisible();
-    await expect(
-      goalsMain.locator('[data-slot="badge"]:has-text("Active")')
-    ).toBeVisible();
+    await expect(goalsMain.locator('[data-slot="badge"]:has-text("Active")')).toBeVisible();
   });
 
   test("delete a past goal", async ({ page }) => {
@@ -156,14 +147,12 @@ test.describe("Goals flow", () => {
       });
     } catch {
       await page.reload();
-      await expect(
-        page.getByRole("main").getByText("Reach Gold IV")
-      ).not.toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole("main").getByText("Reach Gold IV")).not.toBeVisible({
+        timeout: 10_000,
+      });
     }
 
     // "Reach Platinum IV" (retired) should still be there
-    await expect(
-      page.getByRole("main").getByText("Reach Platinum IV")
-    ).toBeVisible();
+    await expect(page.getByRole("main").getByText("Reach Platinum IV")).toBeVisible();
   });
 });

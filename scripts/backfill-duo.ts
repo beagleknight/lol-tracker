@@ -31,7 +31,7 @@ async function main() {
 
   // 1. Get all users with duoPartnerUserId set
   const usersResult = await db.execute(
-    "SELECT id, puuid, duo_partner_user_id FROM users WHERE duo_partner_user_id IS NOT NULL"
+    "SELECT id, puuid, duo_partner_user_id FROM users WHERE duo_partner_user_id IS NOT NULL",
   );
 
   if (usersResult.rows.length === 0) {
@@ -61,7 +61,9 @@ async function main() {
     }
 
     const partnerPuuid = partnerResult.rows[0].puuid as string;
-    const partnerName = `${partnerResult.rows[0].riot_game_name}#${partnerResult.rows[0].riot_tag_line}`;
+    const gameName = partnerResult.rows[0].riot_game_name as string;
+    const tagLine = partnerResult.rows[0].riot_tag_line as string;
+    const partnerName = `${gameName}#${tagLine}`;
 
     if (!partnerPuuid) {
       console.log(`Duo partner ${partnerName} has no puuid. Skipping.`);
@@ -97,7 +99,7 @@ async function main() {
         // Find duo partner on same team
         const partner = participants.find(
           (p: { puuid: string; teamId: number }) =>
-            p.puuid === partnerPuuid && p.teamId === player.teamId
+            p.puuid === partnerPuuid && p.teamId === player.teamId,
         );
 
         if (partner) {

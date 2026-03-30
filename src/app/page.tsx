@@ -1,7 +1,8 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { connection } from "next/server";
+import { Suspense } from "react";
+
+import { auth } from "@/lib/auth";
 
 async function HomeRedirect(): Promise<React.ReactNode> {
   await connection();

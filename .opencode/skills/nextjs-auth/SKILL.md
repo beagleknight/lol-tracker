@@ -26,12 +26,12 @@ Guide Auth.js (NextAuth v5) setup and customization for Next.js applications, in
 
 Auth.js auto-reads these from `process.env` at request time (NOT module load time):
 
-| Variable | Purpose |
-|----------|---------|
-| `AUTH_SECRET` | JWT signing secret (generate with `npx auth secret`) |
-| `AUTH_TRUST_HOST` | Set to `true` for Vercel deployment |
-| `AUTH_DISCORD_ID` | Discord OAuth client ID |
-| `AUTH_DISCORD_SECRET` | Discord OAuth client secret |
+| Variable              | Purpose                                              |
+| --------------------- | ---------------------------------------------------- |
+| `AUTH_SECRET`         | JWT signing secret (generate with `npx auth secret`) |
+| `AUTH_TRUST_HOST`     | Set to `true` for Vercel deployment                  |
+| `AUTH_DISCORD_ID`     | Discord OAuth client ID                              |
+| `AUTH_DISCORD_SECRET` | Discord OAuth client secret                          |
 
 **Critical**: Auth.js uses the `AUTH_<PROVIDER>_ID` / `AUTH_<PROVIDER>_SECRET` naming convention. It auto-reads these via `setEnvDefaults()`. Do NOT pass explicit `clientId`/`clientSecret` to the provider — it bypasses the safe deferred read and gets corrupted by the dotenvx banner.
 
@@ -39,13 +39,13 @@ Auth.js auto-reads these from `process.env` at request time (NOT module load tim
 // GOOD — Auth.js reads AUTH_DISCORD_ID and AUTH_DISCORD_SECRET automatically
 Discord({
   authorization: { params: { prompt: "none" } },
-})
+});
 
 // BAD — reads process.env at module evaluation time, gets corrupted
 Discord({
   clientId: process.env.AUTH_DISCORD_ID!,
   clientSecret: process.env.AUTH_DISCORD_SECRET!,
-})
+});
 ```
 
 ## Discord provider configuration
@@ -59,7 +59,7 @@ Discord({
   authorization: {
     params: { prompt: "none" },
   },
-})
+});
 ```
 
 ### Discord snowflake IDs
@@ -101,10 +101,14 @@ Admins generate invite codes from the settings page. Schema:
 export const invites = sqliteTable("invites", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   code: text("code").notNull().unique(),
-  createdBy: text("created_by").notNull().references(() => users.id),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id),
   usedBy: text("used_by").references(() => users.id),
   usedAt: integer("used_at", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 ```
 
@@ -160,10 +164,10 @@ export const requireUser = cache(async () => {
 
 ## Common errors
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `CallbackRouteError` | Corrupted OAuth secrets (trailing newline, dotenvx banner) | Re-create env vars with `printf`, not `echo` |
-| Forced re-authorization every login | `prompt: "consent"` default | Set `prompt: "none"` |
-| `UNTRUST_HOST` error | Missing `AUTH_TRUST_HOST` on Vercel | Add `AUTH_TRUST_HOST=true` env var |
-| Infinite redirect loop | Middleware misconfigured or `signIn` callback returning falsy | Check callback return values, ensure login page is public |
-| Session missing custom fields | Not extending session type or not mapping in `session` callback | Extend `Session` type in `types/next-auth.d.ts`, map fields in callback |
+| Error                               | Cause                                                           | Fix                                                                     |
+| ----------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `CallbackRouteError`                | Corrupted OAuth secrets (trailing newline, dotenvx banner)      | Re-create env vars with `printf`, not `echo`                            |
+| Forced re-authorization every login | `prompt: "consent"` default                                     | Set `prompt: "none"`                                                    |
+| `UNTRUST_HOST` error                | Missing `AUTH_TRUST_HOST` on Vercel                             | Add `AUTH_TRUST_HOST=true` env var                                      |
+| Infinite redirect loop              | Middleware misconfigured or `signIn` callback returning falsy   | Check callback return values, ensure login page is public               |
+| Session missing custom fields       | Not extending session type or not mapping in `session` callback | Extend `Session` type in `types/next-auth.d.ts`, map fields in callback |

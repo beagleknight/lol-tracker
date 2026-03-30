@@ -1,13 +1,10 @@
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import { getDuoPartnerInfo, getDuoStats, getDuoGames, getChampionSynergy } from "@/app/actions/duo";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getLatestVersion } from "@/lib/riot-api";
-import {
-  getDuoPartnerInfo,
-  getDuoStats,
-  getDuoGames,
-  getChampionSynergy,
-} from "@/app/actions/duo";
+
 import {
   DuoHeader,
   DuoNoPartner,
@@ -23,18 +20,18 @@ import {
 function StatsSkeleton() {
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="surface-glow">
             <CardContent className="pt-6">
-              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="mb-2 h-4 w-24" />
               <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-3 w-20 mt-2" />
+              <Skeleton className="mt-2 h-3 w-20" />
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
           <Card key={i} className="surface-glow">
             <CardHeader>
@@ -55,14 +52,11 @@ function SynergySkeleton() {
     <Card className="surface-glow">
       <CardHeader>
         <Skeleton className="h-5 w-36" />
-        <Skeleton className="h-4 w-52 mt-1" />
+        <Skeleton className="mt-1 h-4 w-52" />
       </CardHeader>
       <CardContent className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border border-border/50 p-2"
-          >
+          <div key={i} className="flex items-center gap-3 rounded-lg border border-border/50 p-2">
             <div className="flex items-center gap-1">
               <Skeleton className="h-7 w-7 rounded" />
               <Skeleton className="h-3 w-3" />
@@ -82,14 +76,11 @@ function RecentGamesSkeleton() {
     <Card className="surface-glow">
       <CardHeader>
         <Skeleton className="h-5 w-36" />
-        <Skeleton className="h-4 w-52 mt-1" />
+        <Skeleton className="mt-1 h-4 w-52" />
       </CardHeader>
       <CardContent className="space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border border-border/50 p-3"
-          >
+          <div key={i} className="flex items-center gap-3 rounded-lg border border-border/50 p-3">
             <Skeleton className="h-5 w-12 rounded-full" />
             <Skeleton className="h-8 w-8 rounded" />
             <div className="space-y-1">
@@ -115,11 +106,7 @@ function RecentGamesSkeleton() {
 
 // ─── Async server components that fetch their own data ─────────────────────
 
-async function DuoStatsSection({
-  partnerName,
-}: {
-  partnerName: string;
-}) {
+async function DuoStatsSection({ partnerName }: { partnerName: string }) {
   const stats = await getDuoStats();
 
   if (!stats || stats.totalGames === 0) {
@@ -144,11 +131,7 @@ async function DuoSynergySection({
   const synergy = await getChampionSynergy();
 
   return (
-    <DuoSynergyCard
-      synergy={synergy}
-      partnerName={partnerName}
-      ddragonVersion={ddragonVersion}
-    />
+    <DuoSynergyCard synergy={synergy} partnerName={partnerName} ddragonVersion={ddragonVersion} />
   );
 }
 
@@ -207,17 +190,11 @@ export default async function DuoPage() {
       </Suspense>
 
       <Suspense fallback={<SynergySkeleton />}>
-        <DuoSynergySection
-          partnerName={partnerName}
-          ddragonVersion={ddragonVersion}
-        />
+        <DuoSynergySection partnerName={partnerName} ddragonVersion={ddragonVersion} />
       </Suspense>
 
       <Suspense fallback={<RecentGamesSkeleton />}>
-        <DuoRecentGamesSection
-          partnerName={partnerName}
-          ddragonVersion={ddragonVersion}
-        />
+        <DuoRecentGamesSection partnerName={partnerName} ddragonVersion={ddragonVersion} />
       </Suspense>
     </div>
   );

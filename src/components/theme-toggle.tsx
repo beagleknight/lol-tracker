@@ -1,9 +1,10 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
+
+import { Button } from "@/components/ui/button";
 
 const emptySubscribe = () => () => {};
 const getSnapshot = () => true;
@@ -40,8 +41,7 @@ export function ThemeToggle() {
       <Monitor className="h-4 w-4" />
     );
 
-  const label =
-    theme === "dark" ? "Dark" : theme === "light" ? "Light" : "System";
+  const label = theme === "dark" ? "Dark" : theme === "light" ? "Light" : "System";
 
   return (
     <Button

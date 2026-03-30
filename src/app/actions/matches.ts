@@ -1,11 +1,12 @@
 "use server";
 
+import { eq, and } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { revalidatePath } from "next/cache";
 import { invalidateReviewCaches } from "@/lib/cache";
+import { requireUser } from "@/lib/session";
 
 /**
  * Save a complete post-game review in one action:
@@ -24,19 +25,14 @@ export async function savePostGameReview(
     reviewed?: boolean;
     reviewNotes?: string;
     reviewSkippedReason?: string;
-  }
+  },
 ) {
   const user = await requireUser();
 
   // Save highlights/lowlights
   await db
     .delete(matchHighlights)
-    .where(
-      and(
-        eq(matchHighlights.matchId, matchId),
-        eq(matchHighlights.userId, user.id)
-      )
-    );
+    .where(and(eq(matchHighlights.matchId, matchId), eq(matchHighlights.userId, user.id)));
 
   if (data.highlights.length > 0) {
     await db.insert(matchHighlights).values(
@@ -46,7 +42,7 @@ export async function savePostGameReview(
         type: item.type,
         text: item.text,
         topic: item.topic || null,
-      }))
+      })),
     );
   }
 
@@ -79,9 +75,7 @@ export async function bulkMarkReviewed(skipReason: string) {
       reviewed: true,
       reviewSkippedReason: skipReason,
     })
-    .where(
-      and(eq(matches.userId, user.id), eq(matches.reviewed, false))
-    );
+    .where(and(eq(matches.userId, user.id), eq(matches.reviewed, false)));
 
   const count = result.rowsAffected ?? 0;
 

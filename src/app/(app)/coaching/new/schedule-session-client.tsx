@@ -1,30 +1,25 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { Loader2, ArrowLeft, Video, Check, Calendar, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useTransition, useMemo } from "react";
+import { toast } from "sonner";
+
 import { scheduleCoachingSession } from "@/app/actions/coaching";
-import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ResultBar } from "@/components/result-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { ResultBar } from "@/components/result-badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { toast } from "sonner";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
-import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
-import { Loader2, ArrowLeft, Video, Check, Calendar, X } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
 
 interface MatchSummary {
   id: string;
@@ -77,9 +72,7 @@ export function ScheduleSessionClient({
   // Filter coach suggestions based on input
   const filteredCoaches = useMemo(() => {
     if (!coachName.trim()) return previousCoaches;
-    return previousCoaches.filter((c) =>
-      c.toLowerCase().includes(coachName.toLowerCase())
-    );
+    return previousCoaches.filter((c) => c.toLowerCase().includes(coachName.toLowerCase()));
   }, [coachName, previousCoaches]);
 
   function selectMatch(id: string) {
@@ -88,7 +81,7 @@ export function ScheduleSessionClient({
 
   function toggleFocusArea(topic: string) {
     setFocusAreas((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic],
     );
   }
 
@@ -135,7 +128,7 @@ export function ScheduleSessionClient({
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/coaching">
@@ -144,12 +137,8 @@ export function ScheduleSessionClient({
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground">
-            {t("subtitle")}
-          </p>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -163,7 +152,7 @@ export function ScheduleSessionClient({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 relative">
+            <div className="relative space-y-2">
               <Label htmlFor="coach">{t("coachNameLabel")}</Label>
               <Input
                 id="coach"
@@ -178,12 +167,12 @@ export function ScheduleSessionClient({
                 autoComplete="off"
               />
               {showCoachSuggestions && filteredCoaches.length > 0 && (
-                <div className="absolute z-10 top-full mt-1 w-full rounded-md border border-border bg-popover shadow-md">
+                <div className="absolute top-full z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
                   {filteredCoaches.map((name) => (
                     <button
                       key={name}
                       type="button"
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                      className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setCoachName(name);
@@ -213,17 +202,13 @@ export function ScheduleSessionClient({
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle>{t("vodToReview")}</CardTitle>
-          <CardDescription>
-            {t("vodToReviewDescription")}
-          </CardDescription>
+          <CardDescription>{t("vodToReviewDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {recentMatches.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t("noMatchesFound")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("noMatchesFound")}</p>
           ) : (
-            <div className="space-y-1 max-h-60 overflow-y-auto">
+            <div className="max-h-60 space-y-1 overflow-y-auto">
               {recentMatches.map((match) => {
                 const isSelected = selectedMatchId === match.id;
                 const dateStr = formatDate(match.gameDate, locale, "short-compact");
@@ -233,29 +218,24 @@ export function ScheduleSessionClient({
                   <button
                     key={match.id}
                     type="button"
-                    className={`flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap rounded-lg p-2 w-full text-left transition-colors ${
+                    className={`flex w-full flex-wrap items-center gap-2 rounded-lg p-2 text-left transition-colors sm:flex-nowrap sm:gap-3 ${
                       isSelected
-                        ? "bg-gold/10 border border-gold/30"
-                        : "hover:bg-accent border border-transparent"
+                        ? "border border-gold/30 bg-gold/10"
+                        : "border border-transparent hover:bg-accent"
                     }`}
                     onClick={() => selectMatch(match.id)}
                   >
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        isSelected
-                          ? "border-gold bg-gold text-black"
-                          : "border-muted-foreground/30"
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                        isSelected ? "border-gold bg-gold text-black" : "border-muted-foreground/30"
                       }`}
                     >
                       {isSelected && <Check className="h-3 w-3" />}
                     </div>
                     <ResultBar result={match.result} size="sm" />
-                    <span className="text-sm font-medium inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium">
                       <Image
-                        src={getChampionIconUrl(
-                          ddragonVersion,
-                          match.championName
-                        )}
+                        src={getChampionIconUrl(ddragonVersion, match.championName)}
                         alt={match.championName}
                         width={20}
                         height={20}
@@ -263,15 +243,12 @@ export function ScheduleSessionClient({
                       />
                       {match.championName}
                     </span>
-                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       {t("vs")}
                       {match.matchupChampionName ? (
                         <>
                           <Image
-                            src={getChampionIconUrl(
-                              ddragonVersion,
-                              match.matchupChampionName
-                            )}
+                            src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}
@@ -283,25 +260,18 @@ export function ScheduleSessionClient({
                         "?"
                       )}
                     </span>
-                    <div className="flex items-center gap-1.5 ml-auto shrink-0">
+                    <div className="ml-auto flex shrink-0 items-center gap-1.5">
                       {hasHighlights && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-1.5 py-0"
-                        >
+                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
                           {t("notesBadge", { count: matchHL.length })}
                         </Badge>
                       )}
-                      {match.vodUrl && (
-                        <Video className="h-3.5 w-3.5 text-electric/70" />
-                      )}
+                      {match.vodUrl && <Video className="h-3.5 w-3.5 text-electric/70" />}
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground shrink-0">
+                    <span className="shrink-0 font-mono text-xs text-muted-foreground">
                       {match.kills}/{match.deaths}/{match.assists}
                     </span>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {dateStr}
-                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{dateStr}</span>
                   </button>
                 );
               })}
@@ -310,12 +280,17 @@ export function ScheduleSessionClient({
 
           {/* Preview of selected match highlights + VOD */}
           {selectedMatch && (
-            <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 space-y-3">
+            <div className="space-y-3 rounded-lg border border-border/50 bg-surface-elevated p-3">
               <p className="text-xs font-medium text-muted-foreground">
                 {t("matchPreviewLabel", {
                   championName: selectedMatch.championName,
                   matchupChampionName: selectedMatch.matchupChampionName || "?",
-                  result: selectedMatch.result === "Victory" ? tCommon("resultW") : selectedMatch.result === "Remake" ? tCommon("resultR") : tCommon("resultL"),
+                  result:
+                    selectedMatch.result === "Victory"
+                      ? tCommon("resultW")
+                      : selectedMatch.result === "Remake"
+                        ? tCommon("resultR")
+                        : tCommon("resultL"),
                 })}
               </p>
 
@@ -326,7 +301,7 @@ export function ScheduleSessionClient({
                     href={selectedMatch.vodUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-electric hover:underline truncate"
+                    className="truncate text-xs text-electric hover:underline"
                   >
                     {selectedMatch.vodUrl}
                   </a>
@@ -336,9 +311,7 @@ export function ScheduleSessionClient({
               {selectedMatchHighlights.length > 0 ? (
                 <HighlightsDisplay highlights={selectedMatchHighlights} />
               ) : (
-                <p className="text-xs text-muted-foreground italic">
-                  {t("noHighlights")}
-                </p>
+                <p className="text-xs text-muted-foreground italic">{t("noHighlights")}</p>
               )}
             </div>
           )}
@@ -349,18 +322,14 @@ export function ScheduleSessionClient({
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle>{t("focusAreas")}</CardTitle>
-          <CardDescription>
-            {t("focusAreasDescription")}
-          </CardDescription>
+          <CardDescription>{t("focusAreasDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {PREDEFINED_TOPICS.map((topic) => (
               <Badge
                 key={topic}
-                variant={
-                  focusAreas.includes(topic) ? "default" : "secondary"
-                }
+                variant={focusAreas.includes(topic) ? "default" : "secondary"}
                 className="cursor-pointer"
                 render={<button type="button" />}
                 onClick={() => toggleFocusArea(topic)}
@@ -369,10 +338,7 @@ export function ScheduleSessionClient({
               </Badge>
             ))}
             {focusAreas
-              .filter(
-                (t) =>
-                  !(PREDEFINED_TOPICS as readonly string[]).includes(t)
-              )
+              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
               .map((topic) => (
                 <Badge
                   key={topic}

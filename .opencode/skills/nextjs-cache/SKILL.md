@@ -13,6 +13,7 @@ This skill documents the `"use cache: remote"` caching pattern used in the LoL T
 ## Setup
 
 In `next.config.ts`:
+
 ```ts
 const config: NextConfig = {
   cacheComponents: true, // required to enable "use cache" directives
@@ -73,10 +74,10 @@ export default async function AnalyticsPage() {
 
 ## Cache Lifetimes
 
-| Data type | `cacheLife` | Rationale |
-|-----------|-------------|-----------|
-| User match/session data | `"hours"` | Stale until next sync is acceptable |
-| DDragon global data (champions list) | `"days"` | Changes only on patch day |
+| Data type                            | `cacheLife` | Rationale                           |
+| ------------------------------------ | ----------- | ----------------------------------- |
+| User match/session data              | `"hours"`   | Stale until next sync is acceptable |
+| DDragon global data (champions list) | `"days"`    | Changes only on patch day           |
 
 ## Cache Tags
 
@@ -101,13 +102,13 @@ The single-arg form `revalidateTag(tag)` is deprecated.
 
 ### Invalidation Helpers (in `src/lib/cache.ts`)
 
-| Helper | Tags invalidated | Used by |
-|--------|-----------------|---------|
-| `invalidateAllCaches(userId)` | duo, analytics, coaching, scout | Sync, account link/unlink |
-| `invalidateReviewCaches(userId)` | analytics, coaching, scout | `savePostGameReview`, `bulkMarkReviewed` |
-| `invalidateCoachingCaches(userId)` | coaching | All 8 coaching mutations |
-| `invalidateDuoCaches(userId)` | duo | `setDuoPartner`, `clearDuoPartner` |
-| `invalidateDuoBackfillCaches(userId)` | duo, analytics, scout | `backfillDuoGames`, `backfillDuoPartnerStats` |
+| Helper                                | Tags invalidated                | Used by                                       |
+| ------------------------------------- | ------------------------------- | --------------------------------------------- |
+| `invalidateAllCaches(userId)`         | duo, analytics, coaching, scout | Sync, account link/unlink                     |
+| `invalidateReviewCaches(userId)`      | analytics, coaching, scout      | `savePostGameReview`, `bulkMarkReviewed`      |
+| `invalidateCoachingCaches(userId)`    | coaching                        | All 8 coaching mutations                      |
+| `invalidateDuoCaches(userId)`         | duo                             | `setDuoPartner`, `clearDuoPartner`            |
+| `invalidateDuoBackfillCaches(userId)` | duo, analytics, scout           | `backfillDuoGames`, `backfillDuoPartnerStats` |
 
 ## What NOT to Cache
 
@@ -140,4 +141,3 @@ Cache keys are derived from **function identity + serialized arguments**. Each `
 - `src/app/actions/matches.ts` -- Invalidates review caches
 - `src/app/actions/coaching.ts` -- Invalidates coaching caches
 - `src/app/actions/settings.ts` -- Invalidates duo/all caches
-

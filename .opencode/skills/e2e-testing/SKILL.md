@@ -39,6 +39,7 @@ tests/
 ### Playwright config (multi-project)
 
 Three projects in `playwright.config.ts`:
+
 1. **setup** — auth login, saves storage state
 2. **smoke** — fast, `fullyParallel: true`, reuses auth
 3. **e2e** — serial, `workers: 1`, `fullyParallel: false`, `timeout: 60_000`
@@ -97,13 +98,13 @@ await expect(page.getByText("Wave management").first()).toBeVisible();
 
 This app uses `@base-ui/react`, NOT Radix. Components use `data-slot` attributes.
 
-| Component | Selector pattern |
-|-----------|-----------------|
-| Button | `[data-slot="button"]` |
-| Badge | `[data-slot="badge"]` or `locator('[data-slot="badge"]:has-text("Completed")')` |
-| Tab trigger | `[data-slot="tabs-trigger"]` |
-| Select item | `page.locator('[data-slot="select-item"]').filter({ hasText: "..." })` |
-| Dropdown item | `[data-slot="dropdown-menu-item"]` |
+| Component     | Selector pattern                                                                |
+| ------------- | ------------------------------------------------------------------------------- |
+| Button        | `[data-slot="button"]`                                                          |
+| Badge         | `[data-slot="badge"]` or `locator('[data-slot="badge"]:has-text("Completed")')` |
+| Tab trigger   | `[data-slot="tabs-trigger"]`                                                    |
+| Select item   | `page.locator('[data-slot="select-item"]').filter({ hasText: "..." })`          |
+| Dropdown item | `[data-slot="dropdown-menu-item"]`                                              |
 
 **Base UI DropdownMenuItem uses `onClick`, NOT `onSelect`** (that's a Radix API). If dropdown actions silently do nothing, check the handler prop name.
 
@@ -181,15 +182,15 @@ Without this, `redirect()` is caught and the user sees a false error toast. This
 
 After `npm run db:seed`, the database contains:
 
-| Entity | Count | Key details |
-|--------|-------|-------------|
-| Users | 2 | DemoPlayer (admin, Riot-linked, has duo partner), DuoPartner |
-| Matches | 50 | ~60% unreviewed, ~30% reviewed, ~10% skipped |
-| Rank snapshots | 14 | Various ranks over time |
-| Coaching sessions | 3 | 2 completed + 1 scheduled, all with "CoachKim" |
-| Action items | 6 | Linked to completed sessions |
-| Match highlights | 12 | On specific match IDs |
-| Invites | 1 | For DemoPlayer |
+| Entity            | Count | Key details                                                  |
+| ----------------- | ----- | ------------------------------------------------------------ |
+| Users             | 2     | DemoPlayer (admin, Riot-linked, has duo partner), DuoPartner |
+| Matches           | 50    | ~60% unreviewed, ~30% reviewed, ~10% skipped                 |
+| Rank snapshots    | 14    | Various ranks over time                                      |
+| Coaching sessions | 3     | 2 completed + 1 scheduled, all with "CoachKim"               |
+| Action items      | 6     | Linked to completed sessions                                 |
+| Match highlights  | 12    | On specific match IDs                                        |
+| Invites           | 1     | For DemoPlayer                                               |
 
 - The logged-in user is always **DemoPlayer** (demo mode auto-login).
 - Coach name in seed data is **"CoachKim"**.
@@ -197,17 +198,18 @@ After `npm run db:seed`, the database contains:
 
 ## CI vs local differences
 
-| Aspect | Local (dev) | CI (production build) |
-|--------|------------|----------------------|
-| Build | `next build && next start` | Build is a separate CI step, test just runs `next start` |
-| DOM | Single render pass | Streaming may produce duplicate DOM nodes |
-| Speed | Fast revalidation | Slower — needs reload fallbacks |
-| SQLite | `file:./data/lol-tracker.db` | Same |
-| Browser | Chromium (may need install) | Chromium (installed in CI step) |
+| Aspect  | Local (dev)                  | CI (production build)                                    |
+| ------- | ---------------------------- | -------------------------------------------------------- |
+| Build   | `next build && next start`   | Build is a separate CI step, test just runs `next start` |
+| DOM     | Single render pass           | Streaming may produce duplicate DOM nodes                |
+| Speed   | Fast revalidation            | Slower — needs reload fallbacks                          |
+| SQLite  | `file:./data/lol-tracker.db` | Same                                                     |
+| Browser | Chromium (may need install)  | Chromium (installed in CI step)                          |
 
 ### CI workflow
 
 The E2E job in `.github/workflows/ci.yml`:
+
 1. Installs deps + Chromium
 2. Builds the Next.js app
 3. Runs `npm run test:e2e`
@@ -253,13 +255,13 @@ expect(results.violations, formatViolations(results.violations)).toEqual([]);
 
 ### Common violation types
 
-| Violation ID | Severity | Typical cause |
-|---|---|---|
-| `button-name` | Critical | Icon-only buttons missing `aria-label` |
-| `color-contrast` | Serious | Text color + background combo below 4.5:1 ratio |
-| `aria-progressbar-name` | Serious | `<Progress>` component missing `aria-label` |
-| `label` | Serious | Form inputs without associated `<label>` |
-| `image-alt` | Critical | `<img>` without `alt` attribute |
+| Violation ID            | Severity | Typical cause                                   |
+| ----------------------- | -------- | ----------------------------------------------- |
+| `button-name`           | Critical | Icon-only buttons missing `aria-label`          |
+| `color-contrast`        | Serious  | Text color + background combo below 4.5:1 ratio |
+| `aria-progressbar-name` | Serious  | `<Progress>` component missing `aria-label`     |
+| `label`                 | Serious  | Form inputs without associated `<label>`        |
+| `image-alt`             | Critical | `<img>` without `alt` attribute                 |
 
 ### Adding a11y tests for new pages
 

@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+
 import type { ChangelogTag } from "@/lib/changelog";
+
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 function buildPageUrl(page: number, activeTag: ChangelogTag | undefined): string {
@@ -33,12 +35,12 @@ export function ChangelogPagination({
           href={buildPageUrl(currentPage - 1, activeTag)}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
-          <ChevronLeft className="h-4 w-4 mr-1" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           {t("previousPage")}
         </Link>
       ) : (
         <Button variant="outline" size="sm" disabled>
-          <ChevronLeft className="h-4 w-4 mr-1" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           {t("previousPage")}
         </Button>
       )}
@@ -53,12 +55,12 @@ export function ChangelogPagination({
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           {t("nextPage")}
-          <ChevronRight className="h-4 w-4 ml-1" />
+          <ChevronRight className="ml-1 h-4 w-4" />
         </Link>
       ) : (
         <Button variant="outline" size="sm" disabled>
           {t("nextPage")}
-          <ChevronRight className="h-4 w-4 ml-1" />
+          <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       )}
     </div>

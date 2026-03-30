@@ -1,16 +1,17 @@
-import { Suspense } from "react";
-import { connection } from "next/server";
+import { eq } from "drizzle-orm";
+import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { requireUser } from "@/lib/session";
+import { connection } from "next/server";
+import { Suspense } from "react";
+
 import { AppSidebar } from "@/components/app-sidebar";
-import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { getLatestChangelogVersion } from "@/lib/changelog";
 import { sidebarReviewCountsSelect } from "@/lib/match-queries";
+import { requireUser } from "@/lib/session";
 
 async function SidebarWithUser() {
   await connection();
@@ -52,26 +53,18 @@ async function SidebarWithUser() {
  */
 async function LocalizedContent({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
-  return (
-    <NextIntlClientProvider messages={messages}>
-      {children}
-    </NextIntlClientProvider>
-  );
+  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
 }
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <Suspense>
         <LocalizedContent>
-          <div className="flex min-h-screen bg-mesh">
+          <div className="bg-mesh flex min-h-screen">
             <a
               href="#main-content"
-              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:text-sm focus:font-medium focus:shadow-lg"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow-lg"
             >
               Skip to main content
             </a>
@@ -79,9 +72,7 @@ export default function AppLayout({
               <SidebarWithUser />
             </Suspense>
             <main id="main-content" className="flex-1 md:ml-64">
-              <div className="container mx-auto max-w-7xl p-6 md:p-8">
-                {children}
-              </div>
+              <div className="container mx-auto max-w-7xl p-6 md:p-8">{children}</div>
             </main>
           </div>
           <Toaster />

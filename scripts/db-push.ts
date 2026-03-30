@@ -104,12 +104,7 @@ const TABLES: TableConfig[] = [
     pk: ["id"],
     autoIncrement: true,
     businessKey: ["user_id", "coach_name", "date"],
-    updateCols: [
-      "duration_minutes",
-      "topics",
-      "notes",
-      "updated_at",
-    ],
+    updateCols: ["duration_minutes", "topics", "notes", "updated_at"],
   },
   {
     name: "coaching_session_matches",
@@ -138,9 +133,7 @@ async function main() {
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
   if (!tursoUrl || !tursoToken) {
-    console.error(
-      "Error: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in .env.local"
-    );
+    console.error("Error: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in .env.local");
     process.exit(1);
   }
 
@@ -173,7 +166,7 @@ async function main() {
   // Confirm before pushing
   if (!process.argv.includes("--yes")) {
     const confirmed = await confirm(
-      `\nYou are about to upsert ${totalRows} rows into production. Continue? [y/N] `
+      `\nYou are about to upsert ${totalRows} rows into production. Continue? [y/N] `,
     );
     if (!confirmed) {
       console.log("Aborted.");
@@ -215,7 +208,7 @@ async function main() {
         remote,
         rows,
         table,
-        table.name === "coaching_sessions" ? sessionIdMap : undefined
+        table.name === "coaching_sessions" ? sessionIdMap : undefined,
       );
     } else {
       await pushNaturalKeyTable(remote, rows, table);
@@ -234,7 +227,7 @@ async function main() {
 async function pushNaturalKeyTable(
   remote: ReturnType<typeof createClient>,
   rows: Record<string, unknown>[],
-  table: TableConfig
+  table: TableConfig,
 ) {
   const columns = Object.keys(rows[0]);
   const placeholders = columns.map(() => "?").join(", ");
@@ -242,9 +235,7 @@ async function pushNaturalKeyTable(
 
   let sql: string;
   if (table.updateCols && table.updateCols.length > 0) {
-    const updateSet = table.updateCols
-      .map((col) => `${col} = excluded.${col}`)
-      .join(", ");
+    const updateSet = table.updateCols.map((col) => `${col} = excluded.${col}`).join(", ");
     sql = `INSERT INTO ${table.name} (${columns.join(", ")}) VALUES (${placeholders}) ON CONFLICT(${pkConflict}) DO UPDATE SET ${updateSet}`;
   } else {
     sql = `INSERT INTO ${table.name} (${columns.join(", ")}) VALUES (${placeholders}) ON CONFLICT(${pkConflict}) DO NOTHING`;
@@ -268,7 +259,7 @@ async function pushAutoIncrementTable(
   remote: ReturnType<typeof createClient>,
   rows: Record<string, unknown>[],
   table: TableConfig,
-  idMap?: Map<number, number>
+  idMap?: Map<number, number>,
 ) {
   const businessKey = table.businessKey!;
   let inserted = 0;
@@ -276,12 +267,8 @@ async function pushAutoIncrementTable(
 
   for (const row of rows) {
     // Check if this row already exists in production by business key
-    const whereClause = businessKey
-      .map((col) => `${col} = ?`)
-      .join(" AND ");
-    const whereValues = businessKey.map(
-      (col) => (row[col] as InValue) ?? null
-    );
+    const whereClause = businessKey.map((col) => `${col} = ?`).join(" AND ");
+    const whereValues = businessKey.map((col) => (row[col] as InValue) ?? null);
 
     const existing = await remote.execute({
       sql: `SELECT * FROM ${table.name} WHERE ${whereClause} LIMIT 1`,
@@ -292,16 +279,10 @@ async function pushAutoIncrementTable(
       // Update existing row
       const remoteRow = existing.rows[0] as unknown as Record<string, unknown>;
       if (table.updateCols && table.updateCols.length > 0) {
-        const setClause = table.updateCols
-          .map((col) => `${col} = ?`)
-          .join(", ");
-        const setValues = table.updateCols.map(
-          (col) => (row[col] as InValue) ?? null
-        );
+        const setClause = table.updateCols.map((col) => `${col} = ?`).join(", ");
+        const setValues = table.updateCols.map((col) => (row[col] as InValue) ?? null);
         const pkWhere = table.pk.map((col) => `${col} = ?`).join(" AND ");
-        const pkValues = table.pk.map(
-          (col) => (remoteRow[col] as InValue) ?? null
-        );
+        const pkValues = table.pk.map((col) => (remoteRow[col] as InValue) ?? null);
 
         await remote.execute({
           sql: `UPDATE ${table.name} SET ${setClause} WHERE ${pkWhere}`,
@@ -318,9 +299,7 @@ async function pushAutoIncrementTable(
       updated++;
     } else {
       // Insert new row (without the auto-increment ID)
-      const columns = Object.keys(row).filter(
-        (col) => !table.pk.includes(col)
-      );
+      const columns = Object.keys(row).filter((col) => !table.pk.includes(col));
       const placeholders = columns.map(() => "?").join(", ");
       const values = columns.map((col) => (row[col] as InValue) ?? null);
 
@@ -338,9 +317,7 @@ async function pushAutoIncrementTable(
       inserted++;
     }
   }
-  console.log(
-    `  ${table.name}: ${inserted} inserted, ${updated} updated`
-  );
+  console.log(`  ${table.name}: ${inserted} inserted, ${updated} updated`);
 }
 
 /**
@@ -349,7 +326,7 @@ async function pushAutoIncrementTable(
 async function pushSessionMatches(
   remote: ReturnType<typeof createClient>,
   rows: Record<string, unknown>[],
-  sessionIdMap: Map<number, number>
+  sessionIdMap: Map<number, number>,
 ) {
   let inserted = 0;
   let skipped = 0;
@@ -379,9 +356,7 @@ async function pushSessionMatches(
     });
     inserted++;
   }
-  console.log(
-    `  coaching_session_matches: ${inserted} inserted, ${skipped} already existed`
-  );
+  console.log(`  coaching_session_matches: ${inserted} inserted, ${skipped} already existed`);
 }
 
 /**
@@ -391,7 +366,7 @@ async function pushActionItems(
   remote: ReturnType<typeof createClient>,
   rows: Record<string, unknown>[],
   table: TableConfig,
-  sessionIdMap: Map<number, number>
+  sessionIdMap: Map<number, number>,
 ) {
   const businessKey = table.businessKey!;
   let inserted = 0;
@@ -418,13 +393,9 @@ async function pushActionItems(
       const remoteRow = existing.rows[0] as unknown as Record<string, unknown>;
       if (table.updateCols && table.updateCols.length > 0) {
         const setClause = table.updateCols.map((col) => `${col} = ?`).join(", ");
-        const setValues = table.updateCols.map(
-          (col) => (row[col] as InValue) ?? null
-        );
+        const setValues = table.updateCols.map((col) => (row[col] as InValue) ?? null);
         const pkWhere = table.pk.map((col) => `${col} = ?`).join(" AND ");
-        const pkValues = table.pk.map(
-          (col) => (remoteRow[col] as InValue) ?? null
-        );
+        const pkValues = table.pk.map((col) => (remoteRow[col] as InValue) ?? null);
 
         await remote.execute({
           sql: `UPDATE ${table.name} SET ${setClause} WHERE ${pkWhere}`,
@@ -434,9 +405,7 @@ async function pushActionItems(
       updated++;
     } else {
       // Insert without auto-increment ID, with remapped session_id
-      const columns = Object.keys(row).filter(
-        (col) => !table.pk.includes(col)
-      );
+      const columns = Object.keys(row).filter((col) => !table.pk.includes(col));
       const placeholders = columns.map(() => "?").join(", ");
       const values = columns.map((col) => {
         if (col === "session_id") return remoteSessionId as InValue;
@@ -450,9 +419,7 @@ async function pushActionItems(
       inserted++;
     }
   }
-  console.log(
-    `  coaching_action_items: ${inserted} inserted, ${updated} updated`
-  );
+  console.log(`  coaching_action_items: ${inserted} inserted, ${updated} updated`);
 }
 
 main().catch((err) => {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 
@@ -27,11 +28,7 @@ export function Pagination({
   // Build page numbers to show: first, last, current +/- 1, with ellipsis
   const pages: (number | "ellipsis")[] = [];
   for (let i = 1; i <= totalPages; i++) {
-    if (
-      i === 1 ||
-      i === totalPages ||
-      (i >= currentPage - 1 && i <= currentPage + 1)
-    ) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
       pages.push(i);
     } else if (pages[pages.length - 1] !== "ellipsis") {
       pages.push("ellipsis");
@@ -52,10 +49,7 @@ export function Pagination({
       </Button>
       {pages.map((p, i) =>
         p === "ellipsis" ? (
-          <span
-            key={`e-${i}`}
-            className="px-1 text-xs text-muted-foreground"
-          >
+          <span key={`e-${i}`} className="px-1 text-xs text-muted-foreground">
             {t("ellipsis")}
           </span>
         ) : (
@@ -68,7 +62,7 @@ export function Pagination({
           >
             {p}
           </Button>
-        )
+        ),
       )}
       <Button
         variant="ghost"

@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+
 import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface ChampionLinkProps {
@@ -70,7 +71,7 @@ export function ChampionLink({
     <Link
       href={href}
       onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
-      className={`inline-flex items-center gap-1 rounded px-0.5 -mx-0.5 hover:bg-accent/50 transition-colors ${className}`}
+      className={`-mx-0.5 inline-flex items-center gap-1 rounded px-0.5 transition-colors hover:bg-accent/50 ${className}`}
       title={`${linkTo === "matches" ? "View games as" : "Scout"} ${champion}`}
     >
       {showIcon && (
@@ -82,9 +83,7 @@ export function ChampionLink({
           className="rounded"
         />
       )}
-      {showName && (
-        <span className={textClassName}>{champion}</span>
-      )}
+      {showName && <span className={textClassName}>{champion}</span>}
     </Link>
   );
 }
