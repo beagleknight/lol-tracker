@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 // ─── Cache Tag Helpers ──────────────────────────────────────────────────────
 // Centralized tag naming so mutations and cached functions stay in sync.
@@ -12,43 +12,43 @@ export const scoutTag = (userId: string) => `scout-${userId}`;
 export const goalsTag = (userId: string) => `goals-${userId}`;
 
 // ─── Invalidation Helpers ───────────────────────────────────────────────────
-// Call these from mutation actions / API routes after writing to the DB.
-// All use profile="max" for stale-while-revalidate semantics.
+// Call these from Server Actions after writing to the DB.
+// All use updateTag() for immediate expiration (read-your-own-writes).
 
 /** Invalidate all Tier 1 caches for a user (sync, account link/unlink). */
 export function invalidateAllCaches(userId: string) {
-  revalidateTag(duoTag(userId), "max");
-  revalidateTag(analyticsTag(userId), "max");
-  revalidateTag(coachingTag(userId), "max");
-  revalidateTag(scoutTag(userId), "max");
-  revalidateTag(goalsTag(userId), "max");
+  updateTag(duoTag(userId));
+  updateTag(analyticsTag(userId));
+  updateTag(coachingTag(userId));
+  updateTag(scoutTag(userId));
+  updateTag(goalsTag(userId));
 }
 
 /** Invalidate caches affected by match review changes. */
 export function invalidateReviewCaches(userId: string) {
-  revalidateTag(analyticsTag(userId), "max");
-  revalidateTag(coachingTag(userId), "max");
-  revalidateTag(scoutTag(userId), "max");
+  updateTag(analyticsTag(userId));
+  updateTag(coachingTag(userId));
+  updateTag(scoutTag(userId));
 }
 
 /** Invalidate caches affected by coaching mutations. */
 export function invalidateCoachingCaches(userId: string) {
-  revalidateTag(coachingTag(userId), "max");
+  updateTag(coachingTag(userId));
 }
 
 /** Invalidate caches affected by duo partner data changes. */
 export function invalidateDuoCaches(userId: string) {
-  revalidateTag(duoTag(userId), "max");
+  updateTag(duoTag(userId));
 }
 
 /** Invalidate caches affected by duo backfill (touches matches table). */
 export function invalidateDuoBackfillCaches(userId: string) {
-  revalidateTag(duoTag(userId), "max");
-  revalidateTag(analyticsTag(userId), "max");
-  revalidateTag(scoutTag(userId), "max");
+  updateTag(duoTag(userId));
+  updateTag(analyticsTag(userId));
+  updateTag(scoutTag(userId));
 }
 
 /** Invalidate caches affected by goal mutations. */
 export function invalidateGoalsCaches(userId: string) {
-  revalidateTag(goalsTag(userId), "max");
+  updateTag(goalsTag(userId));
 }
