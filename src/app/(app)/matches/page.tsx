@@ -1,10 +1,12 @@
+import { eq, and, desc, sql, inArray, count } from "drizzle-orm";
+
 import { db } from "@/db";
 import { matches, matchHighlights, type Match } from "@/db/schema";
-import { eq, and, desc, sql, inArray, count } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { getLatestVersion } from "@/lib/riot-api";
-import { MatchesClient } from "./matches-client";
 import { winLossRemakeSelect } from "@/lib/match-queries";
+import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
+import { MatchesClient } from "./matches-client";
 
 const PAGE_SIZE = 10;
 
@@ -47,7 +49,7 @@ export default async function MatchesPage({
         OR ${matches.runeKeystoneName} LIKE ${pattern}
         OR ${matches.comment} LIKE ${pattern}
         OR ${matches.reviewNotes} LIKE ${pattern}
-      )`
+      )`,
     );
   }
 
@@ -100,10 +102,7 @@ export default async function MatchesPage({
       .where(eq(matches.userId, user.id)),
     getLatestVersion(),
     // Win/loss stats for the filtered set
-    db
-      .select(winLossRemakeSelect)
-      .from(matches)
-      .where(whereClause),
+    db.select(winLossRemakeSelect).from(matches).where(whereClause),
   ]);
 
   const totalMatches = countResult[0]?.total ?? 0;

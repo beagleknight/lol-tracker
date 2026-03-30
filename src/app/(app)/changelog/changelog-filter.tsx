@@ -1,16 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+
 import type { ChangelogTag } from "@/lib/changelog";
 
-const TAGS: (ChangelogTag | "all")[] = [
-  "all",
-  "feature",
-  "fix",
-  "improvement",
-];
+import { Button } from "@/components/ui/button";
+
+const TAGS: (ChangelogTag | "all")[] = ["all", "feature", "fix", "improvement"];
 
 const TAG_FILTER_KEYS: Record<
   "all" | ChangelogTag,
@@ -22,11 +19,7 @@ const TAG_FILTER_KEYS: Record<
   improvement: "filterImprovement",
 };
 
-export function ChangelogFilter({
-  activeTag,
-}: {
-  activeTag: ChangelogTag | undefined;
-}) {
+export function ChangelogFilter({ activeTag }: { activeTag: ChangelogTag | undefined }) {
   const router = useRouter();
   const t = useTranslations("Changelog");
 
@@ -41,8 +34,7 @@ export function ChangelogFilter({
   return (
     <div className="flex flex-wrap gap-2">
       {TAGS.map((tag) => {
-        const isActive =
-          tag === "all" ? !activeTag : activeTag === tag;
+        const isActive = tag === "all" ? !activeTag : activeTag === tag;
         return (
           <Button
             key={tag}

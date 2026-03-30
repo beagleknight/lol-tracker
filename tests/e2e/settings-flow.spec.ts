@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+
 import { reseedDatabase } from "./helpers/reseed";
 
 /**
@@ -29,9 +30,7 @@ test.describe("Settings flow", () => {
     await expect(page.getByText("Duo Partner").first()).toBeVisible();
   });
 
-  test("change language to Spanish and back to English", async ({
-    page,
-  }) => {
+  test("change language to Spanish and back to English", async ({ page }) => {
     await page.goto("/settings");
 
     // ----- Switch to Spanish -----
@@ -41,10 +40,7 @@ test.describe("Settings flow", () => {
     await languageTrigger.click();
 
     // Select "Español" from the Base UI Select popup
-    await page
-      .locator('[data-slot="select-item"]')
-      .filter({ hasText: "Español" })
-      .click();
+    await page.locator('[data-slot="select-item"]').filter({ hasText: "Español" }).click();
 
     // Wait for toast confirmation (in English, since we're still on English)
     await expect(page.getByText("Language updated")).toBeVisible({
@@ -62,10 +58,7 @@ test.describe("Settings flow", () => {
     const languageTriggerEs = page.getByRole("combobox", { name: "Idioma de la interfaz" });
     await languageTriggerEs.click();
 
-    await page
-      .locator('[data-slot="select-item"]')
-      .filter({ hasText: "English" })
-      .click();
+    await page.locator('[data-slot="select-item"]').filter({ hasText: "English" }).click();
 
     // Toast fires in Spanish since the page is currently in Spanish
     await expect(page.getByText("Idioma actualizado")).toBeVisible({
@@ -81,9 +74,7 @@ test.describe("Settings flow", () => {
     });
   });
 
-  test("change locale and verify date format preview", async ({
-    page,
-  }) => {
+  test("change locale and verify date format preview", async ({ page }) => {
     await page.goto("/settings");
 
     // Click the locale select trigger — use role-based selector to avoid
@@ -92,31 +83,25 @@ test.describe("Settings flow", () => {
     await localeTrigger.click();
 
     // Select US format from the Base UI Select popup
-    await page
-      .locator('[data-slot="select-item"]')
-      .filter({ hasText: "English (US)" })
-      .click();
+    await page.locator('[data-slot="select-item"]').filter({ hasText: "English (US)" }).click();
 
     // Wait for toast
-    await expect(
-      page.getByText("Language & region updated").first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Language & region updated").first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     // The preview should show a date
     await expect(page.getByText("Preview:")).toBeVisible();
 
     // Switch back to UK format for cleanup
     await localeTrigger.click();
-    await page
-      .locator('[data-slot="select-item"]')
-      .filter({ hasText: "English (UK)" })
-      .click();
+    await page.locator('[data-slot="select-item"]').filter({ hasText: "English (UK)" }).click();
 
     // The previous toast may still be visible, so use .first() to avoid
     // strict mode violations when two toasts are stacked
-    await expect(
-      page.getByText("Language & region updated").first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Language & region updated").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("set duo partner and verify", async ({ page }) => {
@@ -125,12 +110,8 @@ test.describe("Settings flow", () => {
     // Wait for duo partner section to load (it fetches async).
     // After loading, either the Clear button or the select prompt appears.
     const clearButton = page.getByRole("button", { name: "Clear" });
-    const selectPrompt = page.getByText(
-      "Select a registered user as your duo partner:"
-    );
-    await expect(
-      clearButton.or(selectPrompt)
-    ).toBeVisible({ timeout: 15_000 });
+    const selectPrompt = page.getByText("Select a registered user as your duo partner:");
+    await expect(clearButton.or(selectPrompt)).toBeVisible({ timeout: 15_000 });
 
     // If there's already a duo partner set, clear it first
     const hasDuoPartner = await clearButton.isVisible().catch(() => false);
@@ -155,7 +136,7 @@ test.describe("Settings flow", () => {
 
     // The "Set" badge should now appear (indicating partner is set)
     await expect(
-      page.locator('[data-slot="badge"]').filter({ hasText: "Set" }).first()
+      page.locator('[data-slot="badge"]').filter({ hasText: "Set" }).first(),
     ).toBeVisible();
   });
 
@@ -163,9 +144,7 @@ test.describe("Settings flow", () => {
     await page.goto("/settings");
 
     // Wait for the duo partner to load
-    await expect(
-      page.getByText("Duo Partner").first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Duo Partner").first()).toBeVisible({ timeout: 10_000 });
 
     // The Clear button should be visible since we set a partner in the previous test
     const clearButton = page.getByRole("button", { name: "Clear" });
@@ -180,13 +159,11 @@ test.describe("Settings flow", () => {
     });
 
     // Should now show "Not Set" badge
-    await expect(
-      page.locator('[data-slot="badge"]').filter({ hasText: "Not Set" })
-    ).toBeVisible();
+    await expect(page.locator('[data-slot="badge"]').filter({ hasText: "Not Set" })).toBeVisible();
 
     // Should show the selection prompt again
-    await expect(
-      page.getByText("Select a registered user as your duo partner")
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Select a registered user as your duo partner")).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

@@ -1,9 +1,10 @@
+import { eq, count } from "drizzle-orm";
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
+import { cookies } from "next/headers";
+
 import { db } from "@/db";
 import { users, invites } from "@/db/schema";
-import { eq, count } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { isDemoMode, demoCredentialsProvider } from "@/lib/fake-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -87,9 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // New user — check if this is the very first user (auto-admin)
-        const [{ total }] = await db
-          .select({ total: count() })
-          .from(users);
+        const [{ total }] = await db.select({ total: count() }).from(users);
 
         if (total === 0) {
           // First user ever — create as admin, no invite needed

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+
 import { ThemeProvider } from "next-themes";
+import { Inter, JetBrains_Mono } from "next/font/google";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -17,8 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "LoL Tracker",
-  description:
-    "Track your League of Legends games, coaching sessions, and improve your gameplay.",
+  description: "Track your League of Legends games, coaching sessions, and improve your gameplay.",
 };
 
 export default async function RootLayout({
@@ -36,12 +37,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
       </body>

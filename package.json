@@ -2,9 +2,6 @@
   "name": "lol-tracker",
   "version": "2026.03.14",
   "private": true,
-  "engines": {
-    "node": ">=24"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
@@ -60,5 +57,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

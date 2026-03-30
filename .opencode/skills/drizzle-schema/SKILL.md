@@ -19,6 +19,7 @@ Guide Drizzle ORM schema design, migration workflows, index optimization, query 
 ## Schema conventions in this project
 
 ### File locations
+
 - Schema definition: `src/db/schema.ts`
 - DB client (lazy Proxy): `src/db/index.ts`
 - Drizzle config: `drizzle.config.ts`
@@ -55,15 +56,20 @@ export default defineConfig({
 Add indexes on columns frequently used in WHERE + ORDER BY clauses:
 
 ```ts
-export const matches = sqliteTable("matches", {
-  // ... columns
-}, (table) => [
-  index("idx_matches_user_game_date").on(table.userId, table.gameDate),
-  index("idx_matches_user_champion").on(table.userId, table.championName),
-]);
+export const matches = sqliteTable(
+  "matches",
+  {
+    // ... columns
+  },
+  (table) => [
+    index("idx_matches_user_game_date").on(table.userId, table.gameDate),
+    index("idx_matches_user_champion").on(table.userId, table.championName),
+  ],
+);
 ```
 
 Always add indexes when:
+
 - A page filters by `userId` (every page does in a multi-user app)
 - Queries sort by a date/timestamp column
 - Queries filter on status, type, or category columns alongside userId
@@ -85,6 +91,7 @@ Always add indexes when:
 ## Data sync (db-push / db-pull)
 
 ### Safety rules
+
 - **UPSERT ONLY** — never delete production data
 - Use `ON CONFLICT(pk) DO UPDATE SET ...` for natural-key tables
 - For auto-increment tables, match on business-meaningful columns (e.g., `[user_id, captured_at]` for rank snapshots) to detect duplicates
@@ -94,11 +101,11 @@ Always add indexes when:
 
 ### Table categories
 
-| Type | Example | PK Strategy | Upsert Strategy |
-|------|---------|-------------|-----------------|
-| Natural key | users, matches | UUID or Riot ID | `ON CONFLICT(id) DO UPDATE` |
+| Type           | Example                           | PK Strategy           | Upsert Strategy                          |
+| -------------- | --------------------------------- | --------------------- | ---------------------------------------- |
+| Natural key    | users, matches                    | UUID or Riot ID       | `ON CONFLICT(id) DO UPDATE`              |
 | Auto-increment | rank_snapshots, coaching_sessions | integer autoincrement | Match on business key, insert without ID |
-| Junction | coaching_session_matches | composite PK | Remap foreign keys, `INSERT OR IGNORE` |
+| Junction       | coaching_session_matches          | composite PK          | Remap foreign keys, `INSERT OR IGNORE`   |
 
 ## Query optimization patterns
 
@@ -132,7 +139,9 @@ const rows = await db.query.matches.findMany({
   orderBy: desc(matches.gameDate),
   limit: PAGE_SIZE,
   offset,
-  columns: { /* explicit columns */ },
+  columns: {
+    /* explicit columns */
+  },
 });
 ```
 
@@ -190,15 +199,13 @@ Fetch related rows only for the current page's items, not all user items:
 ```ts
 import { inArray } from "drizzle-orm";
 
-const matchIds = pageMatches.map(m => m.id);
-const highlights = matchIds.length > 0
-  ? await db.query.matchHighlights.findMany({
-      where: and(
-        eq(matchHighlights.userId, user.id),
-        inArray(matchHighlights.matchId, matchIds),
-      ),
-    })
-  : [];
+const matchIds = pageMatches.map((m) => m.id);
+const highlights =
+  matchIds.length > 0
+    ? await db.query.matchHighlights.findMany({
+        where: and(eq(matchHighlights.userId, user.id), inArray(matchHighlights.matchId, matchIds)),
+      })
+    : [];
 ```
 
 Always guard `inArray()` with a length check — passing an empty array produces invalid SQL.
@@ -212,14 +219,17 @@ for (const invite of invites) {
 }
 
 // GOOD — single batch query
-const userIds = invites.map(i => i.usedBy).filter(Boolean);
-const usersMap = userIds.length > 0
-  ? Object.fromEntries(
-      (await db.query.users.findMany({
-        where: inArray(users.id, userIds),
-      })).map(u => [u.id, u])
-    )
-  : {};
+const userIds = invites.map((i) => i.usedBy).filter(Boolean);
+const usersMap =
+  userIds.length > 0
+    ? Object.fromEntries(
+        (
+          await db.query.users.findMany({
+            where: inArray(users.id, userIds),
+          })
+        ).map((u) => [u.id, u]),
+      )
+    : {};
 ```
 
 ### Parallelize independent queries
@@ -230,8 +240,14 @@ Wrap unrelated queries in `Promise.all`:
 const [rows, countResult, champions, stats] = await Promise.all([
   db.query.matches.findMany({ where, orderBy, limit, offset, columns }),
   db.select({ total: count() }).from(matches).where(whereClause),
-  db.selectDistinct({ championName: matches.championName }).from(matches).where(eq(matches.userId, user.id)),
-  db.select({ wins: sql<number>`SUM(...)` }).from(matches).where(whereClause),
+  db
+    .selectDistinct({ championName: matches.championName })
+    .from(matches)
+    .where(eq(matches.userId, user.id)),
+  db
+    .select({ wins: sql<number>`SUM(...)` })
+    .from(matches)
+    .where(whereClause),
 ]);
 ```
 
@@ -243,7 +259,9 @@ Use React `cache()` for auth/user lookups called from both layout and page:
 
 ```ts
 import { cache } from "react";
-export const requireUser = cache(async () => { /* ... */ });
+export const requireUser = cache(async () => {
+  /* ... */
+});
 ```
 
 ### selectDistinct for filter dropdowns

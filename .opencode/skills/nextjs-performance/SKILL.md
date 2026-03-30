@@ -75,14 +75,14 @@ Extract only what the client needs:
 
 ```tsx
 // GOOD — extract ~2KB of relevant data server-side
-const participants = rawMatch.info.participants.map(p => ({
+const participants = rawMatch.info.participants.map((p) => ({
   puuid: p.puuid,
   championName: p.championName,
   kills: p.kills,
   deaths: p.deaths,
   assists: p.assists,
 }));
-<MatchDetailClient participants={participants} />
+<MatchDetailClient participants={participants} />;
 ```
 
 ### Fetching related data for ALL rows instead of the current page
@@ -94,15 +94,13 @@ const allHighlights = await db.query.matchHighlights.findMany({
 });
 
 // GOOD — fetch highlights only for the 10 matches on this page
-const matchIds = pageMatches.map(m => m.id);
-const pageHighlights = matchIds.length > 0
-  ? await db.query.matchHighlights.findMany({
-      where: and(
-        eq(matchHighlights.userId, user.id),
-        inArray(matchHighlights.matchId, matchIds),
-      ),
-    })
-  : [];
+const matchIds = pageMatches.map((m) => m.id);
+const pageHighlights =
+  matchIds.length > 0
+    ? await db.query.matchHighlights.findMany({
+        where: and(eq(matchHighlights.userId, user.id), inArray(matchHighlights.matchId, matchIds)),
+      })
+    : [];
 ```
 
 ### N+1 queries for related data
@@ -114,14 +112,17 @@ for (const invite of invites) {
 }
 
 // GOOD — batch lookup
-const userIds = invites.map(i => i.usedBy).filter(Boolean);
-const usersMap = userIds.length > 0
-  ? Object.fromEntries(
-      (await db.query.users.findMany({
-        where: inArray(users.id, userIds),
-      })).map(u => [u.id, u])
-    )
-  : {};
+const userIds = invites.map((i) => i.usedBy).filter(Boolean);
+const usersMap =
+  userIds.length > 0
+    ? Object.fromEntries(
+        (
+          await db.query.users.findMany({
+            where: inArray(users.id, userIds),
+          })
+        ).map((u) => [u.id, u]),
+      )
+    : {};
 ```
 
 ## Server-side pagination pattern
@@ -161,12 +162,17 @@ export default async function ListPage({
       orderBy: desc(table.createdAt),
       limit: PAGE_SIZE,
       offset,
-      columns: { /* only needed columns */ },
+      columns: {
+        /* only needed columns */
+      },
     }),
     db.select({ total: count() }).from(table).where(whereClause),
-    db.select({
-      wins: sql<number>`SUM(CASE WHEN ${table.result} = 'Victory' THEN 1 ELSE 0 END)`,
-    }).from(table).where(whereClause),
+    db
+      .select({
+        wins: sql<number>`SUM(CASE WHEN ${table.result} = 'Victory' THEN 1 ELSE 0 END)`,
+      })
+      .from(table)
+      .where(whereClause),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(countResult[0].total / PAGE_SIZE));
@@ -183,6 +189,7 @@ export default async function ListPage({
 ```
 
 Key points:
+
 - `db.query.*.findMany()` supports `offset` at the root level (not in nested `with`)
 - `count()` from `drizzle-orm` for total count
 - `sql` template for LIKE search and aggregate stats
@@ -199,7 +206,7 @@ function buildUrl(params: Record<string, string>, overrides: Record<string, stri
   const merged = { ...params, ...overrides };
   const sp = new URLSearchParams();
   for (const [key, value] of Object.entries(merged)) {
-    if (key === "page" && value === "1") continue;     // omit defaults
+    if (key === "page" && value === "1") continue; // omit defaults
     if (key === "search" && value === "") continue;
     if (value) sp.set(key, value);
   }
@@ -235,7 +242,9 @@ const debouncedSearch = useCallback(
       navigateWithFilter("search", value);
     }, 400);
   },
-  [/* deps that affect navigation URL */]
+  [
+    /* deps that affect navigation URL */
+  ],
 );
 ```
 
@@ -262,6 +271,7 @@ function navigateToPage(page: number) {
 ```
 
 Use `isNavigating` to:
+
 1. **Dim the content** — opacity transition on the list container
 2. **Show a spinner** — overlay centered on the dimmed content
 3. **Disable controls** — prevent double-clicks on pagination buttons
@@ -274,18 +284,20 @@ Use `isNavigating` to:
     </div>
   )}
   <div className={`space-y-2 transition-opacity duration-150 ${isNavigating ? "opacity-40" : ""}`}>
-    {items.map(item => <ItemCard key={item.id} item={item} />)}
+    {items.map((item) => (
+      <ItemCard key={item.id} item={item} />
+    ))}
   </div>
 </div>
 ```
 
 ### When to use what
 
-| Scenario | Mechanism | Feedback |
-|----------|-----------|----------|
-| Initial page load / hard navigation | `loading.tsx` + Suspense | Full skeleton |
-| Soft navigation (pagination, filters) | `useTransition` + `router.push()` | Dim + spinner overlay |
-| Data mutation (save, delete) | `useTransition` + server action | Button spinner + disabled |
+| Scenario                              | Mechanism                         | Feedback                  |
+| ------------------------------------- | --------------------------------- | ------------------------- |
+| Initial page load / hard navigation   | `loading.tsx` + Suspense          | Full skeleton             |
+| Soft navigation (pagination, filters) | `useTransition` + `router.push()` | Dim + spinner overlay     |
+| Data mutation (save, delete)          | `useTransition` + server action   | Button spinner + disabled |
 
 ## Caching static external data
 
@@ -302,22 +314,26 @@ This avoids re-fetching on every page load and reduces external API calls. Parti
 ## Vercel + Turso free tier awareness
 
 ### Turso free tier limits
+
 - 9 GB storage, 500 databases
 - 24 billion row reads / month (soft limit)
 - Rows read = every row the query engine touches (including index scans)
 
 ### Reducing row reads
+
 - LIMIT/OFFSET pagination: only 10 rows read per page instead of all rows
 - Filtered COUNT queries: `SELECT COUNT(*) WHERE ...` reads fewer rows than fetching all and counting in JS
 - `inArray()` for related data: fetch highlights for 10 match IDs instead of all user highlights
 - Proper indexes: ensure WHERE + ORDER BY columns are indexed so the engine doesn't full-scan
 
 ### Vercel free tier limits
+
 - Serverless function execution: 100 GB-hours / month
 - Edge function invocations: 500,000 / month
 - Bandwidth: 100 GB / month
 
 ### Reducing bandwidth
+
 - Smaller RSC payloads = less bandwidth per page view
 - Exclude large columns = less data serialized and transferred
 - Server-side pagination = 10 items per response instead of all items

@@ -23,7 +23,9 @@ export function buildMatchupPrompt(ctx: MatchupInsightContext, language: string)
   const sections: string[] = [];
 
   // Player identity
-  sections.push(`## Player\n- Summoner: ${ctx.summonerName}\n- Current rank: ${ctx.currentRank || "Unknown"}`);
+  sections.push(
+    `## Player\n- Summoner: ${ctx.summonerName}\n- Current rank: ${ctx.currentRank || "Unknown"}`,
+  );
 
   // Matchup overview
   const matchupLabel = ctx.yourChampionName
@@ -31,22 +33,22 @@ export function buildMatchupPrompt(ctx: MatchupInsightContext, language: string)
     : `Any champion vs ${ctx.enemyChampionName}`;
   sections.push(
     `## Matchup: ${matchupLabel}\n` +
-    `- Record: ${ctx.record.wins}W ${ctx.record.losses}L (${ctx.record.winRate}% win rate)\n` +
-    `- Games: ${ctx.record.total}\n` +
-    `- Avg KDA: ${ctx.avgStats.kills}/${ctx.avgStats.deaths}/${ctx.avgStats.assists}\n` +
-    `- Avg CS/min: ${ctx.avgStats.csPerMin}\n` +
-    `- Avg Gold: ${ctx.avgStats.goldEarned}\n` +
-    `- Avg Vision: ${ctx.avgStats.visionScore}`
+      `- Record: ${ctx.record.wins}W ${ctx.record.losses}L (${ctx.record.winRate}% win rate)\n` +
+      `- Games: ${ctx.record.total}\n` +
+      `- Avg KDA: ${ctx.avgStats.kills}/${ctx.avgStats.deaths}/${ctx.avgStats.assists}\n` +
+      `- Avg CS/min: ${ctx.avgStats.csPerMin}\n` +
+      `- Avg Gold: ${ctx.avgStats.goldEarned}\n` +
+      `- Avg Vision: ${ctx.avgStats.visionScore}`,
   );
 
   // Comparison to overall averages
   if (ctx.overallAvgStats.games > 0) {
     sections.push(
       `## Comparison to Overall Averages (${ctx.overallAvgStats.games} games)\n` +
-      `- Overall KDA: ${ctx.overallAvgStats.kills}/${ctx.overallAvgStats.deaths}/${ctx.overallAvgStats.assists}\n` +
-      `- Overall CS/min: ${ctx.overallAvgStats.csPerMin}\n` +
-      `- Overall Gold: ${ctx.overallAvgStats.goldEarned}\n` +
-      `- Overall Vision: ${ctx.overallAvgStats.visionScore}`
+        `- Overall KDA: ${ctx.overallAvgStats.kills}/${ctx.overallAvgStats.deaths}/${ctx.overallAvgStats.assists}\n` +
+        `- Overall CS/min: ${ctx.overallAvgStats.csPerMin}\n` +
+        `- Overall Gold: ${ctx.overallAvgStats.goldEarned}\n` +
+        `- Overall Vision: ${ctx.overallAvgStats.visionScore}`,
     );
   }
 
@@ -63,7 +65,7 @@ export function buildMatchupPrompt(ctx: MatchupInsightContext, language: string)
     const gameLines = ctx.recentGames
       .map(
         (g) =>
-          `- ${g.result} as ${g.championName} (${g.kills}/${g.deaths}/${g.assists}, ${g.csPerMin} CS/min, ${g.gameDurationMin}min)${g.comment ? ` — Player note: "${g.comment}"` : ""}${g.highlights.length > 0 ? ` — Highlights: ${g.highlights.join("; ")}` : ""}`
+          `- ${g.result} as ${g.championName} (${g.kills}/${g.deaths}/${g.assists}, ${g.csPerMin} CS/min, ${g.gameDurationMin}min)${g.comment ? ` — Player note: "${g.comment}"` : ""}${g.highlights.length > 0 ? ` — Highlights: ${g.highlights.join("; ")}` : ""}`,
       )
       .join("\n");
     sections.push(`## Recent Games in This Matchup (newest first)\n${gameLines}`);
@@ -84,9 +86,7 @@ export function buildMatchupPrompt(ctx: MatchupInsightContext, language: string)
 
   // Goals
   if (ctx.activeGoals.length > 0) {
-    const goalLines = ctx.activeGoals
-      .map((g) => `- ${g.title} (${g.status})`)
-      .join("\n");
+    const goalLines = ctx.activeGoals.map((g) => `- ${g.title} (${g.status})`).join("\n");
     sections.push(`## Active Goals\n${goalLines}`);
   }
 
@@ -113,18 +113,20 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
   const sections: string[] = [];
 
   // Player identity
-  sections.push(`## Player\n- Summoner: ${ctx.summonerName}\n- Current rank: ${ctx.currentRank || "Unknown"}`);
+  sections.push(
+    `## Player\n- Summoner: ${ctx.summonerName}\n- Current rank: ${ctx.currentRank || "Unknown"}`,
+  );
 
   // This game
   sections.push(
     `## This Game: ${ctx.championName} vs ${ctx.matchupChampionName || "Unknown"}\n` +
-    `- Result: **${ctx.result}**\n` +
-    `- KDA: ${ctx.kills}/${ctx.deaths}/${ctx.assists}\n` +
-    `- CS: ${ctx.cs} (${ctx.csPerMin}/min)\n` +
-    `- Gold: ${ctx.goldEarned}\n` +
-    `- Vision Score: ${ctx.visionScore}\n` +
-    `- Duration: ${ctx.gameDurationMin} minutes\n` +
-    `- Keystone: ${ctx.runeKeystoneName || "Unknown"}`
+      `- Result: **${ctx.result}**\n` +
+      `- KDA: ${ctx.kills}/${ctx.deaths}/${ctx.assists}\n` +
+      `- CS: ${ctx.cs} (${ctx.csPerMin}/min)\n` +
+      `- Gold: ${ctx.goldEarned}\n` +
+      `- Vision Score: ${ctx.visionScore}\n` +
+      `- Duration: ${ctx.gameDurationMin} minutes\n` +
+      `- Keystone: ${ctx.runeKeystoneName || "Unknown"}`,
   );
 
   // Comparison to champion averages
@@ -132,10 +134,10 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
     const avg = ctx.championAvgStats;
     sections.push(
       `## Your Averages on ${ctx.championName} (${avg.games} games)\n` +
-      `- Avg KDA: ${avg.kills}/${avg.deaths}/${avg.assists}\n` +
-      `- Avg CS/min: ${avg.csPerMin}\n` +
-      `- Avg Gold: ${avg.goldEarned}\n` +
-      `- Avg Vision: ${avg.visionScore}`
+        `- Avg KDA: ${avg.kills}/${avg.deaths}/${avg.assists}\n` +
+        `- Avg CS/min: ${avg.csPerMin}\n` +
+        `- Avg Gold: ${avg.goldEarned}\n` +
+        `- Avg Vision: ${avg.visionScore}`,
     );
   }
 
@@ -157,7 +159,9 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
 
   // Matchup notes
   if (ctx.matchupNotes) {
-    sections.push(`## Player's Matchup Notes for ${ctx.championName} vs ${ctx.matchupChampionName}\n${ctx.matchupNotes}`);
+    sections.push(
+      `## Player's Matchup Notes for ${ctx.championName} vs ${ctx.matchupChampionName}\n${ctx.matchupNotes}`,
+    );
   }
 
   // Active coaching focus
@@ -170,9 +174,7 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
 
   // Goals
   if (ctx.activeGoals.length > 0) {
-    const goalLines = ctx.activeGoals
-      .map((g) => `- ${g.title} (${g.status})`)
-      .join("\n");
+    const goalLines = ctx.activeGoals.map((g) => `- ${g.title} (${g.status})`).join("\n");
     sections.push(`## Active Goals\n${goalLines}`);
   }
 

@@ -1,5 +1,6 @@
 import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
+
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "./languages";
 
 export { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "./languages";
@@ -22,9 +23,7 @@ export default getRequestConfig(async () => {
       const preferred = acceptLang
         .split(",")
         .map((part) => part.split(";")[0].trim().split("-")[0].toLowerCase());
-      const match = preferred.find((lang) =>
-        SUPPORTED_LANGUAGES.some((l) => l.value === lang)
-      );
+      const match = preferred.find((lang) => SUPPORTED_LANGUAGES.some((l) => l.value === lang));
       if (match) {
         locale = match as SupportedLanguage;
       }

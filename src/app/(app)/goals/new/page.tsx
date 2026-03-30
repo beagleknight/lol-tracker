@@ -1,8 +1,10 @@
+import { eq, and, desc } from "drizzle-orm";
+import { redirect } from "next/navigation";
+
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
-import { redirect } from "next/navigation";
+
 import { NewGoalClient } from "./new-goal-client";
 
 export default async function NewGoalPage() {

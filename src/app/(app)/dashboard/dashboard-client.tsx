@@ -1,18 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   TrendingUp,
   TrendingDown,
@@ -24,13 +11,19 @@ import {
   Target,
   GraduationCap,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+
 import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
+
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import {
-  formatTierDivision,
-  calculateProgress,
-} from "@/lib/rank";
+import { formatTierDivision, calculateProgress } from "@/lib/rank";
 
 interface DashboardMatch {
   id: string;
@@ -165,17 +158,12 @@ export function DashboardClient({
   const sessionWins = sessionGames.filter((m) => m.result === "Victory").length;
   const sessionLosses = sessionGames.filter((m) => m.result === "Defeat").length;
   const sessionWinRate =
-    sessionGames.length > 0
-      ? Math.round((sessionWins / sessionGames.length) * 100)
-      : 0;
+    sessionGames.length > 0 ? Math.round((sessionWins / sessionGames.length) * 100) : 0;
 
   // Overall stats from aggregates
   const totalWins = matchStats.wins;
   const totalLosses = matchStats.losses;
-  const totalWinRate =
-    matchStats.total > 0
-      ? Math.round((totalWins / matchStats.total) * 100)
-      : 0;
+  const totalWinRate = matchStats.total > 0 ? Math.round((totalWins / matchStats.total) * 100) : 0;
 
   // Average KDA from recent matches (excluding remakes)
   const meaningfulRecent = recentMatches.filter((m) => m.result !== "Remake");
@@ -203,7 +191,7 @@ export function DashboardClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("heading")}</h1>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
           {user.riotGameName && (
             <p className="text-muted-foreground">
               {user.riotGameName}#{user.riotTagLine}
@@ -218,7 +206,7 @@ export function DashboardClient({
           <span>
             {t.rich("linkRiotAccount", {
               link: (chunks) => (
-                <Link href="/settings" className="underline font-medium">
+                <Link href="/settings" className="font-medium underline">
                   {chunks}
                 </Link>
               ),
@@ -239,11 +227,12 @@ export function DashboardClient({
               <div>
                 <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
                 <p className="text-sm text-muted-foreground">
-                  <span className="text-gold/80">{t("lpLabel", { lp: rankInfo.lp })}</span> &middot; {rankInfo.wins}W {rankInfo.losses}L
+                  <span className="text-gold/80">{t("lpLabel", { lp: rankInfo.lp })}</span> &middot;{" "}
+                  {rankInfo.wins}W {rankInfo.losses}L
                 </p>
                 {lpTrend !== null && (
                   <p
-                    className={`text-xs font-mono font-semibold mt-1 flex items-center gap-1 ${
+                    className={`mt-1 flex items-center gap-1 font-mono text-xs font-semibold ${
                       lpTrend >= 0 ? "text-win" : "text-loss"
                     }`}
                   >
@@ -252,14 +241,13 @@ export function DashboardClient({
                     ) : (
                       <TrendingDown className="h-3 w-3" />
                     )}
-                    {lpTrend >= 0 ? "+" : ""}{t("lpTrendRecently", { lpChange: lpTrend })}
+                    {lpTrend >= 0 ? "+" : ""}
+                    {t("lpTrendRecently", { lpChange: lpTrend })}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">
-                {t("noRankData")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("noRankData")}</p>
             )}
           </CardContent>
         </Card>
@@ -282,7 +270,11 @@ export function DashboardClient({
               {sessionWins}W {sessionLosses}L
             </p>
             {recentMatches.length > 0 && (
-              <Progress value={sessionWinRate} className="mt-2 h-2" aria-label={`Win rate: ${sessionWinRate}%`} />
+              <Progress
+                value={sessionWinRate}
+                className="mt-2 h-2"
+                aria-label={`Win rate: ${sessionWinRate}%`}
+              />
             )}
           </CardContent>
         </Card>
@@ -301,11 +293,12 @@ export function DashboardClient({
                   <Snowflake className="h-5 w-5 text-streak-cold" />
                 )}
                 <p className="text-2xl font-bold">
-                  {streak.count}{streak.type}
+                  {streak.count}
+                  {streak.type}
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">{t("noGamesYet")}</p>
+              <p className="text-sm text-muted-foreground">{t("noGamesYet")}</p>
             )}
           </CardContent>
         </Card>
@@ -316,12 +309,10 @@ export function DashboardClient({
             <CardDescription>{t("avgKdaLast10")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono text-gold">
+            <p className="font-mono text-2xl font-bold text-gold">
               {avgKills}/{avgDeaths}/{avgAssists}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {t("avgCs", { avgCS })}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("avgCs", { avgCS })}</p>
           </CardContent>
         </Card>
       </div>
@@ -329,12 +320,17 @@ export function DashboardClient({
       {/* Recent Games + Action Items */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Games */}
-        <Card className="lg:col-span-2 surface-glow">
+        <Card className="surface-glow lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>{t("recentGames")}</CardTitle>
               <CardDescription>
-                {t("recentGamesDescription", { total: matchStats.total, wins: totalWins, losses: totalLosses, winRate: totalWinRate })}
+                {t("recentGamesDescription", {
+                  total: matchStats.total,
+                  wins: totalWins,
+                  losses: totalLosses,
+                  winRate: totalWinRate,
+                })}
               </CardDescription>
             </div>
             <Link href="/matches">
@@ -346,9 +342,7 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             {recentMatches.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                {t("noMatchesYet")}
-              </p>
+              <p className="py-4 text-center text-sm text-muted-foreground">{t("noMatchesYet")}</p>
             ) : (
               <div className="space-y-3">
                 {recentMatches.slice(0, 10).map((match) => (
@@ -372,7 +366,7 @@ export function DashboardClient({
           {upcomingSession ? (
             <Card className="surface-glow border-gold/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Calendar className="h-4 w-4 text-gold" />
                   {t("nextSession")}
                 </CardTitle>
@@ -389,7 +383,7 @@ export function DashboardClient({
                   {formatDate(upcomingSession.date, locale, "datetime-short")}
                 </p>
                 {!upcomingSession.vodMatchId && (
-                  <p className="text-xs text-warning flex items-center gap-1 mt-1">
+                  <p className="mt-1 flex items-center gap-1 text-xs text-warning">
                     <AlertCircle className="h-3 w-3" />
                     {t("noVodSelected")}
                   </p>
@@ -399,7 +393,7 @@ export function DashboardClient({
                   const diff = upcomingSession.date.getTime() - now.getTime();
                   if (diff <= 0) {
                     return (
-                      <Badge className="mt-2 text-xs bg-gold/20 text-gold border-gold/30">
+                      <Badge className="mt-2 border-gold/30 bg-gold/20 text-xs text-gold">
                         {t("readyToComplete")}
                       </Badge>
                     );
@@ -408,7 +402,7 @@ export function DashboardClient({
                   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                   const timeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
                   return (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {t("sessionIn", { timeStr })}
                     </p>
                   );
@@ -418,131 +412,146 @@ export function DashboardClient({
           ) : (
             <Card className="surface-glow border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   {t("nextSession")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
-                <Link href="/coaching/new" className="inline-block mt-2">
-                  <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
+                <Link href="/coaching/new" className="mt-2 inline-block">
+                  <Button variant="outline" size="sm">
+                    {t("scheduleOne")}
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
           )}
 
           {/* Last Coaching Session — cadence indicator (hidden when there's an upcoming session) */}
-          {!upcomingSession && lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null ? (() => {
-            const cadenceColors = {
-              good: "text-win",
-              warning: "text-warning",
-              overdue: "text-loss",
-            };
-            const borderColors = {
-              good: "border-win/20",
-              warning: "border-warning/20",
-              overdue: "border-loss/20",
-            };
-            const badgeClasses = {
-              good: "bg-win/20 text-win border-win/30",
-              warning: "bg-warning/20 text-warning border-warning/30",
-              overdue: "bg-loss/20 text-loss border-loss/30",
-            };
-            return (
-              <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
-                    {t("lastCoaching")}
-                  </CardTitle>
-                  <Link href={`/coaching/${lastCompletedSession.id}`}>
-                    <Button variant="ghost" size="sm">
-                      {t("view")}
-                      <ChevronRight className="ml-1 h-3 w-3" />
-                    </Button>
-                  </Link>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-lg font-bold ${cadenceColors[coachingCadence]}`}>
-                    {daysSinceLastCoaching === 0 ? t("today") : t("daysAgo", { days: daysSinceLastCoaching })}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {lastCompletedSession.coachName}
-                  </p>
-                  <Badge className={`mt-2 text-xs ${badgeClasses[coachingCadence]}`}>
-                    {t(`cadence.${coachingCadence}`)}
-                  </Badge>
-                </CardContent>
-              </Card>
-            );
-          })() : !upcomingSession ? (
+          {!upcomingSession &&
+          lastCompletedSession &&
+          coachingCadence &&
+          daysSinceLastCoaching !== null ? (
+            (() => {
+              const cadenceColors = {
+                good: "text-win",
+                warning: "text-warning",
+                overdue: "text-loss",
+              };
+              const borderColors = {
+                good: "border-win/20",
+                warning: "border-warning/20",
+                overdue: "border-loss/20",
+              };
+              const badgeClasses = {
+                good: "bg-win/20 text-win border-win/30",
+                warning: "bg-warning/20 text-warning border-warning/30",
+                overdue: "bg-loss/20 text-loss border-loss/30",
+              };
+              return (
+                <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
+                      {t("lastCoaching")}
+                    </CardTitle>
+                    <Link href={`/coaching/${lastCompletedSession.id}`}>
+                      <Button variant="ghost" size="sm">
+                        {t("view")}
+                        <ChevronRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </Link>
+                  </CardHeader>
+                  <CardContent>
+                    <p className={`text-lg font-bold ${cadenceColors[coachingCadence]}`}>
+                      {daysSinceLastCoaching === 0
+                        ? t("today")
+                        : t("daysAgo", { days: daysSinceLastCoaching })}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {lastCompletedSession.coachName}
+                    </p>
+                    <Badge className={`mt-2 text-xs ${badgeClasses[coachingCadence]}`}>
+                      {t(`cadence.${coachingCadence}`)}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              );
+            })()
+          ) : !upcomingSession ? (
             <Card className="surface-glow border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <GraduationCap className="h-4 w-4 text-muted-foreground" />
                   {t("lastCoaching")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noCompletedSessions")}</p>
-                <Link href="/coaching/new" className="inline-block mt-2">
-                  <Button variant="outline" size="sm">{t("scheduleOne")}</Button>
+                <Link href="/coaching/new" className="mt-2 inline-block">
+                  <Button variant="outline" size="sm">
+                    {t("scheduleOne")}
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
           ) : null}
 
           {/* Goal Widget */}
-          {activeGoal && currentRank ? (() => {
-            const progress = calculateProgress(
-              activeGoal.startTier,
-              activeGoal.startDivision,
-              activeGoal.startLp,
-              currentRank.tier,
-              currentRank.division,
-              currentRank.lp,
-              activeGoal.targetTier,
-              activeGoal.targetDivision
-            );
-            return (
-              <Card className="surface-glow border-gold/20">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="h-4 w-4 text-gold" />
-                    {activeGoal.title}
-                  </CardTitle>
-                  <Link href="/goals">
-                    <Button variant="ghost" size="sm">
-                      {t("view")}
-                      <ChevronRight className="ml-1 h-3 w-3" />
-                    </Button>
-                  </Link>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Progress value={progress} aria-label={`Goal progress: ${progress}%`}>
-                    <span className="text-xs text-muted-foreground">
-                      {formatTierDivision(currentRank.tier, currentRank.division)}
-                    </span>
-                    <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                      {progress}%
-                    </span>
-                  </Progress>
-                </CardContent>
-              </Card>
-            );
-          })() : (
+          {activeGoal && currentRank ? (
+            (() => {
+              const progress = calculateProgress(
+                activeGoal.startTier,
+                activeGoal.startDivision,
+                activeGoal.startLp,
+                currentRank.tier,
+                currentRank.division,
+                currentRank.lp,
+                activeGoal.targetTier,
+                activeGoal.targetDivision,
+              );
+              return (
+                <Card className="surface-glow border-gold/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Target className="h-4 w-4 text-gold" />
+                      {activeGoal.title}
+                    </CardTitle>
+                    <Link href="/goals">
+                      <Button variant="ghost" size="sm">
+                        {t("view")}
+                        <ChevronRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Progress value={progress} aria-label={`Goal progress: ${progress}%`}>
+                      <span className="text-xs text-muted-foreground">
+                        {formatTierDivision(currentRank.tier, currentRank.division)}
+                      </span>
+                      <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                        {progress}%
+                      </span>
+                    </Progress>
+                  </CardContent>
+                </Card>
+              );
+            })()
+          ) : (
             <Card className="surface-glow border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Target className="h-4 w-4 text-muted-foreground" />
                   {t("goalWidget")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noActiveGoal")}</p>
-                <Link href="/goals/new" className="inline-block mt-2">
-                  <Button variant="outline" size="sm">{t("setGoal")}</Button>
+                <Link href="/goals/new" className="mt-2 inline-block">
+                  <Button variant="outline" size="sm">
+                    {t("setGoal")}
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
@@ -561,27 +570,20 @@ export function DashboardClient({
             </CardHeader>
             <CardContent>
               {actionItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("noActiveActionItems")}
-                </p>
+                <p className="text-sm text-muted-foreground">{t("noActiveActionItems")}</p>
               ) : (
                 <div className="space-y-2">
                   {actionItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-start gap-2 text-sm"
-                    >
+                    <div key={item.id} className="flex items-start gap-2 text-sm">
                       <div
-                        className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
-                          item.status === "in_progress"
-                            ? "bg-gold"
-                            : "bg-muted-foreground"
+                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                          item.status === "in_progress" ? "bg-gold" : "bg-muted-foreground"
                         }`}
                       />
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate">{item.description}</p>
                         {item.topic && (
-                          <Badge variant="secondary" className="text-xs mt-1">
+                          <Badge variant="secondary" className="mt-1 text-xs">
                             {item.topic}
                           </Badge>
                         )}

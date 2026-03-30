@@ -1,16 +1,13 @@
-import { db } from "@/db";
-import {
-  coachingSessions,
-  coachingActionItems,
-  matches,
-  matchHighlights,
-} from "@/db/schema";
 import { eq, desc, and, gt, lte, inArray } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { getLatestVersion } from "@/lib/riot-api";
-import { isMeaningful } from "@/lib/match-result";
 import { cacheLife, cacheTag } from "next/cache";
+
+import { db } from "@/db";
+import { coachingSessions, coachingActionItems, matches, matchHighlights } from "@/db/schema";
 import { coachingTag } from "@/lib/cache";
+import { isMeaningful } from "@/lib/match-result";
+import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { CoachingHubClient } from "./coaching-hub-client";
 
 async function getCachedCoachingHubData(userId: string) {
@@ -30,24 +27,15 @@ async function getCachedCoachingHubData(userId: string) {
     getLatestVersion(),
   ]);
 
-  const scheduledSessions = allSessions.filter(
-    (s) => s.status === "scheduled"
-  );
-  const completedSessions = allSessions.filter(
-    (s) => s.status === "completed"
-  );
+  const scheduledSessions = allSessions.filter((s) => s.status === "scheduled");
+  const completedSessions = allSessions.filter((s) => s.status === "completed");
 
   // Get VOD match details for scheduled sessions
-  const vodMatchIds = scheduledSessions
-    .map((s) => s.vodMatchId)
-    .filter(Boolean) as string[];
+  const vodMatchIds = scheduledSessions.map((s) => s.vodMatchId).filter(Boolean) as string[];
   const vodMatches =
     vodMatchIds.length > 0
       ? await db.query.matches.findMany({
-          where: and(
-            eq(matches.userId, userId),
-            inArray(matches.id, vodMatchIds)
-          ),
+          where: and(eq(matches.userId, userId), inArray(matches.id, vodMatchIds)),
           columns: {
             id: true,
             championName: true,
@@ -59,10 +47,7 @@ async function getCachedCoachingHubData(userId: string) {
   const vodMatchMap = Object.fromEntries(vodMatches.map((m) => [m.id, m]));
 
   // Build action items by session map
-  const actionItemsBySession = new Map<
-    number,
-    { total: number; completed: number }
-  >();
+  const actionItemsBySession = new Map<number, { total: number; completed: number }>();
   for (const item of allActionItems) {
     const existing = actionItemsBySession.get(item.sessionId) || {
       total: 0,
@@ -74,14 +59,12 @@ async function getCachedCoachingHubData(userId: string) {
   }
 
   // Active action items (pending + in_progress)
-  const activeActionItems = allActionItems.filter(
-    (i) => i.status !== "completed"
-  );
+  const activeActionItems = allActionItems.filter((i) => i.status !== "completed");
 
   // For completed sessions: compute "between sessions" match data
   // Sort completed sessions ascending by date for interval computation
   const sortedCompleted = [...completedSessions].sort(
-    (a, b) => a.date.getTime() - b.date.getTime()
+    (a, b) => a.date.getTime() - b.date.getTime(),
   );
 
   // Build intervals: each completed session -> matches between it and the next
@@ -116,7 +99,7 @@ async function getCachedCoachingHubData(userId: string) {
         where: and(
           eq(matches.userId, userId),
           gt(matches.gameDate, current.date),
-          lte(matches.gameDate, endDate)
+          lte(matches.gameDate, endDate),
         ),
         columns: {
           id: true,
@@ -125,9 +108,7 @@ async function getCachedCoachingHubData(userId: string) {
       });
 
       const meaningfulGames = intervalMatches.filter((m) => isMeaningful(m.result));
-      const wins = meaningfulGames.filter(
-        (m) => m.result === "Victory"
-      ).length;
+      const wins = meaningfulGames.filter((m) => m.result === "Victory").length;
       const losses = meaningfulGames.length - wins;
 
       // Count relevant highlights in these matches
@@ -138,12 +119,12 @@ async function getCachedCoachingHubData(userId: string) {
         const intervalHighlights = await db.query.matchHighlights.findMany({
           where: and(
             eq(matchHighlights.userId, userId),
-            inArray(matchHighlights.matchId, intervalMatchIds)
+            inArray(matchHighlights.matchId, intervalMatchIds),
           ),
           columns: { topic: true },
         });
         relevantNoteCount = intervalHighlights.filter(
-          (h) => h.topic && sessionTopics.has(h.topic)
+          (h) => h.topic && sessionTopics.has(h.topic),
         ).length;
       }
 

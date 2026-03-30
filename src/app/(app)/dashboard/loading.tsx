@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
@@ -8,7 +8,7 @@ export default function DashboardLoading() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-4 w-56 mt-2" />
+          <Skeleton className="mt-2 h-4 w-56" />
         </div>
         <Skeleton className="h-9 w-32" />
       </div>
@@ -22,7 +22,7 @@ export default function DashboardLoading() {
             </CardHeader>
             <CardContent>
               <Skeleton className="h-8 w-20" />
-              <Skeleton className="h-3 w-32 mt-2" />
+              <Skeleton className="mt-2 h-3 w-32" />
             </CardContent>
           </Card>
         ))}
@@ -31,7 +31,7 @@ export default function DashboardLoading() {
       {/* Bottom grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Games */}
-        <Card className="lg:col-span-2 surface-glow">
+        <Card className="surface-glow lg:col-span-2">
           <CardHeader>
             <Skeleton className="h-5 w-32" />
           </CardHeader>
@@ -57,7 +57,7 @@ export default function DashboardLoading() {
             </CardHeader>
             <CardContent>
               <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-3 w-40 mt-2" />
+              <Skeleton className="mt-2 h-3 w-40" />
             </CardContent>
           </Card>
           <Card className="surface-glow">

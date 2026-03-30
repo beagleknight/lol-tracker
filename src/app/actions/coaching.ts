@@ -1,15 +1,12 @@
 "use server";
 
-import { db } from "@/db";
-import {
-  coachingSessions,
-  coachingSessionMatches,
-  coachingActionItems,
-} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/db";
+import { coachingSessions, coachingSessionMatches, coachingActionItems } from "@/db/schema";
 import { invalidateCoachingCaches } from "@/lib/cache";
+import { requireUser } from "@/lib/session";
 
 // ─── Phase 1: Schedule a coaching session ────────────────────────────────────
 
@@ -61,15 +58,12 @@ export async function completeCoachingSession(
     notes?: string;
     actionItems: Array<{ description: string; topic?: string }>;
     additionalMatchIds?: string[];
-  }
+  },
 ) {
   const user = await requireUser();
 
   const session = await db.query.coachingSessions.findFirst({
-    where: and(
-      eq(coachingSessions.id, sessionId),
-      eq(coachingSessions.userId, user.id)
-    ),
+    where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
   });
 
   if (!session) {
@@ -95,7 +89,7 @@ export async function completeCoachingSession(
         sessionId,
         matchId,
         userId: user.id,
-      }))
+      })),
     );
   }
 
@@ -107,7 +101,7 @@ export async function completeCoachingSession(
         userId: user.id,
         description: item.description,
         topic: item.topic || null,
-      }))
+      })),
     );
   }
 
@@ -132,15 +126,12 @@ export async function updateCoachingSession(
     // Only for completed sessions:
     durationMinutes?: number | null;
     notes?: string | null;
-  }
+  },
 ) {
   const user = await requireUser();
 
   const session = await db.query.coachingSessions.findFirst({
-    where: and(
-      eq(coachingSessions.id, sessionId),
-      eq(coachingSessions.userId, user.id)
-    ),
+    where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
   });
 
   if (!session) {
@@ -169,8 +160,8 @@ export async function updateCoachingSession(
     .where(
       and(
         eq(coachingSessionMatches.sessionId, sessionId),
-        eq(coachingSessionMatches.userId, user.id)
-      )
+        eq(coachingSessionMatches.userId, user.id),
+      ),
     );
 
   if (data.vodMatchId) {
@@ -196,12 +187,7 @@ export async function deleteCoachingSession(sessionId: number) {
 
   await db
     .delete(coachingSessions)
-    .where(
-      and(
-        eq(coachingSessions.id, sessionId),
-        eq(coachingSessions.userId, user.id)
-      )
-    );
+    .where(and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)));
 
   revalidatePath("/coaching");
   revalidatePath("/dashboard");
@@ -214,7 +200,7 @@ export async function deleteCoachingSession(sessionId: number) {
 
 export async function updateActionItemStatus(
   itemId: number,
-  status: "pending" | "in_progress" | "completed"
+  status: "pending" | "in_progress" | "completed",
 ) {
   const user = await requireUser();
 
@@ -224,12 +210,7 @@ export async function updateActionItemStatus(
       status,
       completedAt: status === "completed" ? new Date() : null,
     })
-    .where(
-      and(
-        eq(coachingActionItems.id, itemId),
-        eq(coachingActionItems.userId, user.id)
-      )
-    );
+    .where(and(eq(coachingActionItems.id, itemId), eq(coachingActionItems.userId, user.id)));
 
   // Use "layout" type to revalidate the entire /coaching tree,
   // including /coaching/[id] detail pages that display action items.
@@ -245,12 +226,7 @@ export async function deleteActionItem(itemId: number) {
 
   await db
     .delete(coachingActionItems)
-    .where(
-      and(
-        eq(coachingActionItems.id, itemId),
-        eq(coachingActionItems.userId, user.id)
-      )
-    );
+    .where(and(eq(coachingActionItems.id, itemId), eq(coachingActionItems.userId, user.id)));
 
   // Use "layout" type to revalidate the entire /coaching tree,
   // including /coaching/[id] detail pages that display action items.

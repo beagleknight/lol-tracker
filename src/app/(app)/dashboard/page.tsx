@@ -1,3 +1,5 @@
+import { eq, desc, and, count, sql, asc, lte, inArray } from "drizzle-orm";
+
 import { db } from "@/db";
 import {
   matches,
@@ -7,10 +9,10 @@ import {
   coachingSessions,
   goals,
 } from "@/db/schema";
-import { eq, desc, and, count, sql, asc, lte, inArray } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { getLatestVersion } from "@/lib/riot-api";
 import { toCumulativeLP } from "@/lib/rank";
+import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { DashboardClient } from "./dashboard-client";
 
 export default async function DashboardPage() {
@@ -72,7 +74,7 @@ export default async function DashboardPage() {
     db.query.coachingActionItems.findMany({
       where: and(
         eq(coachingActionItems.userId, user.id),
-        eq(coachingActionItems.status, "pending")
+        eq(coachingActionItems.status, "pending"),
       ),
       limit: 5,
     }),
@@ -81,7 +83,7 @@ export default async function DashboardPage() {
     db.query.coachingActionItems.findMany({
       where: and(
         eq(coachingActionItems.userId, user.id),
-        eq(coachingActionItems.status, "in_progress")
+        eq(coachingActionItems.status, "in_progress"),
       ),
       limit: 5,
     }),
@@ -89,24 +91,18 @@ export default async function DashboardPage() {
     // Aggregate stats instead of fetching ALL matches
     db
       .select({
-        total: count(
-          sql`CASE WHEN ${matches.result} != 'Remake' THEN 1 END`
-        ),
-        wins: count(
-          sql`CASE WHEN ${matches.result} = 'Victory' THEN 1 END`
-        ),
-        remakes: count(
-          sql`CASE WHEN ${matches.result} = 'Remake' THEN 1 END`
-        ),
+        total: count(sql`CASE WHEN ${matches.result} != 'Remake' THEN 1 END`),
+        wins: count(sql`CASE WHEN ${matches.result} = 'Victory' THEN 1 END`),
+        remakes: count(sql`CASE WHEN ${matches.result} = 'Remake' THEN 1 END`),
         unreviewed: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 END`
+          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 END`,
         ),
         // VOD-pending: unreviewed games that already have post-game notes (comment or highlights)
         vodPending: count(
           sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
             ${matches.comment} IS NOT NULL
             OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
-          ) THEN 1 END`
+          ) THEN 1 END`,
         ),
       })
       .from(matches)
@@ -114,10 +110,7 @@ export default async function DashboardPage() {
 
     // Next upcoming (scheduled) coaching session
     db.query.coachingSessions.findFirst({
-      where: and(
-        eq(coachingSessions.userId, user.id),
-        eq(coachingSessions.status, "scheduled")
-      ),
+      where: and(eq(coachingSessions.userId, user.id), eq(coachingSessions.status, "scheduled")),
       orderBy: asc(coachingSessions.date),
       columns: {
         id: true,
@@ -134,10 +127,7 @@ export default async function DashboardPage() {
 
     // Last completed coaching session (for "days since" widget)
     db.query.coachingSessions.findFirst({
-      where: and(
-        eq(coachingSessions.userId, user.id),
-        eq(coachingSessions.status, "completed")
-      ),
+      where: and(eq(coachingSessions.userId, user.id), eq(coachingSessions.status, "completed")),
       orderBy: desc(coachingSessions.date),
       columns: {
         id: true,
@@ -148,7 +138,13 @@ export default async function DashboardPage() {
   ]);
 
   const latestRankOrUndef = latestRank ?? null;
-  const { total, wins, remakes: _remakes, unreviewed, vodPending } = matchStats[0] ?? {
+  const {
+    total,
+    wins,
+    remakes: _remakes,
+    unreviewed,
+    vodPending,
+  } = matchStats[0] ?? {
     total: 0,
     wins: 0,
     remakes: 0,
@@ -199,20 +195,26 @@ export default async function DashboardPage() {
     const oldestGameDate = recentMatches[recentMatches.length - 1].gameDate;
 
     // Baseline: the latest snapshot captured at or before the oldest recent game
-    const baseline = await db.query.rankSnapshots.findFirst({
-      where: and(
-        eq(rankSnapshots.userId, user.id),
-        lte(rankSnapshots.capturedAt, oldestGameDate)
-      ),
-      orderBy: desc(rankSnapshots.capturedAt),
-    }) ?? await db.query.rankSnapshots.findFirst({
-      // Fall back to the very oldest snapshot if none predates the window
-      where: eq(rankSnapshots.userId, user.id),
-      orderBy: asc(rankSnapshots.capturedAt),
-    });
+    const baseline =
+      (await db.query.rankSnapshots.findFirst({
+        where: and(
+          eq(rankSnapshots.userId, user.id),
+          lte(rankSnapshots.capturedAt, oldestGameDate),
+        ),
+        orderBy: desc(rankSnapshots.capturedAt),
+      })) ??
+      (await db.query.rankSnapshots.findFirst({
+        // Fall back to the very oldest snapshot if none predates the window
+        where: eq(rankSnapshots.userId, user.id),
+        orderBy: asc(rankSnapshots.capturedAt),
+      }));
 
     if (baseline?.tier && baseline.id !== latestRankOrUndef.id) {
-      const newLP = toCumulativeLP(latestRankOrUndef.tier!, latestRankOrUndef.division, latestRankOrUndef.lp || 0);
+      const newLP = toCumulativeLP(
+        latestRankOrUndef.tier!,
+        latestRankOrUndef.division,
+        latestRankOrUndef.lp || 0,
+      );
       const oldLP = toCumulativeLP(baseline.tier, baseline.division, baseline.lp || 0);
       lpTrend = (newLP ?? 0) - (oldLP ?? 0);
     }
@@ -237,16 +239,18 @@ export default async function DashboardPage() {
       lastCompletedSession={lastCompletedSession ?? null}
       daysSinceLastCoaching={
         lastCompletedSession
-          ? Math.floor(
-              (Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24)
-            )
+          ? Math.floor((Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24))
           : null
       }
-      currentRank={latestRankOrUndef?.tier ? {
-        tier: latestRankOrUndef.tier,
-        division: latestRankOrUndef.division,
-        lp: latestRankOrUndef.lp ?? 0,
-      } : null}
+      currentRank={
+        latestRankOrUndef?.tier
+          ? {
+              tier: latestRankOrUndef.tier,
+              division: latestRankOrUndef.division,
+              lp: latestRankOrUndef.lp ?? 0,
+            }
+          : null
+      }
       ddragonVersion={ddragonVersion}
     />
   );

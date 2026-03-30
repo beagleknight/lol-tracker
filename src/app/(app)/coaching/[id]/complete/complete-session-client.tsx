@@ -1,32 +1,5 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { completeCoachingSession } from "@/app/actions/coaching";
-import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { ResultBadge } from "@/components/result-badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { toast } from "sonner";
-import { getChampionIconUrl } from "@/lib/riot-api";
-import { PREDEFINED_TOPICS } from "@/lib/topics";
-import {
-  HighlightsDisplay,
-  type HighlightItem,
-} from "@/components/highlights-editor";
 import {
   Loader2,
   Plus,
@@ -37,9 +10,29 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
 import type { CoachingSession } from "@/db/schema";
+
+import { completeCoachingSession } from "@/app/actions/coaching";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ResultBadge } from "@/components/result-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { getChampionIconUrl } from "@/lib/riot-api";
+import { PREDEFINED_TOPICS } from "@/lib/topics";
 
 interface VodMatch {
   id: string;
@@ -78,17 +71,13 @@ export function CompleteSessionClient({
   const [isPending, startTransition] = useTransition();
 
   // Pre-fill topics from focus areas if they were set during scheduling
-  const initialTopics: string[] = session.topics
-    ? JSON.parse(session.topics)
-    : [];
+  const initialTopics: string[] = session.topics ? JSON.parse(session.topics) : [];
 
   const [selectedTopics, setSelectedTopics] = useState<string[]>(initialTopics);
   const [customTopic, setCustomTopic] = useState("");
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
-  const [actionItems, setActionItems] = useState<
-    Array<{ description: string; topic: string }>
-  >([]);
+  const [actionItems, setActionItems] = useState<Array<{ description: string; topic: string }>>([]);
   const [newActionDesc, setNewActionDesc] = useState("");
   const [newActionTopic, setNewActionTopic] = useState("");
 
@@ -102,7 +91,7 @@ export function CompleteSessionClient({
 
   function toggleTopic(topic: string) {
     setSelectedTopics((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic],
     );
   }
 
@@ -161,7 +150,7 @@ export function CompleteSessionClient({
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href={`/coaching/${session.id}`}>
@@ -170,12 +159,8 @@ export function CompleteSessionClient({
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground">
-            {t("subtitle")}
-          </p>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -183,7 +168,7 @@ export function CompleteSessionClient({
       <Card className="border-gold/20 bg-gold/5">
         <CardContent className="pt-4">
           <div className="flex items-center gap-3">
-            <GraduationCap className="h-5 w-5 text-gold shrink-0" />
+            <GraduationCap className="h-5 w-5 shrink-0 text-gold" />
             <div className="flex-1">
               <p className="font-medium">{session.coachName}</p>
               <p className="text-sm text-muted-foreground">{dateStr}</p>
@@ -191,10 +176,7 @@ export function CompleteSessionClient({
             {vodMatch && (
               <div className="flex items-center gap-2">
                 <Image
-                  src={getChampionIconUrl(
-                    ddragonVersion,
-                    vodMatch.championName
-                  )}
+                  src={getChampionIconUrl(ddragonVersion, vodMatch.championName)}
                   alt={vodMatch.championName}
                   width={24}
                   height={24}
@@ -219,15 +201,13 @@ export function CompleteSessionClient({
                     href={vodMatch.vodUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-electric hover:underline truncate"
+                    className="truncate text-xs text-electric hover:underline"
                   >
                     {t("watchVod")}
                   </a>
                 </div>
               )}
-              {highlights.length > 0 && (
-                <HighlightsDisplay highlights={highlights} compact />
-              )}
+              {highlights.length > 0 && <HighlightsDisplay highlights={highlights} compact />}
             </div>
           )}
         </CardContent>
@@ -237,18 +217,14 @@ export function CompleteSessionClient({
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle>{t("topicsCovered")}</CardTitle>
-          <CardDescription>
-            {t("topicsCoveredDescription")}
-          </CardDescription>
+          <CardDescription>{t("topicsCoveredDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {PREDEFINED_TOPICS.map((topic) => (
               <Badge
                 key={topic}
-                variant={
-                  selectedTopics.includes(topic) ? "default" : "secondary"
-                }
+                variant={selectedTopics.includes(topic) ? "default" : "secondary"}
                 className="cursor-pointer"
                 render={<button type="button" />}
                 onClick={() => toggleTopic(topic)}
@@ -257,10 +233,7 @@ export function CompleteSessionClient({
               </Badge>
             ))}
             {selectedTopics
-              .filter(
-                (t) =>
-                  !(PREDEFINED_TOPICS as readonly string[]).includes(t)
-              )
+              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
               .map((topic) => (
                 <Badge
                   key={topic}
@@ -331,9 +304,7 @@ export function CompleteSessionClient({
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle>{t("actionItems")}</CardTitle>
-          <CardDescription>
-            {t("actionItemsDescription")}
-          </CardDescription>
+          <CardDescription>{t("actionItemsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {actionItems.length > 0 && (
@@ -341,13 +312,13 @@ export function CompleteSessionClient({
               {actionItems.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 rounded-lg border border-border/50 p-2 bg-surface-elevated"
+                  className="flex items-center gap-2 rounded-lg border border-border/50 bg-surface-elevated p-2"
                 >
-                  <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <CheckCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm">{item.description}</p>
                     {item.topic && (
-                      <Badge variant="secondary" className="text-xs mt-1">
+                      <Badge variant="secondary" className="mt-1 text-xs">
                         {item.topic}
                       </Badge>
                     )}
@@ -365,7 +336,7 @@ export function CompleteSessionClient({
               ))}
             </div>
           )}
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder={t("actionItemPlaceholder")}
               value={newActionDesc}
@@ -385,7 +356,13 @@ export function CompleteSessionClient({
                 onChange={(e) => setNewActionTopic(e.target.value)}
                 className="flex-1 sm:w-40"
               />
-              <Button variant="outline" size="icon" onClick={addActionItem} className="shrink-0" aria-label="Add action item">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={addActionItem}
+                className="shrink-0"
+                aria-label="Add action item"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>

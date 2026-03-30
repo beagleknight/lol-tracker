@@ -9,10 +9,11 @@
  * and rejects all attempts if the flag is not set.
  */
 
+import { eq } from "drizzle-orm";
 import Credentials from "next-auth/providers/credentials";
+
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export function isDemoMode(): boolean {
   return process.env.NEXT_PUBLIC_DEMO_MODE === "true";
