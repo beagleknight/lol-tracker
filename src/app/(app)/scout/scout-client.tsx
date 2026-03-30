@@ -10,7 +10,6 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,6 +27,7 @@ import { MatchCard } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatNumber, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
@@ -468,8 +468,8 @@ export function ScoutClient({
 }: ScoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Scout");
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);

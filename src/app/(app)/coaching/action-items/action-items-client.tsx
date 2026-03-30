@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2, Circle, Play, CheckCircle2, Trash2, ListChecks } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 
 interface ActionItemWithSession {
@@ -137,8 +137,8 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
 }
 
 export function ActionItemsClient({ items }: ActionItemsClientProps) {
-  const { data: authSession } = useSession();
-  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("ActionItems");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");

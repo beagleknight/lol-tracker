@@ -1,7 +1,6 @@
 "use client";
 
 import { Target, Plus, Trophy, Archive, Trash2, Loader2, AlertTriangle } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useTransition } from "react";
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
 
@@ -28,8 +28,8 @@ interface GoalsClientProps {
 
 export function GoalsClient({ goals, currentRank }: GoalsClientProps) {
   const t = useTranslations("Goals");
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
 
   const activeGoal = goals.find((g) => g.status === "active");
   const pastGoals = goals.filter((g) => g.status !== "active");

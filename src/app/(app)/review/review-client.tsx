@@ -17,7 +17,6 @@ import {
   Pencil,
   X,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -59,6 +58,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { SKIP_REVIEW_REASONS } from "@/lib/topics";
@@ -739,8 +739,8 @@ export function ReviewClient({
 }: ReviewClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Review");
 
   // Track which matches have been actioned this session (optimistic removal/movement)

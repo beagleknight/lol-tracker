@@ -11,7 +11,6 @@ import {
   MessageSquare,
   ExternalLink,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrl } from "@/lib/riot-api";
 
@@ -188,8 +188,8 @@ export function MatchDetailClient({
   isAiConfigured,
   cachedAiInsight,
 }: MatchDetailClientProps) {
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
   const tAi = useTranslations("AiInsights");
 
