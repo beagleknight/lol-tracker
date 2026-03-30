@@ -42,12 +42,14 @@ Branch naming conventions:
 ### 2. Implement the changes
 
 - Make commits on the feature branch
-- **MANDATORY: Run lint and build locally before every push.** Do NOT rely on CI as the first lint check — catch errors locally:
+- **MANDATORY: Run format check, lint, and build locally before every push.** Do NOT rely on CI as the first check — catch errors locally:
   ```bash
+  npm run fmt:check
   npm run lint
   npm run build
   ```
-  Fix any errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
+  If formatting is off, fix it with `npm run fmt` before committing.
+  Fix any lint errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
 - `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
 - **MANDATORY: Verify the lockfile before every push** (when `package-lock.json` is staged). Run `npm ci` to confirm the lockfile is consistent. If it fails, regenerate with `npm install`. The canonical Node version is defined in `.tool-versions` — both local dev and CI use the same version.
 
@@ -115,18 +117,19 @@ Fixes #N
 
 ### 5. CI checks
 
-Six checks run automatically on every PR to `main`:
+Seven checks run automatically on every PR to `main`:
 
 | Check         | Command                           | What it catches                                               |
 | ------------- | --------------------------------- | ------------------------------------------------------------- |
 | **Typecheck** | `tsc --noEmit`                    | Type errors                                                   |
-| **Lint**      | `eslint`                          | Code style, unused vars, React rules, jsx-a11y                |
+| **Lint**      | `oxlint`                          | Code quality, unused vars, React rules, jsx-a11y, TypeScript  |
+| **Format**    | `oxfmt --check .`                 | Formatting consistency (import sorting, Tailwind class order) |
 | **Build**     | `next build --webpack`            | Compilation errors, broken imports                            |
 | **Smoke**     | `playwright test --project=smoke` | Axe-core a11y violations on every page                        |
 | **E2E**       | `playwright test --project=e2e`   | End-to-end user flows                                         |
 | **Changelog** | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
 
-All six must pass before merging.
+All seven must pass before merging.
 
 ### 6. Merge
 
@@ -160,7 +163,7 @@ Do this even if the overall CI run eventually passes on retry. Flaky tests erode
 git checkout main && git pull
 git checkout -b fix/description
 # make changes
-npm run lint && npm run build
+npm run fmt:check && npm run lint && npm run build
 git add -A && git commit -m "fix: description"
 # add changelog entry
 git add -A && git commit -m "docs: add changelog entry"
@@ -174,7 +177,7 @@ gh pr create --title "fix: description" --body "..."
 git checkout main && git pull
 git checkout -b feat/description
 # implement in logical commits
-npm run lint && npm run build
+npm run fmt:check && npm run lint && npm run build
 # add changelog at the end
 git push -u origin feat/description
 gh pr create --title "feat: description" --body "..."
@@ -186,7 +189,7 @@ gh pr create --title "feat: description" --body "..."
 git checkout main && git pull
 git checkout -b chore/description
 # make changes
-npm run lint && npm run build
+npm run fmt:check && npm run lint && npm run build
 git push -u origin chore/description
 gh pr create --title "chore: description" --body "..." --label skip-changelog
 ```
