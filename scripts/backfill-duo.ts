@@ -61,7 +61,9 @@ async function main() {
     }
 
     const partnerPuuid = partnerResult.rows[0].puuid as string;
-    const partnerName = `${partnerResult.rows[0].riot_game_name}#${partnerResult.rows[0].riot_tag_line}`;
+    const gameName = partnerResult.rows[0].riot_game_name as string;
+    const tagLine = partnerResult.rows[0].riot_tag_line as string;
+    const partnerName = `${gameName}#${tagLine}`;
 
     if (!partnerPuuid) {
       console.log(`Duo partner ${partnerName} has no puuid. Skipping.`);

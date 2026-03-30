@@ -62,7 +62,7 @@ export default async function ScheduleCoachingSessionPage() {
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
     highlightsByMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

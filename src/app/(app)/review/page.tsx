@@ -1,5 +1,7 @@
 import { eq, ne, and, asc, desc, inArray, count } from "drizzle-orm";
 
+import type { Match } from "@/db/schema";
+
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
 import { getLatestVersion } from "@/lib/riot-api";
@@ -74,14 +76,14 @@ export default async function ReviewPage({
         orderBy: asc(matches.gameDate),
         limit: 50,
         columns: matchColumns,
-      }) as unknown as Promise<import("@/db/schema").Match[]>,
+      }) as unknown as Promise<Match[]>,
       db.query.matches.findMany({
         where: reviewedWhere,
         orderBy: desc(matches.gameDate),
         limit: COMPLETED_PAGE_SIZE,
         offset: completedOffset,
         columns: matchColumns,
-      }) as unknown as Promise<import("@/db/schema").Match[]>,
+      }) as unknown as Promise<Match[]>,
       db.select({ total: count() }).from(matches).where(reviewedWhere),
     ]);
 
@@ -116,7 +118,7 @@ export default async function ReviewPage({
     }
     highlightsByMatch[h.matchId].push({
       id: h.id,
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

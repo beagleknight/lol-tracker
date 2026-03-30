@@ -61,7 +61,7 @@ function DemoLoginForm() {
         {DEMO_USERS.map((user) => (
           <button
             key={user.id}
-            onClick={() => handleDemoLogin(user.id)}
+            onClick={() => void handleDemoLogin(user.id)}
             disabled={loading !== null}
             className="flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card p-3 text-left transition-all hover:border-gold/40 hover:bg-gold/5 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -109,7 +109,7 @@ function DiscordLoginForm() {
     if (inviteCode.trim()) {
       document.cookie = `invite-code=${encodeURIComponent(inviteCode.trim())}; path=/; max-age=300; SameSite=Lax`;
     }
-    signIn("discord", { callbackUrl: "/dashboard" });
+    void signIn("discord", { callbackUrl: "/dashboard" });
   }
 
   return (

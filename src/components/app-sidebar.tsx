@@ -152,8 +152,7 @@ function SidebarContent({
       href: string;
       icon: React.ComponentType<{ className?: string }>;
     }[],
-  ): NavItem[] =>
-    defs.map((d) => ({ label: t(d.key as Parameters<typeof t>[0]), href: d.href, icon: d.icon }));
+  ): NavItem[] => defs.map((d) => ({ label: t(d.key), href: d.href, icon: d.icon }));
 
   const dashboardNav = resolve(navDefs.dashboard);
   const trackerNav = resolve(navDefs.tracker);
@@ -266,7 +265,7 @@ function SidebarContent({
               variant="ghost"
               size="icon"
               className="h-8 w-8 shrink-0 hover:text-destructive"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => void signOut({ callbackUrl: "/login" })}
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
@@ -296,17 +295,11 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          role="button"
-          tabIndex={0}
           aria-label="Close sidebar"
           onClick={() => setMobileOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              setMobileOpen(false);
-            }
-          }}
         />
       )}
 

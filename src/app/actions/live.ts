@@ -194,7 +194,7 @@ async function getCachedMatchupReport(
   for (const h of allHighlights) {
     const list = highlightsByMatch.get(h.matchId) || [];
     list.push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

@@ -47,13 +47,13 @@ export default async function CompleteCoachingSessionPage({
             vodUrl: matches.vodUrl,
           })
           .from(matches)
-          .where(and(eq(matches.id, session.vodMatchId!), eq(matches.userId, user.id)))
+          .where(and(eq(matches.id, session.vodMatchId), eq(matches.userId, user.id)))
       : Promise.resolve([]),
     getLatestVersion(),
     session.vodMatchId
       ? db.query.matchHighlights.findMany({
           where: and(
-            eq(matchHighlights.matchId, session.vodMatchId!),
+            eq(matchHighlights.matchId, session.vodMatchId),
             eq(matchHighlights.userId, user.id),
           ),
           columns: {
@@ -67,7 +67,7 @@ export default async function CompleteCoachingSessionPage({
 
   const vodMatch = vodMatchRows[0] || null;
   const highlights = vodHighlights.map((h) => ({
-    type: h.type as "highlight" | "lowlight",
+    type: h.type,
     text: h.text,
     topic: h.topic,
   }));

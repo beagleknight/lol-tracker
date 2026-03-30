@@ -77,6 +77,7 @@ export function ChampionCombobox({
             <Button
               variant="outline"
               role="combobox"
+              aria-controls="champion-listbox"
               aria-expanded={open}
               aria-label={label || placeholder}
               className="w-full justify-between font-normal"
@@ -102,12 +103,12 @@ export function ChampionCombobox({
         <PopoverContent className="w-[--anchor-width] p-0" align="start">
           <Command>
             <CommandInput placeholder="Search champion..." />
-            <CommandList>
+            <CommandList id="champion-listbox">
               <CommandEmpty>No champion found.</CommandEmpty>
 
               {/* Recommendation groups */}
               {hasRecommendations &&
-                recommendations!.map(
+                recommendations.map(
                   (group) =>
                     group.champions.length > 0 && (
                       <CommandGroup key={group.heading} heading={group.heading}>
