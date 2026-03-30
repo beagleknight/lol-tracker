@@ -1,7 +1,6 @@
 "use server";
 
 import { eq, inArray } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { invites, users } from "@/db/schema";
@@ -36,7 +35,6 @@ export async function createInvite() {
     createdBy: admin.id,
   });
 
-  revalidatePath("/settings");
   return { code };
 }
 
@@ -74,6 +72,5 @@ export async function deleteInvite(id: number) {
   await requireAdmin();
 
   await db.delete(invites).where(eq(invites.id, id));
-  revalidatePath("/settings");
   return { success: true };
 }

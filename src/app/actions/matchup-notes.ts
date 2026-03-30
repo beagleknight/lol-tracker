@@ -1,7 +1,7 @@
 "use server";
 
 import { eq, and, isNull } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 import { db } from "@/db";
 import { matchupNotes } from "@/db/schema";
@@ -124,7 +124,7 @@ export async function upsertMatchupNote(
     }
 
     await db.delete(matchupNotes).where(and(...conditions));
-    revalidateTag(scoutTag(user.id), "max");
+    updateTag(scoutTag(user.id));
     return { success: true };
   }
 
@@ -148,7 +148,7 @@ export async function upsertMatchupNote(
       },
     });
 
-  revalidateTag(scoutTag(user.id), "max");
+  updateTag(scoutTag(user.id));
   return { success: true };
 }
 
@@ -162,6 +162,6 @@ export async function deleteMatchupNote(id: number): Promise<{ success: boolean;
     .delete(matchupNotes)
     .where(and(eq(matchupNotes.id, id), eq(matchupNotes.userId, user.id)));
 
-  revalidateTag(scoutTag(user.id), "max");
+  updateTag(scoutTag(user.id));
   return { success: true };
 }

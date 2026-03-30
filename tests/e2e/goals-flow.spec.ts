@@ -56,18 +56,10 @@ test.describe("Goals flow", () => {
     // Click the "Retire" button
     await main.getByRole("button", { name: "Retire" }).click();
 
-    // Verify the goal moved to past goals with "Retired" badge.
-    // Use reload fallback for revalidation timing.
-    try {
-      await expect(main.locator('[data-slot="badge"]:has-text("Retired")').first()).toBeVisible({
-        timeout: 10_000,
-      });
-    } catch {
-      await page.reload();
-      await expect(
-        page.getByRole("main").locator('[data-slot="badge"]:has-text("Retired")').first(),
-      ).toBeVisible({ timeout: 10_000 });
-    }
+    // Verify the goal moved to past goals with "Retired" badge
+    await expect(main.locator('[data-slot="badge"]:has-text("Retired")').first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     // "New Goal" button should appear now
     await expect(page.getByRole("main").getByRole("link", { name: "New Goal" })).toBeVisible();
@@ -141,16 +133,9 @@ test.describe("Goals flow", () => {
     await deleteButton.click();
 
     // Verify "Reach Gold IV" is gone after deletion
-    try {
-      await expect(main.getByText("Reach Gold IV")).not.toBeVisible({
-        timeout: 10_000,
-      });
-    } catch {
-      await page.reload();
-      await expect(page.getByRole("main").getByText("Reach Gold IV")).not.toBeVisible({
-        timeout: 10_000,
-      });
-    }
+    await expect(main.getByText("Reach Gold IV")).not.toBeVisible({
+      timeout: 10_000,
+    });
 
     // "Reach Platinum IV" (retired) should still be there
     await expect(page.getByRole("main").getByText("Reach Platinum IV")).toBeVisible();

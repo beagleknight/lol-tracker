@@ -40,7 +40,6 @@ export async function linkRiotAccount(formData: FormData) {
       })
       .where(eq(users.id, user.id));
 
-    revalidatePath("/settings");
     revalidatePath("/dashboard");
     invalidateAllCaches(user.id);
 
@@ -69,7 +68,6 @@ export async function unlinkRiotAccount() {
     })
     .where(eq(users.id, user.id));
 
-  revalidatePath("/settings");
   revalidatePath("/dashboard");
   invalidateAllCaches(user.id);
 
@@ -147,7 +145,6 @@ export async function setDuoPartner(partnerUserId: string) {
     })
     .where(eq(users.id, user.id));
 
-  revalidatePath("/settings");
   revalidatePath("/duo");
   invalidateDuoCaches(user.id);
 
@@ -171,7 +168,6 @@ export async function clearDuoPartner() {
     })
     .where(eq(users.id, user.id));
 
-  revalidatePath("/settings");
   revalidatePath("/duo");
   invalidateDuoCaches(user.id);
 
