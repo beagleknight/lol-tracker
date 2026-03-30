@@ -49,7 +49,6 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- UX helper: clicking the addon area focuses the adjacent input
     <div
       role="group"
       data-slot="input-group-addon"

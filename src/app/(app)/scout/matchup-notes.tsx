@@ -121,7 +121,7 @@ export function MatchupNotesPanel({
           onChange={(e) => setContent(e.target.value)}
           placeholder={t("placeholder")}
           className="min-h-20 text-sm"
-          /* eslint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: focus the textarea when user clicks "add note" */
+          /* oxlint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: focus the textarea when user clicks "add note" */
           autoFocus
         />
         <div className="flex items-center gap-2">

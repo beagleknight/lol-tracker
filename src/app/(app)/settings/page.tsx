@@ -75,7 +75,6 @@ export default function SettingsPage() {
 
   // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
   const [previewDate, setPreviewDate] = useState<Date | null>(null);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setPreviewDate(new Date()); }, []);
 
   // ─── Invite state (admin only) ────────────────────────────────────────────
@@ -103,7 +102,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (isAdmin) {
       // Load invites
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInvitesLoading(true);
       getInvites()
         .then(setInvitesList)
@@ -115,7 +113,6 @@ export default function SettingsPage() {
   // Load duo partner data (for all users)
   useEffect(() => {
     if (isLinked) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDuoLoading(true);
       Promise.all([getDuoPartner(), getRegisteredUsers()])
         .then(([partner, users]) => {

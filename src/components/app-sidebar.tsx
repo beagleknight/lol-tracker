@@ -145,7 +145,6 @@ function SidebarContent({
   useEffect(() => {
     if (!latestChangelogVersion) return;
     const lastSeen = localStorage.getItem("changelog-last-seen");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasUnseenChangelog(lastSeen !== latestChangelogVersion);
   }, [latestChangelogVersion]);
 

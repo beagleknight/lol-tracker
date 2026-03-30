@@ -215,7 +215,7 @@ export function MatchesClient({
         navigateWithFilter("search", value);
       }, 400);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [filters.result, filters.champion, filters.review]
   );
 

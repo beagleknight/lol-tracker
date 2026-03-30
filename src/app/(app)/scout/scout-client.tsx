@@ -518,7 +518,7 @@ export function ScoutClient({
       }
     }
     // Only react to searchParams changes (browser navigation)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   /** Push champion selections to the URL without a full page reload */
@@ -592,7 +592,7 @@ export function ScoutClient({
     if (initialEnemyChampion) {
       loadReport(initialEnemyChampion, initialYourChampion || undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleEnemyChange = useCallback(
