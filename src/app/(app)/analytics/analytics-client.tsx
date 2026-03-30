@@ -641,7 +641,7 @@ export function AnalyticsClient({
                     stroke={cc.gold}
                     strokeWidth={2}
                     fill="url(#lpGradient)"
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
                     dot={(props: any) => {
                       // Highlight promotion/demotion points
                       const isEvent = lpChartMeta.events.some(
