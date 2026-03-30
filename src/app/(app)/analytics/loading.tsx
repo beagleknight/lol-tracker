@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsLoading() {
   return (
@@ -7,14 +7,14 @@ export default function AnalyticsLoading() {
       {/* Header */}
       <div>
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-4 w-40 mt-2" />
+        <Skeleton className="mt-2 h-4 w-40" />
       </div>
 
       {/* LP Over Time chart */}
       <Card className="surface-glow">
         <CardHeader>
           <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-3 w-56 mt-1" />
+          <Skeleton className="mt-1 h-3 w-56" />
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] w-full" />
@@ -25,7 +25,7 @@ export default function AnalyticsLoading() {
       <Card className="surface-glow">
         <CardHeader>
           <Skeleton className="h-5 w-64" />
-          <Skeleton className="h-3 w-48 mt-1" />
+          <Skeleton className="mt-1 h-3 w-48" />
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] w-full" />
@@ -37,7 +37,7 @@ export default function AnalyticsLoading() {
         <Card className="surface-glow">
           <CardHeader>
             <Skeleton className="h-5 w-36" />
-            <Skeleton className="h-3 w-48 mt-1" />
+            <Skeleton className="mt-1 h-3 w-48" />
           </CardHeader>
           <CardContent>
             <Skeleton className="h-[300px] w-full" />
@@ -46,14 +46,14 @@ export default function AnalyticsLoading() {
         <Card className="surface-glow">
           <CardHeader>
             <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-3 w-44 mt-1" />
+            <Skeleton className="mt-1 h-3 w-44" />
           </CardHeader>
           <CardContent className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 py-1">
                 <Skeleton className="h-5 w-5 rounded" />
                 <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-10 ml-auto" />
+                <Skeleton className="ml-auto h-4 w-10" />
                 <Skeleton className="h-5 w-12 rounded-full" />
                 <Skeleton className="h-4 w-16" />
               </div>
@@ -66,13 +66,13 @@ export default function AnalyticsLoading() {
       <Card className="surface-glow">
         <CardHeader>
           <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-3 w-44 mt-1" />
+          <Skeleton className="mt-1 h-3 w-44" />
         </CardHeader>
         <CardContent className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3 py-1">
               <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-10 ml-auto" />
+              <Skeleton className="ml-auto h-4 w-10" />
               <Skeleton className="h-5 w-12 rounded-full" />
               <Skeleton className="h-4 w-16" />
               <Skeleton className="h-4 w-12" />

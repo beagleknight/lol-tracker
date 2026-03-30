@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
-import { useTranslations } from "next-intl";
-import ReactMarkdown from "react-markdown";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Sparkles, Loader2, RefreshCw, AlertCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState, useTransition, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+
 import type { InsightResult, InsightError } from "@/app/actions/ai-insights";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -87,16 +89,12 @@ export function AiInsightTrigger({
         <Sparkles
           className={cn(
             "h-3.5 w-3.5",
-            hasCachedInsight ? "text-gold fill-gold/20" : "text-muted-foreground",
+            hasCachedInsight ? "fill-gold/20 text-gold" : "text-muted-foreground",
           )}
         />
       )}
       <span className="hidden sm:inline">
-        {isPending
-          ? t("loading")
-          : hasCachedInsight
-            ? t("viewInsight")
-            : t("triggerLabel")}
+        {isPending ? t("loading") : hasCachedInsight ? t("viewInsight") : t("triggerLabel")}
       </span>
     </DialogPrimitive.Trigger>
   );
@@ -164,16 +162,14 @@ export function AiInsightDrawer({
       />
       <DialogPrimitive.Portal>
         {/* Backdrop */}
-        <DialogPrimitive.Backdrop
-          className="fixed inset-0 z-50 bg-black/40 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
-        />
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/40 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
         {/* Drawer panel */}
         <DialogPrimitive.Popup
           className={cn(
             "fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col",
             "border-l border-border/50 bg-background shadow-2xl outline-none",
-            "data-open:animate-in data-open:slide-in-from-right data-open:duration-300",
-            "data-closed:animate-out data-closed:slide-out-to-right data-closed:duration-200",
+            "data-open:animate-in data-open:duration-300 data-open:slide-in-from-right",
+            "data-closed:animate-out data-closed:duration-200 data-closed:slide-out-to-right",
           )}
         >
           {/* Header */}
@@ -208,7 +204,9 @@ export function AiInsightDrawer({
                   </Button>
                 </>
               )}
-              <DialogPrimitive.Close render={<Button variant="ghost" size="icon-xs" aria-label="Close" />}>
+              <DialogPrimitive.Close
+                render={<Button variant="ghost" size="icon-xs" aria-label="Close" />}
+              >
                 <X className="h-3.5 w-3.5" />
               </DialogPrimitive.Close>
             </div>
@@ -255,7 +253,7 @@ export function AiInsightDrawer({
                   <ReactMarkdown>{insight.content}</ReactMarkdown>
                 </div>
                 {error && (
-                  <div className="flex items-center gap-2 text-sm text-destructive mt-4">
+                  <div className="mt-4 flex items-center gap-2 text-sm text-destructive">
                     <AlertCircle className="h-4 w-4" />
                     {error}
                   </div>

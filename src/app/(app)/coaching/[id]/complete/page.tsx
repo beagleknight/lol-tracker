@@ -1,13 +1,11 @@
-import { db } from "@/db";
-import {
-  coachingSessions,
-  matches,
-  matchHighlights,
-} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { notFound, redirect } from "next/navigation";
+
+import { db } from "@/db";
+import { coachingSessions, matches, matchHighlights } from "@/db/schema";
 import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { CompleteSessionClient } from "./complete-session-client";
 
 export default async function CompleteCoachingSessionPage({
@@ -22,10 +20,7 @@ export default async function CompleteCoachingSessionPage({
   if (isNaN(sessionId)) notFound();
 
   const session = await db.query.coachingSessions.findFirst({
-    where: and(
-      eq(coachingSessions.id, sessionId),
-      eq(coachingSessions.userId, user.id)
-    ),
+    where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
   });
 
   if (!session) notFound();
@@ -52,16 +47,14 @@ export default async function CompleteCoachingSessionPage({
             vodUrl: matches.vodUrl,
           })
           .from(matches)
-          .where(
-            and(eq(matches.id, session.vodMatchId!), eq(matches.userId, user.id))
-          )
+          .where(and(eq(matches.id, session.vodMatchId), eq(matches.userId, user.id)))
       : Promise.resolve([]),
     getLatestVersion(),
     session.vodMatchId
       ? db.query.matchHighlights.findMany({
           where: and(
-            eq(matchHighlights.matchId, session.vodMatchId!),
-            eq(matchHighlights.userId, user.id)
+            eq(matchHighlights.matchId, session.vodMatchId),
+            eq(matchHighlights.userId, user.id),
           ),
           columns: {
             type: true,
@@ -74,7 +67,7 @@ export default async function CompleteCoachingSessionPage({
 
   const vodMatch = vodMatchRows[0] || null;
   const highlights = vodHighlights.map((h) => ({
-    type: h.type as "highlight" | "lowlight",
+    type: h.type,
     text: h.text,
     topic: h.topic,
   }));

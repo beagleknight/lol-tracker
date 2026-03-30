@@ -1,21 +1,5 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ResultBadge } from "@/components/result-badge";
-import { Button } from "@/components/ui/button";
-import { Pagination } from "@/components/pagination";
-import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import {
   Users,
   Trophy,
@@ -27,15 +11,23 @@ import {
   Search,
   ArrowUpDown,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
-import { getChampionIconUrl } from "@/lib/riot-api";
-import { ChampionLink } from "@/components/champion-link";
+
+import type { DuoStats, DuoGameRow, ChampionSynergy } from "@/app/actions/duo";
+
 import { getDuoGames, backfillDuoGames } from "@/app/actions/duo";
-import type {
-  DuoStats,
-  DuoGameRow,
-  ChampionSynergy,
-} from "@/app/actions/duo";
+import { ChampionLink } from "@/components/champion-link";
+import { Pagination } from "@/components/pagination";
+import { ResultBadge } from "@/components/result-badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { getChampionIconUrl } from "@/lib/riot-api";
 
 const PAGE_SIZE = 10;
 
@@ -67,14 +59,12 @@ export function DuoHeader({ partnerName }: { partnerName: string | null }) {
   const t = useTranslations("Duo");
   return (
     <div>
-      <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-        {t("title")}
-      </h1>
+      <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
       <p className="text-muted-foreground">
         {partnerName ? (
           <>
             {t("descriptionWithPartner", { partnerName: "" })}
-            <span className="text-gold font-medium">{partnerName}</span>
+            <span className="font-medium text-gold">{partnerName}</span>
           </>
         ) : (
           t("descriptionDefault")
@@ -91,11 +81,9 @@ export function DuoNoPartner() {
   return (
     <Card className="surface-glow">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">{t("noPartner.title")}</h3>
-        <p className="text-sm text-muted-foreground mb-4 max-w-md">
-          {t("noPartner.description")}
-        </p>
+        <Users className="mb-4 h-12 w-12 text-muted-foreground/30" />
+        <h3 className="mb-2 text-lg font-semibold">{t("noPartner.title")}</h3>
+        <p className="mb-4 max-w-md text-sm text-muted-foreground">{t("noPartner.description")}</p>
         <Link href="/settings">
           <Button>
             <Settings className="mr-2 h-4 w-4" />
@@ -116,11 +104,9 @@ export function DuoNoGames() {
   return (
     <Card className="surface-glow">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <Swords className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">{t("noGames.title")}</h3>
-        <p className="text-sm text-muted-foreground max-w-md mb-4">
-          {t("noGames.description")}
-        </p>
+        <Swords className="mb-4 h-12 w-12 text-muted-foreground/30" />
+        <h3 className="mb-2 text-lg font-semibold">{t("noGames.title")}</h3>
+        <p className="mb-4 max-w-md text-sm text-muted-foreground">{t("noGames.description")}</p>
         <div className="flex gap-3">
           <Button
             disabled={isBackfilling}
@@ -129,13 +115,14 @@ export function DuoNoGames() {
                 const result = await backfillDuoGames();
                 if (result.duoFound > 0) {
                   toast.success(
-                    t("toasts.backfillSuccess", { duoFound: result.duoFound, processed: result.processed })
+                    t("toasts.backfillSuccess", {
+                      duoFound: result.duoFound,
+                      processed: result.processed,
+                    }),
                   );
                   window.location.reload();
                 } else {
-                  toast.info(
-                    t("toasts.backfillNone", { processed: result.processed })
-                  );
+                  toast.info(t("toasts.backfillNone", { processed: result.processed }));
                 }
               });
             }}
@@ -158,10 +145,10 @@ export function DuoNoGames() {
 export function DuoStatsCards({ stats }: { stats: DuoStats }) {
   const t = useTranslations("Duo");
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       <Card className="surface-glow">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
             <Swords className="h-4 w-4" />
             {t("stats.gamesTogetherLabel")}
           </div>
@@ -171,15 +158,11 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
 
       <Card className="surface-glow">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
             <Trophy className="h-4 w-4" />
             {t("stats.duoWinRateLabel")}
           </div>
-          <p
-            className={`text-2xl font-bold ${
-              stats.winRate >= 50 ? "text-win" : "text-loss"
-            }`}
-          >
+          <p className={`text-2xl font-bold ${stats.winRate >= 50 ? "text-win" : "text-loss"}`}>
             {stats.winRate}%
           </p>
           <p className="text-xs text-muted-foreground">
@@ -190,15 +173,11 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
 
       <Card className="surface-glow">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4" />
             {t("stats.soloWinRateLabel")}
           </div>
-          <p
-            className={`text-2xl font-bold ${
-              stats.soloWinRate >= 50 ? "text-win" : "text-loss"
-            }`}
-          >
+          <p className={`text-2xl font-bold ${stats.soloWinRate >= 50 ? "text-win" : "text-loss"}`}>
             {stats.soloWinRate}%
           </p>
           <p className="text-xs text-muted-foreground">
@@ -209,7 +188,7 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
 
       <Card className="surface-glow">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
             {stats.winRate > stats.soloWinRate ? (
               <TrendingUp className="h-4 w-4 text-win" />
             ) : stats.winRate < stats.soloWinRate ? (
@@ -240,16 +219,10 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
 
 // ─── DuoKdaCards ─────────────────────────────────────────────────────────────
 
-export function DuoKdaCards({
-  stats,
-  partnerName,
-}: {
-  stats: DuoStats;
-  partnerName: string;
-}) {
+export function DuoKdaCards({ stats, partnerName }: { stats: DuoStats; partnerName: string }) {
   const t = useTranslations("Duo");
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <Card className="surface-glow">
         <CardHeader>
           <CardTitle className="text-base">{t("kda.yourAvgKdaTitle")}</CardTitle>
@@ -324,9 +297,7 @@ export function DuoSynergyCard({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>{t("synergy.title")}</CardTitle>
-            <CardDescription>
-              {t("synergy.description", { partnerName })}
-            </CardDescription>
+            <CardDescription>{t("synergy.description", { partnerName })}</CardDescription>
           </div>
           <div className="flex items-center gap-1">
             {(["games", "winRate", "wins"] as const).map((key) => (
@@ -334,7 +305,7 @@ export function DuoSynergyCard({
                 key={key}
                 variant={synergySortKey === key ? "secondary" : "ghost"}
                 size="sm"
-                className="h-7 text-xs px-2"
+                className="h-7 px-2 text-xs"
                 onClick={() => toggleSynergySort(key)}
               >
                 {key === "games"
@@ -342,9 +313,7 @@ export function DuoSynergyCard({
                   : key === "winRate"
                     ? t("synergy.sortWinRate")
                     : t("synergy.sortWins")}
-                {synergySortKey === key && (
-                  <ArrowUpDown className="ml-1 h-3 w-3" />
-                )}
+                {synergySortKey === key && <ArrowUpDown className="ml-1 h-3 w-3" />}
               </Button>
             ))}
           </div>
@@ -352,57 +321,49 @@ export function DuoSynergyCard({
       </CardHeader>
       <CardContent>
         {synergy.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">
+          <p className="py-4 text-center text-sm text-muted-foreground">
             {t("synergy.emptyState")}
           </p>
         ) : (
-        <div className="space-y-2">
-          {sortedSynergy.map((s) => (
-            <div
-              key={`${s.yourChampion}-${s.partnerChampion}`}
-              className="flex items-center gap-3 rounded-lg border border-border/50 p-2 bg-surface-elevated"
-            >
-              <div className="flex items-center gap-1">
-                <ChampionIcon
-                  championName={s.yourChampion}
-                  version={ddragonVersion}
-                  size={28}
-                />
-                <span className="text-xs text-muted-foreground mx-1">+</span>
-                <ChampionIcon
-                  championName={s.partnerChampion}
-                  version={ddragonVersion}
-                  size={28}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium">
-                  <ChampionLink
-                    champion={s.yourChampion}
-                    ddragonVersion={ddragonVersion}
-                    linkTo="matches"
-                    showIcon={false}
-                    textClassName="text-sm font-medium"
+          <div className="space-y-2">
+            {sortedSynergy.map((s) => (
+              <div
+                key={`${s.yourChampion}-${s.partnerChampion}`}
+                className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-2"
+              >
+                <div className="flex items-center gap-1">
+                  <ChampionIcon championName={s.yourChampion} version={ddragonVersion} size={28} />
+                  <span className="mx-1 text-xs text-muted-foreground">+</span>
+                  <ChampionIcon
+                    championName={s.partnerChampion}
+                    version={ddragonVersion}
+                    size={28}
                   />
-                  {" + "}
-                  {s.partnerChampion}
-                </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-medium">
+                    <ChampionLink
+                      champion={s.yourChampion}
+                      ddragonVersion={ddragonVersion}
+                      linkTo="matches"
+                      showIcon={false}
+                      textClassName="text-sm font-medium"
+                    />
+                    {" + "}
+                    {s.partnerChampion}
+                  </span>
+                </div>
+                <div className="text-right text-sm">
+                  <span className={`font-bold ${s.winRate >= 50 ? "text-win" : "text-loss"}`}>
+                    {s.winRate}%
+                  </span>
+                  <span className="ml-1.5 text-muted-foreground">
+                    {t("synergy.winsGames", { wins: s.wins, games: s.games })}
+                  </span>
+                </div>
               </div>
-              <div className="text-right text-sm">
-                <span
-                  className={`font-bold ${
-                    s.winRate >= 50 ? "text-win" : "text-loss"
-                  }`}
-                >
-                  {s.winRate}%
-                </span>
-                <span className="text-muted-foreground ml-1.5">
-                  {t("synergy.winsGames", { wins: s.wins, games: s.games })}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>
@@ -443,9 +404,7 @@ export function DuoRecentGames({
     <Card className="surface-glow">
       <CardHeader>
         <CardTitle>{t("recentGames.title")}</CardTitle>
-        <CardDescription>
-          {t("recentGames.description", { partnerName })}
-        </CardDescription>
+        <CardDescription>{t("recentGames.description", { partnerName })}</CardDescription>
       </CardHeader>
       <CardContent>
         {games.length > 0 ? (
@@ -454,22 +413,17 @@ export function DuoRecentGames({
               <Link
                 key={game.id}
                 href={`/matches/${game.id}`}
-                className="flex items-center gap-3 flex-wrap sm:flex-nowrap rounded-lg border border-border/50 p-3 bg-surface-elevated hover:bg-accent transition-colors"
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3 transition-colors hover:bg-accent sm:flex-nowrap"
               >
                 <ResultBadge
                   result={game.result}
                   className={`w-12 justify-center ${
-                    game.result === "Victory"
-                      ? "bg-win/20 text-win border-win/30"
-                      : ""
+                    game.result === "Victory" ? "border-win/30 bg-win/20 text-win" : ""
                   }`}
                 />
 
-                <div className="flex items-center gap-2 min-w-0">
-                  <ChampionIcon
-                    championName={game.championName}
-                    version={ddragonVersion}
-                  />
+                <div className="flex min-w-0 items-center gap-2">
+                  <ChampionIcon championName={game.championName} version={ddragonVersion} />
                   <div>
                     <p className="text-sm font-medium">{game.championName}</p>
                     <p className="text-xs text-muted-foreground">
@@ -480,23 +434,17 @@ export function DuoRecentGames({
 
                 <span className="text-xs text-muted-foreground">+</span>
 
-                <div className="flex items-center gap-2 min-w-0">
-                  <ChampionIcon
-                    championName={game.partnerChampionName}
-                    version={ddragonVersion}
-                  />
+                <div className="flex min-w-0 items-center gap-2">
+                  <ChampionIcon championName={game.partnerChampionName} version={ddragonVersion} />
                   <div>
-                    <p className="text-sm font-medium">
-                      {game.partnerChampionName}
-                    </p>
+                    <p className="text-sm font-medium">{game.partnerChampionName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {game.partnerKills}/{game.partnerDeaths}/
-                      {game.partnerAssists}
+                      {game.partnerKills}/{game.partnerDeaths}/{game.partnerAssists}
                     </p>
                   </div>
                 </div>
 
-                <div className="ml-auto text-right text-xs text-muted-foreground shrink-0">
+                <div className="ml-auto shrink-0 text-right text-xs text-muted-foreground">
                   <p>{formatDuration(game.gameDurationSeconds)}</p>
                   <p>{formatDate(game.gameDate, locale, "short")}</p>
                 </div>
@@ -517,11 +465,9 @@ export function DuoRecentGames({
             />
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="py-8 text-center text-muted-foreground">
             <p>{t("recentGames.emptyTitle")}</p>
-            <p className="text-sm mt-1">
-              {t("recentGames.emptyDescription")}
-            </p>
+            <p className="mt-1 text-sm">{t("recentGames.emptyDescription")}</p>
           </div>
         )}
       </CardContent>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
 interface SyncProgress {
@@ -70,7 +70,7 @@ export function useSyncMatches(isLinked: boolean = false) {
             throw new Error(
               res.ok
                 ? "No response body"
-                : `Something went wrong while fetching matches. Please try again.`
+                : `Something went wrong while fetching matches. Please try again.`,
             );
           }
 
@@ -80,9 +80,7 @@ export function useSyncMatches(isLinked: boolean = false) {
           let receivedFinal = false;
 
           const processMessage = (msg: string) => {
-            const dataLine = msg
-              .split("\n")
-              .find((line) => line.startsWith("data: "));
+            const dataLine = msg.split("\n").find((line) => line.startsWith("data: "));
             if (!dataLine) return;
 
             try {
@@ -110,10 +108,9 @@ export function useSyncMatches(isLinked: boolean = false) {
                       `${data.message} (${data.synced} imported, ${pct}%)`,
                     );
                   } else {
-                    toast.loading(
-                      `${data.message} (${data.synced} imported, ${pct}%)`,
-                      { id: toastIdRef.current }
-                    );
+                    toast.loading(`${data.message} (${data.synced} imported, ${pct}%)`, {
+                      id: toastIdRef.current,
+                    });
                   }
                   break;
                 }
@@ -180,10 +177,10 @@ export function useSyncMatches(isLinked: boolean = false) {
           // If the stream ended without a done/error event, show a warning
           // (this shouldn't happen — indicates the server closed unexpectedly)
           if (!receivedFinal && !silent) {
-            toast.warning(
-              "Update ended unexpectedly. Check if your matches are up to date.",
-              { id: toastIdRef.current, duration: 8000 }
-            );
+            toast.warning("Update ended unexpectedly. Check if your matches are up to date.", {
+              id: toastIdRef.current,
+              duration: 8000,
+            });
           }
         })
         .catch((error) => {
@@ -191,9 +188,7 @@ export function useSyncMatches(isLinked: boolean = false) {
           // NOT on clean server-side stream close.
           if (!silent || toastIdRef.current) {
             const message =
-              error instanceof Error
-                ? error.message
-                : "Connection lost while updating matches.";
+              error instanceof Error ? error.message : "Connection lost while updating matches.";
             toast.error(message, { id: toastIdRef.current });
           }
         })
@@ -204,7 +199,7 @@ export function useSyncMatches(isLinked: boolean = false) {
           lastSyncAtRef.current = Date.now();
         });
     },
-    [router]
+    [router],
   );
 
   // --- Auto-sync trigger 1: Login cookie ---
@@ -234,8 +229,7 @@ export function useSyncMatches(isLinked: boolean = false) {
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [isLinked, handleSync]);
 
   // --- Auto-sync trigger 3: Periodic interval (jittered 12–18 min) ---

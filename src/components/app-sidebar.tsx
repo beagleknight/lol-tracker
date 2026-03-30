@@ -1,10 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { useSyncMatches } from "@/hooks/use-sync-matches";
-import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Swords,
@@ -22,13 +17,19 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useSyncMatches } from "@/hooks/use-sync-matches";
+import { cn } from "@/lib/utils";
 
 interface NavItem {
   label: string;
@@ -40,9 +41,7 @@ interface NavItem {
 
 /** Nav definitions without labels — labels are resolved via useTranslations */
 const navDefs = {
-  dashboard: [
-    { key: "navDashboard" as const, href: "/dashboard", icon: LayoutDashboard },
-  ],
+  dashboard: [{ key: "navDashboard" as const, href: "/dashboard", icon: LayoutDashboard }],
   tracker: [
     { key: "navMatches" as const, href: "/matches", icon: Swords },
     { key: "navReview" as const, href: "/review", icon: ClipboardCheck },
@@ -100,7 +99,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       (href) =>
         href !== item.href &&
         href.startsWith(item.href + "/") &&
-        (pathname === href || pathname.startsWith(href + "/"))
+        (pathname === href || pathname.startsWith(href + "/")),
     );
   const isActive = isExactMatch || (isPrefixMatch && !hasMoreSpecificSibling);
   const Icon = item.icon;
@@ -112,8 +111,8 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
         isActive
-          ? "bg-gold/10 text-gold font-medium border-l-2 border-gold glow-gold-sm"
-          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          ? "glow-gold-sm border-l-2 border-gold bg-gold/10 font-medium text-gold"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -123,9 +122,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
           {item.badge}
         </span>
       )}
-      {item.dot && (
-        <span className="ml-auto h-2 w-2 rounded-full bg-gold animate-pulse" />
-      )}
+      {item.dot && <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-gold" />}
     </Link>
   );
 }
@@ -145,13 +142,17 @@ function SidebarContent({
   useEffect(() => {
     if (!latestChangelogVersion) return;
     const lastSeen = localStorage.getItem("changelog-last-seen");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasUnseenChangelog(lastSeen !== latestChangelogVersion);
   }, [latestChangelogVersion]);
 
   // Resolve nav labels from translations
-  const resolve = (defs: readonly { key: string; href: string; icon: React.ComponentType<{ className?: string }> }[]): NavItem[] =>
-    defs.map((d) => ({ label: t(d.key as Parameters<typeof t>[0]), href: d.href, icon: d.icon }));
+  const resolve = (
+    defs: readonly {
+      key: string;
+      href: string;
+      icon: React.ComponentType<{ className?: string }>;
+    }[],
+  ): NavItem[] => defs.map((d) => ({ label: t(d.key), href: d.href, icon: d.icon }));
 
   const dashboardNav = resolve(navDefs.dashboard);
   const trackerNav = resolve(navDefs.tracker);
@@ -162,16 +163,12 @@ function SidebarContent({
   // Inject review badge counts into the tracker nav
   const totalReview = (reviewCounts?.postGame ?? 0) + (reviewCounts?.vod ?? 0);
   const trackerNavWithBadges = trackerNav.map((item) =>
-    item.href === "/review" && totalReview > 0
-      ? { ...item, badge: totalReview }
-      : item
+    item.href === "/review" && totalReview > 0 ? { ...item, badge: totalReview } : item,
   );
 
   // Inject unseen dot into the changelog nav link
   const bottomNavWithDot = bottomNav.map((item) =>
-    item.href === "/changelog" && hasUnseenChangelog
-      ? { ...item, dot: true }
-      : item
+    item.href === "/changelog" && hasUnseenChangelog ? { ...item, dot: true } : item,
   );
 
   return (
@@ -188,16 +185,14 @@ function SidebarContent({
           className={cn(
             "h-8 w-8",
             isLinked
-              ? "text-gold/70 hover:text-gold hover:bg-gold/10 ring-1 ring-gold/20"
-              : "text-muted-foreground"
+              ? "text-gold/70 ring-1 ring-gold/20 hover:bg-gold/10 hover:text-gold"
+              : "text-muted-foreground",
           )}
           onClick={() => handleSync()}
           disabled={isSyncing || !isLinked}
           title={isLinked ? t("updateGamesTooltip") : t("linkRiotAccountTooltip")}
         >
-          <RefreshCw
-            className={cn("h-4 w-4", isSyncing && "animate-spin")}
-          />
+          <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
         </Button>
       </div>
       <Separator />
@@ -210,7 +205,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
           {t("sectionTracker")}
         </div>
         <div className="space-y-1">
@@ -219,7 +214,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
           {t("sectionInsights")}
         </div>
         <div className="space-y-1">
@@ -228,7 +223,7 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gold/70">
+        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
           {t("sectionCoaching")}
         </div>
         <div className="space-y-1">
@@ -256,21 +251,21 @@ function SidebarContent({
               {(user.name || "U").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{user.name}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{user.name}</p>
             {user.riotGameName && (
-              <p className="text-xs text-gold/70 truncate">
+              <p className="truncate text-xs text-gold/70">
                 {user.riotGameName}#{user.riotTagLine}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex shrink-0 items-center gap-1">
             <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 shrink-0 hover:text-destructive"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => void signOut({ callbackUrl: "/login" })}
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
@@ -295,26 +290,16 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label={mobileOpen ? "Close menu" : "Open menu"}
       >
-        {mobileOpen ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <Menu className="h-5 w-5" />
-        )}
+        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          role="button"
-          tabIndex={0}
           aria-label="Close sidebar"
           onClick={() => setMobileOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              setMobileOpen(false);
-            }
-          }}
         />
       )}
 
@@ -322,7 +307,7 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
       <aside
         className={cn(
           "fixed top-0 left-0 z-40 h-screen w-64 border-r border-border/50 bg-card transition-transform md:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <SidebarContent

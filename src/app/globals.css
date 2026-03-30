@@ -8,19 +8,13 @@
       height: 0;
     }
     to {
-      height: var(
-        --radix-accordion-content-height,
-        var(--accordion-panel-height, auto)
-      );
+      height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
     }
   }
 
   @keyframes accordion-up {
     from {
-      height: var(
-        --radix-accordion-content-height,
-        var(--accordion-panel-height, auto)
-      );
+      height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
     }
     to {
       height: 0;
@@ -200,7 +194,7 @@
   --chart-2: oklch(0.65 0.17 250);
   --chart-3: oklch(0.78 0.14 80);
   --chart-4: oklch(0.72 0.15 150);
-  --chart-5: oklch(0.60 0.22 27);
+  --chart-5: oklch(0.6 0.22 27);
   --radius: 0.5rem;
 
   /* Gaming colors */
@@ -225,11 +219,11 @@
   /* Semantic gameplay colors - light mode */
   --win: oklch(0.55 0.16 150);
   --loss: oklch(0.55 0.22 27);
-  --win-muted: oklch(0.60 0.12 150);
-  --loss-muted: oklch(0.60 0.16 27);
+  --win-muted: oklch(0.6 0.12 150);
+  --loss-muted: oklch(0.6 0.16 27);
   --warning: oklch(0.65 0.16 65);
   --status-progress: oklch(0.65 0.16 85);
-  --streak-hot: oklch(0.60 0.20 45);
+  --streak-hot: oklch(0.6 0.2 45);
   --streak-cold: oklch(0.55 0.14 250);
   --kills: oklch(0.55 0.16 150);
   --deaths: oklch(0.55 0.22 27);
@@ -240,7 +234,7 @@
   --chart-tooltip-bg: oklch(0.98 0.005 260);
   --chart-tooltip-border: oklch(0.88 0.01 260);
   --chart-reference: oklch(0.78 0.01 260);
-  --chart-promotion: oklch(0.50 0.16 150);
+  --chart-promotion: oklch(0.5 0.16 150);
   --chart-demotion: oklch(0.55 0.22 27);
 }
 
@@ -266,7 +260,7 @@
 
   /* Muted: subdued dark surfaces */
   --muted: oklch(0.2 0.02 260);
-  --muted-foreground: oklch(0.70 0.02 250);
+  --muted-foreground: oklch(0.7 0.02 250);
 
   /* Accent: subtle dark blue surface for hover states */
   --accent: oklch(0.24 0.04 260);
@@ -282,7 +276,7 @@
   --chart-2: oklch(0.65 0.17 250);
   --chart-3: oklch(0.78 0.14 80);
   --chart-4: oklch(0.72 0.15 150);
-  --chart-5: oklch(0.60 0.22 27);
+  --chart-5: oklch(0.6 0.22 27);
 
   --radius: 0.5rem;
 
@@ -311,8 +305,8 @@
   --win-muted: oklch(0.72 0.12 150);
   --loss-muted: oklch(0.72 0.16 27);
   --warning: oklch(0.78 0.14 65);
-  --status-progress: oklch(0.80 0.14 85);
-  --streak-hot: oklch(0.70 0.18 45);
+  --status-progress: oklch(0.8 0.14 85);
+  --streak-hot: oklch(0.7 0.18 45);
   --streak-cold: oklch(0.68 0.14 250);
   --kills: oklch(0.72 0.17 150);
   --deaths: oklch(0.68 0.22 27);
@@ -445,7 +439,9 @@
 
   /* Card hover lift */
   .hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
   .hover-lift:hover {
     transform: translateY(-2px);

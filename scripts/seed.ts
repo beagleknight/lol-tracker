@@ -184,7 +184,9 @@ async function seed() {
     console.error("");
     console.error("This is a safety measure to prevent accidentally wiping production data.");
     console.error("If you are sure this is the right database, re-run with:");
-    console.error(`  TURSO_DATABASE_URL="${dbUrl}" TURSO_AUTH_TOKEN=... npm run db:seed -- --force-remote`);
+    console.error(
+      `  TURSO_DATABASE_URL="${dbUrl}" TURSO_AUTH_TOKEN=... npm run db:seed -- --force-remote`,
+    );
     process.exit(1);
   }
 
@@ -223,10 +225,21 @@ async function seed() {
       sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, locale, language, role, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        u.id, u.discordId, u.name, u.image, u.email,
-        u.riotGameName, u.riotTagLine, u.puuid, u.summonerId,
-        u.duoPartnerUserId, u.locale, u.language, u.role,
-        ts(now), ts(now),
+        u.id,
+        u.discordId,
+        u.name,
+        u.image,
+        u.email,
+        u.riotGameName,
+        u.riotTagLine,
+        u.puuid,
+        u.summonerId,
+        u.duoPartnerUserId,
+        u.locale,
+        u.language,
+        u.role,
+        ts(now),
+        ts(now),
       ],
     });
   }
@@ -279,7 +292,7 @@ async function seed() {
 
   for (let i = 0; i < totalMatches; i++) {
     const gameDate = new Date(
-      matchStart.getTime() + (timeSpan / totalMatches) * i + randInt(0, 3600000)
+      matchStart.getTime() + (timeSpan / totalMatches) * i + randInt(0, 3600000),
     );
     // ~5% remakes, then ~55% win rate among non-remakes (slightly positive, climbing)
     const resultRoll = rand();
@@ -335,16 +348,17 @@ async function seed() {
       duoDeaths: hasDuo ? randInt(0, 8) : 0,
       duoAssists: hasDuo ? randInt(2, 20) : 0,
       reviewed,
-      comment: reviewed && rand() < 0.6
-        ? pick([
-            "Good wave management this game",
-            "Should have roamed more after pushing",
-            "Team fights went well, positioning was solid",
-            "Got caught warding alone twice — need to be more careful",
-            "Lane phase was rough but recovered well",
-            "Good TP plays this game",
-          ])
-        : null,
+      comment:
+        reviewed && rand() < 0.6
+          ? pick([
+              "Good wave management this game",
+              "Should have roamed more after pushing",
+              "Team fights went well, positioning was solid",
+              "Got caught warding alone twice — need to be more careful",
+              "Lane phase was rough but recovered well",
+              "Good TP plays this game",
+            ])
+          : null,
       reviewNotes: reviewed
         ? pick([
             "Focus on cs leads in the first 5 minutes",
@@ -379,13 +393,32 @@ async function seed() {
               duo_partner_kills, duo_partner_deaths, duo_partner_assists
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        m.matchId, m.odometer, MAIN_USER_ID, ts(m.gameDate), m.result,
-        m.champion.id, m.champion.name, m.keystone.id, m.keystone.name,
-        m.matchup.id, m.matchup.name,
-        m.kills, m.deaths, m.assists, m.cs, m.csPerMin,
-        m.durationSeconds, m.goldEarned, m.visionScore,
-        m.comment, m.reviewed ? 1 : 0, m.reviewNotes, m.reviewSkipped,
-        420, ts(m.gameDate), null,
+        m.matchId,
+        m.odometer,
+        MAIN_USER_ID,
+        ts(m.gameDate),
+        m.result,
+        m.champion.id,
+        m.champion.name,
+        m.keystone.id,
+        m.keystone.name,
+        m.matchup.id,
+        m.matchup.name,
+        m.kills,
+        m.deaths,
+        m.assists,
+        m.cs,
+        m.csPerMin,
+        m.durationSeconds,
+        m.goldEarned,
+        m.visionScore,
+        m.comment,
+        m.reviewed ? 1 : 0,
+        m.reviewNotes,
+        m.reviewSkipped,
+        420,
+        ts(m.gameDate),
+        null,
         m.hasDuo ? DUO_USER.puuid : null,
         m.duoChampion?.name ?? null,
         m.hasDuo ? m.duoKills : null,
@@ -451,7 +484,8 @@ async function seed() {
       status: "completed",
       durationMinutes: 45,
       topics: JSON.stringify(["Team fighting", "Vision control"]),
-      notes: "Reviewed team fight positioning. Need to stay further back and use abilities from max range.",
+      notes:
+        "Reviewed team fight positioning. Need to stay further back and use abilities from max range.",
       matchIds: ["EUW1_7000000030", "EUW1_7000000032", "EUW1_7000000035"],
     },
     {
@@ -473,10 +507,16 @@ async function seed() {
       sql: `INSERT INTO coaching_sessions (id, user_id, coach_name, date, status, duration_minutes, topics, notes, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        sessionId, MAIN_USER_ID, s.coachName,
-        ts(new Date(s.date)), s.status,
-        s.durationMinutes, s.topics, s.notes,
-        ts(new Date(s.date)), ts(new Date(s.date)),
+        sessionId,
+        MAIN_USER_ID,
+        s.coachName,
+        ts(new Date(s.date)),
+        s.status,
+        s.durationMinutes,
+        s.topics,
+        s.notes,
+        ts(new Date(s.date)),
+        ts(new Date(s.date)),
       ],
     });
 
@@ -493,13 +533,49 @@ async function seed() {
 
   const actionItems = [
     // Session 1 items
-    { sessionId: 1, desc: "Practice slow push -> crash -> roam pattern in 5 games", topic: "Wave management", status: "completed", completedAt: "2026-02-20T10:00:00Z" },
-    { sessionId: 1, desc: "Track opponent cooldowns before trading", topic: "Trading patterns", status: "completed", completedAt: "2026-02-25T10:00:00Z" },
-    { sessionId: 1, desc: "Review 3 VODs focusing on first 5 minutes", topic: "Laning", status: "completed", completedAt: "2026-02-18T10:00:00Z" },
+    {
+      sessionId: 1,
+      desc: "Practice slow push -> crash -> roam pattern in 5 games",
+      topic: "Wave management",
+      status: "completed",
+      completedAt: "2026-02-20T10:00:00Z",
+    },
+    {
+      sessionId: 1,
+      desc: "Track opponent cooldowns before trading",
+      topic: "Trading patterns",
+      status: "completed",
+      completedAt: "2026-02-25T10:00:00Z",
+    },
+    {
+      sessionId: 1,
+      desc: "Review 3 VODs focusing on first 5 minutes",
+      topic: "Laning",
+      status: "completed",
+      completedAt: "2026-02-18T10:00:00Z",
+    },
     // Session 2 items
-    { sessionId: 2, desc: "Play 3 games focusing on max-range ability usage in team fights", topic: "Team fighting", status: "in_progress", completedAt: null },
-    { sessionId: 2, desc: "Place 2+ control wards per game before dragon spawns", topic: "Vision control", status: "in_progress", completedAt: null },
-    { sessionId: 2, desc: "Watch LCK mid lane team fight positioning VODs", topic: "Team fighting", status: "pending", completedAt: null },
+    {
+      sessionId: 2,
+      desc: "Play 3 games focusing on max-range ability usage in team fights",
+      topic: "Team fighting",
+      status: "in_progress",
+      completedAt: null,
+    },
+    {
+      sessionId: 2,
+      desc: "Place 2+ control wards per game before dragon spawns",
+      topic: "Vision control",
+      status: "in_progress",
+      completedAt: null,
+    },
+    {
+      sessionId: 2,
+      desc: "Watch LCK mid lane team fight positioning VODs",
+      topic: "Team fighting",
+      status: "pending",
+      completedAt: null,
+    },
   ];
 
   for (const item of actionItems) {
@@ -507,7 +583,11 @@ async function seed() {
       sql: `INSERT INTO coaching_action_items (session_id, user_id, description, topic, status, completed_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        item.sessionId, MAIN_USER_ID, item.desc, item.topic, item.status,
+        item.sessionId,
+        MAIN_USER_ID,
+        item.desc,
+        item.topic,
+        item.status,
         item.completedAt ? ts(new Date(item.completedAt)) : null,
         ts(new Date("2026-02-10T14:00:00Z")),
       ],
@@ -518,18 +598,78 @@ async function seed() {
   console.log("Creating match highlights...");
 
   const highlights = [
-    { matchId: "EUW1_7000000005", type: "highlight", text: "Perfect wave freeze denied enemy 2 waves", topic: "Wave management" },
-    { matchId: "EUW1_7000000005", type: "lowlight", text: "Greeded for cannon and got chunked to 30%", topic: "Laning" },
-    { matchId: "EUW1_7000000010", type: "highlight", text: "3-man roam bot got us dragon + double kill", topic: "Roaming" },
-    { matchId: "EUW1_7000000015", type: "lowlight", text: "Died to gank with no vision — need to ward before pushing", topic: "Vision control" },
-    { matchId: "EUW1_7000000015", type: "highlight", text: "Solo killed matchup at level 6 with full combo", topic: "Laning" },
-    { matchId: "EUW1_7000000020", type: "highlight", text: "Team fight positioning was great — stayed max range entire fight", topic: "Team fighting" },
-    { matchId: "EUW1_7000000020", type: "lowlight", text: "Used flash aggressively when it wasn't needed", topic: "Team fighting" },
-    { matchId: "EUW1_7000000025", type: "highlight", text: "Won lane with good trades and back timing", topic: "Laning" },
-    { matchId: "EUW1_7000000030", type: "lowlight", text: "Walked into unwarded jungle and got collapsed on", topic: "Vision control" },
-    { matchId: "EUW1_7000000035", type: "highlight", text: "Set up slow push before dragon and got priority", topic: "Wave management" },
-    { matchId: "EUW1_7000000040", type: "lowlight", text: "Missed every skillshot in the baron fight", topic: "Team fighting" },
-    { matchId: "EUW1_7000000045", type: "highlight", text: "Clean 1v1 outplay under tower for first blood", topic: "Laning" },
+    {
+      matchId: "EUW1_7000000005",
+      type: "highlight",
+      text: "Perfect wave freeze denied enemy 2 waves",
+      topic: "Wave management",
+    },
+    {
+      matchId: "EUW1_7000000005",
+      type: "lowlight",
+      text: "Greeded for cannon and got chunked to 30%",
+      topic: "Laning",
+    },
+    {
+      matchId: "EUW1_7000000010",
+      type: "highlight",
+      text: "3-man roam bot got us dragon + double kill",
+      topic: "Roaming",
+    },
+    {
+      matchId: "EUW1_7000000015",
+      type: "lowlight",
+      text: "Died to gank with no vision — need to ward before pushing",
+      topic: "Vision control",
+    },
+    {
+      matchId: "EUW1_7000000015",
+      type: "highlight",
+      text: "Solo killed matchup at level 6 with full combo",
+      topic: "Laning",
+    },
+    {
+      matchId: "EUW1_7000000020",
+      type: "highlight",
+      text: "Team fight positioning was great — stayed max range entire fight",
+      topic: "Team fighting",
+    },
+    {
+      matchId: "EUW1_7000000020",
+      type: "lowlight",
+      text: "Used flash aggressively when it wasn't needed",
+      topic: "Team fighting",
+    },
+    {
+      matchId: "EUW1_7000000025",
+      type: "highlight",
+      text: "Won lane with good trades and back timing",
+      topic: "Laning",
+    },
+    {
+      matchId: "EUW1_7000000030",
+      type: "lowlight",
+      text: "Walked into unwarded jungle and got collapsed on",
+      topic: "Vision control",
+    },
+    {
+      matchId: "EUW1_7000000035",
+      type: "highlight",
+      text: "Set up slow push before dragon and got priority",
+      topic: "Wave management",
+    },
+    {
+      matchId: "EUW1_7000000040",
+      type: "lowlight",
+      text: "Missed every skillshot in the baron fight",
+      topic: "Team fighting",
+    },
+    {
+      matchId: "EUW1_7000000045",
+      type: "highlight",
+      text: "Clean 1v1 outplay under tower for first blood",
+      topic: "Laning",
+    },
   ];
 
   for (const h of highlights) {
@@ -548,8 +688,14 @@ async function seed() {
     sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      MAIN_USER_ID, "Reach Gold IV", "GOLD", "IV",
-      "SILVER", "I", 50, "achieved",
+      MAIN_USER_ID,
+      "Reach Gold IV",
+      "GOLD",
+      "IV",
+      "SILVER",
+      "I",
+      50,
+      "achieved",
       null,
       ts(new Date("2026-01-10T18:00:00Z")), // created when season started
       ts(new Date("2026-02-07T14:30:00Z")), // achieved when hit Gold IV
@@ -562,8 +708,14 @@ async function seed() {
     sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      MAIN_USER_ID, "Reach Platinum IV", "PLATINUM", "IV",
-      "GOLD", "III", 5, "active",
+      MAIN_USER_ID,
+      "Reach Platinum IV",
+      "PLATINUM",
+      "IV",
+      "GOLD",
+      "III",
+      5,
+      "active",
       ts(new Date("2026-06-30T23:59:59Z")), // end of Split 2 deadline
       ts(new Date("2026-03-10T10:00:00Z")), // created mid-March
       null,

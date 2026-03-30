@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+
 import { reseedDatabase } from "./helpers/reseed";
 
 /**
@@ -23,14 +24,10 @@ test.describe("Review flow", () => {
 
     // Should show "games waiting for review" message
     // (Base UI Tabs renders all panels in the DOM, so the text appears twice)
-    await expect(
-      page.getByText("waiting for review").first()
-    ).toBeVisible();
+    await expect(page.getByText("waiting for review").first()).toBeVisible();
 
     // Post-game hint text should be visible
-    await expect(
-      page.getByText("These games haven't been reviewed yet").first()
-    ).toBeVisible();
+    await expect(page.getByText("These games haven't been reviewed yet").first()).toBeVisible();
 
     // There should be at least one match card visible
     const matchCards = page.locator('[class*="surface-glow"]');
@@ -47,18 +44,14 @@ test.describe("Review flow", () => {
     const highlightTopicSelect = firstCard.locator("select").first();
     await highlightTopicSelect.selectOption("Laning phase");
 
-    const highlightTextInput = firstCard
-      .getByPlaceholder("Details (optional)")
-      .first();
+    const highlightTextInput = firstCard.getByPlaceholder("Details (optional)").first();
     await highlightTextInput.fill("E2E test highlight note");
 
     // Press Enter on the text input to add the highlight
     await highlightTextInput.press("Enter");
 
     // Verify the highlight was added (appears as a chip/tag)
-    await expect(
-      firstCard.getByText("E2E test highlight note")
-    ).toBeVisible();
+    await expect(firstCard.getByText("E2E test highlight note")).toBeVisible();
 
     // Open the "Game Notes (optional)" collapsible
     await firstCard.getByText("Game Notes (optional)").click();
@@ -78,14 +71,12 @@ test.describe("Review flow", () => {
       .click();
 
     // Wait for toast confirmation (note the trailing period)
-    await expect(
-      page.getByText("Review saved & VOD review skipped.")
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Review saved & VOD review skipped.")).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
-  test("VOD review tab shows seeded matches with highlights", async ({
-    page,
-  }) => {
+  test("VOD review tab shows seeded matches with highlights", async ({ page }) => {
     await page.goto("/review");
 
     // Click the VOD Review tab (use getByRole to disambiguate)
@@ -99,7 +90,10 @@ test.describe("Review flow", () => {
 
     const hasVodHint = await vodHint.isVisible().catch(() => false);
     const hasEmptyState = await emptyState.isVisible().catch(() => false);
-    const hasCards = await matchCards.first().isVisible().catch(() => false);
+    const hasCards = await matchCards
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     expect(hasVodHint || hasEmptyState || hasCards).toBeTruthy();
   });
@@ -111,9 +105,7 @@ test.describe("Review flow", () => {
     await page.getByRole("tab", { name: "Completed" }).first().click();
 
     // Should display completed/reviewed games count
-    await expect(
-      page.getByText("reviewed game").first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("reviewed game").first()).toBeVisible({ timeout: 10_000 });
 
     // At least some seeded matches are reviewed (~30%)
     const completedCards = page.locator('[class*="surface-glow"]');

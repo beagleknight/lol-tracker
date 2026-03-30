@@ -1,6 +1,7 @@
-import { db } from "@/db";
-import { matches, type MatchResult } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+
+import { db } from "@/db";
+import { matches } from "@/db/schema";
 import { getCurrentUser } from "@/lib/session";
 
 // ─── CSV Helpers ─────────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
   // Build WHERE conditions
   const conditions = [eq(matches.userId, user.id)];
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
-    conditions.push(eq(matches.result, result as MatchResult));
+    conditions.push(eq(matches.result, result));
   }
   if (champion !== "all") {
     conditions.push(eq(matches.championName, champion));
@@ -122,9 +123,7 @@ export async function GET(request: Request) {
   } else if (review === "unreviewed") {
     conditions.push(eq(matches.reviewed, false));
   } else if (review === "has-notes") {
-    conditions.push(
-      sql`${matches.comment} IS NOT NULL AND ${matches.comment} != ''`
-    );
+    conditions.push(sql`${matches.comment} IS NOT NULL AND ${matches.comment} != ''`);
   }
   if (search) {
     const pattern = `%${search}%`;
@@ -135,7 +134,7 @@ export async function GET(request: Request) {
         OR ${matches.runeKeystoneName} LIKE ${pattern}
         OR ${matches.comment} LIKE ${pattern}
         OR ${matches.reviewNotes} LIKE ${pattern}
-      )`
+      )`,
     );
   }
 
@@ -166,10 +165,7 @@ export async function GET(request: Request) {
     },
   });
 
-  const csvLines = [
-    CSV_HEADERS.join(","),
-    ...allMatches.map(matchToCsvRow),
-  ];
+  const csvLines = [CSV_HEADERS.join(","), ...allMatches.map(matchToCsvRow)];
   const csvContent = csvLines.join("\n");
 
   const today = new Date().toISOString().slice(0, 10);

@@ -1,7 +1,9 @@
+import { eq, desc } from "drizzle-orm";
+
+import { checkGoalAchievement } from "@/app/actions/goals";
 import { db } from "@/db";
 import { matches, rankSnapshots, users } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { getCurrentUser } from "@/lib/session";
+import { invalidateAllCaches } from "@/lib/cache";
 import {
   getMatchIds,
   getMatch,
@@ -13,8 +15,7 @@ import {
   getSoloQueueEntryByPuuid,
   RiotApiError,
 } from "@/lib/riot-api";
-import { invalidateAllCaches } from "@/lib/cache";
-import { checkGoalAchievement } from "@/app/actions/goals";
+import { getCurrentUser } from "@/lib/session";
 
 function sseMessage(data: Record<string, unknown>): string {
   return `data: ${JSON.stringify(data)}\n\n`;
@@ -30,7 +31,7 @@ export async function GET() {
   if (!user.puuid) {
     return Response.json(
       { error: "Please link your Riot account first in Settings." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -54,9 +55,7 @@ export async function GET() {
           where: eq(matches.userId, user.id),
           columns: { id: true },
         });
-        const existingIds = new Set(
-          existingMatches.map((m: { id: string }) => m.id)
-        );
+        const existingIds = new Set(existingMatches.map((m: { id: string }) => m.id));
 
         send({ type: "status", message: "Fetching match history from Riot..." });
 
@@ -160,38 +159,12 @@ export async function GET() {
               ? extractDuoPartnerData(matchData, user.puuid!, duoPartnerPuuid!)
               : null;
 
-            await db.insert(matches).values({
-              id: matchId,
-              odometer: nextOdometer++,
-              userId: user.id,
-              gameDate: playerData.gameDate,
-              result: playerData.result,
-              championId: playerData.championId,
-              championName: playerData.championName,
-              runeKeystoneId: playerData.runeKeystoneId,
-              runeKeystoneName: playerData.runeKeystoneId
-                ? getKeystoneName(playerData.runeKeystoneId)
-                : null,
-              matchupChampionId: matchup?.championId || null,
-              matchupChampionName: matchup?.championName || null,
-              kills: playerData.kills,
-              deaths: playerData.deaths,
-              assists: playerData.assists,
-              cs: playerData.cs,
-              csPerMin: playerData.csPerMin,
-              gameDurationSeconds: playerData.gameDurationSeconds,
-              goldEarned: playerData.goldEarned,
-              visionScore: playerData.visionScore,
-              queueId: playerData.queueId,
-              rawMatchJson: JSON.stringify(matchData),
-              duoPartnerPuuid: detectedDuoPuuid,
-              duoPartnerChampionName: duoPartnerData?.championName ?? null,
-              duoPartnerKills: duoPartnerData?.kills ?? null,
-              duoPartnerDeaths: duoPartnerData?.deaths ?? null,
-              duoPartnerAssists: duoPartnerData?.assists ?? null,
-            }).onConflictDoUpdate({
-              target: [matches.id, matches.userId],
-              set: {
+            await db
+              .insert(matches)
+              .values({
+                id: matchId,
+                odometer: nextOdometer++,
+                userId: user.id,
                 gameDate: playerData.gameDate,
                 result: playerData.result,
                 championId: playerData.championId,
@@ -217,9 +190,38 @@ export async function GET() {
                 duoPartnerKills: duoPartnerData?.kills ?? null,
                 duoPartnerDeaths: duoPartnerData?.deaths ?? null,
                 duoPartnerAssists: duoPartnerData?.assists ?? null,
-                syncedAt: new Date(),
-              },
-            });
+              })
+              .onConflictDoUpdate({
+                target: [matches.id, matches.userId],
+                set: {
+                  gameDate: playerData.gameDate,
+                  result: playerData.result,
+                  championId: playerData.championId,
+                  championName: playerData.championName,
+                  runeKeystoneId: playerData.runeKeystoneId,
+                  runeKeystoneName: playerData.runeKeystoneId
+                    ? getKeystoneName(playerData.runeKeystoneId)
+                    : null,
+                  matchupChampionId: matchup?.championId || null,
+                  matchupChampionName: matchup?.championName || null,
+                  kills: playerData.kills,
+                  deaths: playerData.deaths,
+                  assists: playerData.assists,
+                  cs: playerData.cs,
+                  csPerMin: playerData.csPerMin,
+                  gameDurationSeconds: playerData.gameDurationSeconds,
+                  goldEarned: playerData.goldEarned,
+                  visionScore: playerData.visionScore,
+                  queueId: playerData.queueId,
+                  rawMatchJson: JSON.stringify(matchData),
+                  duoPartnerPuuid: detectedDuoPuuid,
+                  duoPartnerChampionName: duoPartnerData?.championName ?? null,
+                  duoPartnerKills: duoPartnerData?.kills ?? null,
+                  duoPartnerDeaths: duoPartnerData?.deaths ?? null,
+                  duoPartnerAssists: duoPartnerData?.assists ?? null,
+                  syncedAt: new Date(),
+                },
+              });
 
             syncedCount++;
           } catch (matchError) {
@@ -267,8 +269,7 @@ export async function GET() {
           message: parts.join(" ") + ".",
         });
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to sync matches";
+        const message = error instanceof Error ? error.message : "Failed to sync matches";
         console.error("Sync error:", message);
         send({ type: "error", message });
       } finally {

@@ -1,8 +1,10 @@
+import { eq, desc, inArray } from "drizzle-orm";
+
 import { db } from "@/db";
 import { matches, matchHighlights, coachingSessions } from "@/db/schema";
-import { eq, desc, inArray } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { ScheduleSessionClient } from "./schedule-session-client";
 
 export default async function ScheduleCoachingSessionPage() {
@@ -60,7 +62,7 @@ export default async function ScheduleCoachingSessionPage() {
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
     highlightsByMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

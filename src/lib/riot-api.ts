@@ -101,7 +101,7 @@ export interface RiotMatch {
 export class RiotApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = "RiotApiError";
@@ -122,10 +122,7 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
     }
 
     if (response.status === 401 || response.status === 403) {
-      throw new RiotApiError(
-        response.status,
-        "Riot API key is invalid or unauthorized"
-      );
+      throw new RiotApiError(response.status, "Riot API key is invalid or unauthorized");
     }
 
     if (response.status === 429) {
@@ -135,16 +132,15 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
       // Use Retry-After header if available, otherwise exponential backoff
       const retryAfter = response.headers.get("Retry-After");
       const waitSeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, attempt + 1);
-      console.log(`Rate limited. Waiting ${waitSeconds}s before retry ${attempt + 1}/${retries}...`);
+      console.log(
+        `Rate limited. Waiting ${waitSeconds}s before retry ${attempt + 1}/${retries}...`,
+      );
       await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
       continue;
     }
 
     const body = await response.text().catch(() => "");
-    throw new RiotApiError(
-      response.status,
-      `Riot API error ${response.status}: ${body}`
-    );
+    throw new RiotApiError(response.status, `Riot API error ${response.status}: ${body}`);
   }
 
   // Should never reach here, but TypeScript needs it
@@ -153,29 +149,20 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
 
 // ─── Account ─────────────────────────────────────────────────────────────────
 
-export async function getAccountByRiotId(
-  gameName: string,
-  tagLine: string
-): Promise<RiotAccount> {
+export async function getAccountByRiotId(gameName: string, tagLine: string): Promise<RiotAccount> {
   if (_isDemoMode) return mockGetAccountByRiotId(gameName, tagLine);
   return riotFetch<RiotAccount>(
-    `${REGIONAL_HOST}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`
+    `${REGIONAL_HOST}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
   );
 }
 
 // ─── League / Rank ───────────────────────────────────────────────────────────
 
-async function getLeagueEntriesByPuuid(
-  puuid: string
-): Promise<RiotLeagueEntry[]> {
-  return riotFetch<RiotLeagueEntry[]>(
-    `${PLATFORM_HOST}/lol/league/v4/entries/by-puuid/${puuid}`
-  );
+async function getLeagueEntriesByPuuid(puuid: string): Promise<RiotLeagueEntry[]> {
+  return riotFetch<RiotLeagueEntry[]>(`${PLATFORM_HOST}/lol/league/v4/entries/by-puuid/${puuid}`);
 }
 
-export async function getSoloQueueEntryByPuuid(
-  puuid: string
-): Promise<RiotLeagueEntry | null> {
+export async function getSoloQueueEntryByPuuid(puuid: string): Promise<RiotLeagueEntry | null> {
   if (_isDemoMode) return mockGetSoloQueueEntryByPuuid(puuid);
   const entries = await getLeagueEntriesByPuuid(puuid);
   return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
@@ -190,27 +177,24 @@ export async function getMatchIds(
     count?: number;
     start?: number;
     startTime?: number; // epoch seconds
-  } = {}
+  } = {},
 ): Promise<string[]> {
   if (_isDemoMode) return mockGetMatchIds();
   const params = new URLSearchParams();
   if (options.queue !== undefined) params.set("queue", String(options.queue));
   if (options.count !== undefined) params.set("count", String(options.count));
   if (options.start !== undefined) params.set("start", String(options.start));
-  if (options.startTime !== undefined)
-    params.set("startTime", String(options.startTime));
+  if (options.startTime !== undefined) params.set("startTime", String(options.startTime));
 
   const queryString = params.toString();
   return riotFetch<string[]>(
-    `${REGIONAL_HOST}/lol/match/v5/matches/by-puuid/${puuid}/ids${queryString ? `?${queryString}` : ""}`
+    `${REGIONAL_HOST}/lol/match/v5/matches/by-puuid/${puuid}/ids${queryString ? `?${queryString}` : ""}`,
   );
 }
 
 export async function getMatch(matchId: string): Promise<RiotMatch> {
   if (_isDemoMode) return mockGetMatch(matchId);
-  return riotFetch<RiotMatch>(
-    `${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`
-  );
+  return riotFetch<RiotMatch>(`${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`);
 }
 
 // ─── Champion ID Mapping (Data Dragon) ──────────────────────────────────────
@@ -221,9 +205,7 @@ let cachedChampionMap: Map<number, string> | null = null;
  * Fetch a mapping of champion ID -> champion name (Data Dragon key) from DDragon.
  * Cached in-memory after first call, with a 24h revalidation on the fetch.
  */
-export async function getChampionIdMap(
-  version?: string
-): Promise<Map<number, string>> {
+export async function getChampionIdMap(version?: string): Promise<Map<number, string>> {
   if (cachedChampionMap) return cachedChampionMap;
 
   const ver = version || (await getLatestVersion());
@@ -252,24 +234,22 @@ export function extractPlayerData(match: RiotMatch, puuid: string) {
   if (!participant) return null;
 
   const gameDuration = match.info.gameDuration;
-  const cs =
-    participant.totalMinionsKilled + participant.neutralMinionsKilled;
+  const cs = participant.totalMinionsKilled + participant.neutralMinionsKilled;
   const csPerMin = gameDuration > 0 ? cs / (gameDuration / 60) : 0;
 
   // Get keystone rune
-  const primaryStyle = participant.perks?.styles?.find(
-    (s) => s.description === "primaryStyle"
-  );
+  const primaryStyle = participant.perks?.styles?.find((s) => s.description === "primaryStyle");
   const keystoneId = primaryStyle?.selections?.[0]?.perk;
 
   return {
     matchId: match.metadata.matchId,
     gameDate: new Date(match.info.gameCreation),
-    result: match.info.gameEndedInEarlySurrender || match.info.gameDuration < 300
-      ? ("Remake" as const)
-      : participant.win
-        ? ("Victory" as const)
-        : ("Defeat" as const),
+    result:
+      match.info.gameEndedInEarlySurrender || match.info.gameDuration < 300
+        ? ("Remake" as const)
+        : participant.win
+          ? ("Victory" as const)
+          : ("Defeat" as const),
     championId: participant.championId,
     championName: participant.championName,
     runeKeystoneId: keystoneId || null,
@@ -303,7 +283,7 @@ export function extractPlayerData(match: RiotMatch, puuid: string) {
  */
 export function findMatchupChampion(
   match: RiotMatch,
-  puuid: string
+  puuid: string,
 ): { championId: number; championName: string } | null {
   const player = match.info.participants.find((p) => p.puuid === puuid);
   if (!player) return null;
@@ -317,7 +297,7 @@ export function findMatchupChampion(
   const enemy = match.info.participants.find(
     (p) =>
       p.teamId !== player.teamId &&
-      (p.teamPosition === position || p.individualPosition === position)
+      (p.teamPosition === position || p.individualPosition === position),
   );
 
   if (!enemy) return null;
@@ -335,13 +315,13 @@ export function findMatchupChampion(
 export function findDuoPartner(
   match: RiotMatch,
   playerPuuid: string,
-  duoPartnerPuuid: string
+  duoPartnerPuuid: string,
 ): string | null {
   const player = match.info.participants.find((p) => p.puuid === playerPuuid);
   if (!player) return null;
 
   const partner = match.info.participants.find(
-    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId
+    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId,
   );
 
   return partner ? partner.puuid : null;
@@ -354,7 +334,7 @@ export function findDuoPartner(
 export function extractDuoPartnerData(
   match: RiotMatch,
   playerPuuid: string,
-  duoPartnerPuuid: string
+  duoPartnerPuuid: string,
 ): {
   championName: string;
   kills: number;
@@ -365,7 +345,7 @@ export function extractDuoPartnerData(
   if (!player) return null;
 
   const partner = match.info.participants.find(
-    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId
+    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId,
   );
   if (!partner) return null;
 
@@ -381,10 +361,9 @@ export function extractDuoPartnerData(
 
 export async function getLatestVersion(): Promise<string> {
   // Revalidate once per day — DDragon versions change infrequently
-  const versions = await fetch(
-    "https://ddragon.leagueoflegends.com/api/versions.json",
-    { next: { revalidate: 86400 } }
-  ).then((r) => r.json());
+  const versions = await fetch("https://ddragon.leagueoflegends.com/api/versions.json", {
+    next: { revalidate: 86400 },
+  }).then((r) => r.json());
 
   return versions[0];
 }

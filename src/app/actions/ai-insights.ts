@@ -1,15 +1,17 @@
 "use server";
 
+import { generateText } from "ai";
+import { eq, and, sql } from "drizzle-orm";
+
+import type { MatchupReport } from "@/app/actions/live";
+
 import { db } from "@/db";
 import { aiInsights } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { generateText } from "ai";
-import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
 import { buildMatchupContext } from "@/lib/ai/context";
 import { buildPostGameContext } from "@/lib/ai/context";
 import { buildMatchupPrompt, buildPostGamePrompt } from "@/lib/ai/prompts";
-import type { MatchupReport } from "@/app/actions/live";
+import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
+import { requireUser } from "@/lib/session";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -57,8 +59,8 @@ async function getDailyUsage(userId: string): Promise<number> {
     .where(
       and(
         eq(aiInsights.userId, userId),
-        sql`${aiInsights.createdAt} >= ${Math.floor(todayStart().getTime() / 1000)}`
-      )
+        sql`${aiInsights.createdAt} >= ${Math.floor(todayStart().getTime() / 1000)}`,
+      ),
     );
   return row?.count ?? 0;
 }
@@ -81,7 +83,7 @@ export async function getAiDailyUsage(): Promise<{ used: number; limit: number }
 
 export async function getCachedInsight(
   type: InsightType,
-  params: Record<string, string | undefined>
+  params: Record<string, string | undefined>,
 ): Promise<InsightResult | null> {
   const user = await requireUser();
   const key = contextKey(type, params);
@@ -90,7 +92,7 @@ export async function getCachedInsight(
     where: and(
       eq(aiInsights.userId, user.id),
       eq(aiInsights.type, type),
-      eq(aiInsights.contextKey, key)
+      eq(aiInsights.contextKey, key),
     ),
   });
 
@@ -112,7 +114,7 @@ export async function generateMatchupInsight(
   enemyChampionName: string,
   yourChampionName: string | undefined,
   report: MatchupReport,
-  forceRegenerate = false
+  forceRegenerate = false,
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
 
@@ -131,7 +133,7 @@ export async function generateMatchupInsight(
       where: and(
         eq(aiInsights.userId, user.id),
         eq(aiInsights.type, "matchup"),
-        eq(aiInsights.contextKey, key)
+        eq(aiInsights.contextKey, key),
       ),
     });
 
@@ -163,7 +165,7 @@ export async function generateMatchupInsight(
     summonerName,
     enemyChampionName,
     yourChampionName,
-    report
+    report,
   );
 
   const language = user.language || "en";
@@ -217,7 +219,7 @@ export async function generateMatchupInsight(
 
 export async function generatePostGameInsight(
   matchId: string,
-  forceRegenerate = false
+  forceRegenerate = false,
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
 
@@ -233,7 +235,7 @@ export async function generatePostGameInsight(
       where: and(
         eq(aiInsights.userId, user.id),
         eq(aiInsights.type, "post-game"),
-        eq(aiInsights.contextKey, key)
+        eq(aiInsights.contextKey, key),
       ),
     });
 

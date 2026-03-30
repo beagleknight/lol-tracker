@@ -1,13 +1,11 @@
-import { db } from "@/db";
-import {
-  coachingSessions,
-  matches,
-  matchHighlights,
-} from "@/db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { notFound } from "next/navigation";
+
+import { db } from "@/db";
+import { coachingSessions, matches, matchHighlights } from "@/db/schema";
 import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { EditSessionClient } from "./edit-session-client";
 
 export default async function EditCoachingSessionPage({
@@ -22,10 +20,7 @@ export default async function EditCoachingSessionPage({
   if (isNaN(sessionId)) notFound();
 
   const session = await db.query.coachingSessions.findFirst({
-    where: and(
-      eq(coachingSessions.id, sessionId),
-      eq(coachingSessions.userId, user.id)
-    ),
+    where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
   });
 
   if (!session) notFound();
@@ -80,7 +75,7 @@ export default async function EditCoachingSessionPage({
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
     highlightsByMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

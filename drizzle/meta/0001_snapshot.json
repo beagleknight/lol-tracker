@@ -68,10 +68,7 @@
       "indexes": {
         "action_items_user_status_idx": {
           "name": "action_items_user_status_idx",
-          "columns": [
-            "user_id",
-            "status"
-          ],
+          "columns": ["user_id", "status"],
           "isUnique": false
         }
       },
@@ -80,12 +77,8 @@
           "name": "coaching_action_items_session_id_coaching_sessions_id_fk",
           "tableFrom": "coaching_action_items",
           "tableTo": "coaching_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -93,12 +86,8 @@
           "name": "coaching_action_items_user_id_users_id_fk",
           "tableFrom": "coaching_action_items",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -131,12 +120,8 @@
           "name": "coaching_session_matches_session_id_coaching_sessions_id_fk",
           "tableFrom": "coaching_session_matches",
           "tableTo": "coaching_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -144,22 +129,15 @@
           "name": "coaching_session_matches_match_id_matches_id_fk",
           "tableFrom": "coaching_session_matches",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "coaching_session_matches_session_id_match_id_pk": {
-          "columns": [
-            "session_id",
-            "match_id"
-          ],
+          "columns": ["session_id", "match_id"],
           "name": "coaching_session_matches_session_id_match_id_pk"
         }
       },
@@ -239,12 +217,8 @@
           "name": "coaching_sessions_user_id_users_id_fk",
           "tableFrom": "coaching_sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -302,9 +276,7 @@
       "indexes": {
         "invites_code_unique": {
           "name": "invites_code_unique",
-          "columns": [
-            "code"
-          ],
+          "columns": ["code"],
           "isUnique": true
         }
       },
@@ -313,12 +285,8 @@
           "name": "invites_created_by_users_id_fk",
           "tableFrom": "invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -326,12 +294,8 @@
           "name": "invites_used_by_users_id_fk",
           "tableFrom": "invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "used_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["used_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -531,25 +495,17 @@
       "indexes": {
         "matches_odometer_unique": {
           "name": "matches_odometer_unique",
-          "columns": [
-            "odometer"
-          ],
+          "columns": ["odometer"],
           "isUnique": true
         },
         "matches_user_game_date_idx": {
           "name": "matches_user_game_date_idx",
-          "columns": [
-            "user_id",
-            "game_date"
-          ],
+          "columns": ["user_id", "game_date"],
           "isUnique": false
         },
         "matches_user_reviewed_idx": {
           "name": "matches_user_reviewed_idx",
-          "columns": [
-            "user_id",
-            "reviewed"
-          ],
+          "columns": ["user_id", "reviewed"],
           "isUnique": false
         }
       },
@@ -558,12 +514,8 @@
           "name": "matches_user_id_users_id_fk",
           "tableFrom": "matches",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -638,10 +590,7 @@
       "indexes": {
         "rank_snapshots_user_captured_idx": {
           "name": "rank_snapshots_user_captured_idx",
-          "columns": [
-            "user_id",
-            "captured_at"
-          ],
+          "columns": ["user_id", "captured_at"],
           "isUnique": false
         }
       },
@@ -650,12 +599,8 @@
           "name": "rank_snapshots_user_id_users_id_fk",
           "tableFrom": "rank_snapshots",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -756,9 +701,7 @@
       "indexes": {
         "users_discord_id_unique": {
           "name": "users_discord_id_unique",
-          "columns": [
-            "discord_id"
-          ],
+          "columns": ["discord_id"],
           "isUnique": true
         }
       },

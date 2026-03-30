@@ -71,12 +71,8 @@
           "name": "coaching_action_items_session_id_coaching_sessions_id_fk",
           "tableFrom": "coaching_action_items",
           "tableTo": "coaching_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -84,12 +80,8 @@
           "name": "coaching_action_items_user_id_users_id_fk",
           "tableFrom": "coaching_action_items",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -122,12 +114,8 @@
           "name": "coaching_session_matches_session_id_coaching_sessions_id_fk",
           "tableFrom": "coaching_session_matches",
           "tableTo": "coaching_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -135,22 +123,15 @@
           "name": "coaching_session_matches_match_id_matches_id_fk",
           "tableFrom": "coaching_session_matches",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "coaching_session_matches_session_id_match_id_pk": {
-          "columns": [
-            "session_id",
-            "match_id"
-          ],
+          "columns": ["session_id", "match_id"],
           "name": "coaching_session_matches_session_id_match_id_pk"
         }
       },
@@ -230,12 +211,8 @@
           "name": "coaching_sessions_user_id_users_id_fk",
           "tableFrom": "coaching_sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -435,9 +412,7 @@
       "indexes": {
         "matches_odometer_unique": {
           "name": "matches_odometer_unique",
-          "columns": [
-            "odometer"
-          ],
+          "columns": ["odometer"],
           "isUnique": true
         }
       },
@@ -446,12 +421,8 @@
           "name": "matches_user_id_users_id_fk",
           "tableFrom": "matches",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -529,12 +500,8 @@
           "name": "rank_snapshots_user_id_users_id_fk",
           "tableFrom": "rank_snapshots",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -627,9 +594,7 @@
       "indexes": {
         "users_discord_id_unique": {
           "name": "users_discord_id_unique",
-          "columns": [
-            "discord_id"
-          ],
+          "columns": ["discord_id"],
           "isUnique": true
         }
       },

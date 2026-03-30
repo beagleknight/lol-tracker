@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
 import { ChevronsUpDown } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -13,11 +14,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface ChampionRecommendation {
@@ -67,15 +64,12 @@ export function ChampionCombobox({
     return names;
   }, [recommendations]);
 
-  const hasRecommendations =
-    recommendations && recommendations.some((g) => g.champions.length > 0);
+  const hasRecommendations = recommendations && recommendations.some((g) => g.champions.length > 0);
 
   return (
     <div className={className}>
       {label && (
-        <span className="text-xs font-medium text-muted-foreground mb-1 block">
-          {label}
-        </span>
+        <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
       )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
@@ -83,6 +77,7 @@ export function ChampionCombobox({
             <Button
               variant="outline"
               role="combobox"
+              aria-controls="champion-listbox"
               aria-expanded={open}
               aria-label={label || placeholder}
               className="w-full justify-between font-normal"
@@ -108,12 +103,12 @@ export function ChampionCombobox({
         <PopoverContent className="w-[--anchor-width] p-0" align="start">
           <Command>
             <CommandInput placeholder="Search champion..." />
-            <CommandList>
+            <CommandList id="champion-listbox">
               <CommandEmpty>No champion found.</CommandEmpty>
 
               {/* Recommendation groups */}
               {hasRecommendations &&
-                recommendations!.map(
+                recommendations.map(
                   (group) =>
                     group.champions.length > 0 && (
                       <CommandGroup key={group.heading} heading={group.heading}>
@@ -123,9 +118,7 @@ export function ChampionCombobox({
                             value={c.name}
                             data-checked={value === c.name}
                             onSelect={(currentValue) => {
-                              onValueChange(
-                                currentValue === value ? "" : currentValue
-                              );
+                              onValueChange(currentValue === value ? "" : currentValue);
                               setOpen(false);
                             }}
                           >
@@ -143,15 +136,13 @@ export function ChampionCombobox({
                           </CommandItem>
                         ))}
                       </CommandGroup>
-                    )
+                    ),
                 )}
 
               {hasRecommendations && <CommandSeparator />}
 
               {/* Full alphabetical list (excluding already-shown recommendations) */}
-              <CommandGroup
-                heading={hasRecommendations ? "All Champions" : undefined}
-              >
+              <CommandGroup heading={hasRecommendations ? "All Champions" : undefined}>
                 {champions
                   .filter((name) => !hasRecommendations || !recommendedNames.has(name))
                   .map((name) => (
@@ -160,9 +151,7 @@ export function ChampionCombobox({
                       value={name}
                       data-checked={value === name}
                       onSelect={(currentValue) => {
-                        onValueChange(
-                          currentValue === value ? "" : currentValue
-                        );
+                        onValueChange(currentValue === value ? "" : currentValue);
                         setOpen(false);
                       }}
                     >

@@ -1,15 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { ResultBadge, ResultBar } from "@/components/result-badge";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import {
   MessageSquare,
   Eye,
@@ -19,10 +9,17 @@ import {
   ChevronRight,
   EyeOff,
 } from "lucide-react";
-import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
-import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
-import { ChampionLink } from "@/components/champion-link";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+
 import type { MatchResult } from "@/lib/match-result";
+
+import { ChampionLink } from "@/components/champion-link";
+import { ResultBadge, ResultBar } from "@/components/result-badge";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -125,8 +122,8 @@ export function MatchCard({
     ? match.reviewSkippedReason
       ? t("reviewSkipped", { reason: match.reviewSkippedReason })
       : hasReviewNotes
-      ? match.reviewNotes!
-      : t("reviewed")
+        ? match.reviewNotes!
+        : t("reviewed")
     : t("notReviewed");
 
   return (
@@ -147,13 +144,15 @@ export function MatchCard({
           />
 
           {/* Main info */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             {/* Line 1: Champion vs Opponent + compact highlight pills */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`font-medium ${isCompact ? "text-sm" : "text-sm"}`}>{match.championName}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`font-medium ${isCompact ? "text-sm" : "text-sm"}`}>
+                {match.championName}
+              </span>
               {match.matchupChampionName ? (
                 <>
-                  <span className="text-muted-foreground text-xs">{t("vs")}</span>
+                  <span className="text-xs text-muted-foreground">{t("vs")}</span>
                   {showScoutLink ? (
                     <ChampionLink
                       champion={match.matchupChampionName}
@@ -181,64 +180,18 @@ export function MatchCard({
                 <span className="text-sm text-muted-foreground">&mdash;</span>
               )}
               {/* Compact: highlight pills on champion line */}
-              {isCompact && hasHighlights && visibleHighlights.map((item, i) => {
-                const hasText = !!(item.text && item.topic);
-                return (
-                  <Tooltip key={`h-${i}`}>
-                    <TooltipTrigger
-                      className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
-                        hasText
-                          ? "bg-win/20 text-win-muted"
-                          : "bg-win/10 text-win"
-                      }`}
-                    >
-                      <ThumbsUp className="h-2.5 w-2.5" />
-                      {item.topic || item.text}
-                    </TooltipTrigger>
-                    {hasText && (
-                      <TooltipContent side="bottom" className="max-w-sm">
-                        <p className="whitespace-pre-wrap">{item.text}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-              {isCompact && hasHighlights && highlightOverflow > 0 && (
-                <span className="text-[10px] text-muted-foreground">
-                  +{highlightOverflow}
-                </span>
-              )}
-            </div>
-
-            {/* Line 2 (compact): Rune · Duration · KDA · CS + lowlight pills */}
-            {isCompact && (
-              <div className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
-                {match.runeKeystoneName && (() => {
-                  const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
-                  return iconUrl ? (
-                    <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
-                  ) : null;
-                })()}
-                <span>
-                  {match.runeKeystoneName || "\u2014"} &middot;{" "}
-                  {formatDuration(match.gameDurationSeconds)} &middot;{" "}
-                  <span className="font-mono">
-                    {match.kills}/{match.deaths}/{match.assists}
-                  </span>{" "}
-                  &middot; {t("csLabel", { cs: match.cs })}
-                </span>
-                {hasHighlights && visibleLowlights.map((item, i) => {
+              {isCompact &&
+                hasHighlights &&
+                visibleHighlights.map((item, i) => {
                   const hasText = !!(item.text && item.topic);
                   return (
-                    <Tooltip key={`l-${i}`}>
+                    <Tooltip key={`h-${i}`}>
                       <TooltipTrigger
-                        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
-                          hasText
-                            ? "bg-loss/20 text-loss-muted"
-                            : "bg-loss/10 text-loss"
+                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
+                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
                         }`}
                       >
-                        <ThumbsDown className="h-2.5 w-2.5" />
+                        <ThumbsUp className="h-2.5 w-2.5" />
                         {item.topic || item.text}
                       </TooltipTrigger>
                       {hasText && (
@@ -249,26 +202,66 @@ export function MatchCard({
                     </Tooltip>
                   );
                 })}
+              {isCompact && hasHighlights && highlightOverflow > 0 && (
+                <span className="text-[10px] text-muted-foreground">+{highlightOverflow}</span>
+              )}
+            </div>
+
+            {/* Line 2 (compact): Rune · Duration · KDA · CS + lowlight pills */}
+            {isCompact && (
+              <div className="inline-flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                {match.runeKeystoneName &&
+                  (() => {
+                    const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
+                    return iconUrl ? (
+                      <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
+                    ) : null;
+                  })()}
+                <span>
+                  {match.runeKeystoneName || "\u2014"} &middot;{" "}
+                  {formatDuration(match.gameDurationSeconds)} &middot;{" "}
+                  <span className="font-mono">
+                    {match.kills}/{match.deaths}/{match.assists}
+                  </span>{" "}
+                  &middot; {t("csLabel", { cs: match.cs })}
+                </span>
+                {hasHighlights &&
+                  visibleLowlights.map((item, i) => {
+                    const hasText = !!(item.text && item.topic);
+                    return (
+                      <Tooltip key={`l-${i}`}>
+                        <TooltipTrigger
+                          className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
+                            hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
+                          }`}
+                        >
+                          <ThumbsDown className="h-2.5 w-2.5" />
+                          {item.topic || item.text}
+                        </TooltipTrigger>
+                        {hasText && (
+                          <TooltipContent side="bottom" className="max-w-sm">
+                            <p className="whitespace-pre-wrap">{item.text}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    );
+                  })}
                 {isCompact && hasHighlights && lowlightOverflow > 0 && (
-                  <span className="text-[10px] text-muted-foreground">
-                    +{lowlightOverflow}
-                  </span>
+                  <span className="text-[10px] text-muted-foreground">+{lowlightOverflow}</span>
                 )}
               </div>
             )}
 
             {/* Highlights preview — default variant only (compact shows them inline above) */}
             {!isCompact && hasHighlights && (
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {highlightItems.map((item, i) => {
                   const hasText = !!(item.text && item.topic);
                   return (
                     <Tooltip key={`h-${i}`}>
                       <TooltipTrigger
-                        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
-                          hasText
-                            ? "bg-win/20 text-win-muted"
-                            : "bg-win/10 text-win"
+                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
+                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
                         }`}
                       >
                         <ThumbsUp className="h-2.5 w-2.5" />
@@ -287,10 +280,8 @@ export function MatchCard({
                   return (
                     <Tooltip key={`l-${i}`}>
                       <TooltipTrigger
-                        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] cursor-default ${
-                          hasText
-                            ? "bg-loss/20 text-loss-muted"
-                            : "bg-loss/10 text-loss"
+                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
+                          hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
                         }`}
                       >
                         <ThumbsDown className="h-2.5 w-2.5" />
@@ -309,7 +300,7 @@ export function MatchCard({
 
             {/* Fallback: show comment preview if no highlights (default variant only) */}
             {!isCompact && !hasHighlights && hasComment && (
-              <p className="text-xs text-muted-foreground italic mt-0.5 truncate max-w-md">
+              <p className="mt-0.5 max-w-md truncate text-xs text-muted-foreground italic">
                 &ldquo;{match.comment}&rdquo;
               </p>
             )}
@@ -318,15 +309,13 @@ export function MatchCard({
           {/* Stats — default variant only (compact stats are inline above) */}
           {!isCompact && (
             <>
-              <span className="sm:hidden font-mono text-xs text-muted-foreground shrink-0">
+              <span className="shrink-0 font-mono text-xs text-muted-foreground sm:hidden">
                 {match.kills}/{match.deaths}/{match.assists}
               </span>
-              <div className="hidden sm:flex items-center gap-4 text-sm shrink-0">
+              <div className="hidden shrink-0 items-center gap-4 text-sm sm:flex">
                 <span className="font-mono">
                   {match.kills}/{match.deaths}/{match.assists}
-                  <span className="text-muted-foreground text-xs ml-1">
-                    ({kda})
-                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">({kda})</span>
                 </span>
                 <span className="font-mono text-muted-foreground">
                   {t("csLabel", { cs: match.cs })}
@@ -339,7 +328,7 @@ export function MatchCard({
           )}
 
           {/* Indicators with tooltips (hide duo/comment/unreviewed in compact) */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex shrink-0 items-center gap-1.5">
             {!isCompact && match.duoPartnerPuuid && (
               <Tooltip>
                 <TooltipTrigger className="cursor-default" aria-label="Duo game">
@@ -383,15 +372,13 @@ export function MatchCard({
 
           {/* Date — default variant only */}
           {!isCompact && (
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
+            <span className="shrink-0 text-[10px] whitespace-nowrap text-muted-foreground">
               {formatDate(match.gameDate, locale)}
             </span>
           )}
 
           {/* Navigate indicator — default variant only */}
-          {!isCompact && (
-            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-          )}
+          {!isCompact && <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
         </div>
       </Link>
     </TooltipProvider>

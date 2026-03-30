@@ -1,7 +1,8 @@
-import { type FullConfig } from "@playwright/test";
+import type { FullConfig } from "@playwright/test";
+
 import { execSync } from "child_process";
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 /**
  * Global setup for smoke tests:

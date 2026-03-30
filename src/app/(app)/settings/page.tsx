@@ -1,43 +1,5 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import {
-  linkRiotAccount,
-  unlinkRiotAccount,
-  getRegisteredUsers,
-  getDuoPartner,
-  setDuoPartner,
-  clearDuoPartner,
-  updateLocale,
-  updateLanguage,
-} from "@/app/actions/settings";
-import {
-  createInvite,
-  getInvites,
-  deleteInvite,
-} from "@/app/actions/invites";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import {
   LinkIcon,
   Unlink,
@@ -50,8 +12,37 @@ import {
   Users,
   Globe,
 } from "lucide-react";
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useState, useTransition, useEffect } from "react";
+import { toast } from "sonner";
+
+import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
+import {
+  linkRiotAccount,
+  unlinkRiotAccount,
+  getRegisteredUsers,
+  getDuoPartner,
+  setDuoPartner,
+  clearDuoPartner,
+  updateLocale,
+  updateLanguage,
+} from "@/app/actions/settings";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
 
 interface InviteItem {
   id: number;
@@ -75,8 +66,9 @@ export default function SettingsPage() {
 
   // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
   const [previewDate, setPreviewDate] = useState<Date | null>(null);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setPreviewDate(new Date()); }, []);
+  useEffect(() => {
+    setPreviewDate(new Date());
+  }, []);
 
   // ─── Invite state (admin only) ────────────────────────────────────────────
   const [invitesList, setInvitesList] = useState<InviteItem[]>([]);
@@ -103,7 +95,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (isAdmin) {
       // Load invites
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInvitesLoading(true);
       getInvites()
         .then(setInvitesList)
@@ -115,7 +106,6 @@ export default function SettingsPage() {
   // Load duo partner data (for all users)
   useEffect(() => {
     if (isLinked) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDuoLoading(true);
       Promise.all([getDuoPartner(), getRegisteredUsers()])
         .then(([partner, users]) => {
@@ -131,9 +121,7 @@ export default function SettingsPage() {
 
   function handleLink() {
     if (!riotId.includes("#")) {
-      toast.error(
-        t("toasts.riotIdFormatError")
-      );
+      toast.error(t("toasts.riotIdFormatError"));
       return;
     }
 
@@ -145,7 +133,12 @@ export default function SettingsPage() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(t("toasts.linkSuccess", { gameName: result.gameName ?? "", tagLine: result.tagLine ?? "" }));
+        toast.success(
+          t("toasts.linkSuccess", {
+            gameName: result.gameName ?? "",
+            tagLine: result.tagLine ?? "",
+          }),
+        );
         setRiotId("");
         await updateSession();
       }
@@ -185,7 +178,7 @@ export default function SettingsPage() {
   }
 
   function handleCopyCode(code: string) {
-    navigator.clipboard.writeText(code);
+    void navigator.clipboard.writeText(code);
     toast.success(t("toasts.inviteCopied"));
   }
 
@@ -261,12 +254,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground">
-          {t("description")}
-        </p>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       {/* Riot Account Card */}
@@ -275,10 +264,7 @@ export default function SettingsPage() {
           <CardTitle className="flex items-center gap-2">
             {t("riotAccount.title")}
             {isLinked ? (
-              <Badge
-                variant="default"
-                className="ml-2 bg-gold/20 text-gold border border-gold/30"
-              >
+              <Badge variant="default" className="ml-2 border border-gold/30 bg-gold/20 text-gold">
                 {t("riotAccount.badgeLinked")}
               </Badge>
             ) : (
@@ -287,26 +273,19 @@ export default function SettingsPage() {
               </Badge>
             )}
           </CardTitle>
-          <CardDescription>
-            {t("riotAccount.description")}
-          </CardDescription>
+          <CardDescription>{t("riotAccount.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLinked ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
+              <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">{t("riotAccount.riotIdLabel")}</p>
                   <p className="text-lg font-semibold text-gold">
                     {session.user.riotGameName}#{session.user.riotTagLine}
                   </p>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleUnlink}
-                  disabled={isPending}
-                >
+                <Button variant="destructive" size="sm" onClick={handleUnlink} disabled={isPending}>
                   {isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -315,9 +294,7 @@ export default function SettingsPage() {
                   {t("riotAccount.unlinkButton")}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("riotAccount.unlinkHelpText")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t("riotAccount.unlinkHelpText")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -344,9 +321,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("riotAccount.linkHelpText")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t("riotAccount.linkHelpText")}</p>
             </div>
           )}
         </CardContent>
@@ -359,17 +334,12 @@ export default function SettingsPage() {
             <Globe className="h-5 w-5 text-gold" />
             {t("languageCard.title")}
           </CardTitle>
-          <CardDescription>
-            {t("languageCard.description")}
-          </CardDescription>
+          <CardDescription>{t("languageCard.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="language-select">{t("languageCard.languageLabel")}</Label>
-            <Select
-              value={userLanguage}
-              onValueChange={handleLanguageChange}
-            >
+            <Select value={userLanguage} onValueChange={handleLanguageChange}>
               <SelectTrigger id="language-select" className="w-full max-w-xs" disabled={isPending}>
                 <SelectValue />
               </SelectTrigger>
@@ -384,10 +354,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="locale-select">{t("languageCard.formatLabel")}</Label>
-            <Select
-              value={userLocale}
-              onValueChange={handleLocaleChange}
-            >
+            <Select value={userLocale} onValueChange={handleLocaleChange}>
               <SelectTrigger id="locale-select" className="w-full max-w-xs" disabled={isPending}>
                 <SelectValue placeholder={t("languageCard.selectPlaceholder")} />
               </SelectTrigger>
@@ -401,7 +368,8 @@ export default function SettingsPage() {
             </Select>
           </div>
           <p className="text-xs text-muted-foreground">
-            {t("languageCard.previewPrefix")} {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
+            {t("languageCard.previewPrefix")}{" "}
+            {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
           </p>
         </CardContent>
       </Card>
@@ -416,7 +384,7 @@ export default function SettingsPage() {
               {duoPartner ? (
                 <Badge
                   variant="default"
-                  className="ml-2 bg-gold/20 text-gold border border-gold/30"
+                  className="ml-2 border border-gold/30 bg-gold/20 text-gold"
                 >
                   {t("duoPartner.badgeSet")}
                 </Badge>
@@ -426,9 +394,7 @@ export default function SettingsPage() {
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription>
-              {t("duoPartner.description")}
-            </CardDescription>
+            <CardDescription>{t("duoPartner.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             {duoLoading ? (
@@ -441,7 +407,7 @@ export default function SettingsPage() {
               </div>
             ) : duoPartner ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-4 rounded-lg border border-gold/20 p-4 bg-surface-elevated">
+                <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">{t("duoPartner.partnerLabel")}</p>
                     <p className="text-lg font-semibold text-gold">
@@ -465,24 +431,18 @@ export default function SettingsPage() {
               </div>
             ) : registeredUsers.length > 0 ? (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  {t("duoPartner.selectPrompt")}
-                </p>
+                <p className="text-sm text-muted-foreground">{t("duoPartner.selectPrompt")}</p>
                 <div className="space-y-2">
                   {registeredUsers.map((u) => (
                     <div
                       key={u.id}
-                      className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated"
+                      className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
                     >
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gold">
                           {u.riotGameName}#{u.riotTagLine}
                         </p>
-                        {u.name && (
-                          <p className="text-xs text-muted-foreground">
-                            {u.name}
-                          </p>
-                        )}
+                        {u.name && <p className="text-xs text-muted-foreground">{u.name}</p>}
                       </div>
                       <Button
                         size="sm"
@@ -501,9 +461,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                {t("duoPartner.noUsersFound")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
             )}
           </CardContent>
         </Card>
@@ -521,16 +479,10 @@ export default function SettingsPage() {
                 {t("invites.badgeAdmin")}
               </Badge>
             </CardTitle>
-            <CardDescription>
-              {t("invites.description")}
-            </CardDescription>
+            <CardDescription>{t("invites.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button
-              onClick={handleGenerateInvite}
-              disabled={isPending}
-              size="sm"
-            >
+            <Button onClick={handleGenerateInvite} disabled={isPending} size="sm">
               {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -542,7 +494,10 @@ export default function SettingsPage() {
             {invitesLoading ? (
               <div className="space-y-2">
                 {Array.from({ length: 2 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border/30 p-3">
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-lg border border-border/30 p-3"
+                  >
                     <Skeleton className="h-5 w-24" />
                     <Skeleton className="h-5 w-16 flex-1" />
                     <Skeleton className="h-8 w-8 rounded" />
@@ -554,21 +509,18 @@ export default function SettingsPage() {
                 {invitesList.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated"
+                    className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
                   >
-                    <code className="text-sm font-mono font-semibold text-gold">
-                      {invite.code}
-                    </code>
-                    <div className="flex-1 min-w-0">
+                    <code className="font-mono text-sm font-semibold text-gold">{invite.code}</code>
+                    <div className="min-w-0 flex-1">
                       {invite.usedBy ? (
                         <span className="text-xs text-muted-foreground">
-                          {t("invites.usedBy", { usedByName: invite.usedByName || t("invites.usedByUnknown") })}
+                          {t("invites.usedBy", {
+                            usedByName: invite.usedByName || t("invites.usedByUnknown"),
+                          })}
                         </span>
                       ) : (
-                        <Badge
-                          variant="outline"
-                          className="text-xs border-gold/30 text-gold"
-                        >
+                        <Badge variant="outline" className="border-gold/30 text-xs text-gold">
                           {t("invites.badgeAvailable")}
                         </Badge>
                       )}
@@ -598,14 +550,11 @@ export default function SettingsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                {t("invites.emptyState")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("invites.emptyState")}</p>
             )}
           </CardContent>
         </Card>
       )}
-
     </div>
   );
 }

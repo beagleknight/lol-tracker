@@ -33,7 +33,7 @@ export const LP_PER_TIER = LP_PER_DIVISION * DIVISIONS_PER_TIER; // 400
 export function toCumulativeLP(
   tier: string | null | undefined,
   division: string | null | undefined,
-  lp: number | null | undefined
+  lp: number | null | undefined,
 ): number | null {
   if (!tier) return null;
   const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase() as Tier);
@@ -41,9 +41,7 @@ export function toCumulativeLP(
 
   // Master+ have no divisions — treat as single division
   const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
-  const divIdx = isMasterPlus
-    ? 0
-    : DIVISION_ORDER.indexOf((division || "IV") as Division);
+  const divIdx = isMasterPlus ? 0 : DIVISION_ORDER.indexOf((division || "IV") as Division);
 
   const baseLp = tierIdx * LP_PER_TIER;
   const divLp = (divIdx < 0 ? 0 : divIdx) * LP_PER_DIVISION;
@@ -53,14 +51,13 @@ export function toCumulativeLP(
 /** Get tier boundaries for reference lines within a given LP range */
 export function getTierBoundaries(
   minLP: number,
-  maxLP: number
+  maxLP: number,
 ): Array<{ lp: number; label: string }> {
   const boundaries: Array<{ lp: number; label: string }> = [];
   for (let i = 0; i < TIER_ORDER.length; i++) {
     const boundary = i * LP_PER_TIER;
     if (boundary > minLP && boundary < maxLP) {
-      const tierName =
-        TIER_ORDER[i].charAt(0) + TIER_ORDER[i].slice(1).toLowerCase();
+      const tierName = TIER_ORDER[i].charAt(0) + TIER_ORDER[i].slice(1).toLowerCase();
       boundaries.push({ lp: boundary, label: tierName });
     }
   }
@@ -69,10 +66,7 @@ export function getTierBoundaries(
 
 /** Format cumulative LP back to human-readable rank string */
 export function formatRank(cumulativeLP: number): string {
-  const tierIdx = Math.min(
-    Math.floor(cumulativeLP / LP_PER_TIER),
-    TIER_ORDER.length - 1
-  );
+  const tierIdx = Math.min(Math.floor(cumulativeLP / LP_PER_TIER), TIER_ORDER.length - 1);
   const tier = TIER_ORDER[tierIdx];
   const tierName = tier.charAt(0) + tier.slice(1).toLowerCase();
 
@@ -94,10 +88,7 @@ export function formatRank(cumulativeLP: number): string {
  * e.g. "PLATINUM", "IV" → "Platinum IV"
  * e.g. "MASTER", null → "Master"
  */
-export function formatTierDivision(
-  tier: string,
-  division: string | null | undefined
-): string {
+export function formatTierDivision(tier: string, division: string | null | undefined): string {
   const tierName = tier.charAt(0) + tier.slice(1).toLowerCase();
   const tierIdx = TIER_ORDER.indexOf(tier.toUpperCase() as Tier);
   const isMasterPlus = tierIdx >= TIER_ORDER.indexOf("MASTER");
@@ -114,7 +105,7 @@ export function hasReachedTarget(
   currentDivision: string | null,
   currentLp: number,
   targetTier: string,
-  targetDivision: string | null
+  targetDivision: string | null,
 ): boolean {
   const currentCum = toCumulativeLP(currentTier, currentDivision, currentLp);
   // Target is "reaching" the division, so 0 LP in that division counts
@@ -135,7 +126,7 @@ export function calculateProgress(
   currentDivision: string | null,
   currentLp: number,
   targetTier: string,
-  targetDivision: string | null
+  targetDivision: string | null,
 ): number {
   const startCum = toCumulativeLP(startTier, startDivision, startLp);
   const currentCum = toCumulativeLP(currentTier, currentDivision, currentLp);

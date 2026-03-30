@@ -19,26 +19,26 @@ Guide writing accessible UI components and fixing accessibility violations in th
 
 **WCAG 2.1 AA** — the mid-tier accessibility standard. Key requirements:
 
-| Criterion | Requirement |
-|---|---|
-| 1.4.3 Contrast (Minimum) | Text: 4.5:1, Large text (18px+ bold or 24px+): 3:1 |
-| 1.4.11 Non-text Contrast | UI components and graphical objects: 3:1 |
-| 2.1.1 Keyboard | All functionality available via keyboard |
-| 2.4.1 Bypass Blocks | Skip navigation link to bypass repeated content |
-| 2.4.7 Focus Visible | Keyboard focus indicator is visible |
-| 2.3.1 Three Flashes | No content flashes more than 3 times per second |
-| 1.3.1 Info and Relationships | Semantic HTML structure |
+| Criterion                    | Requirement                                        |
+| ---------------------------- | -------------------------------------------------- |
+| 1.4.3 Contrast (Minimum)     | Text: 4.5:1, Large text (18px+ bold or 24px+): 3:1 |
+| 1.4.11 Non-text Contrast     | UI components and graphical objects: 3:1           |
+| 2.1.1 Keyboard               | All functionality available via keyboard           |
+| 2.4.1 Bypass Blocks          | Skip navigation link to bypass repeated content    |
+| 2.4.7 Focus Visible          | Keyboard focus indicator is visible                |
+| 2.3.1 Three Flashes          | No content flashes more than 3 times per second    |
+| 1.3.1 Info and Relationships | Semantic HTML structure                            |
 
 ## Tooling
 
-### ESLint (compile-time)
+### oxlint (compile-time)
 
-`eslint-plugin-jsx-a11y` is installed as a devDependency. Rules are added individually in `eslint.config.mjs` (NOT via `flatConfigs.recommended`) because `eslint-config-next` already registers the `jsx-a11y` plugin — using `flatConfigs.recommended` causes `ConfigError: Cannot redefine plugin "jsx-a11y"`.
+The `jsx-a11y` plugin is built into oxlint and enabled in `.oxlintrc.json`. Rules include `alt-text`, `aria-props`, `click-events-have-key-events`, `heading-has-content`, `no-autofocus`, `prefer-tag-over-role`, `role-has-required-aria-props`, and more.
 
-To add new rules, add them directly to the rules object in `eslint.config.mjs`:
+To add or adjust a11y rules, edit the `rules` section in `.oxlintrc.json` under the `jsx-a11y/` prefix:
 
-```js
-"jsx-a11y/new-rule-name": "error",
+```json
+"jsx-a11y/new-rule-name": "error"
 ```
 
 ### Playwright axe-core (runtime)
@@ -51,12 +51,12 @@ The app uses OKLCH color tokens defined in `src/app/globals.css`. Dark mode is t
 
 ### Key background surfaces
 
-| Token | OKLCH Value | Approx hex | Usage |
-|---|---|---|---|
-| `--background` | `oklch(0.13 0.02 260)` | `#0d1117` | Page background |
-| `--card` | `oklch(0.17 0.02 260)` | `#161b22` | Cards, sidebar |
-| `--muted` | `oklch(0.2 0.02 260)` | `#1c2129` | Muted surfaces |
-| `--secondary` | `oklch(0.22 0.025 260)` | `#21262d` | Secondary surfaces |
+| Token          | OKLCH Value             | Approx hex | Usage              |
+| -------------- | ----------------------- | ---------- | ------------------ |
+| `--background` | `oklch(0.13 0.02 260)`  | `#0d1117`  | Page background    |
+| `--card`       | `oklch(0.17 0.02 260)`  | `#161b22`  | Cards, sidebar     |
+| `--muted`      | `oklch(0.2 0.02 260)`   | `#1c2129`  | Muted surfaces     |
+| `--secondary`  | `oklch(0.22 0.025 260)` | `#21262d`  | Secondary surfaces |
 
 ### Minimum text lightness for 4.5:1 contrast
 
@@ -70,11 +70,11 @@ On `--card` background (~`#161b22`), text needs OKLCH lightness of approximately
 
 Win/loss pill text appears on semi-transparent backgrounds (`bg-win/20`, `bg-loss/20`). The muted token values have been tuned for 4.5:1:
 
-| Token | Dark mode value | Usage |
-|---|---|---|
-| `--win-muted` | `oklch(0.72 0.12 150)` | Win pill text on `bg-win/20` |
-| `--loss-muted` | `oklch(0.72 0.16 27)` | Loss pill text on `bg-loss/20` |
-| `--destructive` | `oklch(0.72 0.22 27)` | Error text on `bg-destructive/10` or `/20` |
+| Token           | Dark mode value        | Usage                                      |
+| --------------- | ---------------------- | ------------------------------------------ |
+| `--win-muted`   | `oklch(0.72 0.12 150)` | Win pill text on `bg-win/20`               |
+| `--loss-muted`  | `oklch(0.72 0.16 27)`  | Loss pill text on `bg-loss/20`             |
+| `--destructive` | `oklch(0.72 0.22 27)`  | Error text on `bg-destructive/10` or `/20` |
 
 ### Rules of thumb
 
@@ -147,7 +147,8 @@ The app has a "Skip to main content" link in `src/app/(app)/layout.tsx` that tar
 
 - Never use positive `tabIndex` values (disrupts natural order)
 - `tabIndex={0}` is fine for making non-interactive elements focusable when adding `role` and keyboard handlers
-- Non-interactive elements with `onClick` must have: `role="button"`, `tabIndex={0}`, `onKeyDown` (Enter + Space), and `aria-label`
+- **Prefer semantic HTML** (`<button>`, `<a>`) over `role="button"` on divs/spans. The `prefer-tag-over-role` oxlint rule enforces this.
+- Non-interactive elements that must be clickable: use `<button type="button">` with appropriate styling instead of `div` + `role="button"` + `tabIndex` + `onKeyDown`
 
 ## Reduced motion
 
@@ -168,7 +169,7 @@ When adding a new interactive component:
 3. [ ] Color contrast meets 4.5:1 for normal text, 3:1 for large text
 4. [ ] Component is keyboard-operable (Tab to focus, Enter/Space to activate)
 5. [ ] Focus indicator is visible
-6. [ ] Custom interactive elements (non-button/link) have `role`, `tabIndex={0}`, `onKeyDown`
+6. [ ] Custom interactive elements use semantic HTML (`<button>`, `<a>`) — avoid `role="button"` on divs
 7. [ ] Images have `alt` text (decorative images use `alt=""`)
 8. [ ] Progress bars have `aria-label`
 9. [ ] Animations respect `prefers-reduced-motion` (handled globally)

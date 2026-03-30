@@ -6,12 +6,8 @@
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
+import { resultBadgeVariant, resultBarColor } from "@/lib/match-result";
 import { cn } from "@/lib/utils";
-import {
-  type MatchResult,
-  resultBadgeVariant,
-  resultBarColor,
-} from "@/lib/match-result";
 
 // ─── ResultBadge ─────────────────────────────────────────────────────────────
 
@@ -21,17 +17,13 @@ type ResultFormat =
   | "raw"; // Uses the raw result string as-is (e.g. "Victory")
 
 interface ResultBadgeProps {
-  result: MatchResult | string;
+  result: string;
   /** "short" → W/L/R, "long" → Victory/Defeat/Remake, "raw" → raw string */
   format?: ResultFormat;
   className?: string;
 }
 
-export function ResultBadge({
-  result,
-  format = "short",
-  className,
-}: ResultBadgeProps) {
+export function ResultBadge({ result, format = "short", className }: ResultBadgeProps) {
   const t = useTranslations("Common");
   const variant = resultBadgeVariant(result);
 
@@ -47,12 +39,7 @@ export function ResultBadge({
           : t("resultDefeat");
   } else {
     // short
-    label =
-      result === "Victory"
-        ? t("resultW")
-        : result === "Remake"
-          ? t("resultR")
-          : t("resultL");
+    label = result === "Victory" ? t("resultW") : result === "Remake" ? t("resultR") : t("resultL");
   }
 
   return (
@@ -65,7 +52,7 @@ export function ResultBadge({
 // ─── ResultBar ───────────────────────────────────────────────────────────────
 
 interface ResultBarProps {
-  result: MatchResult | string;
+  result: string;
   /** Height class — "sm" = h-6, "md" = h-8, "lg" = h-10 */
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -77,19 +64,10 @@ const barSizeClass = {
   lg: "h-10",
 } as const;
 
-export function ResultBar({
-  result,
-  size = "md",
-  className,
-}: ResultBarProps) {
+export function ResultBar({ result, size = "md", className }: ResultBarProps) {
   return (
     <div
-      className={cn(
-        "w-1 rounded-full",
-        barSizeClass[size],
-        resultBarColor(result),
-        className
-      )}
+      className={cn("w-1 rounded-full", barSizeClass[size], resultBarColor(result), className)}
     />
   );
 }

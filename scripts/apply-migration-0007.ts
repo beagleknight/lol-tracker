@@ -14,7 +14,7 @@ const db = createClient({
 async function run() {
   // Check if index already exists
   const indexes = await db.execute(
-    "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='matches'"
+    "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='matches'",
   );
   const indexNames = indexes.rows.map((r) => r.name);
   console.log("Existing indexes on matches:", indexNames);
@@ -26,7 +26,7 @@ async function run() {
 
   console.log("Creating index matches_user_duo_partner_idx...");
   await db.execute(
-    "CREATE INDEX `matches_user_duo_partner_idx` ON `matches` (`user_id`,`duo_partner_puuid`)"
+    "CREATE INDEX `matches_user_duo_partner_idx` ON `matches` (`user_id`,`duo_partner_puuid`)",
   );
   console.log("Done! Index created.");
 }

@@ -18,10 +18,12 @@ Guide integration with the Riot Games API for League of Legends applications, co
 ## API key management
 
 ### Personal API Key
+
 - Non-expiring personal key from https://developer.riotgames.com/
 - Store as `RIOT_API_KEY` env var
 
 ### Production key (RSO)
+
 - Requires Riot Sign On (RSO) application approval
 - Persistent, does not expire
 - Much higher rate limits
@@ -45,6 +47,7 @@ const API_KEY = process.env.RIOT_API_KEY!;
 Riot has two routing levels. Use the correct host for each endpoint.
 
 ### Regional routing (broad geography)
+
 - `americas.api.riotgames.com` — NA, BR, LAN, LAS, OCE
 - `europe.api.riotgames.com` — EUW, EUNE, TR, RU
 - `asia.api.riotgames.com` — KR, JP
@@ -53,6 +56,7 @@ Riot has two routing levels. Use the correct host for each endpoint.
 Used for: `account-v1`, `match-v5` (match history + match detail)
 
 ### Platform routing (specific server)
+
 - `euw1.api.riotgames.com` — EUW
 - `na1.api.riotgames.com` — NA
 - `kr.api.riotgames.com` — KR
@@ -63,6 +67,7 @@ Used for: `summoner-v4`, `league-v4` (ranked data), `spectator-v5`
 ## Key endpoints
 
 ### Account lookup (by Riot ID)
+
 ```
 GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}
 Host: {regional}
@@ -70,39 +75,48 @@ Returns: { puuid, gameName, tagLine }
 ```
 
 ### Summoner (by PUUID)
+
 ```
 GET /lol/summoner/v4/summoners/by-puuid/{puuid}
 Host: {platform}
 Returns: { puuid, profileIconId, revisionDate, summonerLevel }
 ```
+
 **NOTE (2026):** This endpoint no longer returns `id` (encrypted summoner ID) or `accountId`. Only 4 fields are returned. Do NOT rely on `summoner.id` for League-V4 lookups — use the by-puuid League endpoint instead.
 
 ### Ranked data (by PUUID — preferred)
+
 ```
 GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}
 Host: {platform}
 Returns: Array of { queueType, tier, rank, leaguePoints, wins, losses, summonerId, leagueId }
 ```
+
 Filter for `queueType === "RANKED_SOLO_5x5"` for solo queue. This is the **preferred** endpoint since it uses puuid directly.
 
 ### Ranked data (by summoner ID — legacy)
+
 ```
 GET /lol/league/v4/entries/by-summoner/{encryptedSummonerId}
 Host: {platform}
 Returns: Array of { queueType, tier, rank, leaguePoints, wins, losses }
 ```
+
 Filter for `queueType === "RANKED_SOLO_5x5"` for solo queue.
 **NOTE:** Since Summoner-V4 no longer returns `id`, obtaining an encrypted summoner ID requires an extra step. Prefer the by-puuid endpoint above.
 
 ### Match history (list of match IDs)
+
 ```
 GET /lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=20&type=ranked
 Host: {regional}
 Returns: string[] of match IDs (e.g., ["EUW1_7234567890", ...])
 ```
+
 Max `count`: 100. Use `start` for pagination.
 
 ### Match detail
+
 ```
 GET /lol/match/v5/matches/{matchId}
 Host: {regional}
@@ -112,11 +126,13 @@ Returns: { metadata, info: { participants[], teams[], gameDuration, ... } }
 ## Match data parsing
 
 ### Find the player's participant
+
 ```ts
-const participant = match.info.participants.find(p => p.puuid === userPuuid);
+const participant = match.info.participants.find((p) => p.puuid === userPuuid);
 ```
 
 ### Key participant fields
+
 - `championId`, `championName` — champion played
 - `kills`, `deaths`, `assists` — KDA
 - `totalMinionsKilled + neutralMinionsKilled` — total CS
@@ -129,31 +145,36 @@ const participant = match.info.participants.find(p => p.puuid === userPuuid);
 - `totalDamageDealtToChampions`, `totalDamageTaken`
 
 ### Detect opponent (matchup champion)
+
 Find the enemy in the same lane:
+
 ```ts
 const opponent = match.info.participants.find(
-  p => p.teamId !== participant.teamId
-    && p.individualPosition === participant.individualPosition
+  (p) => p.teamId !== participant.teamId && p.individualPosition === participant.individualPosition,
 );
 const matchupChampion = opponent?.championName;
 ```
 
 ### Detect duo partner
+
 Check if a registered duo partner's PUUID is in the match participants on the same team:
+
 ```ts
 const isDuo = match.info.participants.some(
-  p => p.puuid === duoPartnerPuuid && p.teamId === participant.teamId
+  (p) => p.puuid === duoPartnerPuuid && p.teamId === participant.teamId,
 );
 ```
 
 ## DDragon (static assets)
 
 Base URL pattern:
+
 ```
 https://ddragon.leagueoflegends.com/cdn/{version}/img/{type}/{name}
 ```
 
 ### Version discovery
+
 ```
 GET https://ddragon.leagueoflegends.com/api/versions.json
 Returns: string[] — use [0] for latest
@@ -172,17 +193,21 @@ const res = await fetch("https://ddragon.leagueoflegends.com/api/versions.json",
 Apply the same `{ next: { revalidate: 86400 } }` to all DDragon fetches (versions, champion JSON, etc.). This avoids redundant external API calls on every page load.
 
 ### Champion icons
+
 ```
 https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{championName}.png
 ```
+
 Note: `championName` must match DDragon naming (e.g., "FiddleSticks" not "Fiddlesticks", "MonkeyKing" not "Wukong").
 
 ### Item icons
+
 ```
 https://ddragon.leagueoflegends.com/cdn/{version}/img/item/{itemId}.png
 ```
 
 ### Profile icons
+
 ```
 https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profileIconId}.png
 ```
@@ -190,10 +215,12 @@ https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profileIconId
 ## Rate limits
 
 ### Development key
+
 - 20 requests per second
 - 100 requests per 2 minutes
 
 ### Handling rate limits
+
 - Check for HTTP 429 responses
 - Read `Retry-After` header for backoff duration
 - Sequential sync is fine for personal use but add delays between batch requests
@@ -205,7 +232,7 @@ export class RiotApiError extends Error {
   constructor(
     public status: number,
     public endpoint: string,
-    message: string
+    message: string,
   ) {
     super(message);
   }
@@ -213,6 +240,7 @@ export class RiotApiError extends Error {
 ```
 
 Key status codes:
+
 - **401/403**: API key is invalid or unauthorized.
 - **404**: Summoner/account not found (likely wrong region or misspelled Riot ID)
 - **429**: Rate limited. Respect `Retry-After` header.
@@ -221,6 +249,7 @@ Key status codes:
 ## Stored data
 
 The `rawMatchJson` column stores the full Riot match detail response (50-100KB per match, avg ~75KB). This is useful for:
+
 - Extracting new data fields later without re-fetching from Riot
 - Duo partner detection (all 10 participants are stored)
 - Detailed post-game analysis

@@ -1,13 +1,16 @@
+import { eq, and } from "drizzle-orm";
+import { notFound } from "next/navigation";
+
+import type { RiotMatch } from "@/lib/riot-api";
+
+import { checkAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
+import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
 import { db } from "@/db";
 import { matches, matchHighlights, coachingSessionMatches, coachingSessions } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { getLatestVersion } from "@/lib/riot-api";
-import { notFound } from "next/navigation";
+import { requireUser } from "@/lib/session";
+
 import { MatchDetailClient } from "./match-detail-client";
-import type { RiotMatch } from "@/lib/riot-api";
-import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
-import { checkAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
 
 /** Slim participant shape — only the fields used by the client component */
 function slimParticipants(raw: RiotMatch) {
@@ -35,11 +38,7 @@ function slimParticipants(raw: RiotMatch) {
   }));
 }
 
-export default async function MatchDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
 
@@ -67,13 +66,11 @@ export default async function MatchDetailPage({
       // was synced, so we find the participant whose championName matches the stored
       // match record — that participant is guaranteed to be the user.
       if (user.puuid) {
-        const puuidInMatch = rawMatch.info.participants.some(
-          (p) => p.puuid === user.puuid
-        );
+        const puuidInMatch = rawMatch.info.participants.some((p) => p.puuid === user.puuid);
         if (!puuidInMatch && match.championName) {
           // puuid doesn't match any participant — fall back to championName
           const byChampion = rawMatch.info.participants.find(
-            (p) => p.championName === match.championName
+            (p) => p.championName === match.championName,
           );
           if (byChampion) {
             matchPuuid = byChampion.puuid;
@@ -89,7 +86,14 @@ export default async function MatchDetailPage({
   const { rawMatchJson: _rawJson, ...matchForClient } = match;
 
   // These are independent — run in parallel (ddragonVersion already started above)
-  const [ddragonVersion, linkedSessions, highlights, matchupNotesData, aiConfigured, cachedAiInsight] = await Promise.all([
+  const [
+    ddragonVersion,
+    linkedSessions,
+    highlights,
+    matchupNotesData,
+    aiConfigured,
+    cachedAiInsight,
+  ] = await Promise.all([
     ddragonVersionPromise,
     db
       .select({
@@ -98,23 +102,17 @@ export default async function MatchDetailPage({
         date: coachingSessions.date,
       })
       .from(coachingSessionMatches)
-      .innerJoin(
-        coachingSessions,
-        eq(coachingSessionMatches.sessionId, coachingSessions.id)
-      )
-      .where(and(
-        eq(coachingSessionMatches.matchId, match.id),
-        eq(coachingSessionMatches.userId, user.id),
-      )),
+      .innerJoin(coachingSessions, eq(coachingSessionMatches.sessionId, coachingSessions.id))
+      .where(
+        and(
+          eq(coachingSessionMatches.matchId, match.id),
+          eq(coachingSessionMatches.userId, user.id),
+        ),
+      ),
     db
       .select()
       .from(matchHighlights)
-      .where(
-        and(
-          eq(matchHighlights.matchId, match.id),
-          eq(matchHighlights.userId, user.id),
-        )
-      ),
+      .where(and(eq(matchHighlights.matchId, match.id), eq(matchHighlights.userId, user.id))),
     match.matchupChampionName
       ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
       : Promise.resolve([]),
@@ -123,7 +121,7 @@ export default async function MatchDetailPage({
   ]);
 
   const highlightItems = highlights.map((h) => ({
-    type: h.type as "highlight" | "lowlight",
+    type: h.type,
     text: h.text,
     topic: h.topic || undefined,
   }));

@@ -1,16 +1,14 @@
 "use server";
 
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { cacheLife, cacheTag } from "next/cache";
+
 import { db } from "@/db";
 import { matches, matchHighlights, type MatchResult } from "@/db/schema";
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import {
-  getChampionIdMap,
-  type RiotMatch,
-} from "@/lib/riot-api";
-import { cacheLife, cacheTag } from "next/cache";
 import { scoutTag } from "@/lib/cache";
 import { notRemake } from "@/lib/match-queries";
+import { getChampionIdMap, type RiotMatch } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -97,7 +95,7 @@ async function getCachedMatchupReport(
   userId: string,
   userPuuid: string | null,
   matchupChampionName: string,
-  yourChampionName: string | undefined
+  yourChampionName: string | undefined,
 ): Promise<MatchupReport | null> {
   "use cache: remote";
   cacheLife("hours");
@@ -138,10 +136,7 @@ async function getCachedMatchupReport(
   const lastPlayed = matchRows[0].gameDate;
 
   // Rune breakdown by keystone
-  const runeMap = new Map<
-    string,
-    { games: number; wins: number; losses: number }
-  >();
+  const runeMap = new Map<string, { games: number; wins: number; losses: number }>();
   for (const m of matchRows) {
     if (m.result === "Remake") continue; // Skip remakes from rune stats
     const rune = m.runeKeystoneName || "Unknown";
@@ -164,15 +159,9 @@ async function getCachedMatchupReport(
   const totalKills = meaningful.reduce((sum, m) => sum + m.kills, 0);
   const totalDeaths = meaningful.reduce((sum, m) => sum + m.deaths, 0);
   const totalAssists = meaningful.reduce((sum, m) => sum + m.assists, 0);
-  const totalCsPerMin = meaningful.reduce(
-    (sum, m) => sum + (m.csPerMin || 0),
-    0
-  );
+  const totalCsPerMin = meaningful.reduce((sum, m) => sum + (m.csPerMin || 0), 0);
   const totalGold = meaningful.reduce((sum, m) => sum + (m.goldEarned || 0), 0);
-  const totalVision = meaningful.reduce(
-    (sum, m) => sum + (m.visionScore || 0),
-    0
-  );
+  const totalVision = meaningful.reduce((sum, m) => sum + (m.visionScore || 0), 0);
   const n = meaningful.length || 1; // Avoid division by zero
 
   const avgStats = {
@@ -187,17 +176,15 @@ async function getCachedMatchupReport(
   // Individual game details — extract items from rawMatchJson
   // Also fetch highlights for all matches in one query
   const matchIds = matchRows.map((m) => m.id);
-  const allHighlights = matchIds.length > 0
-    ? await db
-        .select()
-        .from(matchHighlights)
-        .where(
-          and(
-            eq(matchHighlights.userId, userId),
-            inArray(matchHighlights.matchId, matchIds),
+  const allHighlights =
+    matchIds.length > 0
+      ? await db
+          .select()
+          .from(matchHighlights)
+          .where(
+            and(eq(matchHighlights.userId, userId), inArray(matchHighlights.matchId, matchIds)),
           )
-        )
-    : [];
+      : [];
 
   // Group highlights by matchId
   const highlightsByMatch = new Map<
@@ -207,7 +194,7 @@ async function getCachedMatchupReport(
   for (const h of allHighlights) {
     const list = highlightsByMatch.get(h.matchId) || [];
     list.push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });
@@ -220,9 +207,7 @@ async function getCachedMatchupReport(
     if (m.rawMatchJson) {
       try {
         const raw: RiotMatch = JSON.parse(m.rawMatchJson);
-        const participant = raw.info.participants.find(
-          (p) => p.puuid === userPuuid
-        );
+        const participant = raw.info.participants.find((p) => p.puuid === userPuuid);
         if (participant) {
           items = [
             participant.item0,
@@ -339,15 +324,10 @@ async function getCachedMatchupReport(
 /** Public wrapper — resolves userId from session, delegates to cached fn. */
 export async function getMatchupReport(
   matchupChampionName: string,
-  yourChampionName?: string
+  yourChampionName?: string,
 ): Promise<MatchupReport | null> {
   const user = await requireUser();
-  return getCachedMatchupReport(
-    user.id,
-    user.puuid ?? null,
-    matchupChampionName,
-    yourChampionName
-  );
+  return getCachedMatchupReport(user.id, user.puuid ?? null, matchupChampionName, yourChampionName);
 }
 
 // ─── getAllChampionNames ────────────────────────────────────────────────────
@@ -383,7 +363,7 @@ export interface ChampionPickCount {
  */
 async function getCachedMostPlayedChampions(
   userId: string,
-  limit: number
+  limit: number,
 ): Promise<ChampionPickCount[]> {
   "use cache: remote";
   cacheLife("hours");
@@ -403,9 +383,7 @@ async function getCachedMostPlayedChampions(
   return rows;
 }
 
-export async function getMostPlayedChampions(
-  limit = 10
-): Promise<ChampionPickCount[]> {
+export async function getMostPlayedChampions(limit = 10): Promise<ChampionPickCount[]> {
   const user = await requireUser();
   return getCachedMostPlayedChampions(user.id, limit);
 }
@@ -416,7 +394,7 @@ export async function getMostPlayedChampions(
  */
 async function getCachedMostFacedOpponents(
   userId: string,
-  limit: number
+  limit: number,
 ): Promise<ChampionPickCount[]> {
   "use cache: remote";
   cacheLife("hours");
@@ -428,12 +406,7 @@ async function getCachedMostFacedOpponents(
       games: sql<number>`count(*)`.as("games"),
     })
     .from(matches)
-    .where(
-      and(
-        eq(matches.userId, userId),
-        sql`${matches.matchupChampionName} is not null`
-      )
-    )
+    .where(and(eq(matches.userId, userId), sql`${matches.matchupChampionName} is not null`))
     .groupBy(matches.matchupChampionName)
     .orderBy(sql`count(*) desc`)
     .limit(limit);
@@ -441,9 +414,7 @@ async function getCachedMostFacedOpponents(
   return rows.filter((r): r is ChampionPickCount => !!r.name);
 }
 
-export async function getMostFacedOpponents(
-  limit = 10
-): Promise<ChampionPickCount[]> {
+export async function getMostFacedOpponents(limit = 10): Promise<ChampionPickCount[]> {
   const user = await requireUser();
   return getCachedMostFacedOpponents(user.id, limit);
 }

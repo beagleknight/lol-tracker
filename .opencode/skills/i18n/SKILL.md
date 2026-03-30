@@ -15,15 +15,15 @@ Multi-language support for LoL Tracker using `next-intl`.
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `messages/en.json` | English translations (~290 keys, 17 namespaces) |
-| `messages/es.json` | Spanish translations (AI-generated, gaming terms in English) |
-| `src/i18n/request.ts` | next-intl config: cookie → Accept-Language → default `en` |
-| `src/types/next-intl.d.ts` | Type augmentation for type-safe `t()` keys |
-| `src/app/actions/settings.ts` | `updateLanguage()` server action |
-| `src/lib/auth.ts` | Sets `language` cookie in `signIn` callback |
-| `next.config.ts` | Wrapped with `createNextIntlPlugin()` |
+| File                          | Purpose                                                      |
+| ----------------------------- | ------------------------------------------------------------ |
+| `messages/en.json`            | English translations (~290 keys, 17 namespaces)              |
+| `messages/es.json`            | Spanish translations (AI-generated, gaming terms in English) |
+| `src/i18n/request.ts`         | next-intl config: cookie → Accept-Language → default `en`    |
+| `src/types/next-intl.d.ts`    | Type augmentation for type-safe `t()` keys                   |
+| `src/app/actions/settings.ts` | `updateLanguage()` server action                             |
+| `src/lib/auth.ts`             | Sets `language` cookie in `signIn` callback                  |
+| `next.config.ts`              | Wrapped with `createNextIntlPlugin()`                        |
 
 ## Namespaces
 
@@ -62,6 +62,7 @@ When adding `aria-label={t("key")}` (or any new `t()` call) for accessibility fi
 This is the most commonly forgotten step when fixing accessibility violations. Every `aria-label`, `aria-labelledby`, or other ARIA attribute that uses `t()` requires a corresponding entry in both message files.
 
 Checklist for every new `t()` call:
+
 1. Identify the namespace (from `useTranslations("NamespaceName")` in the same file)
 2. Add the key to `messages/en.json` under that namespace
 3. Add the Spanish translation to `messages/es.json` under the same namespace

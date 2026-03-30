@@ -37,7 +37,7 @@ async function main() {
      FROM matches
      WHERE duo_partner_puuid IS NOT NULL
        AND duo_partner_champion_name IS NULL
-       AND raw_match_json IS NOT NULL`
+       AND raw_match_json IS NOT NULL`,
   );
 
   console.log(`Found ${result.rows.length} duo matches needing backfill\n`);
@@ -59,9 +59,7 @@ async function main() {
         continue;
       }
 
-      const partner = participants.find(
-        (p: { puuid: string }) => p.puuid === duoPartnerPuuid
-      );
+      const partner = participants.find((p: { puuid: string }) => p.puuid === duoPartnerPuuid);
 
       if (!partner) {
         skipped++;

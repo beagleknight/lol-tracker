@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
-import { useTranslations } from "next-intl";
 import { MessageSquareText, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
+import { useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
+
 import {
   upsertMatchupNote,
   deleteMatchupNote,
   type MatchupNoteData,
 } from "@/app/actions/matchup-notes";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/format";
 
 // ─── Trigger Button (inline in header) ──────────────────────────────────────
@@ -21,20 +22,16 @@ interface MatchupNotesTriggerProps {
   onToggle: () => void;
 }
 
-export function MatchupNotesTrigger({
-  hasNote,
-  isOpen,
-  onToggle,
-}: MatchupNotesTriggerProps) {
+export function MatchupNotesTrigger({ hasNote, isOpen, onToggle }: MatchupNotesTriggerProps) {
   const t = useTranslations("MatchupNotes");
 
   return (
     <button
       onClick={onToggle}
-      className={`relative p-1.5 rounded-md transition-colors ${
+      className={`relative rounded-md p-1.5 transition-colors ${
         isOpen
-          ? "text-gold bg-gold/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
+          ? "bg-gold/10 text-gold"
+          : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
       }`}
       title={t("sectionTitle")}
     >
@@ -72,11 +69,7 @@ export function MatchupNotesPanel({
 
   const handleSave = useCallback(() => {
     startSaveTransition(async () => {
-      const result = await upsertMatchupNote(
-        championName,
-        matchupChampionName,
-        content
-      );
+      const result = await upsertMatchupNote(championName, matchupChampionName, content);
       if (result.success) {
         toast.success(content.trim() ? t("toasts.saved") : t("toasts.deleted"));
         setIsEditing(false);
@@ -115,25 +108,20 @@ export function MatchupNotesPanel({
 
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-border/40 bg-surface-elevated p-3 space-y-2">
+      <div className="space-y-2 rounded-lg border border-border/40 bg-surface-elevated p-3">
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={t("placeholder")}
           className="min-h-20 text-sm"
-          /* eslint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: focus the textarea when user clicks "add note" */
+          /* oxlint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: focus the textarea when user clicks "add note" */
           autoFocus
         />
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={handleSave} disabled={isSaving}>
             {t("save")}
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleCancel}
-            disabled={isSaving}
-          >
+          <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isSaving}>
             {t("cancel")}
           </Button>
           {note && (
@@ -154,20 +142,16 @@ export function MatchupNotesPanel({
 
   // Read mode — show content, click to edit
   return (
-    <div
-      className="rounded-lg border border-border/40 bg-surface-elevated p-3 cursor-pointer hover:border-border/60 transition-colors"
+    <button
+      type="button"
+      className="w-full cursor-pointer rounded-lg border border-border/40 bg-surface-elevated p-3 text-left transition-colors hover:border-border/60"
       onClick={() => setIsEditing(true)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setIsEditing(true);
-      }}
     >
       <p className="text-sm whitespace-pre-wrap">{note!.content}</p>
-      <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+      <p className="mt-1.5 text-[10px] text-muted-foreground/50">
         {t("savedAt", { date: formatDate(note!.updatedAt, locale) })}
       </p>
-    </div>
+    </button>
   );
 }
 
@@ -175,11 +159,11 @@ export function MatchupNotesPanel({
 
 export function pickActiveNote(
   notes: MatchupNoteData[],
-  yourChampionName?: string
+  yourChampionName?: string,
 ): { activeNote: MatchupNoteData | null; activeChampionName: string | null } {
   const generalNote = notes.find((n) => n.championName === null) ?? null;
   const specificNote = yourChampionName
-    ? notes.find((n) => n.championName === yourChampionName) ?? null
+    ? (notes.find((n) => n.championName === yourChampionName) ?? null)
     : null;
 
   return {
@@ -213,13 +197,13 @@ export function ReadOnlyMatchupNotes({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+        <h3 className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <MessageSquareText className="h-3.5 w-3.5 text-gold" />
           {t("readOnlyTitle")}
         </h3>
         <a
           href={`/scout?enemy=${encodeURIComponent(matchupChampionName)}&your=${encodeURIComponent(yourChampionName)}`}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           {t("viewInScout")}
         </a>
@@ -234,28 +218,22 @@ export function ReadOnlyMatchupNotes({
                 enemy: matchupChampionName,
               })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap">
-              {specificNote.content}
-            </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
+            <p className="mt-1 text-sm whitespace-pre-wrap">{specificNote.content}</p>
+            <p className="mt-1 text-[10px] text-muted-foreground/60">
               {t("savedAt", { date: formatDate(specificNote.updatedAt, locale) })}
             </p>
           </div>
         )}
 
-        {specificNote && generalNote && (
-          <div className="border-t border-border/20" />
-        )}
+        {specificNote && generalNote && <div className="border-t border-border/20" />}
 
         {generalNote && (
           <div>
             <p className="text-xs font-medium text-muted-foreground">
               {t("generalNoteTitle", { enemy: matchupChampionName })}
             </p>
-            <p className="text-sm mt-1 whitespace-pre-wrap">
-              {generalNote.content}
-            </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
+            <p className="mt-1 text-sm whitespace-pre-wrap">{generalNote.content}</p>
+            <p className="mt-1 text-[10px] text-muted-foreground/60">
               {t("savedAt", { date: formatDate(generalNote.updatedAt, locale) })}
             </p>
           </div>

@@ -13,8 +13,8 @@ const db = createClient({
 
 async function run() {
   const info = await db.execute("PRAGMA table_info(matches)");
-  const cols = info.rows.map((r) => r.name);
-  const duoCols = cols.filter((c) => String(c).startsWith("duo_partner"));
+  const cols = info.rows.map((r) => r.name as string);
+  const duoCols = cols.filter((c) => c.startsWith("duo_partner"));
   console.log("Duo columns:", duoCols);
 
   if (cols.includes("duo_partner_champion_name")) {
