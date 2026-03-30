@@ -48,20 +48,7 @@ Branch naming conventions:
   ```
   Fix any errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
 - `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
-- **MANDATORY: Verify the lockfile before every push.** Local Node 24 / npm 11 generates lockfiles incompatible with CI's Node 22 / npm 10. Always run:
-  ```bash
-  npx -y npm@10 ci
-  ```
-  If this fails, regenerate the lockfile:
-  ```bash
-  git checkout origin/main -- package-lock.json
-  npx -y npm@10 install --package-lock-only
-  npx -y npm@10 ci   # verify it works now
-  ```
-  If you did NOT change `package.json` dependencies, just restore the lockfile from main:
-  ```bash
-  git checkout origin/main -- package-lock.json
-  ```
+- **MANDATORY: Verify the lockfile before every push** (when `package-lock.json` is staged). Run `npm ci` to confirm the lockfile is consistent. If it fails, regenerate with `npm install`. The canonical Node version is defined in `.tool-versions` — both local dev and CI use the same version.
 
 ### 3. Write a changelog entry
 
