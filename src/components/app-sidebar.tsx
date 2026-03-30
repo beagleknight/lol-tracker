@@ -17,7 +17,6 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
+import { logout } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -265,7 +265,7 @@ function SidebarContent({
               variant="ghost"
               size="icon"
               className="h-8 w-8 shrink-0 hover:text-destructive"
-              onClick={() => void signOut({ callbackUrl: "/login" })}
+              onClick={() => void logout({ callbackUrl: "/login" })}
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />

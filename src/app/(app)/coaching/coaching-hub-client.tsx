@@ -15,7 +15,6 @@ import {
   Swords,
   AlertTriangle,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 
@@ -111,8 +111,8 @@ export function CoachingHubClient({
   intervalsData,
   ddragonVersion,
 }: CoachingHubClientProps) {
-  const { data: authSession } = useSession();
-  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Coaching");
   const totalSessions = scheduledSessions.length + completedSessions.length;
 

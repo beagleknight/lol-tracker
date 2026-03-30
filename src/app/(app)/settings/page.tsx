@@ -12,7 +12,6 @@ import {
   Users,
   Globe,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
@@ -42,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
+import { useAuth } from "@/lib/auth-client";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
 
 interface InviteItem {
@@ -54,15 +54,15 @@ interface InviteItem {
 }
 
 export default function SettingsPage() {
-  const { data: session, update: updateSession } = useSession();
+  const { user, updateSession } = useAuth();
   const t = useTranslations("Settings");
   const [riotId, setRiotId] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const isLinked = !!session?.user?.riotGameName;
-  const isAdmin = session?.user?.role === "admin";
-  const userLocale = (session?.user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
-  const userLanguage = (session?.user?.language as SupportedLanguage) ?? DEFAULT_LANGUAGE;
+  const isLinked = !!user?.riotGameName;
+  const isAdmin = user?.role === "admin";
+  const userLocale = (user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
+  const userLanguage = (user?.language as SupportedLanguage) ?? DEFAULT_LANGUAGE;
 
   // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
   const [previewDate, setPreviewDate] = useState<Date | null>(null);
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">{t("riotAccount.riotIdLabel")}</p>
                   <p className="text-lg font-semibold text-gold">
-                    {session.user.riotGameName}#{session.user.riotTagLine}
+                    {user?.riotGameName}#{user?.riotTagLine}
                   </p>
                 </div>
                 <Button variant="destructive" size="sm" onClick={handleUnlink} disabled={isPending}>

@@ -1,7 +1,6 @@
 "use client";
 
 import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -37,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useChartColors } from "@/hooks/use-chart-colors";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { filterMeaningful } from "@/lib/match-result";
 import { toCumulativeLP, getTierBoundaries, formatRank } from "@/lib/rank";
@@ -212,8 +212,8 @@ export function AnalyticsClient({
   ddragonVersion,
   activeGoal,
 }: AnalyticsClientProps) {
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Analytics");
   const cc = useChartColors();
 

@@ -11,7 +11,6 @@ import {
   Search,
   ArrowUpDown,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,6 +25,7 @@ import { Pagination } from "@/components/pagination";
 import { ResultBadge } from "@/components/result-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 
@@ -387,9 +387,9 @@ export function DuoRecentGames({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isPending, startTransition] = useTransition();
-  const { data: authSession } = useSession();
+  const { user } = useAuth();
   const t = useTranslations("Duo");
-  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const locale = user?.locale ?? DEFAULT_LOCALE;
 
   function handlePageChange(page: number) {
     startTransition(async () => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { Swords, Ticket, User, Shield } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -11,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { login } from "@/lib/auth-client";
 
 // ─── Demo users (must match seed.ts) ──────────────────────────────────────────
 
@@ -109,7 +109,7 @@ function DiscordLoginForm() {
     if (inviteCode.trim()) {
       document.cookie = `invite-code=${encodeURIComponent(inviteCode.trim())}; path=/; max-age=300; SameSite=Lax`;
     }
-    void signIn("discord", { callbackUrl: "/dashboard" });
+    void login("discord", { callbackUrl: "/dashboard" });
   }
 
   return (
