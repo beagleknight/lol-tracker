@@ -11,7 +11,6 @@ import {
   Target,
   GraduationCap,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -22,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
 
@@ -137,8 +137,8 @@ export function DashboardClient({
   ddragonVersion,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user: authUser } = useAuth();
+  const locale = authUser?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.puuid;
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);

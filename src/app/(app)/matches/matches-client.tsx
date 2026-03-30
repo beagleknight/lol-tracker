@@ -1,7 +1,6 @@
 "use client";
 
 import { Search, Loader2, AlertCircle, ChevronRight, ChevronLeft, Download } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/lib/auth-client";
 import { DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 
@@ -164,8 +164,8 @@ export function MatchesClient({
   filters,
 }: MatchesClientProps) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const locale = session?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Matches");
   const [isNavigating, startTransition] = useTransition();
 
