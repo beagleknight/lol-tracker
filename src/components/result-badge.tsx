@@ -6,7 +6,7 @@
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
-import { type MatchResult, resultBadgeVariant, resultBarColor } from "@/lib/match-result";
+import { resultBadgeVariant, resultBarColor } from "@/lib/match-result";
 import { cn } from "@/lib/utils";
 
 // ─── ResultBadge ─────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ type ResultFormat =
   | "raw"; // Uses the raw result string as-is (e.g. "Victory")
 
 interface ResultBadgeProps {
-  result: MatchResult | string;
+  result: string;
   /** "short" → W/L/R, "long" → Victory/Defeat/Remake, "raw" → raw string */
   format?: ResultFormat;
   className?: string;
@@ -52,7 +52,7 @@ export function ResultBadge({ result, format = "short", className }: ResultBadge
 // ─── ResultBar ───────────────────────────────────────────────────────────────
 
 interface ResultBarProps {
-  result: MatchResult | string;
+  result: string;
   /** Height class — "sm" = h-6, "md" = h-8, "lg" = h-10 */
   size?: "sm" | "md" | "lg";
   className?: string;

@@ -180,7 +180,7 @@ export default async function DashboardPage() {
       highlightsPerMatch[h.matchId] = [];
     }
     highlightsPerMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
 
     if (baseline?.tier && baseline.id !== latestRankOrUndef.id) {
       const newLP = toCumulativeLP(
-        latestRankOrUndef.tier!,
+        latestRankOrUndef.tier,
         latestRankOrUndef.division,
         latestRankOrUndef.lp || 0,
       );

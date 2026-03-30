@@ -139,7 +139,7 @@ export default async function MatchesPage({
       highlightsPerMatch[h.matchId] = [];
     }
     highlightsPerMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });

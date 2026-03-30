@@ -119,7 +119,7 @@ async function migrate() {
 
   // Get already-applied migration hashes
   const applied = await client.execute("SELECT hash FROM __drizzle_migrations");
-  const appliedHashes = new Set(applied.rows.map((r) => String(r.hash)));
+  const appliedHashes = new Set(applied.rows.map((r) => r.hash as string));
 
   console.log(`[migrate] ${appliedHashes.size} migrations already applied`);
   console.log(`[migrate] ${journal.entries.length} total migrations in journal`);

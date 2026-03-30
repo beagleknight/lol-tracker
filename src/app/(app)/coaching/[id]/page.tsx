@@ -92,7 +92,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
   for (const h of allHighlights) {
     if (!highlightsByMatch[h.matchId]) highlightsByMatch[h.matchId] = [];
     highlightsByMatch[h.matchId].push({
-      type: h.type as "highlight" | "lowlight",
+      type: h.type,
       text: h.text,
       topic: h.topic,
     });
@@ -173,7 +173,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
       for (const h of progressHL) {
         if (!progressHighlightsByMatch[h.matchId]) progressHighlightsByMatch[h.matchId] = [];
         progressHighlightsByMatch[h.matchId].push({
-          type: h.type as "highlight" | "lowlight",
+          type: h.type,
           text: h.text,
           topic: h.topic,
         });

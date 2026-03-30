@@ -4,7 +4,7 @@ import { Target, Plus, Trophy, Archive, Trash2, Loader2, AlertTriangle } from "l
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 
 import type { Goal } from "@/db/schema";

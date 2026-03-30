@@ -43,7 +43,7 @@ async function run() {
   console.log("Done! Verifying...");
 
   const result = await db.execute("PRAGMA table_info(goals)");
-  const cols = result.rows.map((r) => r.name);
+  const cols = result.rows.map((r) => r.name as string);
   console.log("Columns:", cols.join(", "));
 
   if (cols.includes("id") && cols.includes("user_id") && cols.includes("status")) {

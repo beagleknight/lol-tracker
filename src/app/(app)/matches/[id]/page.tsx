@@ -121,7 +121,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   ]);
 
   const highlightItems = highlights.map((h) => ({
-    type: h.type as "highlight" | "lowlight",
+    type: h.type,
     text: h.text,
     topic: h.topic || undefined,
   }));

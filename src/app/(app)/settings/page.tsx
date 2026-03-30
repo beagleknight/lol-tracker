@@ -178,7 +178,7 @@ export default function SettingsPage() {
   }
 
   function handleCopyCode(code: string) {
-    navigator.clipboard.writeText(code);
+    void navigator.clipboard.writeText(code);
     toast.success(t("toasts.inviteCopied"));
   }
 

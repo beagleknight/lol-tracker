@@ -142,20 +142,16 @@ export function MatchupNotesPanel({
 
   // Read mode — show content, click to edit
   return (
-    <div
-      className="cursor-pointer rounded-lg border border-border/40 bg-surface-elevated p-3 transition-colors hover:border-border/60"
+    <button
+      type="button"
+      className="w-full cursor-pointer rounded-lg border border-border/40 bg-surface-elevated p-3 text-left transition-colors hover:border-border/60"
       onClick={() => setIsEditing(true)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setIsEditing(true);
-      }}
     >
       <p className="text-sm whitespace-pre-wrap">{note!.content}</p>
       <p className="mt-1.5 text-[10px] text-muted-foreground/50">
         {t("savedAt", { date: formatDate(note!.updatedAt, locale) })}
       </p>
-    </div>
+    </button>
   );
 }
 
