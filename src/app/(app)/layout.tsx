@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { connection } from "next/server";
@@ -9,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches } from "@/db/schema";
+import { AuthProvider } from "@/lib/auth-client";
 import { getLatestChangelogVersion } from "@/lib/changelog";
 import { sidebarReviewCountsSelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
@@ -58,7 +58,7 @@ async function LocalizedContent({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <AuthProvider>
       <Suspense>
         <LocalizedContent>
           <div className="bg-mesh flex min-h-screen">
@@ -78,6 +78,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Toaster />
         </LocalizedContent>
       </Suspense>
-    </SessionProvider>
+    </AuthProvider>
   );
 }

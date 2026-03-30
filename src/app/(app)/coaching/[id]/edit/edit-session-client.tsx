@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2, ArrowLeft, Video, Check, Calendar, Clock, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
@@ -61,8 +61,8 @@ export function EditSessionClient({
   previousCoaches,
 }: EditSessionClientProps) {
   const router = useRouter();
-  const { data: authSession } = useSession();
-  const locale = authSession?.user?.locale ?? DEFAULT_LOCALE;
+  const { user } = useAuth();
+  const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("EditSession");
   const tCommon = useTranslations("Common");
   const [isPending, startTransition] = useTransition();
