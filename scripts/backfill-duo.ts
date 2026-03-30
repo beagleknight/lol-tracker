@@ -31,7 +31,7 @@ async function main() {
 
   // 1. Get all users with duoPartnerUserId set
   const usersResult = await db.execute(
-    "SELECT id, puuid, duo_partner_user_id FROM users WHERE duo_partner_user_id IS NOT NULL"
+    "SELECT id, puuid, duo_partner_user_id FROM users WHERE duo_partner_user_id IS NOT NULL",
   );
 
   if (usersResult.rows.length === 0) {
@@ -97,7 +97,7 @@ async function main() {
         // Find duo partner on same team
         const partner = participants.find(
           (p: { puuid: string; teamId: number }) =>
-            p.puuid === partnerPuuid && p.teamId === player.teamId
+            p.puuid === partnerPuuid && p.teamId === player.teamId,
         );
 
         if (partner) {

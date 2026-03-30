@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoachingHubLoading() {
   return (
@@ -16,7 +16,7 @@ export default function CoachingHubLoading() {
 
       {/* Upcoming Sessions */}
       <section>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-5 w-40" />
         </div>
@@ -44,12 +44,12 @@ export default function CoachingHubLoading() {
 
       {/* Active Action Items */}
       <section>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-5 w-36" />
         </div>
         <Card>
-          <CardContent className="pt-4 space-y-3">
+          <CardContent className="space-y-3 pt-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Skeleton className="h-3.5 w-3.5 rounded-full" />
@@ -65,7 +65,7 @@ export default function CoachingHubLoading() {
 
       {/* Past Sessions */}
       <section>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-5 w-28" />
         </div>
@@ -90,12 +90,12 @@ export default function CoachingHubLoading() {
                     <Skeleton className="h-5 w-20 rounded-full" />
                     <Skeleton className="h-5 w-24 rounded-full" />
                   </div>
-                  <Skeleton className="h-3 w-40 mt-2" />
+                  <Skeleton className="mt-2 h-3 w-40" />
                 </CardContent>
               </Card>
               {/* Interval */}
               <div className="ml-6 flex items-center gap-3">
-                <Skeleton className="w-0.5 h-4" />
+                <Skeleton className="h-4 w-0.5" />
                 <Skeleton className="h-3 w-32" />
               </div>
             </div>

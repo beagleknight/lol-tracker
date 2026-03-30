@@ -1,14 +1,16 @@
 "use server";
 
-import { db } from "@/db";
-import { matches, users, type MatchResult } from "@/db/schema";
 import { eq, and, isNotNull, desc, sql, count } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { cacheLife, cacheTag } from "next/cache";
-import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
+
 import type { RiotMatch } from "@/lib/riot-api";
+
+import { db } from "@/db";
+import { matches, users, type MatchResult } from "@/db/schema";
+import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
 import { duoStatsSelect, championSynergySelect } from "@/lib/match-queries";
+import { requireUser } from "@/lib/session";
 
 const PAGE_SIZE = 10;
 
@@ -101,24 +103,14 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
     db
       .select(duoStatsSelect())
       .from(matches)
-      .where(
-        and(
-          eq(matches.userId, userId),
-          isNotNull(matches.duoPartnerPuuid)
-        )
-      ),
+      .where(and(eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid))),
     db
       .select({
         totalGames: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`,
         wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
       })
       .from(matches)
-      .where(
-        and(
-          eq(matches.userId, userId),
-          sql`${matches.duoPartnerPuuid} IS NULL`
-        )
-      ),
+      .where(and(eq(matches.userId, userId), sql`${matches.duoPartnerPuuid} IS NULL`)),
   ]);
 
   const duo = duoAgg[0];
@@ -158,9 +150,7 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
     soloGames: solo?.totalGames ?? 0,
     soloWins: solo?.wins ?? 0,
     soloWinRate:
-      solo && solo.totalGames > 0
-        ? Math.round(((solo.wins ?? 0) / solo.totalGames) * 100)
-        : 0,
+      solo && solo.totalGames > 0 ? Math.round(((solo.wins ?? 0) / solo.totalGames) * 100) : 0,
   };
 }
 
@@ -174,7 +164,7 @@ export async function getDuoStats(): Promise<DuoStats | null> {
 
 async function getCachedDuoGames(
   userId: string,
-  page: number
+  page: number,
 ): Promise<{ games: DuoGameRow[]; totalPages: number }> {
   "use cache: remote";
   cacheLife("hours");
@@ -188,16 +178,10 @@ async function getCachedDuoGames(
   if (!user?.duoPartnerUserId) return { games: [], totalPages: 0 };
 
   const offset = (page - 1) * PAGE_SIZE;
-  const duoWhere = and(
-    eq(matches.userId, userId),
-    isNotNull(matches.duoPartnerPuuid)
-  );
+  const duoWhere = and(eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid));
 
   const [countResult, rows] = await Promise.all([
-    db
-      .select({ total: count() })
-      .from(matches)
-      .where(duoWhere),
+    db.select({ total: count() }).from(matches).where(duoWhere),
     db
       .select({
         id: matches.id,
@@ -252,9 +236,7 @@ export async function getDuoGames(page: number = 1): Promise<{
 
 // ─── Cached Champion Synergy ────────────────────────────────────────────────
 
-async function getCachedChampionSynergy(
-  userId: string
-): Promise<ChampionSynergy[]> {
+async function getCachedChampionSynergy(userId: string): Promise<ChampionSynergy[]> {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(duoTag(userId));
@@ -277,8 +259,8 @@ async function getCachedChampionSynergy(
       and(
         eq(matches.userId, userId),
         isNotNull(matches.duoPartnerPuuid),
-        isNotNull(matches.duoPartnerChampionName)
-      )
+        isNotNull(matches.duoPartnerChampionName),
+      ),
     )
     .groupBy(matches.championName, matches.duoPartnerChampionName)
     .orderBy(sql`games desc`)
@@ -331,8 +313,8 @@ export async function backfillDuoGames(): Promise<{
       and(
         eq(matches.userId, user.id),
         isNotNull(matches.rawMatchJson),
-        sql`${matches.duoPartnerPuuid} IS NULL`
-      )
+        sql`${matches.duoPartnerPuuid} IS NULL`,
+      ),
     );
 
   let duoFound = 0;
@@ -347,7 +329,7 @@ export async function backfillDuoGames(): Promise<{
       if (!player) continue;
 
       const partnerOnTeam = participants.find(
-        (p) => p.puuid === partnerPuuid && p.teamId === player.teamId
+        (p) => p.puuid === partnerPuuid && p.teamId === player.teamId,
       );
 
       if (partnerOnTeam) {
@@ -360,9 +342,7 @@ export async function backfillDuoGames(): Promise<{
             duoPartnerDeaths: partnerOnTeam.deaths,
             duoPartnerAssists: partnerOnTeam.assists,
           })
-          .where(
-            and(eq(matches.id, m.id), eq(matches.userId, user.id))
-          );
+          .where(and(eq(matches.id, m.id), eq(matches.userId, user.id)));
         duoFound++;
       }
     } catch {

@@ -1,10 +1,12 @@
+import { eq, asc, and } from "drizzle-orm";
+import { cacheLife, cacheTag } from "next/cache";
+
 import { db } from "@/db";
 import { matches, coachingSessions, rankSnapshots, goals } from "@/db/schema";
-import { eq, asc, and } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { getLatestVersion } from "@/lib/riot-api";
-import { cacheLife, cacheTag } from "next/cache";
 import { analyticsTag, goalsTag } from "@/lib/cache";
+import { getLatestVersion } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
+
 import { AnalyticsClient } from "./analytics-client";
 
 async function getCachedAnalyticsData(userId: string) {
@@ -56,8 +58,9 @@ async function getCachedAnalyticsData(userId: string) {
 
 export default async function AnalyticsPage() {
   const user = await requireUser();
-  const { allMatches, sessions, ranks, ddragonVersion, activeGoal } =
-    await getCachedAnalyticsData(user.id);
+  const { allMatches, sessions, ranks, ddragonVersion, activeGoal } = await getCachedAnalyticsData(
+    user.id,
+  );
 
   return (
     <AnalyticsClient

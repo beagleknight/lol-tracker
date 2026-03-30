@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
+import { useCallback, useSyncExternalStore } from "react";
 
 /**
  * Reads computed CSS variable values so they can be passed as color strings
@@ -82,7 +82,7 @@ export function useChartColors(): ChartColors {
     return cachedColors;
   }, [resolvedTheme]);
 
-  const getServerSnapshot = useCallback(() => ({} as ChartColors), []);
+  const getServerSnapshot = useCallback(() => ({}) as ChartColors, []);
 
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

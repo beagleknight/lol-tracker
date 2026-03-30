@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useRef, useTransition, useCallback } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { Search, Loader2, AlertCircle, ChevronRight, ChevronLeft, Download } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useTransition, useCallback } from "react";
+
+import type { Match } from "@/db/schema";
+
+import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,18 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Search,
-  Loader2,
-  AlertCircle,
-  ChevronRight,
-  ChevronLeft,
-  Download,
-} from "lucide-react";
-import type { Match } from "@/db/schema";
-import { getChampionIconUrl } from "@/lib/riot-api";
-import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { DEFAULT_LOCALE } from "@/lib/format";
+import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -52,7 +47,7 @@ interface MatchesClientProps {
 
 function buildMatchesUrl(
   params: Record<string, string>,
-  overrides: Record<string, string>
+  overrides: Record<string, string>,
 ): string {
   const merged = { ...params, ...overrides };
   const sp = new URLSearchParams();
@@ -102,11 +97,7 @@ function ServerPagination({
   // Build page numbers: first, last, current +/- 1, with ellipsis
   const pages: (number | "ellipsis")[] = [];
   for (let i = 1; i <= totalPages; i++) {
-    if (
-      i === 1 ||
-      i === totalPages ||
-      (i >= currentPage - 1 && i <= currentPage + 1)
-    ) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
       pages.push(i);
     } else if (pages[pages.length - 1] !== "ellipsis") {
       pages.push("ellipsis");
@@ -141,7 +132,7 @@ function ServerPagination({
           >
             {p}
           </Button>
-        )
+        ),
       )}
       <Button
         variant="ghost"
@@ -204,7 +195,6 @@ export function MatchesClient({
     });
   }
 
-
   // Debounced search — navigate after typing stops
   const [searchValue, setSearchValue] = useState(filters.search);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -216,7 +206,7 @@ export function MatchesClient({
       }, 400);
     },
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-    [filters.result, filters.champion, filters.review]
+    [filters.result, filters.champion, filters.review],
   );
 
   return (
@@ -224,7 +214,7 @@ export function MatchesClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("heading")}</h1>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
           <p className="text-muted-foreground">
             {t("summary", { totalMatches, wins, losses, winRate })}
           </p>
@@ -247,7 +237,7 @@ export function MatchesClient({
           <span>
             {t.rich("linkRiotAccount", {
               link: (chunks) => (
-                <Link href="/settings" className="underline font-medium">
+                <Link href="/settings" className="font-medium underline">
                   {chunks}
                 </Link>
               ),
@@ -258,8 +248,8 @@ export function MatchesClient({
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t("searchPlaceholder")}
             value={searchValue}
@@ -270,7 +260,10 @@ export function MatchesClient({
             className="pl-9"
           />
         </div>
-        <Select value={filters.result} onValueChange={(v) => navigateWithFilter("result", v ?? "all")}>
+        <Select
+          value={filters.result}
+          onValueChange={(v) => navigateWithFilter("result", v ?? "all")}
+        >
           <SelectTrigger className="w-full sm:w-[130px]" aria-label="Filter by result">
             <SelectValue placeholder={t("resultFilterPlaceholder")} />
           </SelectTrigger>
@@ -281,7 +274,10 @@ export function MatchesClient({
             <SelectItem value="Remake">{t("remakes")}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filters.champion} onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}>
+        <Select
+          value={filters.champion}
+          onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}
+        >
           <SelectTrigger className="w-full sm:w-[150px]" aria-label="Filter by champion">
             <SelectValue placeholder={t("championFilterPlaceholder")} />
           </SelectTrigger>
@@ -303,7 +299,10 @@ export function MatchesClient({
             ))}
           </SelectContent>
         </Select>
-        <Select value={filters.review} onValueChange={(v) => navigateWithFilter("review", v ?? "all")}>
+        <Select
+          value={filters.review}
+          onValueChange={(v) => navigateWithFilter("review", v ?? "all")}
+        >
           <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by review status">
             <SelectValue placeholder={t("reviewFilterPlaceholder")} />
           </SelectTrigger>
@@ -320,7 +319,10 @@ export function MatchesClient({
       {totalMatches === 0 && !isNavigating ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
           <p className="text-muted-foreground">
-            {filters.search || filters.result !== "all" || filters.champion !== "all" || filters.review !== "all"
+            {filters.search ||
+            filters.result !== "all" ||
+            filters.champion !== "all" ||
+            filters.review !== "all"
               ? t("noMatchesFiltered")
               : t("noMatchesEmpty")}
           </p>
@@ -329,11 +331,13 @@ export function MatchesClient({
         <>
           <div className="relative">
             {isNavigating && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            <div className={`space-y-2 transition-opacity duration-150 ${isNavigating ? "opacity-40" : ""}`}>
+            <div
+              className={`space-y-2 transition-opacity duration-150 ${isNavigating ? "opacity-40" : ""}`}
+            >
               {pageMatches.map((match) => (
                 <MatchCard
                   key={match.id}

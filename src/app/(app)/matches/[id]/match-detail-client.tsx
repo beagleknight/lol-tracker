@@ -1,30 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ResultBadge } from "@/components/result-badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
-import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
-import { AiInsightDrawer } from "@/components/ai-insight-card";
-import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-insights";
 import {
   ArrowLeft,
   GraduationCap,
@@ -36,13 +11,35 @@ import {
   MessageSquare,
   ExternalLink,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+
+import type { MatchupNoteData } from "@/app/actions/matchup-notes";
 import type { Match } from "@/db/schema";
 import type { RiotMatchParticipant } from "@/lib/riot-api";
-import { getKeystoneIconUrl } from "@/lib/riot-api";
-import { ChampionLink } from "@/components/champion-link";
-import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+
 import { ReadOnlyMatchupNotes } from "@/app/(app)/scout/matchup-notes";
-import type { MatchupNoteData } from "@/app/actions/matchup-notes";
+import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-insights";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
+import { ChampionLink } from "@/components/champion-link";
+import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ResultBadge } from "@/components/result-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { getKeystoneIconUrl } from "@/lib/riot-api";
 
 /** Slim participant — only fields needed for the match detail view */
 type SlimParticipant = Pick<
@@ -101,17 +98,15 @@ function ParticipantRow({
   const kda =
     participant.deaths === 0
       ? t("perfectKda")
-      : ((participant.kills + participant.assists) / participant.deaths).toFixed(
-          1
-        );
+      : ((participant.kills + participant.assists) / participant.deaths).toFixed(1);
 
   return (
     <TableRow
       className={
         isUser
-          ? "bg-gold/5 border-l-2 border-l-gold/40"
+          ? "border-l-2 border-l-gold/40 bg-gold/5"
           : isDuoPartner
-            ? "bg-electric/5 border-l-2 border-l-electric/40"
+            ? "border-l-2 border-l-electric/40 bg-electric/5"
             : "border-l-2 border-l-transparent"
       }
     >
@@ -143,17 +138,15 @@ function ParticipantRow({
       <TableCell className="text-center font-mono text-sm">
         {participant.kills}/{participant.deaths}/{participant.assists}
       </TableCell>
-      <TableCell className="text-center text-sm text-muted-foreground">
-        {kda}
-      </TableCell>
+      <TableCell className="text-center text-sm text-muted-foreground">{kda}</TableCell>
       <TableCell className="text-center text-sm">{cs}</TableCell>
-      <TableCell className="hidden sm:table-cell text-center text-sm text-muted-foreground">
+      <TableCell className="hidden text-center text-sm text-muted-foreground sm:table-cell">
         {participant.visionScore}
       </TableCell>
-      <TableCell className="hidden sm:table-cell text-center text-sm">
+      <TableCell className="hidden text-center text-sm sm:table-cell">
         {(participant.goldEarned / 1000).toFixed(1)}k
       </TableCell>
-      <TableCell className="hidden sm:table-cell text-center text-sm text-muted-foreground">
+      <TableCell className="hidden text-center text-sm text-muted-foreground sm:table-cell">
         {(participant.totalDamageDealtToChampions / 1000).toFixed(1)}k
       </TableCell>
       <TableCell>
@@ -219,7 +212,7 @@ export function MatchDetailClient({
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-          <div className="flex-1">
+        <div className="flex-1">
           <div className="flex items-center gap-3">
             <ChampionLink
               champion={match.championName}
@@ -231,7 +224,7 @@ export function MatchDetailClient({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-gradient-gold">
+                <h1 className="text-gradient-gold text-xl font-bold">
                   <ChampionLink
                     champion={match.championName}
                     ddragonVersion={ddragonVersion}
@@ -250,7 +243,7 @@ export function MatchDetailClient({
                   </Badge>
                 )}
                 {!match.reviewed && hasAnyNotes && (
-                  <Badge variant="outline" className="gap-1 text-warning border-warning/30">
+                  <Badge variant="outline" className="gap-1 border-warning/30 text-warning">
                     <EyeOff className="h-3 w-3" />
                     {t("pendingReview")}
                   </Badge>
@@ -265,24 +258,34 @@ export function MatchDetailClient({
                   }
                 />
               </div>
-              <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
+              <p className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
                 {formatDate(match.gameDate, locale, "datetime")} &middot;{" "}
                 {formatDuration(match.gameDurationSeconds)}
                 {match.runeKeystoneName && (
                   <>
-                    {" "}&middot;{" "}
+                    {" "}
+                    &middot;{" "}
                     {(() => {
-                      const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
+                      const url = match.runeKeystoneId
+                        ? getKeystoneIconUrl(match.runeKeystoneId)
+                        : null;
                       return url ? (
-                        <Image src={url} alt={match.runeKeystoneName} width={20} height={20} className="inline -my-0.5" />
+                        <Image
+                          src={url}
+                          alt={match.runeKeystoneName}
+                          width={20}
+                          height={20}
+                          className="-my-0.5 inline"
+                        />
                       ) : null;
-                    })()}
-                    {" "}{match.runeKeystoneName}
+                    })()}{" "}
+                    {match.runeKeystoneName}
                   </>
                 )}
                 {match.matchupChampionName && (
                   <>
-                    {" "}{t("vs")}{" "}
+                    {" "}
+                    {t("vs")}{" "}
                     <ChampionLink
                       champion={match.matchupChampionName}
                       ddragonVersion={ddragonVersion}
@@ -315,17 +318,15 @@ export function MatchDetailClient({
       {/* Review this game CTA */}
       {!match.reviewed && (
         <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
-          <ClipboardEdit className="h-5 w-5 text-gold shrink-0" />
+          <ClipboardEdit className="h-5 w-5 shrink-0 text-gold" />
           <div className="flex-1">
             <p className="text-sm font-medium">
               {hasAnyNotes ? t("reviewCtaWithNotes") : t("reviewCtaWithoutNotes")}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {t("reviewCtaSubtext")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("reviewCtaSubtext")}</p>
           </div>
           <Link href={`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`}>
-            <Button size="sm" className="gap-1.5 shrink-0">
+            <Button size="sm" className="shrink-0 gap-1.5">
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("reviewButton")}
             </Button>
@@ -337,7 +338,7 @@ export function MatchDetailClient({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold font-mono text-gold">
+            <p className="font-mono text-2xl font-bold text-gold">
               {match.kills}/{match.deaths}/{match.assists}
             </p>
             <p className="text-xs text-muted-foreground">{t("kda")}</p>
@@ -367,19 +368,19 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">
-              {formatDuration(match.gameDurationSeconds)}
-            </p>
+            <p className="text-2xl font-bold">{formatDuration(match.gameDurationSeconds)}</p>
             <p className="text-xs text-muted-foreground">{t("duration")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold flex items-center justify-center gap-2">
+            <p className="flex items-center justify-center gap-2 text-2xl font-bold">
               {match.runeKeystoneName ? (
                 <>
                   {(() => {
-                    const url = match.runeKeystoneId ? getKeystoneIconUrl(match.runeKeystoneId) : null;
+                    const url = match.runeKeystoneId
+                      ? getKeystoneIconUrl(match.runeKeystoneId)
+                      : null;
                     return url ? (
                       <Image src={url} alt={match.runeKeystoneName} width={36} height={36} />
                     ) : null;
@@ -440,9 +441,15 @@ export function MatchDetailClient({
                       <TableHead className="text-center">{t("kdaColumn")}</TableHead>
                       <TableHead className="text-center">{t("ratioColumn")}</TableHead>
                       <TableHead className="text-center">{t("csColumn")}</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">{t("visionColumn")}</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">{t("goldColumn")}</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">{t("damageColumn")}</TableHead>
+                      <TableHead className="hidden text-center sm:table-cell">
+                        {t("visionColumn")}
+                      </TableHead>
+                      <TableHead className="hidden text-center sm:table-cell">
+                        {t("goldColumn")}
+                      </TableHead>
+                      <TableHead className="hidden text-center sm:table-cell">
+                        {t("damageColumn")}
+                      </TableHead>
                       <TableHead>{t("itemsColumn")}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -481,7 +488,7 @@ export function MatchDetailClient({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
                       {match.comment}
                     </p>
                   </CardContent>
@@ -501,7 +508,7 @@ export function MatchDetailClient({
                     {/* VOD URL */}
                     {hasVodUrl && (
                       <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                           <LinkIcon className="h-3 w-3" />
                           {t("ascentVod")}
                         </p>
@@ -509,7 +516,7 @@ export function MatchDetailClient({
                           href={match.vodUrl!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-electric hover:underline inline-flex items-center gap-1"
+                          className="inline-flex items-center gap-1 text-sm text-electric hover:underline"
                         >
                           <ExternalLink className="h-3 w-3" />
                           {t("openVod")}
@@ -523,7 +530,7 @@ export function MatchDetailClient({
                         <p className="text-xs font-medium text-muted-foreground">
                           {t("reviewNotes")}
                         </p>
-                        <p className="text-sm whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
                           {match.reviewNotes}
                         </p>
                       </div>
@@ -539,7 +546,7 @@ export function MatchDetailClient({
 
                     {/* Review status badge */}
                     {match.reviewed && !hasReviewNotes && !match.reviewSkippedReason && (
-                      <p className="text-xs text-win flex items-center gap-1.5">
+                      <p className="flex items-center gap-1.5 text-xs text-win">
                         <Eye className="h-3 w-3" />
                         {t("markedAsReviewed")}
                       </p>

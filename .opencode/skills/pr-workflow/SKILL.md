@@ -33,6 +33,7 @@ git checkout -b <branch-name>
 ```
 
 Branch naming conventions:
+
 - `feat/<short-description>` — new features
 - `fix/<short-description>` — bug fixes
 - `refactor/<short-description>` — refactoring
@@ -60,6 +61,7 @@ changelog/es/YYYY-MM-DD-slug.mdx
 ```
 
 Frontmatter format:
+
 ```yaml
 ---
 version: "YYYY.MM.N"
@@ -72,6 +74,7 @@ tags: ["feature"]
 Body uses standard Markdown: **bold**, lists, `### headings`.
 
 Version scheme — **CalVer** (`YYYY.MM.N`):
+
 - `YYYY` = calendar year (e.g. 2026)
 - `MM` = calendar month, zero-padded (e.g. 03)
 - `N` = sequential release number within that month, starting at 1
@@ -94,14 +97,17 @@ Create the PR with `gh pr create`. The PR body should follow this format:
 
 ```markdown
 ## Summary
+
 - Brief description of changes
 
 Fixes #N
+
 <!-- Use "Fixes #N" for each GitHub issue this PR resolves. -->
 <!-- GitHub auto-closes the issue when the PR merges. -->
 <!-- Use "Relates to #N" if the PR partially addresses but doesn't fully close an issue. -->
 
 ## Changelog
+
 - Version YYYY.MM.N: <what changed for users>
 ```
 
@@ -111,14 +117,14 @@ Fixes #N
 
 Six checks run automatically on every PR to `main`:
 
-| Check | Command | What it catches |
-|---|---|---|
-| **Typecheck** | `tsc --noEmit` | Type errors |
-| **Lint** | `eslint` | Code style, unused vars, React rules, jsx-a11y |
-| **Build** | `next build --webpack` | Compilation errors, broken imports |
-| **Smoke** | `playwright test --project=smoke` | Axe-core a11y violations on every page |
-| **E2E** | `playwright test --project=e2e` | End-to-end user flows |
-| **Changelog** | `git diff` on `changelog/` | Missing changelog entry (skipped with `skip-changelog` label) |
+| Check         | Command                           | What it catches                                               |
+| ------------- | --------------------------------- | ------------------------------------------------------------- |
+| **Typecheck** | `tsc --noEmit`                    | Type errors                                                   |
+| **Lint**      | `eslint`                          | Code style, unused vars, React rules, jsx-a11y                |
+| **Build**     | `next build --webpack`            | Compilation errors, broken imports                            |
+| **Smoke**     | `playwright test --project=smoke` | Axe-core a11y violations on every page                        |
+| **E2E**       | `playwright test --project=e2e`   | End-to-end user flows                                         |
+| **Changelog** | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
 
 All six must pass before merging.
 
@@ -139,6 +145,7 @@ Vercel auto-deploys on merge to main — no manual deploy step needed.
 ### 7. Flaky tests
 
 **MANDATORY: Flaky tests are unacceptable.** Whenever a CI check passes only on re-run (i.e., a test is flaky), immediately open a GitHub issue with the `flaky-test` label. The issue should describe:
+
 - Which test flaked (full test name)
 - What the failure looked like (error message / timeout)
 - In which PR/run it was observed (link to the CI run)
@@ -148,6 +155,7 @@ Do this even if the overall CI run eventually passes on retry. Flaky tests erode
 ## Common scenarios
 
 ### Quick fix (1 commit)
+
 ```bash
 git checkout main && git pull
 git checkout -b fix/description
@@ -161,6 +169,7 @@ gh pr create --title "fix: description" --body "..."
 ```
 
 ### Feature (multiple commits)
+
 ```bash
 git checkout main && git pull
 git checkout -b feat/description
@@ -172,6 +181,7 @@ gh pr create --title "feat: description" --body "..."
 ```
 
 ### Infrastructure change (no changelog)
+
 ```bash
 git checkout main && git pull
 git checkout -b chore/description

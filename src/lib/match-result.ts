@@ -35,9 +35,7 @@ export function filterMeaningful<T extends { result: string }>(items: T[]): T[] 
 // ─── UI Mappers ──────────────────────────────────────────────────────────────
 
 /** Badge variant for match result badges (maps to Badge component variants). */
-export function resultBadgeVariant(
-  result: string
-): "default" | "secondary" | "destructive" {
+export function resultBadgeVariant(result: string): "default" | "secondary" | "destructive" {
   if (isWin(result)) return "default";
   if (isRemake(result)) return "secondary";
   return "destructive";
@@ -67,7 +65,7 @@ export function computeWinRate(wins: number, total: number): number {
 
 /** Compute the current streak from a list of matches (newest first). */
 export function computeStreak(
-  matches: Array<{ result: string }>
+  matches: Array<{ result: string }>,
 ): { type: "W" | "L"; count: number } | null {
   const meaningful = matches.filter((m) => isMeaningful(m.result));
   if (meaningful.length === 0) return null;

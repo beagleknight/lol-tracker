@@ -24,8 +24,7 @@ const isProduction = !!TURSO_URL && !TURSO_URL.startsWith("file:");
 
 if (isProduction && !process.argv.includes("--force-remote")) {
   console.error(
-    "ERROR: This script would run against a REMOTE database.\n" +
-      "Pass --force-remote to confirm."
+    "ERROR: This script would run against a REMOTE database.\n" + "Pass --force-remote to confirm.",
   );
   process.exit(1);
 }
@@ -36,18 +35,14 @@ const db = createClient({
 });
 
 async function main() {
-  console.log(
-    `Running against ${isProduction ? "PRODUCTION" : "LOCAL"} database\n`
-  );
+  console.log(`Running against ${isProduction ? "PRODUCTION" : "LOCAL"} database\n`);
 
   // Get all matches that have raw JSON and are currently Victory/Defeat
   const matchesResult = await db.execute(
-    "SELECT id, user_id, result, raw_match_json FROM matches WHERE raw_match_json IS NOT NULL AND result IN ('Victory', 'Defeat')"
+    "SELECT id, user_id, result, raw_match_json FROM matches WHERE raw_match_json IS NOT NULL AND result IN ('Victory', 'Defeat')",
   );
 
-  console.log(
-    `Found ${matchesResult.rows.length} matches with raw JSON to check\n`
-  );
+  console.log(`Found ${matchesResult.rows.length} matches with raw JSON to check\n`);
 
   let checked = 0;
   let remakesFound = 0;
@@ -62,8 +57,7 @@ async function main() {
       const info = matchData?.info;
       if (!info) continue;
 
-      const isRemake =
-        info.gameEndedInEarlySurrender === true || info.gameDuration < 300;
+      const isRemake = info.gameEndedInEarlySurrender === true || info.gameDuration < 300;
 
       if (isRemake) {
         await db.execute({
@@ -71,7 +65,9 @@ async function main() {
           args: [matchId, userId],
         });
         remakesFound++;
-        console.log(`  Updated ${matchId} -> Remake (duration: ${info.gameDuration}s, earlySurrender: ${info.gameEndedInEarlySurrender})`);
+        console.log(
+          `  Updated ${matchId} -> Remake (duration: ${info.gameDuration}s, earlySurrender: ${info.gameEndedInEarlySurrender})`,
+        );
       }
 
       checked++;
@@ -80,9 +76,7 @@ async function main() {
     }
   }
 
-  console.log(
-    `\nChecked ${checked} matches, found ${remakesFound} remakes.\n`
-  );
+  console.log(`\nChecked ${checked} matches, found ${remakesFound} remakes.\n`);
   console.log("Backfill complete!");
 }
 

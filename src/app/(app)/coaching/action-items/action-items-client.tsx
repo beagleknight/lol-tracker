@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Loader2, Circle, Play, CheckCircle2, Trash2, ListChecks } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import {
-  updateActionItemStatus,
-  deleteActionItem,
-} from "@/app/actions/coaching";
-import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
+import { updateActionItemStatus, deleteActionItem } from "@/app/actions/coaching";
+import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -18,16 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import {
-  Loader2,
-  Circle,
-  Play,
-  CheckCircle2,
-  Trash2,
-  ListChecks,
-} from "lucide-react";
-import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 
 interface ActionItemWithSession {
   id: number;
@@ -51,12 +42,11 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
   const [isDeleting, startDelete] = useTransition();
 
   function cycleStatus() {
-    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> =
-      {
-        pending: "in_progress",
-        in_progress: "completed",
-        completed: "pending",
-      };
+    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> = {
+      pending: "in_progress",
+      in_progress: "completed",
+      completed: "pending",
+    };
     const next = nextStatus[item.status];
     startTransition(async () => {
       try {
@@ -89,30 +79,24 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
   const dateStr = formatDate(item.sessionDate, locale, "short-compact");
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border/50 p-3 bg-surface-elevated">
+    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3">
       <button
         onClick={cycleStatus}
         disabled={isPending}
         className="shrink-0 cursor-pointer"
         aria-label="Toggle action item status"
       >
-        {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          icons[item.status]
-        )}
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : icons[item.status]}
       </button>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p
           className={`text-sm ${
-            item.status === "completed"
-              ? "line-through text-muted-foreground"
-              : ""
+            item.status === "completed" ? "text-muted-foreground line-through" : ""
           }`}
         >
           {item.description}
         </p>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="mt-1 flex items-center gap-2">
           {item.topic && (
             <Badge variant="secondary" className="text-xs">
               {item.topic}
@@ -134,7 +118,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
               ? "secondary"
               : "outline"
         }
-        className="text-xs shrink-0"
+        className="shrink-0 text-xs"
       >
         {item.status.replace("_", " ")}
       </Badge>
@@ -146,11 +130,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
         disabled={isDeleting}
         aria-label="Delete action item"
       >
-        {isDeleting ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <Trash2 className="h-3 w-3" />
-        )}
+        {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
       </Button>
     </div>
   );
@@ -184,7 +164,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("title")}</h1>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground">
           {t("summary", { pendingCount, inProgressCount, completedCount })}
         </p>
@@ -194,7 +174,10 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
       <div className="flex gap-3">
         <Select
           value={statusFilter}
-          onValueChange={(v) => { setStatusFilter(v ?? "all"); setPage(1); }}
+          onValueChange={(v) => {
+            setStatusFilter(v ?? "all");
+            setPage(1);
+          }}
         >
           <SelectTrigger className="w-[150px]" aria-label="Filter by status">
             <SelectValue placeholder={t("statusFilterPlaceholder")} />
@@ -209,7 +192,10 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
         {topics.length > 0 && (
           <Select
             value={topicFilter}
-            onValueChange={(v) => { setTopicFilter(v ?? "all"); setPage(1); }}
+            onValueChange={(v) => {
+              setTopicFilter(v ?? "all");
+              setPage(1);
+            }}
           >
             <SelectTrigger className="w-[180px]" aria-label="Filter by topic">
               <SelectValue placeholder={t("topicFilterPlaceholder")} />
@@ -229,16 +215,12 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
       {/* Items */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 py-16 text-center">
-          <ListChecks className="h-8 w-8 text-gold mb-3" />
+          <ListChecks className="mb-3 h-8 w-8 text-gold" />
           <p className="text-lg font-medium">
-            {items.length === 0
-              ? t("emptyStateTitle")
-              : t("noFilterMatch")}
+            {items.length === 0 ? t("emptyStateTitle") : t("noFilterMatch")}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {items.length === 0
-              ? t("emptyStateDescription")
-              : t("noFilterMatchDescription")}
+          <p className="mt-1 text-sm text-muted-foreground">
+            {items.length === 0 ? t("emptyStateDescription") : t("noFilterMatchDescription")}
           </p>
         </div>
       ) : (
@@ -248,11 +230,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
               <ActionItemRow key={item.id} item={item} locale={locale} />
             ))}
           </div>
-          <Pagination
-            currentPage={safePage}
-            totalItems={filtered.length}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={safePage} totalItems={filtered.length} onPageChange={setPage} />
         </>
       )}
     </div>

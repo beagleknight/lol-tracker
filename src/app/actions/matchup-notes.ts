@@ -1,11 +1,12 @@
 "use server";
 
+import { eq, and, isNull } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
+
 import { db } from "@/db";
 import { matchupNotes } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { revalidateTag } from "next/cache";
 import { scoutTag } from "@/lib/cache";
+import { requireUser } from "@/lib/session";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -26,7 +27,7 @@ export interface MatchupNoteData {
  */
 export async function getMatchupNotes(
   matchupChampionName: string,
-  championName?: string
+  championName?: string,
 ): Promise<MatchupNoteData[]> {
   const user = await requireUser();
 
@@ -63,7 +64,7 @@ export async function getMatchupNotes(
  */
 export async function getMatchupNotesForMatch(
   championName: string,
-  matchupChampionName: string
+  matchupChampionName: string,
 ): Promise<MatchupNoteData[]> {
   const user = await requireUser();
 
@@ -74,14 +75,12 @@ export async function getMatchupNotesForMatch(
       and(
         eq(matchupNotes.userId, user.id),
         eq(matchupNotes.matchupChampionName, matchupChampionName),
-      )
+      ),
     )
     .orderBy(matchupNotes.championName);
 
   // Return both general notes and notes specific to this champion
-  const filtered = rows.filter(
-    (r) => r.championName === null || r.championName === championName
-  );
+  const filtered = rows.filter((r) => r.championName === null || r.championName === championName);
 
   return filtered.map((r) => ({
     id: r.id,
@@ -102,7 +101,7 @@ export async function getMatchupNotesForMatch(
 export async function upsertMatchupNote(
   championName: string | null,
   matchupChampionName: string,
-  content: string
+  content: string,
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireUser();
   const trimmed = content.trim();
@@ -142,11 +141,7 @@ export async function upsertMatchupNote(
       updatedAt: now,
     })
     .onConflictDoUpdate({
-      target: [
-        matchupNotes.userId,
-        matchupNotes.championName,
-        matchupNotes.matchupChampionName,
-      ],
+      target: [matchupNotes.userId, matchupNotes.championName, matchupNotes.matchupChampionName],
       set: {
         content: trimmed,
         updatedAt: now,
@@ -160,16 +155,12 @@ export async function upsertMatchupNote(
 /**
  * Delete a matchup note by ID (ownership-checked).
  */
-export async function deleteMatchupNote(
-  id: number
-): Promise<{ success: boolean; error?: string }> {
+export async function deleteMatchupNote(id: number): Promise<{ success: boolean; error?: string }> {
   const user = await requireUser();
 
   await db
     .delete(matchupNotes)
-    .where(
-      and(eq(matchupNotes.id, id), eq(matchupNotes.userId, user.id))
-    );
+    .where(and(eq(matchupNotes.id, id), eq(matchupNotes.userId, user.id)));
 
   revalidateTag(scoutTag(user.id), "max");
   return { success: true };

@@ -48,8 +48,6 @@ for (const route of AUTHENTICATED_ROUTES) {
     expect(page.url()).not.toContain("/login");
 
     // Verify no error boundary is showing
-    await expect(
-      page.getByRole("heading", { name: /something went wrong/i })
-    ).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: /something went wrong/i })).not.toBeVisible();
   });
 }

@@ -34,7 +34,7 @@ function compareCalVer(a: string, b: string): number {
  */
 export async function getChangelogEntries(
   locale: string,
-  tag?: ChangelogTag
+  tag?: ChangelogTag,
 ): Promise<ChangelogEntry[]> {
   const changelogDir = path.join(process.cwd(), "changelog", locale);
 
@@ -57,9 +57,7 @@ export async function getChangelogEntries(
       const raw = await fs.readFile(filePath, "utf-8");
 
       // Parse frontmatter manually (simple --- delimited block)
-      const frontmatterMatch = raw.match(
-        /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/
-      );
+      const frontmatterMatch = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
       if (!frontmatterMatch) return null;
 
       const frontmatterBlock = frontmatterMatch[1];
@@ -76,9 +74,7 @@ export async function getChangelogEntries(
 
       // Parse tags array: tags: ["feature", "fix"]
       let tags: ChangelogTag[] = [];
-      const tagsLine = frontmatterBlock
-        .split("\n")
-        .find((l) => l.startsWith("tags:"));
+      const tagsLine = frontmatterBlock.split("\n").find((l) => l.startsWith("tags:"));
       if (tagsLine) {
         const tagsMatch = tagsLine.match(/\[([^\]]*)\]/);
         if (tagsMatch) {
@@ -101,16 +97,13 @@ export async function getChangelogEntries(
         tags,
         source,
       } satisfies ChangelogEntry;
-    })
+    }),
   );
 
   // Filter nulls and sort newest-first by date, then by CalVer version as tiebreaker
   let result = entries
     .filter((e): e is ChangelogEntry => e !== null)
-    .sort(
-      (a, b) =>
-        b.date.localeCompare(a.date) || compareCalVer(b.version, a.version)
-    );
+    .sort((a, b) => b.date.localeCompare(a.date) || compareCalVer(b.version, a.version));
 
   // Apply tag filter if specified
   if (tag) {

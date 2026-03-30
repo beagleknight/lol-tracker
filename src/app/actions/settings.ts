@@ -1,20 +1,16 @@
 "use server";
 
+import { eq, and, isNotNull, ne } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq, and, isNotNull, ne } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import {
-  getAccountByRiotId,
-} from "@/lib/riot-api";
-import { revalidatePath } from "next/cache";
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n/request";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
-import { cookies } from "next/headers";
-import {
-  SUPPORTED_LANGUAGES,
-  type SupportedLanguage,
-} from "@/i18n/request";
+import { getAccountByRiotId } from "@/lib/riot-api";
+import { requireUser } from "@/lib/session";
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
@@ -54,8 +50,7 @@ export async function linkRiotAccount(formData: FormData) {
       tagLine: account.tagLine,
     };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Failed to link Riot account";
+    const message = error instanceof Error ? error.message : "Failed to link Riot account";
     return { error: message };
   }
 }
@@ -99,12 +94,7 @@ export async function getRegisteredUsers() {
       puuid: users.puuid,
     })
     .from(users)
-    .where(
-      and(
-        ne(users.id, user.id),
-        isNotNull(users.puuid),
-      )
-    );
+    .where(and(ne(users.id, user.id), isNotNull(users.puuid)));
 
   return result;
 }

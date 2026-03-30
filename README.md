@@ -64,12 +64,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server (webpack) |
-| `npm run build` | Production build (webpack) |
-| `npm run start` | Start production server |
-| `npx drizzle-kit push` | Push schema changes to the database |
+| Command                  | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `npm run dev`            | Start dev server (webpack)                 |
+| `npm run build`          | Production build (webpack)                 |
+| `npm run start`          | Start production server                    |
+| `npx drizzle-kit push`   | Push schema changes to the database        |
 | `npx drizzle-kit studio` | Open Drizzle Studio to browse the database |
 
 ## Tech Stack

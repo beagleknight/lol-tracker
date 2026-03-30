@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+
 import { reseedDatabase } from "./helpers/reseed";
 
 /**
@@ -24,14 +25,10 @@ test.describe("Coaching flow", () => {
     await expect(page.getByText("CoachKim").first()).toBeVisible();
 
     // Should see the "Schedule Session" button
-    await expect(
-      page.getByRole("link", { name: "Schedule Session" })
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Schedule Session" })).toBeVisible();
 
     // Should show at least one "Scheduled" badge
-    await expect(
-      page.locator('[data-slot="badge"]:has-text("Scheduled")').first()
-    ).toBeVisible();
+    await expect(page.locator('[data-slot="badge"]:has-text("Scheduled")').first()).toBeVisible();
   });
 
   test("schedule a new coaching session", async ({ page }) => {
@@ -48,18 +45,14 @@ test.describe("Coaching flow", () => {
     await main.getByText("Vision control", { exact: true }).click();
 
     // Add a custom topic
-    await main
-      .getByPlaceholder("Custom topic...")
-      .fill("Custom E2E Topic");
+    await main.getByPlaceholder("Custom topic...").fill("Custom E2E Topic");
     await main.getByRole("button", { name: "Add" }).click();
 
     // Verify the custom topic badge appeared
     await expect(main.getByText("Custom E2E Topic")).toBeVisible();
 
     // Select the first match from the list (if available)
-    const matchButtons = main.locator(
-      'button:has(div.rounded-full)'
-    );
+    const matchButtons = main.locator("button:has(div.rounded-full)");
     const matchCount = await matchButtons.count();
     if (matchCount > 0) {
       await matchButtons.first().click();
@@ -69,9 +62,7 @@ test.describe("Coaching flow", () => {
     await main.getByRole("button", { name: "Schedule Session" }).click();
 
     // Wait for toast confirmation
-    await expect(
-      page.getByText("Coaching session scheduled!")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Coaching session scheduled!")).toBeVisible({ timeout: 15_000 });
 
     // Should redirect to the new session detail page.
     // router.push() may be delayed by cache revalidation — fall back to
@@ -89,22 +80,16 @@ test.describe("Coaching flow", () => {
 
     // Verify session detail shows correct data
     await expect(page.getByText("TestCoach")).toBeVisible();
-    await expect(
-      page.locator('[data-slot="badge"]:has-text("Scheduled")')
-    ).toBeVisible();
+    await expect(page.locator('[data-slot="badge"]:has-text("Scheduled")')).toBeVisible();
     await expect(page.getByText("Wave management").first()).toBeVisible();
     await expect(page.getByText("Vision control").first()).toBeVisible();
     await expect(page.getByText("Custom E2E Topic").first()).toBeVisible();
 
     // Should show "Complete Session" CTA
-    await expect(
-      page.getByRole("link", { name: "Complete Session" })
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Complete Session" })).toBeVisible();
   });
 
-  test("complete the new coaching session with action items", async ({
-    page,
-  }) => {
+  test("complete the new coaching session with action items", async ({ page }) => {
     test.skip(!newSessionUrl, "Skipped — scheduling test did not pass");
     await page.goto(newSessionUrl!);
 
@@ -130,32 +115,24 @@ test.describe("Coaching flow", () => {
     await main.locator("#notes").fill("Great session on wave management fundamentals.");
 
     // Add first action item (Enter key on description input triggers add)
-    await main
-      .getByPlaceholder("Topic (optional)")
-      .fill("Wave management");
+    await main.getByPlaceholder("Topic (optional)").fill("Wave management");
     await main
       .getByPlaceholder("Action item description...")
       .fill("Practice freezing near tower for 5 games");
     await main.getByPlaceholder("Action item description...").press("Enter");
 
     // Wait for the action item to appear before adding the next one
-    await expect(
-      main.getByText("Practice freezing near tower for 5 games")
-    ).toBeVisible();
+    await expect(main.getByText("Practice freezing near tower for 5 games")).toBeVisible();
 
     // Add second action item
-    await main
-      .getByPlaceholder("Topic (optional)")
-      .fill("Vision control");
+    await main.getByPlaceholder("Topic (optional)").fill("Vision control");
     await main
       .getByPlaceholder("Action item description...")
       .fill("Watch 2 VODs focusing on ward placement");
     await main.getByPlaceholder("Action item description...").press("Enter");
 
     // Verify second action item appears
-    await expect(
-      main.getByText("Watch 2 VODs focusing on ward placement")
-    ).toBeVisible();
+    await expect(main.getByText("Watch 2 VODs focusing on ward placement")).toBeVisible();
 
     // Submit — the button triggers a server action then router.push()
     const submitButton = main.getByRole("button", { name: "Complete Session" });
@@ -181,23 +158,17 @@ test.describe("Coaching flow", () => {
     }
 
     // Verify completed status badge
-    await expect(
-      page.locator('[data-slot="badge"]:has-text("Completed")').first()
-    ).toBeVisible();
+    await expect(page.locator('[data-slot="badge"]:has-text("Completed")').first()).toBeVisible();
 
     // Verify notes are displayed (may appear in both the notes card and
     // highlight sections — use .first() to avoid strict mode violation)
     await expect(
-      page.getByText("Great session on wave management fundamentals.").first()
+      page.getByText("Great session on wave management fundamentals.").first(),
     ).toBeVisible();
 
     // Verify action items are shown
-    await expect(
-      page.getByText("Practice freezing near tower for 5 games").first()
-    ).toBeVisible();
-    await expect(
-      page.getByText("Watch 2 VODs focusing on ward placement").first()
-    ).toBeVisible();
+    await expect(page.getByText("Practice freezing near tower for 5 games").first()).toBeVisible();
+    await expect(page.getByText("Watch 2 VODs focusing on ward placement").first()).toBeVisible();
   });
 
   test("action items page shows the new items", async ({ page }) => {
@@ -206,12 +177,8 @@ test.describe("Coaching flow", () => {
 
     // The new action items should appear (they're "pending" by default)
     // Action item text may appear in multiple tab panels (hidden), use .first()
-    await expect(
-      page.getByText("Practice freezing near tower for 5 games").first()
-    ).toBeVisible();
-    await expect(
-      page.getByText("Watch 2 VODs focusing on ward placement").first()
-    ).toBeVisible();
+    await expect(page.getByText("Practice freezing near tower for 5 games").first()).toBeVisible();
+    await expect(page.getByText("Watch 2 VODs focusing on ward placement").first()).toBeVisible();
   });
 
   test("cycle action item status on session detail", async ({ page }) => {
@@ -219,9 +186,7 @@ test.describe("Coaching flow", () => {
     await page.goto(newSessionUrl!);
 
     // Wait for action items section to load
-    await expect(
-      page.getByText("Practice freezing near tower for 5 games").first()
-    ).toBeVisible();
+    await expect(page.getByText("Practice freezing near tower for 5 games").first()).toBeVisible();
 
     // Action items are displayed with a status cycle button + text + status badge.
     // Structure: row > [button(cycle), div(text+topic), div(status)]
@@ -238,16 +203,14 @@ test.describe("Coaching flow", () => {
     // Revalidation can be slow on CI — if the status doesn't appear within
     // the timeout, reload the page and check again (the DB write is synchronous).
     try {
-      await expect(
-        firstActionItemRow.getByText("in progress")
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(firstActionItemRow.getByText("in progress")).toBeVisible({ timeout: 10_000 });
     } catch {
       await page.reload();
       await expect(
         mainContent
           .getByText("Practice freezing near tower for 5 games")
           .locator("../..")
-          .getByText("in progress")
+          .getByText("in progress"),
       ).toBeVisible({ timeout: 10_000 });
     }
   });

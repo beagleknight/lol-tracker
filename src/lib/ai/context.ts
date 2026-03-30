@@ -5,6 +5,8 @@
  * a structured object consumed by the prompt templates.
  */
 
+import { eq, and, desc, sql } from "drizzle-orm";
+
 import { db } from "@/db";
 import {
   matches,
@@ -14,7 +16,6 @@ import {
   goals,
   rankSnapshots,
 } from "@/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
 import { notRemake } from "@/lib/match-queries";
 
 // ─── Shared types ───────────────────────────────────────────────────────────
@@ -121,7 +122,7 @@ export async function buildMatchupContext(
       comment: string | null;
       highlights: Array<{ type: string; text: string; topic: string | null }>;
     }>;
-  }
+  },
 ): Promise<MatchupInsightContext> {
   // Fetch coaching context, notes, and rank in parallel
   const [actionItems, activeGoalRows, rankRow, noteRows] = await Promise.all([
@@ -135,8 +136,8 @@ export async function buildMatchupContext(
       .where(
         and(
           eq(coachingActionItems.userId, userId),
-          sql`${coachingActionItems.status} != 'completed'`
-        )
+          sql`${coachingActionItems.status} != 'completed'`,
+        ),
       ),
     db
       .select({ title: goals.title, status: goals.status })
@@ -158,8 +159,8 @@ export async function buildMatchupContext(
       .where(
         and(
           eq(matchupNotes.userId, userId),
-          eq(matchupNotes.matchupChampionName, enemyChampionName)
-        )
+          eq(matchupNotes.matchupChampionName, enemyChampionName),
+        ),
       ),
   ]);
 
@@ -188,9 +189,7 @@ export async function buildMatchupContext(
     csPerMin: g.csPerMin,
     gameDurationMin: Math.round(g.gameDurationSeconds / 60),
     comment: g.comment,
-    highlights: g.highlights.map(
-      (h) => `[${h.type}]${h.topic ? ` (${h.topic})` : ""} ${h.text}`
-    ),
+    highlights: g.highlights.map((h) => `[${h.type}]${h.topic ? ` (${h.topic})` : ""} ${h.text}`),
   }));
 
   return {
@@ -238,7 +237,7 @@ export interface PostGameInsightContext {
 export async function buildPostGameContext(
   userId: string,
   summonerName: string,
-  matchId: string
+  matchId: string,
 ): Promise<PostGameInsightContext | null> {
   // Fetch the match
   const match = await db.query.matches.findFirst({
@@ -257,12 +256,7 @@ export async function buildPostGameContext(
           topic: matchHighlights.topic,
         })
         .from(matchHighlights)
-        .where(
-          and(
-            eq(matchHighlights.matchId, matchId),
-            eq(matchHighlights.userId, userId)
-          )
-        ),
+        .where(and(eq(matchHighlights.matchId, matchId), eq(matchHighlights.userId, userId))),
       db
         .select({
           description: coachingActionItems.description,
@@ -273,8 +267,8 @@ export async function buildPostGameContext(
         .where(
           and(
             eq(coachingActionItems.userId, userId),
-            sql`${coachingActionItems.status} != 'completed'`
-          )
+            sql`${coachingActionItems.status} != 'completed'`,
+          ),
         ),
       db
         .select({ title: goals.title, status: goals.status })
@@ -297,8 +291,8 @@ export async function buildPostGameContext(
             .where(
               and(
                 eq(matchupNotes.userId, userId),
-                eq(matchupNotes.matchupChampionName, match.matchupChampionName)
-              )
+                eq(matchupNotes.matchupChampionName, match.matchupChampionName),
+              ),
             )
         : Promise.resolve([]),
       // Champion averages
@@ -314,11 +308,7 @@ export async function buildPostGameContext(
         })
         .from(matches)
         .where(
-          and(
-            eq(matches.userId, userId),
-            eq(matches.championName, match.championName),
-            notRemake
-          )
+          and(eq(matches.userId, userId), eq(matches.championName, match.championName), notRemake),
         ),
     ]);
 

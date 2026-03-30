@@ -72,14 +72,12 @@ async function migrate() {
   // so the backfill is skipped and all migrations run normally.
   // ──────────────────────────────────────────────────────────────────────────
 
-  const trackingCount = await client.execute(
-    "SELECT count(*) as cnt FROM __drizzle_migrations"
-  );
+  const trackingCount = await client.execute("SELECT count(*) as cnt FROM __drizzle_migrations");
   const hasTrackingRows = Number(trackingCount.rows[0].cnt) > 0;
 
   if (!hasTrackingRows) {
     const tableCheck = await client.execute(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'",
     );
     const isExistingDb = tableCheck.rows.length > 0;
 
@@ -100,12 +98,8 @@ async function migrate() {
         "0010_curved_gladiator",
       ];
 
-      console.log(
-        `[migrate] Detected existing database with empty migration tracking.`
-      );
-      console.log(
-        `[migrate] Backfilling ${preExistingTags.length} pre-existing migrations...`
-      );
+      console.log(`[migrate] Detected existing database with empty migration tracking.`);
+      console.log(`[migrate] Backfilling ${preExistingTags.length} pre-existing migrations...`);
 
       for (const tag of preExistingTags) {
         await client.execute({
@@ -115,9 +109,7 @@ async function migrate() {
         console.log(`[migrate]   ✓ Backfilled ${tag}`);
       }
 
-      console.log(
-        `[migrate] Backfill complete. Only new migrations will be applied.`
-      );
+      console.log(`[migrate] Backfill complete. Only new migrations will be applied.`);
     }
   }
 
@@ -157,7 +149,7 @@ async function migrate() {
       .filter((s) => s.length > 0);
 
     console.log(
-      `[migrate] Applying ${hash} (${statements.length} statement${statements.length !== 1 ? "s" : ""})...`
+      `[migrate] Applying ${hash} (${statements.length} statement${statements.length !== 1 ? "s" : ""})...`,
     );
 
     for (const stmt of statements) {
@@ -166,10 +158,7 @@ async function migrate() {
       } catch (err) {
         // For idempotency: skip "already exists" errors
         const msg = err instanceof Error ? err.message : String(err);
-        if (
-          msg.includes("already exists") ||
-          msg.includes("duplicate column name")
-        ) {
+        if (msg.includes("already exists") || msg.includes("duplicate column name")) {
           console.log(`[migrate]   ⚠ Skipped (already exists): ${stmt.slice(0, 80)}...`);
           continue;
         }

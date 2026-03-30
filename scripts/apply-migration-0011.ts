@@ -37,7 +37,7 @@ async function run() {
   )`);
 
   await db.execute(
-    "CREATE INDEX IF NOT EXISTS `goals_user_status_idx` ON `goals` (`user_id`, `status`)"
+    "CREATE INDEX IF NOT EXISTS `goals_user_status_idx` ON `goals` (`user_id`, `status`)",
   );
 
   console.log("Done! Verifying...");

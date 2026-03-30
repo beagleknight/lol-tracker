@@ -1,18 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { Plus, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
-import { Plus, X, ThumbsUp, ThumbsDown } from "lucide-react";
 
 export interface HighlightItem {
   type: "highlight" | "lowlight";
@@ -26,11 +22,7 @@ interface HighlightsEditorProps {
   maxPerType?: number;
 }
 
-export function HighlightsEditor({
-  highlights,
-  onChange,
-  maxPerType = 3,
-}: HighlightsEditorProps) {
+export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: HighlightsEditorProps) {
   const t = useTranslations("HighlightsEditor");
   const [newHighlightText, setNewHighlightText] = useState("");
   const [newHighlightTopic, setNewHighlightTopic] = useState("");
@@ -49,10 +41,7 @@ export function HighlightsEditor({
       const items = type === "highlight" ? highlightItems : lowlightItems;
       if (items.length >= maxPerType) return;
 
-      onChange([
-        ...highlights,
-        { type, text: text.trim(), topic: topic || undefined },
-      ]);
+      onChange([...highlights, { type, text: text.trim(), topic: topic || undefined }]);
 
       if (type === "highlight") {
         setNewHighlightText("");
@@ -72,21 +61,21 @@ export function HighlightsEditor({
       newLowlightText,
       newLowlightTopic,
       onChange,
-    ]
+    ],
   );
 
   const removeItem = useCallback(
     (index: number) => {
       onChange(highlights.filter((_, i) => i !== index));
     },
-    [highlights, onChange]
+    [highlights, onChange],
   );
 
   return (
     <div className="space-y-4">
       {/* Highlights */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <ThumbsUp className="h-3 w-3 text-win" />
           {t("highlightsLabel", { count: highlightItems.length, max: maxPerType })}
         </label>
@@ -100,7 +89,7 @@ export function HighlightsEditor({
               className="flex items-center gap-2 rounded-md border border-win/20 bg-win/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0">
+                <Badge variant="secondary" className="shrink-0 text-[10px]">
                   {item.topic}
                 </Badge>
               )}
@@ -109,7 +98,7 @@ export function HighlightsEditor({
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
                 aria-label="Remove highlight"
               >
                 <X className="h-3 w-3" />
@@ -138,7 +127,7 @@ export function HighlightsEditor({
               value={newHighlightText}
               onChange={(e) => setNewHighlightText(e.target.value)}
               placeholder={t("detailsPlaceholder")}
-              className="flex-1 text-sm h-8"
+              className="h-8 flex-1 text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -150,7 +139,7 @@ export function HighlightsEditor({
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 px-2 shrink-0"
+              className="h-8 shrink-0 px-2"
               onClick={() => addItem("highlight")}
               disabled={!newHighlightText.trim() && !newHighlightTopic}
               aria-label="Add highlight"
@@ -163,7 +152,7 @@ export function HighlightsEditor({
 
       {/* Lowlights */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <ThumbsDown className="h-3 w-3 text-loss" />
           {t("lowlightsLabel", { count: lowlightItems.length, max: maxPerType })}
         </label>
@@ -177,7 +166,7 @@ export function HighlightsEditor({
               className="flex items-center gap-2 rounded-md border border-loss/20 bg-loss/5 px-3 py-1.5 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0">
+                <Badge variant="secondary" className="shrink-0 text-[10px]">
                   {item.topic}
                 </Badge>
               )}
@@ -186,7 +175,7 @@ export function HighlightsEditor({
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
                 aria-label="Remove lowlight"
               >
                 <X className="h-3 w-3" />
@@ -215,7 +204,7 @@ export function HighlightsEditor({
               value={newLowlightText}
               onChange={(e) => setNewLowlightText(e.target.value)}
               placeholder={t("detailsPlaceholder")}
-              className="flex-1 text-sm h-8"
+              className="h-8 flex-1 text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -227,7 +216,7 @@ export function HighlightsEditor({
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 px-2 shrink-0"
+              className="h-8 shrink-0 px-2"
               onClick={() => addItem("lowlight")}
               disabled={!newLowlightText.trim() && !newLowlightTopic}
               aria-label="Add lowlight"
@@ -266,10 +255,8 @@ export function HighlightsDisplay({
             return (
               <Tooltip key={`h-${i}`}>
                 <TooltipTrigger
-                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] cursor-default ${
-                    hasText
-                      ? "bg-win/20 text-win-muted"
-                      : "bg-win/10 text-win"
+                  className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-0.5 text-[11px] ${
+                    hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
                   }`}
                 >
                   <ThumbsUp className="h-2.5 w-2.5" />
@@ -288,10 +275,8 @@ export function HighlightsDisplay({
             return (
               <Tooltip key={`l-${i}`}>
                 <TooltipTrigger
-                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] cursor-default ${
-                    hasText
-                      ? "bg-loss/20 text-loss-muted"
-                      : "bg-loss/10 text-loss"
+                  className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-0.5 text-[11px] ${
+                    hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
                   }`}
                 >
                   <ThumbsDown className="h-2.5 w-2.5" />
@@ -314,17 +299,20 @@ export function HighlightsDisplay({
     <div className="space-y-3">
       {highlightItems.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <ThumbsUp className="h-3 w-3 text-win" />
             {t("highlightsHeading")}
           </p>
           {highlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-md border border-win/20 border-l-2 border-l-win/50 bg-win/5 px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-md border border-l-2 border-win/20 border-l-win/50 bg-win/5 px-3 py-2 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-win/10 text-win-muted border-win/20">
+                <Badge
+                  variant="secondary"
+                  className="mt-0.5 shrink-0 border-win/20 bg-win/10 text-[10px] text-win-muted"
+                >
                   {item.topic}
                 </Badge>
               )}
@@ -335,17 +323,20 @@ export function HighlightsDisplay({
       )}
       {lowlightItems.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <ThumbsDown className="h-3 w-3 text-loss" />
             {t("lowlightsHeading")}
           </p>
           {lowlightItems.map((item, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-md border border-loss/20 border-l-2 border-l-loss/50 bg-loss/5 px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-md border border-l-2 border-loss/20 border-l-loss/50 bg-loss/5 px-3 py-2 text-sm"
             >
               {item.topic && (
-                <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5 bg-loss/10 text-loss-muted border-loss/20">
+                <Badge
+                  variant="secondary"
+                  className="mt-0.5 shrink-0 border-loss/20 bg-loss/10 text-[10px] text-loss-muted"
+                >
                   {item.topic}
                 </Badge>
               )}

@@ -28,7 +28,7 @@ test.describe("API routes", () => {
     expect(lines.length).toBeGreaterThan(1);
     // Verify CSV header columns
     expect(lines[0]).toBe(
-      "Match ID,Date,Result,Champion,Matchup,Keystone,Kills,Deaths,Assists,CS,CS/min,Duration,Gold,Vision Score,Queue ID,Reviewed,Comment,Review Notes,VOD URL,Duo Partner Champion"
+      "Match ID,Date,Result,Champion,Matchup,Keystone,Kills,Deaths,Assists,CS,CS/min,Duration,Gold,Vision Score,Queue ID,Reviewed,Comment,Review Notes,VOD URL,Duo Partner Champion",
     );
   });
 

@@ -1,12 +1,13 @@
 "use server";
 
+import { eq, and, desc } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
-import { requireUser } from "@/lib/session";
-import { revalidatePath } from "next/cache";
 import { invalidateGoalsCaches } from "@/lib/cache";
 import { hasReachedTarget } from "@/lib/rank";
+import { requireUser } from "@/lib/session";
 
 // ─── Create a new goal ──────────────────────────────────────────────────────
 
@@ -69,11 +70,7 @@ export async function retireGoal(goalId: number) {
   const user = await requireUser();
 
   const goal = await db.query.goals.findFirst({
-    where: and(
-      eq(goals.id, goalId),
-      eq(goals.userId, user.id),
-      eq(goals.status, "active")
-    ),
+    where: and(eq(goals.id, goalId), eq(goals.userId, user.id), eq(goals.status, "active")),
   });
 
   if (!goal) {
@@ -100,11 +97,7 @@ export async function retireGoal(goalId: number) {
 export async function deleteGoal(goalId: number) {
   const user = await requireUser();
 
-  await db
-    .delete(goals)
-    .where(
-      and(eq(goals.id, goalId), eq(goals.userId, user.id))
-    );
+  await db.delete(goals).where(and(eq(goals.id, goalId), eq(goals.userId, user.id)));
 
   revalidatePath("/goals");
   revalidatePath("/dashboard");
@@ -136,7 +129,7 @@ export async function checkGoalAchievement(userId: string): Promise<boolean> {
     latestSnapshot.division,
     latestSnapshot.lp ?? 0,
     activeGoal.targetTier,
-    activeGoal.targetDivision
+    activeGoal.targetDivision,
   );
 
   if (reached) {

@@ -1,7 +1,9 @@
+import { eq, desc } from "drizzle-orm";
+
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
+
 import { GoalsClient } from "./goals-client";
 
 export default async function GoalsPage() {

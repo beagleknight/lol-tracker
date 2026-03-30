@@ -51,9 +51,7 @@ export async function mockGetAccountByRiotId(
 
 // ─── Mock: getSoloQueueEntryByPuuid ──────────────────────────────────────────
 
-export async function mockGetSoloQueueEntryByPuuid(
-  puuid: string,
-): Promise<{
+export async function mockGetSoloQueueEntryByPuuid(puuid: string): Promise<{
   leagueId: string;
   summonerId: string;
   queueType: string;
@@ -130,9 +128,7 @@ export async function mockGetMatch(matchId: string): Promise<RiotMatch> {
               {
                 description: "primaryStyle",
                 style: 8100,
-                selections: [
-                  { perk: 8112, var1: 0, var2: 0, var3: 0 },
-                ],
+                selections: [{ perk: 8112, var1: 0, var2: 0, var3: 0 }],
               },
             ],
           },

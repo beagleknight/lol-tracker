@@ -14,24 +14,22 @@ const db = createClient({
 async function run() {
   console.log("Adding 'status' column to coaching_sessions...");
   await db.execute(
-    "ALTER TABLE `coaching_sessions` ADD `status` text DEFAULT 'scheduled' NOT NULL"
+    "ALTER TABLE `coaching_sessions` ADD `status` text DEFAULT 'scheduled' NOT NULL",
   );
 
   console.log("Adding 'vod_match_id' column to coaching_sessions...");
-  await db.execute(
-    "ALTER TABLE `coaching_sessions` ADD `vod_match_id` text"
-  );
+  await db.execute("ALTER TABLE `coaching_sessions` ADD `vod_match_id` text");
 
   console.log("Creating index coaching_sessions_user_status_idx...");
   await db.execute(
-    "CREATE INDEX `coaching_sessions_user_status_idx` ON `coaching_sessions` (`user_id`,`status`)"
+    "CREATE INDEX `coaching_sessions_user_status_idx` ON `coaching_sessions` (`user_id`,`status`)",
   );
 
   // Verify
   const cols = await db.execute("PRAGMA table_info(coaching_sessions)");
   console.log(
     "coaching_sessions columns:",
-    cols.rows.map((r) => r.name)
+    cols.rows.map((r) => r.name),
   );
 
   console.log("Done!");

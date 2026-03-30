@@ -1,10 +1,11 @@
 "use server";
 
+import { eq, inArray } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { invites, users } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
-import { revalidatePath } from "next/cache";
 
 function generateCode(): string {
   // 8-char alphanumeric code (URL-safe, easy to copy-paste)
@@ -47,9 +48,7 @@ export async function getInvites() {
   });
 
   // Batch-fetch all users referenced by usedBy (instead of N+1 per invite)
-  const usedByIds = allInvites
-    .map((i) => i.usedBy)
-    .filter((id): id is string => !!id);
+  const usedByIds = allInvites.map((i) => i.usedBy).filter((id): id is string => !!id);
 
   const usedByUsers =
     usedByIds.length > 0
@@ -66,7 +65,7 @@ export async function getInvites() {
     code: invite.code,
     createdAt: invite.createdAt,
     usedBy: invite.usedBy,
-    usedByName: invite.usedBy ? userNameMap.get(invite.usedBy) ?? null : null,
+    usedByName: invite.usedBy ? (userNameMap.get(invite.usedBy) ?? null) : null,
     usedAt: invite.usedAt,
   }));
 }

@@ -1,26 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Target, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
 import { createGoal } from "@/app/actions/goals";
-import {
-  TIER_ORDER,
-  DIVISION_ORDER,
-  formatTierDivision,
-  toCumulativeLP,
-} from "@/lib/rank";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -28,13 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import {
-  Target,
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { TIER_ORDER, DIVISION_ORDER, formatTierDivision, toCumulativeLP } from "@/lib/rank";
 
 interface NewGoalClientProps {
   currentRank: {
@@ -57,7 +42,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
 
   // Determine if selected tier is Master+ (no divisions)
   const selectedTierIdx = TIER_ORDER.indexOf(
-    selectedTier.toUpperCase() as (typeof TIER_ORDER)[number]
+    selectedTier.toUpperCase() as (typeof TIER_ORDER)[number],
   );
   const isMasterPlus = selectedTierIdx >= MASTER_PLUS_INDEX;
 
@@ -66,17 +51,11 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
     ? toCumulativeLP(currentRank.tier, currentRank.division, currentRank.lp)
     : null;
   const targetCumLP = selectedTier
-    ? toCumulativeLP(
-        selectedTier,
-        isMasterPlus ? null : selectedDivision || "IV",
-        0
-      )
+    ? toCumulativeLP(selectedTier, isMasterPlus ? null : selectedDivision || "IV", 0)
     : null;
 
   const isTargetHigher =
-    currentCumLP !== null &&
-    targetCumLP !== null &&
-    targetCumLP > currentCumLP;
+    currentCumLP !== null && targetCumLP !== null && targetCumLP > currentCumLP;
 
   const canSubmit =
     selectedTier !== "" &&
@@ -116,7 +95,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">
             {t("newGoalTitle")}
           </h1>
           <p className="text-muted-foreground">{t("newGoalSubtitle")}</p>
@@ -138,8 +117,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
             <p className="text-sm text-muted-foreground">
               {t("currentRankLabel")}:{" "}
               <span className="font-medium text-foreground">
-                {formatTierDivision(currentRank.tier, currentRank.division)}{" "}
-                — {currentRank.lp} LP
+                {formatTierDivision(currentRank.tier, currentRank.division)} — {currentRank.lp} LP
               </span>
             </p>
           </CardContent>
@@ -166,9 +144,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                   if (!v) return;
                   setSelectedTier(v);
                   // Clear division when switching to Master+
-                  const idx = TIER_ORDER.indexOf(
-                    v.toUpperCase() as (typeof TIER_ORDER)[number]
-                  );
+                  const idx = TIER_ORDER.indexOf(v.toUpperCase() as (typeof TIER_ORDER)[number]);
                   if (idx >= MASTER_PLUS_INDEX) {
                     setSelectedDivision("");
                   }
@@ -191,10 +167,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
             {selectedTier && !isMasterPlus && (
               <div className="space-y-2">
                 <Label>{t("division")}</Label>
-                <Select
-                  value={selectedDivision}
-                  onValueChange={(v) => v && setSelectedDivision(v)}
-                >
+                <Select value={selectedDivision} onValueChange={(v) => v && setSelectedDivision(v)}>
                   <SelectTrigger aria-label="Select division">
                     <SelectValue placeholder={t("selectDivision")} />
                   </SelectTrigger>
@@ -218,7 +191,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                     {t("reachTarget", {
                       target: formatTierDivision(
                         selectedTier.toUpperCase(),
-                        isMasterPlus ? null : selectedDivision
+                        isMasterPlus ? null : selectedDivision,
                       ),
                     })}
                   </span>
@@ -231,9 +204,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
               (isMasterPlus || selectedDivision) &&
               currentRank &&
               !isTargetHigher && (
-                <p className="text-sm text-destructive">
-                  {t("targetMustBeHigher")}
-                </p>
+                <p className="text-sm text-destructive">{t("targetMustBeHigher")}</p>
               )}
 
             {/* Optional deadline */}
@@ -245,9 +216,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                 onChange={(e) => setDeadline(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
               />
-              <p className="text-xs text-muted-foreground">
-                {t("deadlineHelp")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t("deadlineHelp")}</p>
             </div>
 
             {/* Submit */}

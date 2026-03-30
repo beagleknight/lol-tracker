@@ -40,7 +40,7 @@ async function main() {
 
   // Check if match_highlights table exists
   const tables = await db.execute(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='match_highlights'"
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='match_highlights'",
   );
   if (tables.rows.length === 0) {
     console.log("Creating match_highlights table...");
@@ -55,7 +55,7 @@ async function main() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE no action ON DELETE cascade
     )`);
     await db.execute(
-      "CREATE INDEX match_highlights_match_user_idx ON match_highlights (match_id, user_id)"
+      "CREATE INDEX match_highlights_match_user_idx ON match_highlights (match_id, user_id)",
     );
     console.log("  Done.");
   } else {

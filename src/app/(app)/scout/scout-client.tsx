@@ -1,28 +1,5 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
-import {
-  getMatchupReport,
-  type MatchupReport,
-} from "@/app/actions/live";
-import {
-  getMatchupNotes,
-  type MatchupNoteData,
-} from "@/app/actions/matchup-notes";
-import { generateMatchupInsight } from "@/app/actions/ai-insights";
-import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
-import { AiInsightDrawer } from "@/components/ai-insight-card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { ChampionCombobox, type ChampionRecommendations } from "@/components/champion-combobox";
-import type { ChampionPickCount } from "@/app/actions/live";
-import { toast } from "sonner";
-import { MatchCard } from "@/components/match-card";
 import {
   Crosshair,
   Swords,
@@ -33,8 +10,28 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
+
+import type { ChampionPickCount } from "@/app/actions/live";
+
+import { generateMatchupInsight } from "@/app/actions/ai-insights";
+import { getMatchupReport, type MatchupReport } from "@/app/actions/live";
+import { getMatchupNotes, type MatchupNoteData } from "@/app/actions/matchup-notes";
+import { AiInsightDrawer } from "@/components/ai-insight-card";
+import { ChampionCombobox, type ChampionRecommendations } from "@/components/champion-combobox";
+import { MatchCard } from "@/components/match-card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { formatDate, formatNumber, DEFAULT_LOCALE } from "@/lib/format";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+
+import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -106,7 +103,9 @@ function ScoutingReport({
   const overallKdaRatio =
     overallAvgStats.deaths === 0
       ? 0
-      : Math.round(((overallAvgStats.kills + overallAvgStats.assists) / overallAvgStats.deaths) * 10) / 10;
+      : Math.round(
+          ((overallAvgStats.kills + overallAvgStats.assists) / overallAvgStats.deaths) * 10,
+        ) / 10;
 
   return (
     <div className="space-y-6">
@@ -115,12 +114,8 @@ function ScoutingReport({
         <div className="flex items-center gap-4">
           {yourChampionName ? (
             <div className="flex items-center gap-2">
-              <ChampionIcon
-                championName={yourChampionName}
-                version={ddragonVersion}
-                size={48}
-              />
-              <span className="text-muted-foreground text-sm font-medium">{t("vs")}</span>
+              <ChampionIcon championName={yourChampionName} version={ddragonVersion} size={48} />
+              <span className="text-sm font-medium text-muted-foreground">{t("vs")}</span>
               <ChampionIcon
                 championName={report.matchupChampionName}
                 version={ddragonVersion}
@@ -160,20 +155,17 @@ function ScoutingReport({
                 }
               />
             </div>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-lg font-mono">
+            <div className="mt-1 flex items-center gap-3">
+              <span className="font-mono text-lg">
                 <span className="text-win">{record.wins}W</span>{" "}
                 <span className="text-loss">{record.losses}L</span>
               </span>
-              <Badge
-                variant={record.winRate >= 50 ? "default" : "destructive"}
-                className="text-sm"
-              >
+              <Badge variant={record.winRate >= 50 ? "default" : "destructive"} className="text-sm">
                 {record.winRate}%
               </Badge>
             </div>
             {report.lastPlayed && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t("lastPlayed", { date: formatDate(report.lastPlayed, locale) })}
               </p>
             )}
@@ -199,7 +191,7 @@ function ScoutingReport({
 
       {/* Rune Performance */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
           <TrendingUp className="h-4 w-4 text-neon-purple" />
           {t("runePerformance")}
         </h3>
@@ -214,20 +206,23 @@ function ScoutingReport({
                     {(() => {
                       const url = getKeystoneIconUrlByName(rune.keystoneName);
                       return url ? (
-                        <Image src={url} alt={rune.keystoneName} width={18} height={18} className="rounded" />
+                        <Image
+                          src={url}
+                          alt={rune.keystoneName}
+                          width={18}
+                          height={18}
+                          className="rounded"
+                        />
                       ) : null;
                     })()}
                     {rune.keystoneName}
                   </span>
-                  <span className="text-muted-foreground font-mono text-xs">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {rune.wins}W {rune.losses}L ({rune.winRate}%) &middot;{" "}
                     {t("gamesCount", { count: rune.games })}
                   </span>
                 </div>
-                <Progress
-                  value={rune.winRate}
-                  className="h-2"
-                />
+                <Progress value={rune.winRate} className="h-2" />
               </div>
             ))}
           </div>
@@ -239,7 +234,7 @@ function ScoutingReport({
       {/* Avg Stats with comparison */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-sm font-medium">
             <BarChart3 className="h-4 w-4 text-electric" />
             {t("averageStats")}
           </h3>
@@ -249,7 +244,7 @@ function ScoutingReport({
             </span>
           )}
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
           <StatCell
             label={t("statLabels.kda")}
             value={`${avgStats.kills}/${avgStats.deaths}/${avgStats.assists}`}
@@ -283,7 +278,7 @@ function ScoutingReport({
         <>
           <Separator />
           <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2">
+            <h3 className="flex items-center gap-2 text-sm font-medium">
               <Users className="h-4 w-4 text-electric" />
               {t("duoPairsTitle")}
             </h3>
@@ -291,7 +286,7 @@ function ScoutingReport({
               {duoPairs.map((pair) => (
                 <div
                   key={`${pair.yourChampion}-${pair.duoChampion}`}
-                  className="flex items-center gap-3 rounded-lg border border-border/50 p-2 bg-surface-elevated"
+                  className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-2"
                 >
                   <div className="flex items-center gap-1">
                     <ChampionIcon
@@ -299,29 +294,23 @@ function ScoutingReport({
                       version={ddragonVersion}
                       size={28}
                     />
-                    <span className="text-xs text-muted-foreground mx-1">+</span>
+                    <span className="mx-1 text-xs text-muted-foreground">+</span>
                     <ChampionIcon
                       championName={pair.duoChampion}
                       version={ddragonVersion}
                       size={28}
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="text-sm font-medium">
                       {pair.yourChampion} + {pair.duoChampion}
                     </span>
                   </div>
                   <div className="text-right text-sm">
-                    <span
-                      className={`font-bold ${
-                        pair.winRate >= 50
-                          ? "text-win"
-                          : "text-loss"
-                      }`}
-                    >
+                    <span className={`font-bold ${pair.winRate >= 50 ? "text-win" : "text-loss"}`}>
                       {pair.winRate}%
                     </span>
-                    <span className="text-muted-foreground ml-1.5">
+                    <span className="ml-1.5 text-muted-foreground">
                       {pair.wins}W {pair.losses}L
                     </span>
                   </div>
@@ -336,7 +325,7 @@ function ScoutingReport({
 
       {/* Past Games — using shared MatchCard */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
           <Swords className="h-4 w-4 text-gold" />
           {t("pastGames", { count: games.length })}
         </h3>
@@ -405,15 +394,11 @@ function StatCell({
   return (
     <div className="rounded-lg border bg-surface/30 p-2 text-center">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-mono font-medium mt-0.5">{value}</p>
+      <p className="mt-0.5 font-mono text-sm font-medium">{value}</p>
       {delta !== null && delta !== 0 && (
         <p
-          className={`text-[10px] font-mono mt-0.5 flex items-center justify-center gap-0.5 ${
-            isPositive
-              ? "text-win"
-              : isNegative
-              ? "text-loss"
-              : "text-muted-foreground"
+          className={`mt-0.5 flex items-center justify-center gap-0.5 font-mono text-[10px] ${
+            isPositive ? "text-win" : isNegative ? "text-loss" : "text-muted-foreground"
           }`}
         >
           {isPositive ? (
@@ -425,9 +410,7 @@ function StatCell({
         </p>
       )}
       {delta === 0 && (
-        <p className="text-[10px] font-mono mt-0.5 text-muted-foreground">
-          {t("avg")}
-        </p>
+        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{t("avg")}</p>
       )}
     </div>
   );
@@ -454,11 +437,7 @@ function NoDataNotesBubble({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <MatchupNotesTrigger
-        hasNote={hasNote}
-        isOpen={isOpen}
-        onToggle={() => setIsOpen(!isOpen)}
-      />
+      <MatchupNotesTrigger hasNote={hasNote} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
       {isOpen && (
         <div className="w-full">
           <MatchupNotesPanel
@@ -531,24 +510,20 @@ export function ScoutClient({
       isUpdatingUrl.current = true;
       router.replace(`/scout${qs ? `?${qs}` : ""}`, { scroll: false });
     },
-    [router]
+    [router],
   );
 
   // Build recommendation groups for comboboxes
   const yourChampionRecs: ChampionRecommendations[] = useMemo(
     () =>
-      mostPlayed.length > 0
-        ? [{ heading: t("mostPlayedHeading"), champions: mostPlayed }]
-        : [],
-    [mostPlayed, t]
+      mostPlayed.length > 0 ? [{ heading: t("mostPlayedHeading"), champions: mostPlayed }] : [],
+    [mostPlayed, t],
   );
 
   const enemyChampionRecs: ChampionRecommendations[] = useMemo(
     () =>
-      mostFaced.length > 0
-        ? [{ heading: t("commonMatchupsHeading"), champions: mostFaced }]
-        : [],
-    [mostFaced, t]
+      mostFaced.length > 0 ? [{ heading: t("commonMatchupsHeading"), champions: mostFaced }] : [],
+    [mostFaced, t],
   );
 
   const loadReport = useCallback(
@@ -571,7 +546,7 @@ export function ScoutClient({
         }
       });
     },
-    [t]
+    [t],
   );
 
   /** Re-fetch only notes (called after save/delete) */
@@ -601,7 +576,7 @@ export function ScoutClient({
       loadReport(value, yourChampion);
       updateUrl(yourChampion, value);
     },
-    [yourChampion, loadReport, updateUrl]
+    [yourChampion, loadReport, updateUrl],
   );
 
   const handleYourChampionChange = useCallback(
@@ -612,24 +587,22 @@ export function ScoutClient({
         loadReport(enemyChampion, value);
       }
     },
-    [enemyChampion, loadReport, updateUrl]
+    [enemyChampion, loadReport, updateUrl],
   );
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold flex items-center gap-2">
+        <h1 className="text-gradient-gold flex items-center gap-2 text-2xl font-bold tracking-tight">
           <Crosshair className="h-6 w-6" />
           {t("pageTitle")}
         </h1>
-        <p className="text-muted-foreground">
-          {t("pageDescription")}
-        </p>
+        <p className="text-muted-foreground">{t("pageDescription")}</p>
       </div>
 
       {/* Controls: two champion pickers */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
         <ChampionCombobox
           value={yourChampion}
           onValueChange={handleYourChampionChange}
@@ -640,7 +613,7 @@ export function ScoutClient({
           className="flex-1 sm:max-w-xs"
           recommendations={yourChampionRecs}
         />
-        <span className="flex items-center sm:items-end sm:pb-2 text-muted-foreground font-medium text-sm justify-center">
+        <span className="flex items-center justify-center text-sm font-medium text-muted-foreground sm:items-end sm:pb-2">
           {t("vs")}
         </span>
         <ChampionCombobox
@@ -680,16 +653,14 @@ export function ScoutClient({
       {!isLoadingReport && !report && enemyChampion && (
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-            <Swords className="h-8 w-8 text-muted-foreground mb-2" />
+            <Swords className="mb-2 h-8 w-8 text-muted-foreground" />
             <p className="text-muted-foreground">
               {yourChampion
                 ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
                 : t("noGamesFound", { enemyChampion })}
             </p>
             {yourChampion && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("clearYourChampionHint")}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("clearYourChampionHint")}</p>
             )}
           </div>
 
@@ -707,10 +678,8 @@ export function ScoutClient({
       {/* Initial state — no matchup selected */}
       {!enemyChampion && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <Crosshair className="h-10 w-10 text-muted-foreground/50 mb-3" />
-          <p className="text-muted-foreground">
-            {t("selectEnemyPrompt")}
-          </p>
+          <Crosshair className="mb-3 h-10 w-10 text-muted-foreground/50" />
+          <p className="text-muted-foreground">{t("selectEnemyPrompt")}</p>
         </div>
       )}
     </div>

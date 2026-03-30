@@ -1,36 +1,21 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { Target, Plus, Trophy, Archive, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { retireGoal, deleteGoal } from "@/app/actions/goals";
-import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import {
-  formatTierDivision,
-  calculateProgress,
-} from "@/lib/rank";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Progress, ProgressLabel } from "@/components/ui/progress";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  Target,
-  Plus,
-  Trophy,
-  Archive,
-  Trash2,
-  Loader2,
-  AlertTriangle,
-} from "lucide-react";
+
 import type { Goal } from "@/db/schema";
+
+import { retireGoal, deleteGoal } from "@/app/actions/goals";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress, ProgressLabel } from "@/components/ui/progress";
+import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { formatTierDivision, calculateProgress } from "@/lib/rank";
 
 interface GoalsClientProps {
   goals: Goal[];
@@ -54,9 +39,7 @@ export function GoalsClient({ goals, currentRank }: GoalsClientProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
-            {t("title")}
-          </h1>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         {!activeGoal && (
@@ -71,19 +54,13 @@ export function GoalsClient({ goals, currentRank }: GoalsClientProps) {
 
       {/* Active Goal */}
       {activeGoal ? (
-        <ActiveGoalCard
-          goal={activeGoal}
-          currentRank={currentRank}
-          locale={locale}
-        />
+        <ActiveGoalCard goal={activeGoal} currentRank={currentRank} locale={locale} />
       ) : (
         <Card className="border-dashed border-muted-foreground/25">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Target className="h-8 w-8 text-gold mb-3" />
+            <Target className="mb-3 h-8 w-8 text-gold" />
             <p className="text-lg font-medium">{t("noActiveGoal")}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("noActiveGoalDescription")}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("noActiveGoalDescription")}</p>
             <Link href="/goals/new" className="mt-4">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -132,7 +109,7 @@ function ActiveGoalCard({
         currentRank.division,
         currentRank.lp,
         goal.targetTier,
-        goal.targetDivision
+        goal.targetDivision,
       )
     : 0;
 
@@ -162,9 +139,7 @@ function ActiveGoalCard({
             <Target className="h-5 w-5 text-gold" />
             <CardTitle className="text-lg">{goal.title}</CardTitle>
           </div>
-          <Badge className="bg-gold/20 text-gold border-gold/30">
-            {t("active")}
-          </Badge>
+          <Badge className="border-gold/30 bg-gold/20 text-gold">{t("active")}</Badge>
         </div>
         <CardDescription>
           {t("startedFrom", {
@@ -179,12 +154,10 @@ function ActiveGoalCard({
         <div>
           <Progress value={progress}>
             <ProgressLabel>{t("progress")}</ProgressLabel>
-            <span className="ml-auto text-sm text-muted-foreground tabular-nums">
-              {progress}%
-            </span>
+            <span className="ml-auto text-sm text-muted-foreground tabular-nums">{progress}%</span>
           </Progress>
           {currentRank && (
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="mt-2 text-sm text-muted-foreground">
               {t("currentRank", {
                 rank: formatTierDivision(currentRank.tier, currentRank.division),
                 lp: currentRank.lp,
@@ -215,12 +188,7 @@ function ActiveGoalCard({
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRetire}
-            disabled={isRetiring}
-          >
+          <Button variant="outline" size="sm" onClick={handleRetire} disabled={isRetiring}>
             {isRetiring ? (
               <Loader2 className="mr-2 h-3 w-3 animate-spin" />
             ) : (
@@ -258,11 +226,11 @@ function PastGoalCard({ goal, locale }: { goal: Goal; locale: string }) {
     <Card className={isAchieved ? "border-win/20" : "border-border/50"}>
       <CardContent className="flex items-center gap-4 py-4">
         {isAchieved ? (
-          <Trophy className="h-5 w-5 text-win shrink-0" />
+          <Trophy className="h-5 w-5 shrink-0 text-win" />
         ) : (
-          <Archive className="h-5 w-5 text-muted-foreground shrink-0" />
+          <Archive className="h-5 w-5 shrink-0 text-muted-foreground" />
         )}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{goal.title}</p>
           <p className="text-xs text-muted-foreground">
             {isAchieved
@@ -276,9 +244,7 @@ function PastGoalCard({ goal, locale }: { goal: Goal; locale: string }) {
         </div>
         <Badge
           variant={isAchieved ? "default" : "secondary"}
-          className={
-            isAchieved ? "bg-win/20 text-win border-win/30" : ""
-          }
+          className={isAchieved ? "border-win/30 bg-win/20 text-win" : ""}
         >
           {isAchieved ? t("achieved") : t("retired")}
         </Badge>

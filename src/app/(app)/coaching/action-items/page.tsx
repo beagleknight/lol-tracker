@@ -1,7 +1,9 @@
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { coachingActionItems, coachingSessions } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/session";
+
 import { ActionItemsClient } from "./action-items-client";
 
 export default async function ActionItemsPage() {
@@ -20,10 +22,7 @@ export default async function ActionItemsPage() {
       sessionDate: coachingSessions.date,
     })
     .from(coachingActionItems)
-    .innerJoin(
-      coachingSessions,
-      eq(coachingActionItems.sessionId, coachingSessions.id)
-    )
+    .innerJoin(coachingSessions, eq(coachingActionItems.sessionId, coachingSessions.id))
     .where(eq(coachingActionItems.userId, user.id))
     .orderBy(coachingActionItems.createdAt);
 

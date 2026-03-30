@@ -19,15 +19,15 @@ Guide writing accessible UI components and fixing accessibility violations in th
 
 **WCAG 2.1 AA** — the mid-tier accessibility standard. Key requirements:
 
-| Criterion | Requirement |
-|---|---|
-| 1.4.3 Contrast (Minimum) | Text: 4.5:1, Large text (18px+ bold or 24px+): 3:1 |
-| 1.4.11 Non-text Contrast | UI components and graphical objects: 3:1 |
-| 2.1.1 Keyboard | All functionality available via keyboard |
-| 2.4.1 Bypass Blocks | Skip navigation link to bypass repeated content |
-| 2.4.7 Focus Visible | Keyboard focus indicator is visible |
-| 2.3.1 Three Flashes | No content flashes more than 3 times per second |
-| 1.3.1 Info and Relationships | Semantic HTML structure |
+| Criterion                    | Requirement                                        |
+| ---------------------------- | -------------------------------------------------- |
+| 1.4.3 Contrast (Minimum)     | Text: 4.5:1, Large text (18px+ bold or 24px+): 3:1 |
+| 1.4.11 Non-text Contrast     | UI components and graphical objects: 3:1           |
+| 2.1.1 Keyboard               | All functionality available via keyboard           |
+| 2.4.1 Bypass Blocks          | Skip navigation link to bypass repeated content    |
+| 2.4.7 Focus Visible          | Keyboard focus indicator is visible                |
+| 2.3.1 Three Flashes          | No content flashes more than 3 times per second    |
+| 1.3.1 Info and Relationships | Semantic HTML structure                            |
 
 ## Tooling
 
@@ -51,12 +51,12 @@ The app uses OKLCH color tokens defined in `src/app/globals.css`. Dark mode is t
 
 ### Key background surfaces
 
-| Token | OKLCH Value | Approx hex | Usage |
-|---|---|---|---|
-| `--background` | `oklch(0.13 0.02 260)` | `#0d1117` | Page background |
-| `--card` | `oklch(0.17 0.02 260)` | `#161b22` | Cards, sidebar |
-| `--muted` | `oklch(0.2 0.02 260)` | `#1c2129` | Muted surfaces |
-| `--secondary` | `oklch(0.22 0.025 260)` | `#21262d` | Secondary surfaces |
+| Token          | OKLCH Value             | Approx hex | Usage              |
+| -------------- | ----------------------- | ---------- | ------------------ |
+| `--background` | `oklch(0.13 0.02 260)`  | `#0d1117`  | Page background    |
+| `--card`       | `oklch(0.17 0.02 260)`  | `#161b22`  | Cards, sidebar     |
+| `--muted`      | `oklch(0.2 0.02 260)`   | `#1c2129`  | Muted surfaces     |
+| `--secondary`  | `oklch(0.22 0.025 260)` | `#21262d`  | Secondary surfaces |
 
 ### Minimum text lightness for 4.5:1 contrast
 
@@ -70,11 +70,11 @@ On `--card` background (~`#161b22`), text needs OKLCH lightness of approximately
 
 Win/loss pill text appears on semi-transparent backgrounds (`bg-win/20`, `bg-loss/20`). The muted token values have been tuned for 4.5:1:
 
-| Token | Dark mode value | Usage |
-|---|---|---|
-| `--win-muted` | `oklch(0.72 0.12 150)` | Win pill text on `bg-win/20` |
-| `--loss-muted` | `oklch(0.72 0.16 27)` | Loss pill text on `bg-loss/20` |
-| `--destructive` | `oklch(0.72 0.22 27)` | Error text on `bg-destructive/10` or `/20` |
+| Token           | Dark mode value        | Usage                                      |
+| --------------- | ---------------------- | ------------------------------------------ |
+| `--win-muted`   | `oklch(0.72 0.12 150)` | Win pill text on `bg-win/20`               |
+| `--loss-muted`  | `oklch(0.72 0.16 27)`  | Loss pill text on `bg-loss/20`             |
+| `--destructive` | `oklch(0.72 0.22 27)`  | Error text on `bg-destructive/10` or `/20` |
 
 ### Rules of thumb
 

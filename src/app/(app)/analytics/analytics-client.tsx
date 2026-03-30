@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
+import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useChartColors } from "@/hooks/use-chart-colors";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -21,15 +21,13 @@ import {
   ReferenceArea,
   Cell,
 } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
+import type { RankSnapshot } from "@/db/schema";
+
+import { ChampionLink } from "@/components/champion-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -38,13 +36,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
-import type { RankSnapshot } from "@/db/schema";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { useChartColors } from "@/hooks/use-chart-colors";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { toCumulativeLP, getTierBoundaries, formatRank } from "@/lib/rank";
 import { filterMeaningful } from "@/lib/match-result";
-import { ChampionLink } from "@/components/champion-link";
+import { toCumulativeLP, getTierBoundaries, formatRank } from "@/lib/rank";
+import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 /** Prepare rank snapshot data for the LP chart */
 function prepareRankChartData(snapshots: RankSnapshot[], locale: string) {
@@ -65,9 +61,7 @@ function prepareRankChartData(snapshots: RankSnapshot[], locale: string) {
 
     const dateStr = formatDate(s.capturedAt, locale, "short-compact");
 
-    const tierName = s.tier
-      ? s.tier.charAt(0) + s.tier.slice(1).toLowerCase()
-      : "";
+    const tierName = s.tier ? s.tier.charAt(0) + s.tier.slice(1).toLowerCase() : "";
 
     data.push({
       date: dateStr,
@@ -115,7 +109,7 @@ interface AnalyticsClientProps {
 function computeRollingWinRate(
   matches: AnalyticsMatch[],
   locale: string,
-  window = 10
+  window = 10,
 ): Array<{ index: number; date: string; winRate: number }> {
   // Exclude remakes from rolling win rate
   const meaningful = matches.filter((m) => m.result !== "Remake");
@@ -132,10 +126,7 @@ function computeRollingWinRate(
 }
 
 function computeMatchupStats(matches: AnalyticsMatch[]) {
-  const stats = new Map<
-    string,
-    { wins: number; losses: number; games: number }
-  >();
+  const stats = new Map<string, { wins: number; losses: number; games: number }>();
   for (const m of matches) {
     if (m.result === "Remake") continue; // Skip remakes
     const name = m.matchupChampionName || "Unknown";
@@ -155,10 +146,7 @@ function computeMatchupStats(matches: AnalyticsMatch[]) {
 }
 
 function computeRuneStats(matches: AnalyticsMatch[]) {
-  const stats = new Map<
-    string,
-    { wins: number; losses: number; games: number }
-  >();
+  const stats = new Map<string, { wins: number; losses: number; games: number }>();
   for (const m of matches) {
     if (m.result === "Remake") continue; // Skip remakes
     const name = m.runeKeystoneName || "Unknown";
@@ -212,10 +200,7 @@ function computeChampionStats(matches: AnalyticsMatch[]) {
       name,
       ...s,
       winRate: Math.round((s.wins / s.games) * 100),
-      avgKDA:
-        s.deaths === 0
-          ? "Perfect"
-          : ((s.kills + s.assists) / s.deaths).toFixed(1),
+      avgKDA: s.deaths === 0 ? "Perfect" : ((s.kills + s.assists) / s.deaths).toFixed(1),
     }))
     .sort((a, b) => b.games - a.games);
 }
@@ -235,13 +220,10 @@ export function AnalyticsClient({
   const rollingWR = useMemo(() => computeRollingWinRate(matches, locale), [matches, locale]);
   const matchupStats = useMemo(() => computeMatchupStats(matches), [matches]);
   const runeStats = useMemo(() => computeRuneStats(matches), [matches]);
-  const championStats = useMemo(
-    () => computeChampionStats(matches),
-    [matches]
-  );
+  const championStats = useMemo(() => computeChampionStats(matches), [matches]);
   const rankChartData = useMemo(
     () => prepareRankChartData(rankSnapshots, locale),
-    [rankSnapshots, locale]
+    [rankSnapshots, locale],
   );
 
   // Compute goal target cumulative LP for chart reference line
@@ -252,12 +234,8 @@ export function AnalyticsClient({
 
   const goalTargetLabel = useMemo(() => {
     if (!activeGoal) return "";
-    const tierName =
-      activeGoal.targetTier.charAt(0) +
-      activeGoal.targetTier.slice(1).toLowerCase();
-    return activeGoal.targetDivision
-      ? `${tierName} ${activeGoal.targetDivision}`
-      : tierName;
+    const tierName = activeGoal.targetTier.charAt(0) + activeGoal.targetTier.slice(1).toLowerCase();
+    return activeGoal.targetDivision ? `${tierName} ${activeGoal.targetDivision}` : tierName;
   }, [activeGoal]);
 
   // ─── Sort state for Rune Keystones table ──────────────────────────────────
@@ -449,17 +427,13 @@ export function AnalyticsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("pageTitle")}</h1>
-          <p className="text-muted-foreground">
-            {t("importGamesFirst")}
-          </p>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+          <p className="text-muted-foreground">{t("importGamesFirst")}</p>
         </div>
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <BarChart3 className="h-8 w-8 text-muted-foreground mb-3" />
+          <BarChart3 className="mb-3 h-8 w-8 text-muted-foreground" />
           <p className="text-lg font-medium">{t("noDataYetTitle")}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("noDataYetDescription")}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("noDataYetDescription")}</p>
         </div>
       </div>
     );
@@ -468,49 +442,306 @@ export function AnalyticsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">{t("pageTitle")}</h1>
-        <p className="text-muted-foreground">
-          {t("gamesAnalyzed", { count: meaningfulCount })}
-        </p>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+        <p className="text-muted-foreground">{t("gamesAnalyzed", { count: meaningfulCount })}</p>
       </div>
 
       {/* Rank Journey + Win Rate side-by-side */}
       <div className="grid gap-6 lg:grid-cols-2">
-      {rankChartData.length >= 2 && lpChartMeta ? (
+        {rankChartData.length >= 2 && lpChartMeta ? (
+          <Card className="surface-glow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-gold" />
+                {t("rankJourney")}
+              </CardTitle>
+              <CardDescription>
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="font-medium text-foreground/80">
+                    {t("peakLabel", { rank: lpChartMeta.peakRank })}
+                  </span>
+                  {lpChartMeta.netChange !== 0 && (
+                    <span
+                      className={`font-mono font-semibold ${
+                        lpChartMeta.netChange >= 0 ? "text-win" : "text-loss"
+                      }`}
+                    >
+                      {lpChartMeta.netChange >= 0 ? "+" : ""}
+                      {t("lpOverall", { value: lpChartMeta.netChange })}
+                    </span>
+                  )}
+                </span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={rankChartData}>
+                    <defs>
+                      <linearGradient id="lpGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={cc.gold} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={cc.gold} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
+                    <XAxis
+                      dataKey="date"
+                      stroke={cc.chartAxis}
+                      fontSize={12}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis
+                      stroke={cc.chartAxis}
+                      fontSize={12}
+                      domain={[
+                        goalTargetLP !== null
+                          ? Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100)
+                          : lpChartMeta.yMin,
+                        goalTargetLP !== null
+                          ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
+                          : lpChartMeta.yMax,
+                      ]}
+                      tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: cc.chartTooltipBg,
+                        border: `1px solid ${cc.chartTooltipBorder}`,
+                        borderRadius: "8px",
+                      }}
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload[0]) return null;
+                        const d = payload[0].payload as (typeof rankChartData)[0];
+                        const idx = rankChartData.findIndex((r) => r.timestamp === d.timestamp);
+                        const isPeak = idx === lpChartMeta.peakIndex;
+                        const milestone = lpChartMeta.milestones.find((m) => m.index === idx);
+                        return (
+                          <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                            {isPeak && (
+                              <p className="mb-1 text-xs font-semibold text-gold">
+                                {t("tooltips.peakRankAchieved")}
+                              </p>
+                            )}
+                            {milestone && (
+                              <p className="mb-1 text-xs font-semibold text-win">
+                                {t("tooltips.firstTimeInTier", { tier: milestone.tier })}
+                              </p>
+                            )}
+                            <p className="font-semibold text-gold">
+                              {d.tier} {d.division}
+                            </p>
+                            <p className="text-sm">
+                              <span className="text-gold/80">{d.lp} LP</span>
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {d.wins}W {d.losses}L &middot; {d.date}
+                            </p>
+                          </div>
+                        );
+                      }}
+                    />
+                    {/* Tier boundary reference lines */}
+                    {(adjustedTierBoundaries ?? lpChartMeta.tierBoundaries).map((b) => (
+                      <ReferenceLine
+                        key={b.label}
+                        y={b.lp}
+                        stroke={cc.electric}
+                        strokeDasharray="6 3"
+                        label={{
+                          value: b.label,
+                          fill: cc.electric,
+                          fontSize: 11,
+                          position: "right",
+                        }}
+                      />
+                    ))}
+                    {/* Goal target reference line */}
+                    {goalTargetLP !== null && (
+                      <ReferenceLine
+                        y={goalTargetLP}
+                        stroke={cc.gold}
+                        strokeDasharray="8 4"
+                        strokeWidth={2}
+                        label={({ viewBox }: { viewBox: { x: number; y: number } }) => {
+                          const label = t("chartLabels.goalTarget", { rank: goalTargetLabel });
+                          return (
+                            <g>
+                              {/* Target/crosshair icon */}
+                              <g transform={`translate(${viewBox.x + 4}, ${viewBox.y - 8})`}>
+                                <circle
+                                  cx="6"
+                                  cy="6"
+                                  r="5"
+                                  fill="none"
+                                  stroke={cc.gold}
+                                  strokeWidth="1.5"
+                                />
+                                <circle cx="6" cy="6" r="2" fill={cc.gold} />
+                                <line
+                                  x1="6"
+                                  y1="0"
+                                  x2="6"
+                                  y2="2.5"
+                                  stroke={cc.gold}
+                                  strokeWidth="1.5"
+                                />
+                                <line
+                                  x1="6"
+                                  y1="9.5"
+                                  x2="6"
+                                  y2="12"
+                                  stroke={cc.gold}
+                                  strokeWidth="1.5"
+                                />
+                                <line
+                                  x1="0"
+                                  y1="6"
+                                  x2="2.5"
+                                  y2="6"
+                                  stroke={cc.gold}
+                                  strokeWidth="1.5"
+                                />
+                                <line
+                                  x1="9.5"
+                                  y1="6"
+                                  x2="12"
+                                  y2="6"
+                                  stroke={cc.gold}
+                                  strokeWidth="1.5"
+                                />
+                              </g>
+                              <text
+                                x={viewBox.x + 20}
+                                y={viewBox.y - 3}
+                                fill={cc.gold}
+                                fontSize={11}
+                                fontWeight="bold"
+                              >
+                                {label}
+                              </text>
+                            </g>
+                          );
+                        }}
+                      />
+                    )}
+                    {/* Promotion/demotion markers */}
+                    {lpChartMeta.events.map((e, i) => (
+                      <ReferenceLine
+                        key={`event-${i}`}
+                        x={rankChartData[e.index].date}
+                        stroke={e.type === "promotion" ? cc.chartPromotion : cc.chartDemotion}
+                        strokeDasharray="4 4"
+                        label={{
+                          value:
+                            e.type === "promotion"
+                              ? t("chartLabels.reached", { tier: e.to.split(" ")[0] })
+                              : t("chartLabels.backTo", { tier: e.to.split(" ")[0] }),
+                          fill: e.type === "promotion" ? cc.chartPromotion : cc.chartDemotion,
+                          fontSize: 10,
+                          position: "top",
+                        }}
+                      />
+                    ))}
+                    <Area
+                      type="monotone"
+                      dataKey="cumulativeLP"
+                      stroke={cc.gold}
+                      strokeWidth={2}
+                      fill="url(#lpGradient)"
+                      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+                      dot={(props: any) => {
+                        // Highlight promotion/demotion points
+                        const isEvent = lpChartMeta.events.some(
+                          (e: { index: number }) => e.index === props.index,
+                        );
+                        // Highlight peak rank point
+                        const isPeak = props.index === lpChartMeta.peakIndex;
+                        if (isPeak) {
+                          return (
+                            <g key={props.index}>
+                              <circle
+                                cx={props.cx}
+                                cy={props.cy}
+                                r={6}
+                                fill={cc.gold}
+                                stroke={cc.goldLight}
+                                strokeWidth={2}
+                              />
+                              <text
+                                x={props.cx}
+                                y={props.cy - 12}
+                                textAnchor="middle"
+                                fill={cc.goldLight}
+                                fontSize={9}
+                                fontWeight="bold"
+                              >
+                                {t("peak")}
+                              </text>
+                            </g>
+                          );
+                        }
+                        if (isEvent) {
+                          return (
+                            <circle
+                              key={props.index}
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={5}
+                              fill={cc.gold}
+                              stroke={cc.background}
+                              strokeWidth={2}
+                            />
+                          );
+                        }
+                        return (
+                          <circle
+                            key={props.index}
+                            cx={props.cx}
+                            cy={props.cy}
+                            r={2}
+                            fill={cc.gold}
+                            opacity={0.5}
+                          />
+                        );
+                      }}
+                      activeDot={{ r: 5, fill: cc.goldLight }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="surface-glow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-gold" />
+                {t("rankJourney")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{t("notEnoughRankData")}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Win Rate Over Time */}
         <Card className="surface-glow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-gold" />
-              {t("rankJourney")}
+              <TrendingUp className="h-4 w-4 text-gold" />
+              {t("winRateOverTime")}
             </CardTitle>
             <CardDescription>
-              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="font-medium text-foreground/80">
-                  {t("peakLabel", { rank: lpChartMeta.peakRank })}
-                </span>
-                {lpChartMeta.netChange !== 0 && (
-                  <span
-                    className={`font-mono font-semibold ${
-                      lpChartMeta.netChange >= 0 ? "text-win" : "text-loss"
-                    }`}
-                  >
-                    {lpChartMeta.netChange >= 0 ? "+" : ""}
-                    {t("lpOverall", { value: lpChartMeta.netChange })}
-                  </span>
-                )}
-              </span>
+              {coachingBands.bands.length > 0
+                ? t("coachingBandsDescription")
+                : t("noCoachingSessions")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={rankChartData}>
-                  <defs>
-                    <linearGradient id="lpGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={cc.gold} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={cc.gold} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <LineChart data={rollingWR}>
                   <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
                   <XAxis
                     dataKey="date"
@@ -521,296 +752,72 @@ export function AnalyticsClient({
                   <YAxis
                     stroke={cc.chartAxis}
                     fontSize={12}
-                    domain={[
-                      goalTargetLP !== null
-                        ? Math.min(lpChartMeta.yMin, Math.floor((goalTargetLP - 50) / 100) * 100)
-                        : lpChartMeta.yMin,
-                      goalTargetLP !== null
-                        ? Math.max(lpChartMeta.yMax, Math.ceil((goalTargetLP + 50) / 100) * 100)
-                        : lpChartMeta.yMax,
-                    ]}
-                    tickFormatter={(v: number) => formatRank(v).split("—")[0].trim()}
+                    domain={[0, 100]}
+                    tickFormatter={(v) => `${v}%`}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: cc.chartTooltipBg,
-                      border: `1px solid ${cc.chartTooltipBorder}`,
-                      borderRadius: "8px",
-                    }}
+                    cursor={{ stroke: cc.chartReference }}
                     content={({ active, payload }) => {
                       if (!active || !payload || !payload[0]) return null;
-                      const d = payload[0].payload as (typeof rankChartData)[0];
-                      const idx = rankChartData.findIndex((r) => r.timestamp === d.timestamp);
-                      const isPeak = idx === lpChartMeta.peakIndex;
-                      const milestone = lpChartMeta.milestones.find((m) => m.index === idx);
+                      const d = payload[0].payload as (typeof rollingWR)[0];
                       return (
                         <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
-                          {isPeak && (
-                            <p className="text-xs font-semibold text-gold mb-1">{t("tooltips.peakRankAchieved")}</p>
-                          )}
-                          {milestone && (
-                            <p className="text-xs font-semibold text-win mb-1">{t("tooltips.firstTimeInTier", { tier: milestone.tier })}</p>
-                          )}
-                          <p className="font-semibold text-gold">
-                            {d.tier} {d.division}
-                          </p>
+                          <p className="text-sm font-semibold text-foreground">{d.date}</p>
                           <p className="text-sm">
-                            <span className="text-gold/80">{d.lp} LP</span>
+                            {t("tooltips.winRate")}{" "}
+                            <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
+                              {d.winRate}%
+                            </span>
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {d.wins}W {d.losses}L &middot; {d.date}
+                          <p className="text-xs text-muted-foreground">
+                            {t("tooltips.gameNumber", { index: d.index })}
                           </p>
                         </div>
                       );
                     }}
                   />
-                  {/* Tier boundary reference lines */}
-                  {(adjustedTierBoundaries ?? lpChartMeta.tierBoundaries).map((b) => (
-                    <ReferenceLine
-                      key={b.label}
-                      y={b.lp}
-                      stroke={cc.electric}
-                      strokeDasharray="6 3"
-                      label={{
-                        value: b.label,
-                        fill: cc.electric,
-                        fontSize: 11,
-                        position: "right",
-                      }}
+                  <ReferenceLine
+                    y={50}
+                    stroke={cc.chartReference}
+                    strokeDasharray="3 3"
+                    label={{ value: "50%", fill: cc.chartAxis, fontSize: 11 }}
+                  />
+                  {/* Shaded bands between coaching sessions */}
+                  {coachingBands.bands.map((band, i) => (
+                    <ReferenceArea
+                      key={`band-${i}`}
+                      x1={band.x1}
+                      x2={band.x2}
+                      fill={cc.neonPurple}
+                      fillOpacity={band.isOngoing ? 0.08 : 0.12}
+                      strokeOpacity={0}
                     />
                   ))}
-                  {/* Goal target reference line */}
-                  {goalTargetLP !== null && (
+                  {/* Coaching session markers (vertical lines at each session) */}
+                  {coachingBands.sessionIndices.map((s, i) => (
                     <ReferenceLine
-                      y={goalTargetLP}
-                      stroke={cc.gold}
-                      strokeDasharray="8 4"
-                      strokeWidth={2}
-                      label={({ viewBox }: { viewBox: { x: number; y: number } }) => {
-                        const label = t("chartLabels.goalTarget", { rank: goalTargetLabel });
-                        return (
-                          <g>
-                            {/* Target/crosshair icon */}
-                            <g transform={`translate(${viewBox.x + 4}, ${viewBox.y - 8})`}>
-                              <circle cx="6" cy="6" r="5" fill="none" stroke={cc.gold} strokeWidth="1.5" />
-                              <circle cx="6" cy="6" r="2" fill={cc.gold} />
-                              <line x1="6" y1="0" x2="6" y2="2.5" stroke={cc.gold} strokeWidth="1.5" />
-                              <line x1="6" y1="9.5" x2="6" y2="12" stroke={cc.gold} strokeWidth="1.5" />
-                              <line x1="0" y1="6" x2="2.5" y2="6" stroke={cc.gold} strokeWidth="1.5" />
-                              <line x1="9.5" y1="6" x2="12" y2="6" stroke={cc.gold} strokeWidth="1.5" />
-                            </g>
-                            <text
-                              x={viewBox.x + 20}
-                              y={viewBox.y - 3}
-                              fill={cc.gold}
-                              fontSize={11}
-                              fontWeight="bold"
-                            >
-                              {label}
-                            </text>
-                          </g>
-                        );
-                      }}
-                    />
-                  )}
-                  {/* Promotion/demotion markers */}
-                  {lpChartMeta.events.map((e, i) => (
-                    <ReferenceLine
-                      key={`event-${i}`}
-                      x={rankChartData[e.index].date}
-                      stroke={
-                        e.type === "promotion"
-                          ? cc.chartPromotion
-                          : cc.chartDemotion
-                      }
-                      strokeDasharray="4 4"
+                      key={`session-${i}`}
+                      x={s.index}
+                      stroke={cc.neonPurple}
+                      strokeOpacity={s.status === "scheduled" ? 0.6 : 1}
+                      strokeDasharray={s.status === "scheduled" ? "6 4" : "4 4"}
                       label={{
-                        value: e.type === "promotion" ? t("chartLabels.reached", { tier: e.to.split(" ")[0] }) : t("chartLabels.backTo", { tier: e.to.split(" ")[0] }),
-                        fill:
-                          e.type === "promotion"
-                            ? cc.chartPromotion
-                            : cc.chartDemotion,
+                        value: s.coachName,
+                        fill: cc.neonPurple,
                         fontSize: 10,
                         position: "top",
                       }}
                     />
                   ))}
-                  <Area
+                  <Line
                     type="monotone"
-                    dataKey="cumulativeLP"
+                    dataKey="winRate"
                     stroke={cc.gold}
                     strokeWidth={2}
-                    fill="url(#lpGradient)"
-                    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-                    dot={(props: any) => {
-                      // Highlight promotion/demotion points
-                      const isEvent = lpChartMeta.events.some(
-                        (e: { index: number }) => e.index === props.index
-                      );
-                      // Highlight peak rank point
-                      const isPeak = props.index === lpChartMeta.peakIndex;
-                      if (isPeak) {
-                        return (
-                          <g key={props.index}>
-                            <circle
-                              cx={props.cx}
-                              cy={props.cy}
-                              r={6}
-                              fill={cc.gold}
-                              stroke={cc.goldLight}
-                              strokeWidth={2}
-                            />
-                            <text
-                              x={props.cx}
-                              y={props.cy - 12}
-                              textAnchor="middle"
-                              fill={cc.goldLight}
-                              fontSize={9}
-                              fontWeight="bold"
-                            >
-                              {t("peak")}
-                            </text>
-                          </g>
-                        );
-                      }
-                      if (isEvent) {
-                        return (
-                          <circle
-                            key={props.index}
-                            cx={props.cx}
-                            cy={props.cy}
-                            r={5}
-                            fill={cc.gold}
-                            stroke={cc.background}
-                            strokeWidth={2}
-                          />
-                        );
-                      }
-                      return (
-                        <circle
-                          key={props.index}
-                          cx={props.cx}
-                          cy={props.cy}
-                          r={2}
-                          fill={cc.gold}
-                          opacity={0.5}
-                        />
-                      );
-                    }}
-                    activeDot={{ r: 5, fill: cc.goldLight }}
+                    dot={false}
+                    activeDot={{ r: 4 }}
                   />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="surface-glow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-gold" />
-              {t("rankJourney")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {t("notEnoughRankData")}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Win Rate Over Time */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-gold" />
-            {t("winRateOverTime")}
-          </CardTitle>
-          <CardDescription>
-            {coachingBands.bands.length > 0
-              ? t("coachingBandsDescription")
-              : t("noCoachingSessions")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={rollingWR}>
-                <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
-                <XAxis
-                  dataKey="date"
-                  stroke={cc.chartAxis}
-                  fontSize={12}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  stroke={cc.chartAxis}
-                  fontSize={12}
-                  domain={[0, 100]}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <Tooltip
-                  cursor={{ stroke: cc.chartReference }}
-                  content={({ active, payload }) => {
-                    if (!active || !payload || !payload[0]) return null;
-                    const d = payload[0].payload as (typeof rollingWR)[0];
-                    return (
-                      <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
-                        <p className="text-sm font-semibold text-foreground">{d.date}</p>
-                        <p className="text-sm">
-                          {t("tooltips.winRate")}{" "}
-                          <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
-                            {d.winRate}%
-                          </span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t("tooltips.gameNumber", { index: d.index })}</p>
-                      </div>
-                    );
-                  }}
-                />
-                <ReferenceLine
-                  y={50}
-                  stroke={cc.chartReference}
-                  strokeDasharray="3 3"
-                  label={{ value: "50%", fill: cc.chartAxis, fontSize: 11 }}
-                />
-                {/* Shaded bands between coaching sessions */}
-                {coachingBands.bands.map((band, i) => (
-                  <ReferenceArea
-                    key={`band-${i}`}
-                    x1={band.x1}
-                    x2={band.x2}
-                    fill={cc.neonPurple}
-                    fillOpacity={band.isOngoing ? 0.08 : 0.12}
-                    strokeOpacity={0}
-                  />
-                ))}
-                {/* Coaching session markers (vertical lines at each session) */}
-                {coachingBands.sessionIndices.map((s, i) => (
-                  <ReferenceLine
-                    key={`session-${i}`}
-                    x={s.index}
-                    stroke={cc.neonPurple}
-                    strokeOpacity={s.status === "scheduled" ? 0.6 : 1}
-                    strokeDasharray={s.status === "scheduled" ? "6 4" : "4 4"}
-                    label={{
-                      value: s.coachName,
-                      fill: cc.neonPurple,
-                      fontSize: 10,
-                      position: "top",
-                    }}
-                  />
-                ))}
-                <Line
-                  type="monotone"
-                  dataKey="winRate"
-                  stroke={cc.gold}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              </LineChart>
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -828,81 +835,86 @@ export function AnalyticsClient({
             {topMatchups.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("noMatchupData")}</p>
             ) : (
-            <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topMatchups} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
-                  <XAxis
-                    type="number"
-                    domain={[0, 100]}
-                    tickFormatter={(v) => `${v}%`}
-                    stroke={cc.chartAxis}
-                    fontSize={12}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={100}
-                    stroke={cc.chartAxis}
-                    fontSize={12}
-                    tick={({ x, y, payload }: { x: string | number; y: string | number; payload: { value: string } }) => (
-                      <a href={`/scout?enemy=${encodeURIComponent(payload.value)}`}>
-                        <g transform={`translate(${x},${y})`} style={{ cursor: "pointer" }}>
-                          <image
-                            href={getChampionIconUrl(ddragonVersion, payload.value)}
-                            x={-98}
-                            y={-10}
-                            width={20}
-                            height={20}
-                            clipPath="inset(0 round 2px)"
-                          />
-                          <text
-                            x={-74}
-                            y={0}
-                            dy={4}
-                            fill={cc.mutedForeground}
-                            fontSize={12}
-                            textAnchor="start"
-                          >
-                            {payload.value}
-                          </text>
-                        </g>
-                      </a>
-                    )}
-                  />
-                  <Tooltip
-                    cursor={{ fill: `color-mix(in oklch, ${cc.chartGrid}, transparent 70%)` }}
-                    content={({ active, payload }) => {
-                      if (!active || !payload || !payload[0]) return null;
-                      const d = payload[0].payload as (typeof topMatchups)[0];
-                      return (
-                        <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
-                          <p className="font-semibold text-foreground">{d.name}</p>
-                          <p className="text-sm">
-                            Win Rate:{" "}
-                            <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
-                              {d.winRate}%
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              ({d.wins}W {d.losses}L / {d.games} games)
-                            </span>
-                          </p>
-                        </div>
-                      );
-                    }}
-                  />
-                  <ReferenceLine x={50} stroke={cc.chartReference} strokeDasharray="3 3" />
-                  <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
-                    {topMatchups.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={entry.winRate >= 50 ? cc.gold : cc.loss}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+              <div style={{ height: Math.max(200, topMatchups.length * 40 + 40) }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topMatchups} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke={cc.chartGrid} />
+                    <XAxis
+                      type="number"
+                      domain={[0, 100]}
+                      tickFormatter={(v) => `${v}%`}
+                      stroke={cc.chartAxis}
+                      fontSize={12}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={100}
+                      stroke={cc.chartAxis}
+                      fontSize={12}
+                      tick={({
+                        x,
+                        y,
+                        payload,
+                      }: {
+                        x: string | number;
+                        y: string | number;
+                        payload: { value: string };
+                      }) => (
+                        <a href={`/scout?enemy=${encodeURIComponent(payload.value)}`}>
+                          <g transform={`translate(${x},${y})`} style={{ cursor: "pointer" }}>
+                            <image
+                              href={getChampionIconUrl(ddragonVersion, payload.value)}
+                              x={-98}
+                              y={-10}
+                              width={20}
+                              height={20}
+                              clipPath="inset(0 round 2px)"
+                            />
+                            <text
+                              x={-74}
+                              y={0}
+                              dy={4}
+                              fill={cc.mutedForeground}
+                              fontSize={12}
+                              textAnchor="start"
+                            >
+                              {payload.value}
+                            </text>
+                          </g>
+                        </a>
+                      )}
+                    />
+                    <Tooltip
+                      cursor={{ fill: `color-mix(in oklch, ${cc.chartGrid}, transparent 70%)` }}
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload[0]) return null;
+                        const d = payload[0].payload as (typeof topMatchups)[0];
+                        return (
+                          <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 shadow-lg">
+                            <p className="font-semibold text-foreground">{d.name}</p>
+                            <p className="text-sm">
+                              Win Rate:{" "}
+                              <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
+                                {d.winRate}%
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                ({d.wins}W {d.losses}L / {d.games} games)
+                              </span>
+                            </p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <ReferenceLine x={50} stroke={cc.chartReference} strokeDasharray="3 3" />
+                    <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
+                      {topMatchups.map((entry, index) => (
+                        <Cell key={index} fill={entry.winRate >= 50 ? cc.gold : cc.loss} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -925,26 +937,22 @@ export function AnalyticsClient({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-xs px-1.5 -ml-1.5"
+                        className="-ml-1.5 h-6 px-1.5 text-xs"
                         onClick={() => toggleRuneSort("games")}
                       >
                         {t("tableHeaders.games")}
-                        {runeSortKey === "games" && (
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        )}
+                        {runeSortKey === "games" && <ArrowUpDown className="ml-1 h-3 w-3" />}
                       </Button>
                     </TableHead>
                     <TableHead className="text-center">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-xs px-1.5 -ml-1.5"
+                        className="-ml-1.5 h-6 px-1.5 text-xs"
                         onClick={() => toggleRuneSort("winRate")}
                       >
                         {t("tableHeaders.winRate")}
-                        {runeSortKey === "winRate" && (
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        )}
+                        {runeSortKey === "winRate" && <ArrowUpDown className="ml-1 h-3 w-3" />}
                       </Button>
                     </TableHead>
                     <TableHead className="text-center">{t("tableHeaders.wl")}</TableHead>
@@ -953,25 +961,27 @@ export function AnalyticsClient({
                 <TableBody>
                   {sortedRuneStats.map((rune) => (
                     <TableRow key={rune.name}>
-                      <TableCell className="font-medium text-sm">
+                      <TableCell className="text-sm font-medium">
                         <span className="flex items-center gap-1.5">
                           {(() => {
                             const url = getKeystoneIconUrlByName(rune.name);
                             return url ? (
-                              <Image src={url} alt={rune.name} width={18} height={18} className="rounded" />
+                              <Image
+                                src={url}
+                                alt={rune.name}
+                                width={18}
+                                height={18}
+                                className="rounded"
+                              />
                             ) : null;
                           })()}
                           {rune.name}
                         </span>
                       </TableCell>
-                      <TableCell className="text-center text-sm">
-                        {rune.games}
-                      </TableCell>
+                      <TableCell className="text-center text-sm">{rune.games}</TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          variant={
-                            rune.winRate >= 50 ? "default" : "destructive"
-                          }
+                          variant={rune.winRate >= 50 ? "default" : "destructive"}
                           className="text-xs"
                         >
                           {rune.winRate}%
@@ -999,87 +1009,77 @@ export function AnalyticsClient({
           {sortedChampionStats.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("noChampionData")}</p>
           ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("tableHeaders.champion")}</TableHead>
-                <TableHead className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs px-1.5 -ml-1.5"
-                    onClick={() => toggleChampSort("games")}
-                  >
-                    {t("tableHeaders.games")}
-                    {champSortKey === "games" && (
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
-                    )}
-                  </Button>
-                </TableHead>
-                <TableHead className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs px-1.5 -ml-1.5"
-                    onClick={() => toggleChampSort("winRate")}
-                  >
-                    {t("tableHeaders.winRate")}
-                    {champSortKey === "winRate" && (
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
-                    )}
-                  </Button>
-                </TableHead>
-                <TableHead className="text-center">{t("tableHeaders.wl")}</TableHead>
-                <TableHead className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs px-1.5 -ml-1.5"
-                    onClick={() => toggleChampSort("avgKDA")}
-                  >
-                    {t("tableHeaders.avgKda")}
-                    {champSortKey === "avgKDA" && (
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
-                    )}
-                  </Button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedChampionStats.map((champ) => (
-                <TableRow key={champ.name}>
-                  <TableCell className="font-medium text-sm">
-                    <ChampionLink
-                      champion={champ.name}
-                      ddragonVersion={ddragonVersion}
-                      linkTo="scout-your"
-                      iconSize={24}
-                      textClassName="font-medium text-sm"
-                    />
-                  </TableCell>
-                  <TableCell className="text-center text-sm">
-                    {champ.games}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge
-                      variant={
-                        champ.winRate >= 50 ? "default" : "destructive"
-                      }
-                      className="text-xs"
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("tableHeaders.champion")}</TableHead>
+                  <TableHead className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="-ml-1.5 h-6 px-1.5 text-xs"
+                      onClick={() => toggleChampSort("games")}
                     >
-                      {champ.winRate}%
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center text-sm text-muted-foreground">
-                    {champ.wins}W {champ.losses}L
-                  </TableCell>
-                  <TableCell className="text-center text-sm font-mono">
-                    {champ.avgKDA === "Perfect" ? t("perfectKda") : champ.avgKDA}
-                  </TableCell>
+                      {t("tableHeaders.games")}
+                      {champSortKey === "games" && <ArrowUpDown className="ml-1 h-3 w-3" />}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="-ml-1.5 h-6 px-1.5 text-xs"
+                      onClick={() => toggleChampSort("winRate")}
+                    >
+                      {t("tableHeaders.winRate")}
+                      {champSortKey === "winRate" && <ArrowUpDown className="ml-1 h-3 w-3" />}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-center">{t("tableHeaders.wl")}</TableHead>
+                  <TableHead className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="-ml-1.5 h-6 px-1.5 text-xs"
+                      onClick={() => toggleChampSort("avgKDA")}
+                    >
+                      {t("tableHeaders.avgKda")}
+                      {champSortKey === "avgKDA" && <ArrowUpDown className="ml-1 h-3 w-3" />}
+                    </Button>
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sortedChampionStats.map((champ) => (
+                  <TableRow key={champ.name}>
+                    <TableCell className="text-sm font-medium">
+                      <ChampionLink
+                        champion={champ.name}
+                        ddragonVersion={ddragonVersion}
+                        linkTo="scout-your"
+                        iconSize={24}
+                        textClassName="font-medium text-sm"
+                      />
+                    </TableCell>
+                    <TableCell className="text-center text-sm">{champ.games}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant={champ.winRate >= 50 ? "default" : "destructive"}
+                        className="text-xs"
+                      >
+                        {champ.winRate}%
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-muted-foreground">
+                      {champ.wins}W {champ.losses}L
+                    </TableCell>
+                    <TableCell className="text-center font-mono text-sm">
+                      {champ.avgKDA === "Perfect" ? t("perfectKda") : champ.avgKDA}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
