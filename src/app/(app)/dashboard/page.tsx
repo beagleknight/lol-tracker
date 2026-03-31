@@ -1,4 +1,4 @@
-import { eq, desc, and, count, sql, asc, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc, lte, ne, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
     // Recent matches (last 10) — no rawMatchJson needed
     db.query.matches.findMany({
-      where: eq(matches.userId, user.id),
+      where: and(eq(matches.userId, user.id), ne(matches.result, "Remake")),
       orderBy: desc(matches.gameDate),
       limit: 10,
       columns: {
@@ -190,9 +190,17 @@ export default async function DashboardPage() {
   // the last 10 games, giving a consistent "LP change over recent games"
   // indicator that aligns with the analytics page.
   let lpTrend: number | null = null;
+  let lpTrendDays: number | null = null;
   if (latestRankOrUndef?.tier && recentMatches.length >= 2) {
     // Find the oldest game date in recent matches for the baseline window
     const oldestGameDate = recentMatches[recentMatches.length - 1].gameDate;
+
+    // Calculate time span of recent matches in days
+    const newestGameDate = recentMatches[0].gameDate;
+    lpTrendDays = Math.max(
+      1,
+      Math.ceil((newestGameDate.getTime() - oldestGameDate.getTime()) / (1000 * 60 * 60 * 24)),
+    );
 
     // Baseline: the latest snapshot captured at or before the oldest recent game
     const baseline =
@@ -233,6 +241,7 @@ export default async function DashboardPage() {
       matchStats={{ total, wins, losses: total - wins, unreviewed, postGamePending, vodPending }}
       latestRank={latestRankOrUndef}
       lpTrend={lpTrend}
+      lpTrendDays={lpTrendDays}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
       activeGoal={activeGoal ?? null}
