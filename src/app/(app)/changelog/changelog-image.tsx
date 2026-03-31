@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function ChangelogImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   const [open, setOpen] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    // Focus the overlay so screen readers announce it
+    overlayRef.current?.focus();
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open, close]);
 
   return (
     <>
@@ -24,16 +30,34 @@ export function ChangelogImage(props: React.ImgHTMLAttributes<HTMLImageElement>)
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img {...props} alt={props.alt ?? ""} />
       </button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[90vw] p-2 sm:max-w-[85vw]" showCloseButton>
-          <DialogHeader className="sr-only">
-            <DialogTitle>{props.alt ?? "Image"}</DialogTitle>
-            <DialogDescription>Full-size image preview</DialogDescription>
-          </DialogHeader>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={props.src} alt={props.alt ?? ""} className="w-full rounded-lg" />
-        </DialogContent>
-      </Dialog>
+      {open && (
+        <div
+          ref={overlayRef}
+          role="dialog"
+          aria-label={props.alt ?? "Image preview"}
+          tabIndex={-1}
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/80 p-4"
+          onClick={close}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") close();
+          }}
+        >
+          {/* Stop clicks on the image from closing the overlay */}
+          <div
+            className="contents"
+            role="presentation"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={props.src}
+              alt={props.alt ?? ""}
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
