@@ -17,6 +17,9 @@
 /blob-report/
 tests/smoke/setup/.auth/
 
+# temporary screenshots (audit, annotations, etc.)
+/screenshots/
+
 # next.js
 /.next/
 /out/
