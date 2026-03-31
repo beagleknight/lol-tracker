@@ -29,7 +29,6 @@ import { toast } from "sonner";
 import type { Match } from "@/db/schema";
 
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
-import { ChampionLink } from "@/components/champion-link";
 import {
   HighlightsEditor,
   HighlightsDisplay,
@@ -124,7 +123,7 @@ const PRIORITY_THRESHOLD = 4;
 
 // ─── Match Header (shared across card types) ────────────────────────────────
 
-function MatchCardHeader({
+function MatchCardHeaderInfo({
   match,
   ddragonVersion,
   locale,
@@ -153,14 +152,16 @@ function MatchCardHeader({
           {formatDate(match.gameDate, locale)} &middot; {match.kills}/{match.deaths}/{match.assists}{" "}
           &middot; {formatDuration(match.gameDurationSeconds)} &middot; {t("vs")}{" "}
           {match.matchupChampionName ? (
-            <ChampionLink
-              champion={match.matchupChampionName}
-              ddragonVersion={ddragonVersion}
-              linkTo="scout-enemy"
-              yourChampion={match.championName}
-              iconSize={16}
-              textClassName="text-xs"
-            />
+            <>
+              <Image
+                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
+                alt={match.matchupChampionName}
+                width={16}
+                height={16}
+                className="rounded"
+              />
+              <span className="text-xs">{match.matchupChampionName}</span>
+            </>
           ) : (
             "?"
           )}
@@ -179,11 +180,6 @@ function MatchCardHeader({
           )}
         </CardDescription>
       </div>
-      <Link href={`/matches/${match.id}`}>
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View match details">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </Link>
     </div>
   );
 }
@@ -251,24 +247,29 @@ function PostGameCard({
   return (
     <Card className="surface-glow">
       <CardHeader className="pb-3">
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className="flex w-full items-center gap-3 text-left"
-        >
-          <ChevronDown
-            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`}
-          />
-          <div className="flex-1">
-            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
-          </div>
+        <div className="flex w-full items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="flex flex-1 items-center gap-3 text-left"
+          >
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+            />
+            <div className="flex-1">
+              <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
+            </div>
+          </button>
           {priorityScore >= PRIORITY_THRESHOLD && (
             <Badge variant="secondary" className="gap-1 text-gold">
               <Sparkles className="h-3 w-3" />
               {t("suggested")}
             </Badge>
           )}
-        </button>
+          <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
       </CardHeader>
       {isExpanded && (
         <CardContent className="space-y-4">
@@ -441,18 +442,23 @@ function VodReviewCard({
   return (
     <Card className="surface-glow">
       <CardHeader className="pb-3">
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className="flex w-full items-center gap-3 text-left"
-        >
-          <ChevronDown
-            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`}
-          />
-          <div className="flex-1">
-            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
-          </div>
-        </button>
+        <div className="flex w-full items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="flex flex-1 items-center gap-3 text-left"
+          >
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+            />
+            <div className="flex-1">
+              <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
+            </div>
+          </button>
+          <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
       </CardHeader>
       {isExpanded && (
         <CardContent className="space-y-4">
@@ -634,7 +640,7 @@ function CompletedCard({
     return (
       <Card className="surface-glow border-primary/30">
         <CardHeader className="pb-3">
-          <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
+          <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Highlights / Lowlights */}
@@ -708,7 +714,7 @@ function CompletedCard({
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <MatchCardHeader match={match} ddragonVersion={ddragonVersion} locale={locale} />
+            <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
           </div>
           <Button
             variant="ghost"
@@ -1082,7 +1088,12 @@ export function ReviewClient({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  aria-label={t("moreActions")}
+                >
                   <Ellipsis className="h-4 w-4" />
                 </Button>
               }

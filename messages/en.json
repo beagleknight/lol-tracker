@@ -212,6 +212,8 @@
     "suggested": "Suggested",
     "disabledSaveTooltip": "Add at least one highlight, note, or VOD link to save.",
     "sessionProgress": "{done} of {total} reviewed this session",
+    "moreActions": "More actions",
+    "viewMatchDetails": "View match details",
     "toasts": {
       "reviewSavedAndSkipped": "Review saved & VOD review skipped.",
       "postGameReviewSaved": "Post-game review saved!",
