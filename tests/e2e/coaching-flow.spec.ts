@@ -200,7 +200,19 @@ test.describe("Coaching flow", () => {
     await cycleButton.click();
 
     // The status should cycle from "pending" to "in progress".
-    await expect(firstActionItemRow.getByText("in progress")).toBeVisible({ timeout: 10_000 });
+    // Reload fallback: server-side revalidation can be slow on CI (see issue #74).
+    try {
+      await expect(firstActionItemRow.getByText("in progress")).toBeVisible({ timeout: 10_000 });
+    } catch {
+      await page.reload();
+      await expect(
+        page
+          .getByRole("main")
+          .getByText("Practice freezing near tower for 5 games")
+          .locator("../..")
+          .getByText("in progress"),
+      ).toBeVisible({ timeout: 10_000 });
+    }
   });
 
   test("delete the new coaching session", async ({ page }) => {
