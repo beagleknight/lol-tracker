@@ -499,6 +499,35 @@
     border-radius: 0.5rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
+    cursor: zoom-in;
+    transition: opacity 0.15s ease;
+  }
+  .changelog-prose img:hover {
+    opacity: 0.85;
+  }
+
+  /* Side-by-side before/after image grid */
+  .changelog-image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .changelog-image-grid + .changelog-image-grid {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  }
+  .changelog-image-grid img {
+    max-width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  @media (max-width: 640px) {
+    .changelog-image-grid {
+      grid-template-columns: 1fr;
+    }
   }
   .changelog-prose code {
     background: var(--muted);

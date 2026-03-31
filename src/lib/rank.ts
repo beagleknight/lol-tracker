@@ -138,3 +138,35 @@ export function calculateProgress(
   const progress = ((currentCum - startCum) / (targetCum - startCum)) * 100;
   return Math.max(0, Math.min(100, Math.round(progress)));
 }
+
+/**
+ * Get division-boundary milestones between a start and target rank,
+ * returned as percentage positions along the progress bar.
+ * Only includes tier boundaries (e.g. Gold → Platinum) to avoid clutter.
+ */
+export function getRankMilestones(
+  startTier: string,
+  startDivision: string | null,
+  startLp: number,
+  targetTier: string,
+  targetDivision: string | null,
+): Array<{ percent: number; label: string }> {
+  const startCum = toCumulativeLP(startTier, startDivision, startLp);
+  const targetCum = toCumulativeLP(targetTier, targetDivision, 0);
+  if (startCum === null || targetCum === null || targetCum <= startCum) return [];
+
+  const total = targetCum - startCum;
+  const milestones: Array<{ percent: number; label: string }> = [];
+
+  for (let i = 0; i < TIER_ORDER.length; i++) {
+    const boundary = i * LP_PER_TIER;
+    // Only include boundaries strictly between start and target
+    if (boundary > startCum && boundary < targetCum) {
+      const percent = Math.round(((boundary - startCum) / total) * 100);
+      const tierName = TIER_ORDER[i].charAt(0) + TIER_ORDER[i].slice(1).toLowerCase();
+      milestones.push({ percent, label: tierName });
+    }
+  }
+
+  return milestones;
+}

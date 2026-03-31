@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { formatTierDivision, calculateProgress } from "@/lib/rank";
+import { formatTierDivision, calculateProgress, getRankMilestones } from "@/lib/rank";
 
 interface DashboardMatch {
   id: string;
@@ -85,6 +85,7 @@ interface DashboardClientProps {
   matchStats: MatchStats;
   latestRank: RankSnapshot | null;
   lpTrend: number | null;
+  lpTrendDays: number | null;
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
   activeGoal: Goal | null;
@@ -96,12 +97,9 @@ interface DashboardClientProps {
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
   if (matches.length === 0) return null;
-  // Skip remakes — they don't affect streaks
-  const meaningful = matches.filter((m) => m.result !== "Remake");
-  if (meaningful.length === 0) return null;
-  const first = meaningful[0].result;
+  const first = matches[0].result;
   let count = 0;
-  for (const m of meaningful) {
+  for (const m of matches) {
     if (m.result === first) count++;
     else break;
   }
@@ -128,6 +126,7 @@ export function DashboardClient({
   matchStats,
   latestRank,
   lpTrend,
+  lpTrendDays,
   actionItems,
   upcomingSession,
   activeGoal,
@@ -153,35 +152,33 @@ export function DashboardClient({
           : "overdue"
       : null;
 
-  // Session stats (last 10 games, excluding remakes)
-  const sessionGames = recentMatches.filter((m) => m.result !== "Remake");
-  const sessionWins = sessionGames.filter((m) => m.result === "Victory").length;
-  const sessionLosses = sessionGames.filter((m) => m.result === "Defeat").length;
+  // Session stats (last 10 games — remakes already excluded by query)
+  const sessionWins = recentMatches.filter((m) => m.result === "Victory").length;
+  const sessionLosses = recentMatches.filter((m) => m.result === "Defeat").length;
   const sessionWinRate =
-    sessionGames.length > 0 ? Math.round((sessionWins / sessionGames.length) * 100) : 0;
+    recentMatches.length > 0 ? Math.round((sessionWins / recentMatches.length) * 100) : 0;
 
   // Overall stats from aggregates
   const totalWins = matchStats.wins;
   const totalLosses = matchStats.losses;
   const totalWinRate = matchStats.total > 0 ? Math.round((totalWins / matchStats.total) * 100) : 0;
 
-  // Average KDA from recent matches (excluding remakes)
-  const meaningfulRecent = recentMatches.filter((m) => m.result !== "Remake");
+  // Average KDA from recent matches (remakes already excluded by query)
   const avgKills =
-    meaningfulRecent.length > 0
-      ? (meaningfulRecent.reduce((s, m) => s + m.kills, 0) / meaningfulRecent.length).toFixed(1)
+    recentMatches.length > 0
+      ? (recentMatches.reduce((s, m) => s + m.kills, 0) / recentMatches.length).toFixed(1)
       : "0";
   const avgDeaths =
-    meaningfulRecent.length > 0
-      ? (meaningfulRecent.reduce((s, m) => s + m.deaths, 0) / meaningfulRecent.length).toFixed(1)
+    recentMatches.length > 0
+      ? (recentMatches.reduce((s, m) => s + m.deaths, 0) / recentMatches.length).toFixed(1)
       : "0";
   const avgAssists =
-    meaningfulRecent.length > 0
-      ? (meaningfulRecent.reduce((s, m) => s + m.assists, 0) / meaningfulRecent.length).toFixed(1)
+    recentMatches.length > 0
+      ? (recentMatches.reduce((s, m) => s + m.assists, 0) / recentMatches.length).toFixed(1)
       : "0";
   const avgCS =
-    meaningfulRecent.length > 0
-      ? (meaningfulRecent.reduce((s, m) => s + m.cs, 0) / meaningfulRecent.length).toFixed(0)
+    recentMatches.length > 0
+      ? (recentMatches.reduce((s, m) => s + m.cs, 0) / recentMatches.length).toFixed(0)
       : "0";
 
   // Games needing review
@@ -218,7 +215,7 @@ export function DashboardClient({
       {/* Rank + Streak Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Rank Card */}
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>{t("currentRank")}</CardDescription>
           </CardHeader>
@@ -242,7 +239,9 @@ export function DashboardClient({
                       <TrendingDown className="h-3 w-3" />
                     )}
                     {lpTrend >= 0 ? "+" : ""}
-                    {t("lpTrendRecently", { lpChange: lpTrend })}
+                    {lpTrendDays !== null
+                      ? t("lpTrendInDays", { lpChange: lpTrend, days: lpTrendDays })
+                      : t("lpTrendRecently", { lpChange: lpTrend })}
                   </p>
                 )}
               </div>
@@ -253,7 +252,7 @@ export function DashboardClient({
         </Card>
 
         {/* Win Rate Card */}
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>{t("sessionWinRate")}</CardDescription>
           </CardHeader>
@@ -280,7 +279,7 @@ export function DashboardClient({
         </Card>
 
         {/* Streak Card */}
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>{t("currentStreak")}</CardDescription>
           </CardHeader>
@@ -304,7 +303,7 @@ export function DashboardClient({
         </Card>
 
         {/* Avg KDA Card */}
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardHeader className="pb-2">
             <CardDescription>{t("avgKdaLast10")}</CardDescription>
           </CardHeader>
@@ -392,9 +391,19 @@ export function DashboardClient({
                   const now = new Date();
                   const diff = upcomingSession.date.getTime() - now.getTime();
                   if (diff <= 0) {
+                    const daysOverdue = Math.floor(-diff / (1000 * 60 * 60 * 24));
+                    const isOverdue = daysOverdue >= 2;
                     return (
-                      <Badge className="mt-2 border-gold/30 bg-gold/20 text-xs text-gold">
-                        {t("readyToComplete")}
+                      <Badge
+                        className={`mt-2 text-xs ${
+                          isOverdue
+                            ? "border-loss/30 bg-loss/10 text-loss"
+                            : "border-gold/30 bg-gold/20 text-gold"
+                        }`}
+                      >
+                        {isOverdue
+                          ? t("readyToCompleteDaysAgo", { days: daysOverdue })
+                          : t("readyToComplete")}
                       </Badge>
                     );
                   }
@@ -447,7 +456,7 @@ export function DashboardClient({
               const badgeClasses = {
                 good: "bg-win/20 text-win border-win/30",
                 warning: "bg-warning/20 text-warning border-warning/30",
-                overdue: "bg-loss/20 text-loss border-loss/30",
+                overdue: "bg-loss/10 text-loss border-loss/30",
               };
               return (
                 <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
@@ -511,6 +520,13 @@ export function DashboardClient({
                 activeGoal.targetTier,
                 activeGoal.targetDivision,
               );
+              const milestones = getRankMilestones(
+                activeGoal.startTier,
+                activeGoal.startDivision,
+                activeGoal.startLp,
+                activeGoal.targetTier,
+                activeGoal.targetDivision,
+              );
               return (
                 <Card className="surface-glow border-gold/20">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -531,9 +547,27 @@ export function DashboardClient({
                         {formatTierDivision(currentRank.tier, currentRank.division)}
                       </span>
                       <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                        {formatTierDivision(activeGoal.targetTier, activeGoal.targetDivision)} ·{" "}
                         {progress}%
                       </span>
                     </Progress>
+                    {milestones.length > 0 && (
+                      <div className="relative h-2">
+                        {milestones.map((m) => (
+                          <div
+                            key={m.label}
+                            className="absolute top-0 flex flex-col items-center"
+                            style={{ left: `${m.percent}%` }}
+                            title={m.label}
+                          >
+                            <div className="h-2 w-px bg-muted-foreground/40" />
+                            <span className="mt-0.5 text-[10px] leading-none text-muted-foreground/60">
+                              {m.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -582,11 +616,25 @@ export function DashboardClient({
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate">{item.description}</p>
-                        {item.topic && (
-                          <Badge variant="secondary" className="mt-1 text-xs">
-                            {item.topic}
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs ${
+                              item.status === "in_progress"
+                                ? "border-gold/30 bg-gold/10 text-gold"
+                                : ""
+                            }`}
+                          >
+                            {item.status === "in_progress"
+                              ? t("actionItemInProgress")
+                              : t("actionItemPending")}
                           </Badge>
-                        )}
+                          {item.topic && (
+                            <Badge variant="secondary" className="text-xs">
+                              {item.topic}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
