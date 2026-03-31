@@ -494,7 +494,8 @@
     color: var(--gold-light);
   }
   .changelog-prose img {
-    max-width: 100%;
+    max-width: 560px;
+    width: 100%;
     border-radius: 0.5rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
