@@ -397,7 +397,7 @@ export function DashboardClient({
                       <Badge
                         className={`mt-2 text-xs ${
                           isOverdue
-                            ? "border-loss/30 bg-loss/20 text-loss"
+                            ? "border-loss/30 bg-loss/10 text-loss"
                             : "border-gold/30 bg-gold/20 text-gold"
                         }`}
                       >
@@ -456,7 +456,7 @@ export function DashboardClient({
               const badgeClasses = {
                 good: "bg-win/20 text-win border-win/30",
                 warning: "bg-warning/20 text-warning border-warning/30",
-                overdue: "bg-loss/20 text-loss border-loss/30",
+                overdue: "bg-loss/10 text-loss border-loss/30",
               };
               return (
                 <Card className={`surface-glow ${borderColors[coachingCadence]}`}>

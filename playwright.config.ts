@@ -3,6 +3,12 @@ import { defineConfig } from "@playwright/test";
 const isCI = !!process.env.CI;
 
 /**
+ * Use a non-standard port to avoid conflicts with other local services
+ * (e.g. Ascent GEP uses port 3000 and respawns automatically).
+ */
+const TEST_PORT = 3099;
+
+/**
  * Test configuration for smoke and E2E tests.
  *
  * Starts the Next.js production server in demo mode and verifies
@@ -17,11 +23,13 @@ export default defineConfig({
   globalSetup: "tests/smoke/setup/global-setup.ts",
 
   /* Start the production server for tests.
-   * - Locally: build + start (may already be built, Next.js skips if .next exists)
+   * - Locally: build + start on TEST_PORT (avoids port 3000 conflicts)
    * - CI: just start (build is a separate workflow step for reliability) */
   webServer: {
-    command: isCI ? "npm run start" : "npm run build && npm run start",
-    port: 3000,
+    command: isCI
+      ? `npm run start -- --port ${TEST_PORT}`
+      : `npm run build && npm run start -- --port ${TEST_PORT}`,
+    port: TEST_PORT,
     reuseExistingServer: !isCI,
     env: {
       NEXT_PUBLIC_DEMO_MODE: "true",
