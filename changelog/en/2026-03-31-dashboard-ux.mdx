@@ -1,0 +1,33 @@
+---
+version: "2026.03.16"
+date: "2026-03-31"
+title: "Dashboard UX Improvements"
+tags: ["improvement"]
+---
+
+Several usability improvements to the dashboard based on the UX audit findings:
+
+- **Accurate win rate stats** — The session win rate now always reflects exactly 10 competitive games, excluding remakes from the query instead of fetching them and filtering client-side.
+- **Stat cards no longer look clickable** — Removed the hover-lift effect from the four informational stat cards (Rank, Win Rate, Streak, KDA) since they are read-only.
+- **Goal progress shows target rank** — The goal widget now displays both your current rank and target rank, with tier milestone markers on the progress bar.
+- **Action item status labels** — Dashboard action items now show "In Progress" or "Pending" badges alongside the colored dot for clearer status at a glance.
+- **Overdue coaching session warning** — Sessions past-due by 2+ days now show a red "Ready to complete · X days ago" badge instead of the neutral gold one.
+- **LP trend with time context** — The rank card now shows "+X LP in last N days" instead of the vague "+X LP recently".
+
+### Before & After
+
+<div className="changelog-image-grid">
+
+![Dashboard before changes](/changelog/dashboard-ux/before-dashboard-top.png)
+
+![Dashboard after changes — annotated](/changelog/dashboard-ux/after-dashboard-top-annotated.png)
+
+</div>
+
+<div className="changelog-image-grid">
+
+![Dashboard bottom before changes](/changelog/dashboard-ux/before-dashboard-bottom.png)
+
+![Dashboard bottom after changes — annotated](/changelog/dashboard-ux/after-dashboard-bottom-annotated.png)
+
+</div>

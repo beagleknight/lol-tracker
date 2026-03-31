@@ -51,6 +51,15 @@ Branch naming conventions:
   If formatting is off, fix it with `npm run fmt` before committing.
   Fix any lint errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
 - `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
+- **MANDATORY: Run smoke tests locally before pushing when the PR touches UI.** Any change to components, styles, color tokens, ARIA attributes, layouts, or pages requires smoke tests to pass locally:
+  ```bash
+  npm run test:smoke
+  ```
+  This catches a11y violations (axe-core WCAG 2.1 AA scans), broken pages, and contrast failures that would otherwise only be caught in CI.
+- **MANDATORY: Run E2E tests locally before pushing when the PR touches interactive flows.** If the PR modifies interactive user flows that have E2E coverage (review, coaching, match detail, etc.):
+  ```bash
+  npm run test:e2e
+  ```
 - **MANDATORY: Verify the lockfile before every push** (when `package-lock.json` is staged). Run `npm ci` to confirm the lockfile is consistent. If it fails, regenerate with `npm install`. The canonical Node version is defined in `.tool-versions` — both local dev and CI use the same version.
 
 ### 3. Write a changelog entry
@@ -164,6 +173,7 @@ git checkout main && git pull
 git checkout -b fix/description
 # make changes
 npm run fmt:check && npm run lint && npm run build
+npm run test:smoke  # if touching UI/styles/a11y
 git add -A && git commit -m "fix: description"
 # add changelog entry
 git add -A && git commit -m "docs: add changelog entry"
@@ -178,6 +188,8 @@ git checkout main && git pull
 git checkout -b feat/description
 # implement in logical commits
 npm run fmt:check && npm run lint && npm run build
+npm run test:smoke  # if touching UI/styles/a11y
+npm run test:e2e    # if touching interactive flows
 # add changelog at the end
 git push -u origin feat/description
 gh pr create --title "feat: description" --body "..."

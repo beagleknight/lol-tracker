@@ -14,6 +14,10 @@ Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.
 
 **MANDATORY: Run `npm run fmt:check`, `npm run lint`, and `npm run build` locally BEFORE pushing.** Do not rely on CI as the first lint/build check — catch errors locally first.
 
+**MANDATORY: Run `npm run test:smoke` locally BEFORE pushing when the PR touches UI.** Any change to components, styles, color tokens, ARIA attributes, layouts, or pages requires smoke tests to pass locally. This catches a11y violations (color-contrast, missing labels, etc.) that would otherwise only fail in CI. Do NOT skip this step — pushing code that fails smoke tests wastes a CI round-trip.
+
+**MANDATORY: Run `npm run test:e2e` locally BEFORE pushing when the PR touches interactive flows.** If the PR modifies user flows that have E2E coverage (review, coaching, match detail, etc.), run E2E tests locally first.
+
 **MANDATORY: Wait for CI checks to pass BEFORE merging a PR.** Even if checks are not required by branch protection, always run `gh pr checks <number> --watch` (or poll) and confirm all checks pass before merging.
 
 **MANDATORY: NEVER merge a PR without the user's explicit permission.** Even if the user says "proceed" or "do it", that means implement + push — NOT merge. Only merge when the user explicitly says "merge it" (or equivalent). If the user grants permission to merge, verify CI checks are green first.
@@ -128,3 +132,25 @@ Before committing any file that adds a new `t()` call:
 3. Add the Spanish translation to `messages/es.json` under the same namespace
 4. Verify with `npm run build` — the type system catches missing keys at build time
 <!-- END:i18n-aria-rules -->
+
+<!-- BEGIN:ui-screenshots-rules -->
+
+# UI/UX PRs require screenshots — MANDATORY
+
+**Every PR that changes UI or UX MUST include before/after screenshots.** This is non-negotiable. Load the `ui-screenshots` OpenCode skill at the START of any UI/UX task — before writing any code — so you can capture "before" screenshots while the current state still exists.
+
+Checklist for any PR touching UI:
+
+1. **Load the `ui-screenshots` skill BEFORE making code changes**
+2. Capture "before" screenshots of affected pages/components
+3. Implement the changes
+4. Capture "after" screenshots and annotate them (red arrows/labels)
+5. Store all images in `public/changelog/<slug>/`
+6. Embed screenshots in both the PR description and changelog MDX entries
+7. Use the demo-mode production server recipe from the skill for captures
+
+If you forgot to capture "before" screenshots, check out `main`, capture them, then switch back to the feature branch.
+
+Full workflow details are in the `ui-screenshots` OpenCode skill.
+
+<!-- END:ui-screenshots-rules -->
