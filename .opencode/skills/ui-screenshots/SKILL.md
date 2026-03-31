@@ -50,47 +50,70 @@ Create a temporary HTML file that composites the screenshot with SVG overlays:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body { margin: 0; width: 1280px; height: 720px; overflow: hidden; }
-    .container {
-      position: relative;
-      width: 1280px;
-      height: 720px;
-      background: url('./after-screenshot.png') no-repeat center/cover;
-    }
-    svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
-      <!-- Arrow: line + arrowhead -->
-      <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="7"
-                refX="10" refY="3.5" orient="auto">
-          <polygon points="0 0, 10 3.5, 0 7"
-                   fill="rgba(255,60,60,0.7)" />
-        </marker>
-      </defs>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+      }
+      .container {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        background: url("./after-screenshot.png") no-repeat center/cover;
+      }
+      svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
+        <!-- Arrow: line + arrowhead -->
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,60,60,0.7)" />
+          </marker>
+        </defs>
 
-      <!-- Highlight rectangle -->
-      <rect x="100" y="200" width="300" height="40" rx="6"
-            fill="none" stroke="rgba(255,60,60,0.55)" stroke-width="2.5" />
+        <!-- Highlight rectangle -->
+        <rect
+          x="100"
+          y="200"
+          width="300"
+          height="40"
+          rx="6"
+          fill="none"
+          stroke="rgba(255,60,60,0.55)"
+          stroke-width="2.5"
+        />
 
-      <!-- Arrow pointing to element -->
-      <line x1="80" y1="160" x2="100" y2="195"
-            stroke="rgba(255,60,60,0.7)" stroke-width="3"
-            marker-end="url(#arrow)" />
+        <!-- Arrow pointing to element -->
+        <line
+          x1="80"
+          y1="160"
+          x2="100"
+          y2="195"
+          stroke="rgba(255,60,60,0.7)"
+          stroke-width="3"
+          marker-end="url(#arrow)"
+        />
 
-      <!-- Label -->
-      <rect x="20" y="140" width="120" height="24" rx="4"
-            fill="rgba(255,60,60,0.7)" />
-      <text x="80" y="157" fill="white" font-size="14"
-            font-weight="bold" text-anchor="middle">New badge</text>
-    </svg>
-  </div>
-</body>
+        <!-- Label -->
+        <rect x="20" y="140" width="120" height="24" rx="4" fill="rgba(255,60,60,0.7)" />
+        <text x="80" y="157" fill="white" font-size="14" font-weight="bold" text-anchor="middle">
+          New badge
+        </text>
+      </svg>
+    </div>
+  </body>
 </html>
 ```
 
@@ -119,6 +142,7 @@ public/changelog/<slug>/
 This is the single source of truth. Changelog MDX entries and PR descriptions both reference these same images.
 
 Naming convention:
+
 - `before-<page>.png` — original state
 - `after-<feature>.png` — annotated "after" screenshot
 
@@ -190,7 +214,7 @@ cat /tmp/next-server.log
 - **Full-page screenshots are too tall** — always use viewport-sized screenshots.
 - **Auto-scroll workaround**: Some pages auto-scroll on load (e.g., the review page's `useEffect` scrolls the first expanded card into view). After navigation, run:
   ```js
-  document.querySelector('h1').scrollIntoView({ behavior: 'instant', block: 'start' })
+  document.querySelector("h1").scrollIntoView({ behavior: "instant", block: "start" });
   ```
   to reset to the top of the page before screenshotting.
 
@@ -206,7 +230,23 @@ lsof -ti :3777 | xargs kill -9 2>/dev/null || true
 
 Pushing code that fails CI wastes time in push-fix-push cycles. For UI/a11y changes, failures are often predictable and catchable locally.
 
-### Rule: Run smoke tests locally before pushing
+### Rule 1: Format EVERY file you create or edit — IMMEDIATELY
+
+The project uses `oxfmt` (NOT prettier). **Every file you write or edit must be formatted before committing.** This includes skill files, MDX changelogs, JSON, TypeScript — everything.
+
+```bash
+# Format a specific file after writing/editing it
+npx oxfmt --write <file>
+
+# Verify all source files pass (ignore .playwright-mcp/ — untracked)
+npx oxfmt --check src/ messages/ changelog/ .opencode/
+```
+
+**CRITICAL**: Run `npx oxfmt --write <file>` immediately after writing or editing ANY file. Do not batch formatting — format each file as you go. This prevents format issues from accumulating and being forgotten.
+
+The CI `Format` check runs `oxfmt --check .` which includes all tracked files. If you forget to format even one file, CI will fail.
+
+### Rule 2: Run smoke tests locally before pushing
 
 When a PR touches ANY of the following, run `npm run test:smoke` locally before pushing:
 
@@ -222,7 +262,7 @@ npm run test:smoke
 
 This runs the Playwright smoke suite, which includes axe-core a11y scans on all pages. It auto-builds and starts the server via `playwright.config.ts`'s `webServer` config, so no manual server management is needed.
 
-### When to also run E2E tests locally
+### Rule 3: Run E2E tests locally when touching interactive flows
 
 If the PR changes interactive flows that have E2E coverage (review flow, coaching flow, match detail), also run:
 
@@ -232,12 +272,13 @@ npm run test:e2e
 
 ### Full pre-push checklist for UI PRs
 
-1. [ ] `npm run fmt:check` — formatting
-2. [ ] `npm run lint` — lint rules including jsx-a11y
-3. [ ] `npm run build` — compilation + type checking
-4. [ ] `npm run test:smoke` — a11y violations, page loads
-5. [ ] `npm run test:e2e` — if touching interactive flows with E2E coverage
-6. [ ] All five pass → safe to push
+1. [ ] `npx oxfmt --write <file>` on every file you created or edited
+2. [ ] `npx oxfmt --check src/ messages/ changelog/ .opencode/` — full format verification
+3. [ ] `npm run lint` — lint rules including jsx-a11y
+4. [ ] `npm run build` — compilation + type checking
+5. [ ] `npm run test:smoke` — a11y violations, page loads
+6. [ ] `npm run test:e2e` — if touching interactive flows with E2E coverage
+7. [ ] All checks pass → safe to push
 
 ### Known CI-only issues
 
@@ -251,6 +292,8 @@ npm run test:e2e
 3. [ ] All images stored in `public/changelog/<slug>/`
 4. [ ] Changelog MDX (both `en/` and `es/`) includes embedded screenshots
 5. [ ] PR description includes before/after images with correct GitHub blob URLs
-6. [ ] `npm run test:smoke` passes locally before pushing
-7. [ ] `npm run test:e2e` passes locally (if touching interactive flows)
-8. [ ] Dev server shut down after screenshot session (`lsof -ti :3777 | xargs kill -9`)
+6. [ ] `npx oxfmt --write <file>` run on EVERY file created or edited
+7. [ ] `npx oxfmt --check src/ messages/ changelog/ .opencode/` passes
+8. [ ] `npm run test:smoke` passes locally before pushing
+9. [ ] `npm run test:e2e` passes locally (if touching interactive flows)
+10. [ ] Dev server shut down after screenshot session (`lsof -ti :3777 | xargs kill -9`)
