@@ -8,8 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getChangelogEntries, type ChangelogTag } from "@/lib/changelog";
 
 import { ChangelogFilter } from "./changelog-filter";
+import { ChangelogImage } from "./changelog-image";
 import { ChangelogPagination } from "./changelog-pagination";
 import { ChangelogSeenMarker } from "./changelog-seen-marker";
+
+const mdxComponents = {
+  img: ChangelogImage,
+};
 
 const ENTRIES_PER_PAGE = 5;
 const VALID_TAGS: ChangelogTag[] = ["feature", "fix", "improvement"];
@@ -73,6 +78,7 @@ export default async function ChangelogRoute({
               const { content } = await compileMDX({
                 source: entry.source,
                 options: { parseFrontmatter: false },
+                components: mdxComponents,
               });
 
               const isNewest = currentPage === 1 && index === 0 && !activeTag;
