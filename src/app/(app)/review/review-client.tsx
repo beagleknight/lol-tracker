@@ -1087,12 +1087,15 @@ export function ReviewClient({
                 </Button>
               }
             />
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-auto">
               <AlertDialog>
                 <AlertDialogTrigger
                   render={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <SkipForward className="mr-2 h-3.5 w-3.5" />
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      className="whitespace-nowrap"
+                    >
+                      <SkipForward className="mr-2 h-3.5 w-3.5 shrink-0" />
                       {t("markAllReviewed")}
                     </DropdownMenuItem>
                   }

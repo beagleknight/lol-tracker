@@ -493,6 +493,12 @@
   .changelog-prose a:hover {
     color: var(--gold-light);
   }
+  .changelog-prose img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
   .changelog-prose code {
     background: var(--muted);
     padding: 0.125rem 0.375rem;
