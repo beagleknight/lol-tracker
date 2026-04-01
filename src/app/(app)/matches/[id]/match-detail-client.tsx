@@ -168,6 +168,7 @@ function ParticipantRow({
                 alt={t("itemAlt", { itemId })}
                 width={24}
                 height={24}
+                unoptimized
                 className="rounded"
               />
             ))}
@@ -275,6 +276,7 @@ export function MatchDetailClient({
                           alt={match.runeKeystoneName}
                           width={20}
                           height={20}
+                          unoptimized
                           className="-my-0.5 inline"
                         />
                       ) : null;

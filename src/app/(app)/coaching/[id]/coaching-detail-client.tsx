@@ -409,6 +409,7 @@ export function CoachingDetailClient({
                         alt={match.championName}
                         width={32}
                         height={32}
+                        unoptimized
                         className="rounded"
                       />
                       <div className="flex-1">
@@ -422,6 +423,7 @@ export function CoachingDetailClient({
                                 alt={match.matchupChampionName}
                                 width={16}
                                 height={16}
+                                unoptimized
                                 className="rounded"
                               />
                               {match.matchupChampionName}
@@ -587,6 +589,7 @@ export function CoachingDetailClient({
                           alt={match.championName}
                           width={24}
                           height={24}
+                          unoptimized
                           className="rounded"
                         />
                         <span className="text-sm font-medium">{match.championName}</span>
@@ -599,6 +602,7 @@ export function CoachingDetailClient({
                                 alt={match.matchupChampionName}
                                 width={16}
                                 height={16}
+                                unoptimized
                                 className="rounded"
                               />
                               {match.matchupChampionName}

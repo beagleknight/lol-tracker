@@ -163,6 +163,7 @@ function MatchCardHeaderInfo({
                 alt={match.matchupChampionName}
                 width={16}
                 height={16}
+                unoptimized
                 className="rounded"
               />
               <span className="text-xs">{match.matchupChampionName}</span>
@@ -177,7 +178,14 @@ function MatchCardHeaderInfo({
               {(() => {
                 const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
                 return iconUrl ? (
-                  <Image src={iconUrl} alt="" width={14} height={14} className="rounded-sm" />
+                  <Image
+                    src={iconUrl}
+                    alt=""
+                    width={14}
+                    height={14}
+                    unoptimized
+                    className="rounded-sm"
+                  />
                 ) : null;
               })()}
               {match.runeKeystoneName}

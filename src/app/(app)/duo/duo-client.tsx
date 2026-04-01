@@ -48,6 +48,7 @@ function ChampionIcon({
       alt={championName}
       width={size}
       height={size}
+      unoptimized={size <= 32}
       className="rounded"
     />
   );

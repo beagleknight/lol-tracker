@@ -244,6 +244,7 @@ export function ScheduleSessionClient({
                         alt={match.championName}
                         width={20}
                         height={20}
+                        unoptimized
                         className="rounded"
                       />
                       {match.championName}
@@ -257,6 +258,7 @@ export function ScheduleSessionClient({
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}
+                            unoptimized
                             className="rounded"
                           />
                           {match.matchupChampionName}
