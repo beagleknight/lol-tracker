@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
@@ -16,6 +17,11 @@ import { requireUser } from "@/lib/session";
 async function SidebarWithUser() {
   await connection();
   const user = await requireUser();
+
+  // Redirect to onboarding if user hasn't completed setup
+  if (!user.onboardingCompleted) {
+    redirect("/onboarding");
+  }
 
   // Lightweight count for sidebar review badges (excludes remakes)
   const [reviewCounts, latestVersion] = await Promise.all([

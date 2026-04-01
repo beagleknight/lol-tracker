@@ -34,6 +34,8 @@ export async function GET() {
     );
   }
 
+  const region = user.region || "euw1";
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -67,12 +69,16 @@ export async function GET() {
         const PAGE_SIZE = 100;
 
         while (true) {
-          const batch = await getMatchIds(user.puuid!, {
-            queue: 420,
-            count: PAGE_SIZE,
-            start,
-            startTime: SEASON_START,
-          });
+          const batch = await getMatchIds(
+            user.puuid!,
+            {
+              queue: 420,
+              count: PAGE_SIZE,
+              start,
+              startTime: SEASON_START,
+            },
+            region,
+          );
 
           if (batch.length === 0) break;
 
@@ -93,7 +99,7 @@ export async function GET() {
 
         if (newMatchIds.length === 0) {
           // Still capture rank snapshot
-          const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
+          const rankWarning = await captureRankSnapshot(user.id, user.puuid!, region);
           // Check if rank goal was achieved
           await checkGoalAchievement(user.id);
           const msg = rankWarning
@@ -106,7 +112,7 @@ export async function GET() {
 
         // Capture rank snapshot BEFORE syncing — gives a "before" data point
         // so the LP chart shows the delta across this sync session
-        await captureRankSnapshot(user.id, user.puuid!);
+        await captureRankSnapshot(user.id, user.puuid!, region);
 
         send({
           type: "status",
@@ -138,7 +144,7 @@ export async function GET() {
           const matchId = newMatchIds[i];
 
           try {
-            const matchData = await getMatch(matchId);
+            const matchData = await getMatch(matchId, region);
             const playerData = extractPlayerData(matchData, user.puuid!);
 
             if (!playerData) {
@@ -245,7 +251,7 @@ export async function GET() {
         }
 
         // Capture rank snapshot
-        const rankWarning = await captureRankSnapshot(user.id, user.puuid!);
+        const rankWarning = await captureRankSnapshot(user.id, user.puuid!, region);
 
         // Check if rank goal was achieved after syncing
         await checkGoalAchievement(user.id);
@@ -290,9 +296,13 @@ export async function GET() {
   });
 }
 
-async function captureRankSnapshot(userId: string, puuid: string): Promise<string | null> {
+async function captureRankSnapshot(
+  userId: string,
+  puuid: string,
+  region: string,
+): Promise<string | null> {
   try {
-    const entry = await getSoloQueueEntryByPuuid(puuid);
+    const entry = await getSoloQueueEntryByPuuid(puuid, region);
     if (entry) {
       await db.insert(rankSnapshots).values({
         userId,

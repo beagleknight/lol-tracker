@@ -9,7 +9,7 @@ import { users } from "@/db/schema";
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n/request";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
-import { getAccountByRiotId } from "@/lib/riot-api";
+import { getAccountByRiotId, PLATFORM_IDS } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
 export async function linkRiotAccount(formData: FormData) {
@@ -20,14 +20,19 @@ export async function linkRiotAccount(formData: FormData) {
     return { error: "Invalid Riot ID format. Use GameName#TagLine" };
   }
 
+  const region = formData.get("region") as string;
+  if (!region || !PLATFORM_IDS.includes(region)) {
+    return { error: "Please select a valid region." };
+  }
+
   const [gameName, tagLine] = riotId.split("#");
   if (!gameName || !tagLine) {
     return { error: "Invalid Riot ID format. Use GameName#TagLine" };
   }
 
   try {
-    // Look up account via Riot API
-    const account = await getAccountByRiotId(gameName, tagLine);
+    // Look up account via Riot API (using the selected region)
+    const account = await getAccountByRiotId(gameName, tagLine, region);
 
     // Update user record
     await db
@@ -36,6 +41,7 @@ export async function linkRiotAccount(formData: FormData) {
         riotGameName: account.gameName,
         riotTagLine: account.tagLine,
         puuid: account.puuid,
+        region,
         updatedAt: new Date(),
       })
       .where(eq(users.id, user.id));
@@ -64,6 +70,7 @@ export async function unlinkRiotAccount() {
       riotTagLine: null,
       puuid: null,
       summonerId: null,
+      region: null,
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));
@@ -75,6 +82,33 @@ export async function unlinkRiotAccount() {
 }
 
 // ─── Duo Partner ─────────────────────────────────────────────────────────────
+
+/**
+ * Update the user's region (platform ID) without re-linking the Riot account.
+ * Useful when a user needs to correct their region after linking.
+ */
+export async function updateRegion(region: string) {
+  const user = await requireUser();
+
+  if (!PLATFORM_IDS.includes(region)) {
+    return { error: "Invalid region." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      region,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
+
+  return { success: true };
+}
+
+// ─── Duo Partner (continued) ────────────────────────────────────────────────
 
 /**
  * Get all registered users with linked Riot accounts (excluding current user).

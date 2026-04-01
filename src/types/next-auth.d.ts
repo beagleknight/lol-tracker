@@ -10,6 +10,8 @@ declare module "next-auth" {
       riotGameName?: string | null;
       riotTagLine?: string | null;
       puuid?: string | null;
+      region?: string | null;
+      onboardingCompleted?: boolean;
       role?: string | null;
       locale?: string | null;
       language?: string | null;

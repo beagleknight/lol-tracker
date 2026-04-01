@@ -62,12 +62,14 @@
     "demoLoginButton": "Log in",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "User",
-    "demoNoRiotAccount": "No Riot account linked"
+    "demoNoRiotAccount": "No Riot account linked",
+    "demoNeedsSetup": "Needs setup"
   },
   "Dashboard": {
     "heading": "Dashboard",
     "linkRiotAccount": "Link your Riot account in <link>Settings</link> to get started.",
     "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
+    "selectRegion": "Select your region in <link>Settings</link> to ensure your matches sync from the correct server.",
     "currentRank": "Current rank",
     "lpLabel": "{lp} LP",
     "lpTrendRecently": "{lpChange} LP recently",
@@ -117,6 +119,7 @@
     "summary": "{totalMatches, plural, one {# game} other {# games}} · {wins}W {losses}L ({winRate}%)",
     "linkRiotAccount": "Link your Riot account in <link>Settings</link> to import games.",
     "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
+    "selectRegion": "Select your region in <link>Settings</link> to ensure your matches sync from the correct server.",
     "searchPlaceholder": "Search champion, matchup, notes...",
     "resultFilterPlaceholder": "Result",
     "allResults": "All results",
@@ -173,6 +176,7 @@
   "Review": {
     "pageTitle": "Review",
     "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
+    "selectRegion": "Select your region in <link>Settings</link> to ensure your matches sync from the correct server.",
     "allCaughtUp": "All caught up! No games waiting for review.",
     "gamesWaitingForReview": "{count, plural, one {# game} other {# games}} waiting for review",
     "vs": "vs",
@@ -601,6 +605,8 @@
       "description": "Link your Riot Games account to sync your ranked games automatically.",
       "riotIdLabel": "Riot ID",
       "riotIdPlaceholder": "beagleknight#euw",
+      "regionLabel": "Server region",
+      "regionPlaceholder": "Select region",
       "linkButton": "Link",
       "unlinkButton": "Unlink",
       "unlinkHelpText": "Unlinking will not delete your imported match data.",
@@ -670,6 +676,7 @@
       "duoPartnerSet": "Duo partner set to {partnerName}",
       "duoPartnerCleared": "Duo partner cleared.",
       "localeUpdated": "Language & region updated.",
+      "regionUpdated": "Server region updated.",
       "languageUpdated": "Language updated.",
       "rolePreferencesSaved": "Role preferences saved.",
       "rolePreferencesSaveError": "Failed to save role preferences."

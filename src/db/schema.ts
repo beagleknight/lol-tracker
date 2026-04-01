@@ -21,6 +21,10 @@ export const users = sqliteTable("users", {
   puuid: text("puuid"),
   summonerId: text("summoner_id"),
   duoPartnerUserId: text("duo_partner_user_id"),
+  region: text("region"), // Riot platform region: euw1, na1, kr, eun1, etc.
+  onboardingCompleted: integer("onboarding_completed", { mode: "boolean" })
+    .notNull()
+    .default(false),
   primaryRole: text("primary_role"), // Preferred primary position: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
   secondaryRole: text("secondary_role"), // Preferred secondary position
   locale: text("locale").default("en-GB"),
@@ -321,6 +325,7 @@ export const aiInsights = sqliteTable(
 
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
+export type User = typeof users.$inferSelect;
 export type Match = typeof matches.$inferSelect;
 /** The result column's union type, derived from the schema enum. */
 export type MatchResult = Match["result"];

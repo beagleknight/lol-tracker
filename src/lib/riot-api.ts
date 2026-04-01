@@ -14,10 +14,77 @@ function getRiotApiKey(): string {
   return process.env.RIOT_API_KEY!;
 }
 
-// Regional routing for account-v1 (EUW -> europe)
-const REGIONAL_HOST = "https://europe.api.riotgames.com";
-// Platform routing for EUW1
-const PLATFORM_HOST = "https://euw1.api.riotgames.com";
+// ─── Region Mapping ─────────────────────────────────────────────────────────
+// Platform ID → regional host (for account-v1, match-v5)
+// Platform ID → platform host (for league-v4, summoner-v4)
+// Reference: https://developer.riotgames.com/docs/lol#routing-values
+
+type RegionalCluster = "americas" | "europe" | "asia" | "sea";
+
+/** Map from platform ID to its broad regional routing cluster. */
+const PLATFORM_TO_REGIONAL: Record<string, RegionalCluster> = {
+  // Americas
+  na1: "americas",
+  br1: "americas",
+  la1: "americas",
+  la2: "americas",
+  oc1: "americas",
+  // Europe
+  euw1: "europe",
+  eun1: "europe",
+  tr1: "europe",
+  ru: "europe",
+  // Asia
+  kr: "asia",
+  jp1: "asia",
+  // SEA
+  ph2: "sea",
+  sg2: "sea",
+  th2: "sea",
+  tw2: "sea",
+  vn2: "sea",
+};
+
+/** All supported platform IDs. */
+export const PLATFORM_IDS = Object.keys(PLATFORM_TO_REGIONAL);
+
+/** Human-readable labels for each platform. */
+export const PLATFORM_LABELS: Record<string, string> = {
+  euw1: "Europe West",
+  eun1: "Europe Nordic & East",
+  na1: "North America",
+  kr: "Korea",
+  jp1: "Japan",
+  br1: "Brazil",
+  la1: "Latin America North",
+  la2: "Latin America South",
+  oc1: "Oceania",
+  tr1: "Turkey",
+  ru: "Russia",
+  ph2: "Philippines",
+  sg2: "Singapore",
+  th2: "Thailand",
+  tw2: "Taiwan",
+  vn2: "Vietnam",
+};
+
+/**
+ * Get the regional host URL for match-v5 and account-v1 endpoints.
+ * Falls back to "europe" if the platform is unknown.
+ */
+function getRegionalHost(platformId: string): string {
+  const cluster = PLATFORM_TO_REGIONAL[platformId] ?? "europe";
+  return `https://${cluster}.api.riotgames.com`;
+}
+
+/**
+ * Get the platform host URL for league-v4 endpoints.
+ * Falls back to "euw1" if the platform is unknown.
+ */
+function getPlatformHost(platformId: string): string {
+  const platform = PLATFORM_TO_REGIONAL[platformId] ? platformId : "euw1";
+  return `https://${platform}.api.riotgames.com`;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -149,22 +216,34 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
 
 // ─── Account ─────────────────────────────────────────────────────────────────
 
-export async function getAccountByRiotId(gameName: string, tagLine: string): Promise<RiotAccount> {
+export async function getAccountByRiotId(
+  gameName: string,
+  tagLine: string,
+  region: string = "euw1",
+): Promise<RiotAccount> {
   if (_isDemoMode) return mockGetAccountByRiotId(gameName, tagLine);
+  const host = getRegionalHost(region);
   return riotFetch<RiotAccount>(
-    `${REGIONAL_HOST}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
+    `${host}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
   );
 }
 
 // ─── League / Rank ───────────────────────────────────────────────────────────
 
-async function getLeagueEntriesByPuuid(puuid: string): Promise<RiotLeagueEntry[]> {
-  return riotFetch<RiotLeagueEntry[]>(`${PLATFORM_HOST}/lol/league/v4/entries/by-puuid/${puuid}`);
+async function getLeagueEntriesByPuuid(
+  puuid: string,
+  region: string = "euw1",
+): Promise<RiotLeagueEntry[]> {
+  const host = getPlatformHost(region);
+  return riotFetch<RiotLeagueEntry[]>(`${host}/lol/league/v4/entries/by-puuid/${puuid}`);
 }
 
-export async function getSoloQueueEntryByPuuid(puuid: string): Promise<RiotLeagueEntry | null> {
+export async function getSoloQueueEntryByPuuid(
+  puuid: string,
+  region: string = "euw1",
+): Promise<RiotLeagueEntry | null> {
   if (_isDemoMode) return mockGetSoloQueueEntryByPuuid(puuid);
-  const entries = await getLeagueEntriesByPuuid(puuid);
+  const entries = await getLeagueEntriesByPuuid(puuid, region);
   return entries.find((e) => e.queueType === "RANKED_SOLO_5x5") || null;
 }
 
@@ -178,6 +257,7 @@ export async function getMatchIds(
     start?: number;
     startTime?: number; // epoch seconds
   } = {},
+  region: string = "euw1",
 ): Promise<string[]> {
   if (_isDemoMode) return mockGetMatchIds();
   const params = new URLSearchParams();
@@ -187,14 +267,16 @@ export async function getMatchIds(
   if (options.startTime !== undefined) params.set("startTime", String(options.startTime));
 
   const queryString = params.toString();
+  const host = getRegionalHost(region);
   return riotFetch<string[]>(
-    `${REGIONAL_HOST}/lol/match/v5/matches/by-puuid/${puuid}/ids${queryString ? `?${queryString}` : ""}`,
+    `${host}/lol/match/v5/matches/by-puuid/${puuid}/ids${queryString ? `?${queryString}` : ""}`,
   );
 }
 
-export async function getMatch(matchId: string): Promise<RiotMatch> {
+export async function getMatch(matchId: string, region: string = "euw1"): Promise<RiotMatch> {
   if (_isDemoMode) return mockGetMatch(matchId);
-  return riotFetch<RiotMatch>(`${REGIONAL_HOST}/lol/match/v5/matches/${matchId}`);
+  const host = getRegionalHost(region);
+  return riotFetch<RiotMatch>(`${host}/lol/match/v5/matches/${matchId}`);
 }
 
 // ─── Champion ID Mapping (Data Dragon) ──────────────────────────────────────

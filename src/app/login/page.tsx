@@ -1,6 +1,6 @@
 "use client";
 
-import { Ticket, User, Shield } from "lucide-react";
+import { Ticket, User, Shield, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -23,6 +23,7 @@ const DEMO_USERS = [
     rank: "Gold III · 62 LP",
     role: "admin" as const,
     hasRiot: true,
+    description: null,
   },
   {
     id: "demo-user-0002-0002-000000000002",
@@ -31,6 +32,16 @@ const DEMO_USERS = [
     rank: null,
     role: "user" as const,
     hasRiot: true,
+    description: null,
+  },
+  {
+    id: "demo-user-0003-0003-000000000003",
+    name: "NewPlayer",
+    riotId: null,
+    rank: null,
+    role: "user" as const,
+    hasRiot: false,
+    description: "needsSetup",
   },
 ];
 
@@ -69,6 +80,8 @@ function DemoLoginForm() {
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
               {user.role === "admin" ? (
                 <Shield className="h-5 w-5 text-gold" />
+              ) : user.description === "needsSetup" ? (
+                <UserPlus className="h-5 w-5 text-muted-foreground" />
               ) : (
                 <User className="h-5 w-5 text-muted-foreground" />
               )}
@@ -81,7 +94,11 @@ function DemoLoginForm() {
                 </Badge>
               </div>
               <div className="truncate text-sm text-muted-foreground">
-                {user.hasRiot ? user.riotId : t("demoNoRiotAccount")}
+                {user.description === "needsSetup"
+                  ? t("demoNeedsSetup")
+                  : user.hasRiot
+                    ? user.riotId
+                    : t("demoNoRiotAccount")}
                 {user.rank && <span className="ml-2 text-gold">{user.rank}</span>}
               </div>
             </div>
