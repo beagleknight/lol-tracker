@@ -1,12 +1,11 @@
 ---
 version: "2026.03.7"
 date: "2026-03-27"
-title: "Corrección de tendencia de LP y selector de fecha/hora en coaching"
+title: "Corrección de tendencia de LP y selector de hora en coaching"
 tags: ["fix"]
 ---
 
-### Correcciones
+Dos correcciones:
 
-- **Indicador de tendencia de LP restaurado en el dashboard**: El indicador de "LP ganados/perdidos recientemente" no aparecía en la tarjeta de rango tras una refactorización reciente. La causa era una incompatibilidad de tipos en una consulta a base de datos — se comparaba un objeto Date contra una columna de timestamp Unix mediante SQL directo. Se reemplazó con el operador `lte()` de Drizzle, que es seguro en tipos.
-
-- **La programación de sesiones de coaching ahora incluye hora**: Antes solo se mostraba un selector de fecha, lo que hacía que las sesiones se almacenasen a medianoche UTC (mostrándose como la 1 AM en CET). El formulario ahora usa un selector completo de fecha y hora (`datetime-local`), y las vistas de coaching muestran la hora programada donde es relevante.
+- **Indicador de tendencia de LP restaurado**: la etiqueta "+X LP recientemente" en la tarjeta de rango del dashboard había desaparecido. Ya está de vuelta.
+- **Las sesiones de coaching ahora incluyen selector de hora**: antes solo se podía elegir una fecha al programar una sesión, así que siempre quedaba a medianoche. Ahora puedes establecer la hora real.

@@ -1,52 +1,52 @@
 ---
 version: "2026.03.16"
 date: "2026-04-01"
-title: "Mejoras UX en el flujo de coaching"
+title: "Mejoras de UX en el flujo de coaching"
 tags: ["improvement"]
 ---
 
-Varias mejoras de calidad de vida en el flujo de coaching — la gestión de sesiones, el seguimiento de acciones y la selección de VOD son ahora más fluidos.
+El flujo de coaching recibió varias mejoras para que programar sesiones, completarlas y gestionar tareas sea más fácil.
 
-### Paginación del Selector de VOD (F3.1)
+### Paginación del selector de VOD
 
-El selector de partidas al programar o editar una sesión ahora muestra 10 partidas a la vez en lugar de volcar las 50 en una lista con scroll. Haz clic en "Mostrar más" para cargar el siguiente bloque.
+Al elegir una partida para tu sesión, ahora ves 10 partidas a la vez en lugar de las 50 en una lista interminable. Pulsa "Mostrar más" para cargar el siguiente bloque.
 
-**Antes** — las 50 partidas en una lista plana:
+<div className="changelog-image-grid">
 
-![Selector de VOD antes](/changelog/coaching-ux/before-new-session-top.png)
+![Selector de VOD mostrando todas las partidas en una lista plana](/changelog/coaching-ux/before-new-session-top.png)
 
-**Después** — 10 a la vez con "Mostrar más":
+![Selector de VOD mostrando 10 partidas con botón Mostrar más](/changelog/coaching-ux/after-vod-annotated.png)
 
-![Selector de VOD con Mostrar más](/changelog/coaching-ux/after-vod-annotated.png)
+</div>
 
-### Botón Completar Sesión en el Hub (F3.2)
+### Completar sesiones desde el hub
 
-Las sesiones programadas que ya pasaron su fecha ahora muestran un botón "Completar" directamente en la tarjeta del hub de coaching. Las sesiones con 2+ días de retraso obtienen un borde rojo para llamar la atención.
+Las sesiones atrasadas ahora muestran un botón "Completar" directamente en la tarjeta del hub de coaching. Las sesiones con 2+ días de retraso tienen un borde rojo para que destaquen.
 
-**Antes** — sin forma de completar desde el hub:
+<div className="changelog-image-grid">
 
-![Hub de coaching antes](/changelog/coaching-ux/before-coaching-hub.png)
+![Hub de coaching sin opción de completar](/changelog/coaching-ux/before-coaching-hub.png)
 
-**Después** — indicador de retraso + botón Completar:
+![Hub de coaching con indicador de retraso y botón Completar](/changelog/coaching-ux/after-hub-annotated.png)
 
-![Hub de coaching con botón Completar](/changelog/coaching-ux/after-hub-annotated.png)
+</div>
 
-### Insignias de Estado con Colores (F3.3)
+### Insignias de tareas con colores
 
-Las insignias de estado de las acciones ahora usan colores semánticos: verde para completado, dorado para en progreso y neutro para pendiente. Esto aplica en el detalle de sesión y en la página de acciones.
+Las insignias de estado de tareas ahora usan colores: verde para completado, dorado para en progreso y neutro para pendiente. Funciona en todos los sitios donde aparecen las tareas.
 
-**Antes** — todas las insignias iguales:
+<div className="changelog-image-grid">
 
-![Acciones antes](/changelog/coaching-ux/before-action-items-page.png)
+![Tareas con insignias idénticas](/changelog/coaching-ux/before-action-items-page.png)
 
-**Después** — codificadas por color según estado:
+![Tareas con insignias de estado por colores](/changelog/coaching-ux/after-action-items-annotated.png)
 
-![Insignias con colores](/changelog/coaching-ux/after-action-items-annotated.png)
+</div>
 
-### Acciones Independientes (F3.4)
+### Tareas independientes
 
-Ahora puedes crear acciones sin vincularlas a una sesión de coaching. Usa el botón "+ Añadir" en la página de acciones para agregar elementos rápidos con una descripción y un tema opcional.
+Ahora puedes crear tareas sin vincularlas a una sesión de coaching. Usa el botón "+ Añadir" en la página de tareas.
 
-### Áreas de Enfoque vs. Temas Tratados (F3.6)
+### Áreas de enfoque vs. temas tratados
 
-Al programar una sesión, las áreas de enfoque ahora se preservan por separado de los temas finales cubiertos tras la completación. Las sesiones completadas muestran tanto "Áreas de Enfoque (planificadas)" como "Temas Tratados (reales)" para que puedas comparar lo que planeabas trabajar con lo que realmente se discutió.
+Al programar una sesión, tus áreas de enfoque planificadas ahora se guardan por separado de los temas que realmente cubriste. Tras completar una sesión, puedes ver ambos lado a lado.

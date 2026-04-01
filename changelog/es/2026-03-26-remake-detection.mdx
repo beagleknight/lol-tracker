@@ -5,9 +5,9 @@ title: "Detección de remakes"
 tags: ["fix"]
 ---
 
-Las partidas que terminaron como **remakes** (rendiciones tempranas antes de 5 minutos) ahora se identifican correctamente y se excluyen de tus estadísticas.
+Las partidas que terminaron como **remakes** (rendiciones tempranas antes de 5 minutos) ahora se detectan correctamente y se excluyen de tus estadísticas.
 
-- **Detección automática** durante la sincronización — los remakes muestran una insignia gris "R" en lugar de victoria/derrota
-- **Excluidos de todas las estadísticas** — win rates, rachas, estadísticas de matchup, estadísticas de duo y progreso de coaching ya no cuentan los remakes
-- **Filtrable** — usa la opción "Remakes" en el filtro de resultado en la página de Partidas
-- **Script de backfill incluido** — ejecuta `npx tsx scripts/backfill-remakes.ts` para corregir retroactivamente las partidas existentes
+- **Detección automática**: los remakes se marcan durante la sincronización y muestran una insignia gris "R" en lugar de victoria/derrota.
+- **Excluidos de todas las estadísticas**: win rates, rachas, analíticas de matchup, estadísticas de duo y progreso de coaching ya no cuentan los remakes.
+- **Filtrable**: usa la opción "Remakes" en el filtro de resultado en la página de partidas para encontrarlos.
+- **Corrección retroactiva**: las partidas existentes se han actualizado para marcar correctamente los remakes antiguos también.
