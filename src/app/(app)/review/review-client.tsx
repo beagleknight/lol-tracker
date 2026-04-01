@@ -989,8 +989,26 @@ export function ReviewClient({
         const nextMatch = vodReviewMatches[idx + 1];
         setExpandedVodId(nextMatch?.id ?? null);
       }
+
+      // Auto-switch tab when current tab becomes empty (#78)
+      // Compute next-state counts (after this match is removed)
+      const nextPostGameCount = postGameMatches.filter((m) => m.id !== matchId).length;
+      const nextVodCount = vodReviewMatches.filter((m) => m.id !== matchId).length;
+
+      if (tabValue === 0 && nextPostGameCount === 0 && nextVodCount > 0) {
+        handleTabChange(1);
+      } else if (tabValue === 1 && nextVodCount === 0 && nextPostGameCount > 0) {
+        handleTabChange(0);
+      }
     },
-    [expandedPostGameId, expandedVodId, postGameMatches, vodReviewMatches],
+    [
+      expandedPostGameId,
+      expandedVodId,
+      postGameMatches,
+      vodReviewMatches,
+      tabValue,
+      handleTabChange,
+    ],
   );
 
   const handleCompletedSaved = useCallback(() => {
