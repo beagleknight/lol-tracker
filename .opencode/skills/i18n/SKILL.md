@@ -49,11 +49,49 @@ Each component file uses a single namespace via `useTranslations("NamespaceName"
 
 ## Conventions
 
+- **Sentence case everywhere** — see section below
 - **Gaming terms stay English** in ALL languages: KDA, CS, Win Rate, LP, champion names, rune names, VOD
 - **Server action errors** return error codes (not messages); codes are translated client-side via `Errors.codes.*`
 - **Rich text format**: Use `<tag>content</tag>` in JSON, NOT `{variable}` for inline components
 - **Variable shadowing**: Never name a `.map()` callback parameter `t` — it shadows the translation function. Use descriptive names like `topic`, `item`, etc.
 - **No `new Date()` in client components** at module level — causes Next.js prerender errors. Use `useEffect` to initialize.
+
+## CRITICAL: Sentence case — MANDATORY
+
+All user-facing text **MUST** use sentence case. Only the first word of a phrase and proper nouns / acronyms are capitalized. **No Title Case anywhere** — not in i18n values, hardcoded TSX strings, or changelog titles.
+
+### What sentence case looks like
+
+| Wrong (Title Case)              | Right (sentence case)           |
+| ------------------------------- | ------------------------------- |
+| "Current Rank"                  | "Current rank"                  |
+| "Session Win Rate"              | "Session win rate"              |
+| "VOD Review Notes"              | "VOD review notes"              |
+| "Back to Matches"               | "Back to matches"               |
+| "Coaching Flow UX Improvements" | "Coaching flow UX improvements" |
+
+### Proper nouns to preserve (always capitalized)
+
+LoL Tracker, Riot, Discord, Ascent, League of Legends, Settings (when referring to the page name in navigation context, e.g. sidebar label)
+
+### Acronyms to preserve (always uppercase)
+
+KDA, CS, LP, CSV, VOD, AI, UI, UX
+
+### Where it applies
+
+1. **`messages/en.json`** — all string values
+2. **`messages/es.json`** — all string values (Spanish follows its own capitalization rules, but avoid unnecessary capitals mid-sentence)
+3. **Hardcoded strings in TSX** — button labels, fallback text, placeholder text
+4. **Changelog titles** — `title:` field in `changelog/en/*.mdx` and `changelog/es/*.mdx` frontmatter
+
+### Checklist for every new string
+
+Before committing any i18n value or hardcoded UI string:
+
+1. Is only the first word capitalized (plus proper nouns/acronyms)? If not, fix it.
+2. Does the Spanish translation also follow sentence case? Check it.
+3. Run `npm run build` — it validates i18n structure but won't catch casing, so review manually.
 
 ## CRITICAL: i18n keys for aria-labels
 
