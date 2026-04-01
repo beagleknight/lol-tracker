@@ -114,7 +114,11 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3">
+    <div
+      data-testid="action-item-row"
+      data-status={item.status}
+      className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
+    >
       <button
         onClick={cycleStatus}
         disabled={isPending}
