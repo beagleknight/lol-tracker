@@ -1,6 +1,14 @@
 "use client";
 
-import { Search, Loader2, AlertCircle, ChevronRight, ChevronLeft, Download } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  AlertCircle,
+  ChevronRight,
+  ChevronLeft,
+  Download,
+  Crosshair,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -237,6 +245,21 @@ export function MatchesClient({
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
             {t.rich("linkRiotAccount", {
+              link: (chunks) => (
+                <Link href="/settings" className="font-medium underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
+        </div>
+      )}
+
+      {isRiotLinked && !user?.primaryRole && (
+        <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
+          <Crosshair className="h-4 w-4 shrink-0" />
+          <span>
+            {t.rich("setRolePreferences", {
               link: (chunks) => (
                 <Link href="/settings" className="font-medium underline">
                   {chunks}
