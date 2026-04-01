@@ -138,15 +138,15 @@ function ParticipantRow({
       <TableCell className="text-center font-mono text-sm">
         {participant.kills}/{participant.deaths}/{participant.assists}
       </TableCell>
-      <TableCell className="text-center text-sm text-muted-foreground">{kda}</TableCell>
-      <TableCell className="text-center text-sm">{cs}</TableCell>
-      <TableCell className="hidden text-center text-sm text-muted-foreground sm:table-cell">
+      <TableCell className="text-center font-mono text-sm text-muted-foreground">{kda}</TableCell>
+      <TableCell className="text-center font-mono text-sm">{cs}</TableCell>
+      <TableCell className="hidden text-center font-mono text-sm text-muted-foreground sm:table-cell">
         {participant.visionScore}
       </TableCell>
-      <TableCell className="hidden text-center text-sm sm:table-cell">
+      <TableCell className="hidden text-center font-mono text-sm sm:table-cell">
         {(participant.goldEarned / 1000).toFixed(1)}k
       </TableCell>
-      <TableCell className="hidden text-center text-sm text-muted-foreground sm:table-cell">
+      <TableCell className="hidden text-center font-mono text-sm text-muted-foreground sm:table-cell">
         {(participant.totalDamageDealtToChampions / 1000).toFixed(1)}k
       </TableCell>
       <TableCell>
@@ -346,7 +346,7 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold text-gold">{match.cs}</p>
+            <p className="font-mono text-2xl font-bold text-gold">{match.cs}</p>
             <p className="text-xs text-muted-foreground">
               {t("csWithPerMin", { csPerMin: match.csPerMin ?? 0 })}
             </p>
@@ -354,7 +354,7 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold text-gold">
+            <p className="font-mono text-2xl font-bold text-gold">
               {((match.goldEarned || 0) / 1000).toFixed(1)}k
             </p>
             <p className="text-xs text-muted-foreground">{t("gold")}</p>
@@ -362,13 +362,15 @@ export function MatchDetailClient({
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold text-gold">{match.visionScore}</p>
+            <p className="font-mono text-2xl font-bold text-gold">{match.visionScore}</p>
             <p className="text-xs text-muted-foreground">{t("vision")}</p>
           </CardContent>
         </Card>
         <Card className="hover-lift surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
-            <p className="text-2xl font-bold">{formatDuration(match.gameDurationSeconds)}</p>
+            <p className="font-mono text-2xl font-bold">
+              {formatDuration(match.gameDurationSeconds)}
+            </p>
             <p className="text-xs text-muted-foreground">{t("duration")}</p>
           </CardContent>
         </Card>

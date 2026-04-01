@@ -12,6 +12,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 
 import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
@@ -24,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress, getRankMilestones } from "@/lib/rank";
+import { getRankEmblemUrl } from "@/lib/rank-utils";
 
 interface DashboardMatch {
   id: string;
@@ -110,6 +112,7 @@ function getRankDisplay(rank: RankSnapshot | null) {
   if (!rank || !rank.tier) return null;
   const tier = rank.tier.charAt(0) + rank.tier.slice(1).toLowerCase();
   return {
+    rawTier: rank.tier,
     tier,
     division: rank.division || "",
     lp: rank.lp || 0,
@@ -186,7 +189,7 @@ export function DashboardClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="animate-in-up flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
           {user.riotGameName && (
@@ -213,37 +216,51 @@ export function DashboardClient({
       )}
 
       {/* Rank + Streak Row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="animate-in-up-delay-1 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Rank Card */}
-        <Card className="surface-glow">
+        <Card className="surface-glow overflow-hidden border-gold/30">
           <CardHeader className="pb-2">
             <CardDescription>{t("currentRank")}</CardDescription>
           </CardHeader>
           <CardContent>
             {rankInfo ? (
-              <div>
-                <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
-                <p className="text-sm text-muted-foreground">
-                  <span className="text-gold/80">{t("lpLabel", { lp: rankInfo.lp })}</span> &middot;{" "}
-                  {rankInfo.wins}W {rankInfo.losses}L
-                </p>
-                {lpTrend !== null && (
-                  <p
-                    className={`mt-1 flex items-center gap-1 font-mono text-xs font-semibold ${
-                      lpTrend >= 0 ? "text-win" : "text-loss"
-                    }`}
-                  >
-                    {lpTrend >= 0 ? (
-                      <TrendingUp className="h-3 w-3" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3" />
-                    )}
-                    {lpTrend >= 0 ? "+" : ""}
-                    {lpTrendDays !== null
-                      ? t("lpTrendInDays", { lpChange: lpTrend, days: lpTrendDays })
-                      : t("lpTrendRecently", { lpChange: lpTrend })}
+              <div className="flex items-center gap-3">
+                <Image
+                  src={getRankEmblemUrl(rankInfo.rawTier)}
+                  alt={rankInfo.display}
+                  width={48}
+                  height={48}
+                  className="shrink-0 drop-shadow-md"
+                />
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-mono text-gold/80">
+                      {t("lpLabel", { lp: rankInfo.lp })}
+                    </span>{" "}
+                    &middot;{" "}
+                    <span className="font-mono">
+                      {rankInfo.wins}W {rankInfo.losses}L
+                    </span>
                   </p>
-                )}
+                  {lpTrend !== null && (
+                    <p
+                      className={`mt-1 flex items-center gap-1 font-mono text-xs font-semibold ${
+                        lpTrend >= 0 ? "text-win" : "text-loss"
+                      }`}
+                    >
+                      {lpTrend >= 0 ? (
+                        <TrendingUp className="h-3 w-3" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3" />
+                      )}
+                      {lpTrend >= 0 ? "+" : ""}
+                      {lpTrendDays !== null
+                        ? t("lpTrendInDays", { lpChange: lpTrend, days: lpTrendDays })
+                        : t("lpTrendRecently", { lpChange: lpTrend })}
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">{t("noRankData")}</p>
@@ -258,14 +275,14 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold">{sessionWinRate}%</p>
+              <p className="font-mono text-2xl font-bold">{sessionWinRate}%</p>
               {sessionWinRate >= 50 ? (
                 <TrendingUp className="h-4 w-4 text-win" />
               ) : recentMatches.length > 0 ? (
                 <TrendingDown className="h-4 w-4 text-loss" />
               ) : null}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-sm text-muted-foreground">
               {sessionWins}W {sessionLosses}L
             </p>
             {recentMatches.length > 0 && (
@@ -291,7 +308,7 @@ export function DashboardClient({
                 ) : (
                   <Snowflake className="h-5 w-5 text-streak-cold" />
                 )}
-                <p className="text-2xl font-bold">
+                <p className="font-mono text-2xl font-bold">
                   {streak.count}
                   {streak.type}
                 </p>
@@ -311,13 +328,13 @@ export function DashboardClient({
             <p className="font-mono text-2xl font-bold text-gold">
               {avgKills}/{avgDeaths}/{avgAssists}
             </p>
-            <p className="text-sm text-muted-foreground">{t("avgCs", { avgCS })}</p>
+            <p className="font-mono text-sm text-muted-foreground">{t("avgCs", { avgCS })}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Recent Games + Action Items */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="animate-in-up-delay-2 grid gap-6 lg:grid-cols-3">
         {/* Recent Games */}
         <Card className="surface-glow lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -473,7 +490,7 @@ export function DashboardClient({
                     </Link>
                   </CardHeader>
                   <CardContent>
-                    <p className={`text-lg font-bold ${cadenceColors[coachingCadence]}`}>
+                    <p className={`font-mono text-lg font-bold ${cadenceColors[coachingCadence]}`}>
                       {daysSinceLastCoaching === 0
                         ? t("today")
                         : t("daysAgo", { days: daysSinceLastCoaching })}

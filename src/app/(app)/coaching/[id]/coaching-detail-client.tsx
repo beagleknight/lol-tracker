@@ -502,25 +502,25 @@ export function CoachingDetailClient({
               {/* Summary stats */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
-                  <p className="text-lg font-bold text-gold">{progressStats.winRate}%</p>
+                  <p className="font-mono text-lg font-bold text-gold">{progressStats.winRate}%</p>
                   <p className="text-xs text-muted-foreground">{t("winRate")}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-mono text-xs text-muted-foreground">
                     {progressStats.wins}W {progressStats.total - progressStats.wins}L
                   </p>
                 </div>
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
-                  <p className="text-lg font-bold text-gold">{progressStats.avgKDA}</p>
+                  <p className="font-mono text-lg font-bold text-gold">{progressStats.avgKDA}</p>
                   <p className="text-xs text-muted-foreground">{t("avgKda")}</p>
                 </div>
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     {progressStats.relevantHighlights > 0 && (
-                      <span className="text-sm font-bold text-win">
+                      <span className="font-mono text-sm font-bold text-win">
                         {progressStats.relevantHighlights}
                       </span>
                     )}
                     {progressStats.relevantLowlights > 0 && (
-                      <span className="text-sm font-bold text-loss">
+                      <span className="font-mono text-sm font-bold text-loss">
                         {progressStats.relevantLowlights}
                       </span>
                     )}
