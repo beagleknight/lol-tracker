@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   serverExternalPackages: ["@libsql/client"],
   images: {
+    minimumCacheTTL: 2592000, // 30 days — DDragon assets are versioned and never change
     remotePatterns: [
       {
         protocol: "https",

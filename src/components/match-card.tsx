@@ -70,6 +70,7 @@ function ChampionIcon({
       alt={championName}
       width={size}
       height={size}
+      unoptimized={size <= 32}
       className="rounded"
     />
   );
@@ -171,6 +172,7 @@ export function MatchCard({
                         alt={match.matchupChampionName}
                         width={isCompact ? 16 : 20}
                         height={isCompact ? 16 : 20}
+                        unoptimized
                         className="rounded"
                       />
                       {match.matchupChampionName}
@@ -215,7 +217,14 @@ export function MatchCard({
                   (() => {
                     const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
                     return iconUrl ? (
-                      <Image src={iconUrl} alt="" width={12} height={12} className="rounded-sm" />
+                      <Image
+                        src={iconUrl}
+                        alt=""
+                        width={12}
+                        height={12}
+                        unoptimized
+                        className="rounded-sm"
+                      />
                     ) : null;
                   })()}
                 <span>
