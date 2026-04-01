@@ -36,6 +36,7 @@ import {
   type HighlightItem,
 } from "@/components/highlights-editor";
 import { Pagination, paginate } from "@/components/pagination";
+import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import {
   AlertDialog,
@@ -134,9 +135,28 @@ function MatchCardHeaderInfo({
   locale: string;
 }) {
   const t = useTranslations("Review");
+  const { user } = useAuth();
+  const roleRelevance = getRoleRelevance(match.position, user?.primaryRole, user?.secondaryRole);
+  const positionIconColor =
+    roleRelevance === "main"
+      ? "text-gold"
+      : roleRelevance === "secondary"
+        ? "text-muted-foreground"
+        : roleRelevance === "off-role"
+          ? "text-warning"
+          : "text-muted-foreground";
+
   return (
     <div className="flex items-center gap-3">
       <ResultBar result={match.result} size="lg" />
+      {match.position && (
+        <PositionIcon
+          position={match.position}
+          size={16}
+          className={`shrink-0 ${positionIconColor}`}
+          aria-label={getPositionLabel(match.position)}
+        />
+      )}
       <Image
         src={getChampionIconUrl(ddragonVersion, match.championName)}
         alt={match.championName}

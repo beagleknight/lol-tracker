@@ -161,6 +161,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.role = dbUser.role;
           session.user.locale = dbUser.locale;
           session.user.language = dbUser.language;
+          session.user.primaryRole = dbUser.primaryRole;
+          session.user.secondaryRole = dbUser.secondaryRole;
         }
       }
       return session;

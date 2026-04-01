@@ -16,6 +16,7 @@ import Link from "next/link";
 import type { MatchResult } from "@/lib/match-result";
 
 import { ChampionLink } from "@/components/champion-link";
+import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
@@ -51,6 +52,7 @@ export interface MatchCardData {
   reviewNotes: string | null;
   reviewSkippedReason?: string | null;
   duoPartnerPuuid: string | null;
+  position?: string | null;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -85,6 +87,8 @@ export function MatchCard({
   locale = DEFAULT_LOCALE,
   variant = "default",
   showScoutLink = false,
+  userPrimaryRole,
+  userSecondaryRole,
 }: {
   match: MatchCardData;
   ddragonVersion: string;
@@ -92,11 +96,15 @@ export function MatchCard({
   locale?: string;
   variant?: "default" | "compact";
   showScoutLink?: boolean;
+  userPrimaryRole?: string | null;
+  userSecondaryRole?: string | null;
 }) {
   const t = useTranslations("MatchCard");
   const isCompact = variant === "compact";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
+  const roleRelevance = getRoleRelevance(match.position, userPrimaryRole, userSecondaryRole);
+  const isOffRole = roleRelevance === "off-role";
   const kda =
     match.deaths === 0
       ? t("perfectKda")
@@ -128,15 +136,52 @@ export function MatchCard({
         : t("reviewed")
     : t("notReviewed");
 
+  // Position icon color based on role relevance
+  const positionIconColor =
+    roleRelevance === "main"
+      ? "text-gold"
+      : roleRelevance === "secondary"
+        ? "text-muted-foreground"
+        : roleRelevance === "off-role"
+          ? "text-warning"
+          : "text-muted-foreground";
+
+  const positionTooltipText = match.position
+    ? roleRelevance === "main"
+      ? t("positionMain", { position: getPositionLabel(match.position) })
+      : roleRelevance === "secondary"
+        ? t("positionSecondary", { position: getPositionLabel(match.position) })
+        : roleRelevance === "off-role"
+          ? t("positionOffRole", { position: getPositionLabel(match.position) })
+          : getPositionLabel(match.position)
+    : null;
+
   return (
     <TooltipProvider>
       <Link
         href={`/matches/${match.id}`}
-        className={`hover-lift block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}
+        className={`hover-lift block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${resultBgTint(match.result)}${isOffRole ? " opacity-60" : ""}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>
           {/* Result bar */}
           <ResultBar result={match.result} size={isCompact ? "sm" : "md"} />
+
+          {/* Position icon */}
+          {match.position && (
+            <Tooltip>
+              <TooltipTrigger
+                className="cursor-default"
+                aria-label={positionTooltipText ?? undefined}
+              >
+                <PositionIcon
+                  position={match.position}
+                  size={isCompact ? 14 : 16}
+                  className={`shrink-0 ${positionIconColor}`}
+                />
+              </TooltipTrigger>
+              <TooltipContent>{positionTooltipText}</TooltipContent>
+            </Tooltip>
+          )}
 
           {/* Champion */}
           <ChampionIcon

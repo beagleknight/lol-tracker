@@ -348,6 +348,8 @@ export function MatchesClient({
                   ddragonVersion={ddragonVersion}
                   matchHighlights={highlightsPerMatch[match.id] || []}
                   locale={locale}
+                  userPrimaryRole={user?.primaryRole}
+                  userSecondaryRole={user?.secondaryRole}
                 />
               ))}
             </div>

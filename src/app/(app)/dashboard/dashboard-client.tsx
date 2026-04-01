@@ -51,6 +51,7 @@ interface DashboardMatch {
   comment: string | null;
   duoPartnerPuuid: string | null;
   queueId: number | null;
+  position: string | null;
 }
 
 interface MatchStats {
@@ -369,6 +370,8 @@ export function DashboardClient({
                     matchHighlights={highlightsPerMatch[match.id] || []}
                     variant="compact"
                     showScoutLink
+                    userPrimaryRole={authUser?.primaryRole}
+                    userSecondaryRole={authUser?.secondaryRole}
                   />
                 ))}
               </div>
