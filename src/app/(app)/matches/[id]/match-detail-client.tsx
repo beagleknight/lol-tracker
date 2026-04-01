@@ -336,7 +336,7 @@ export function MatchDetailClient({
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="font-mono text-2xl font-bold text-gold">
               {match.kills}/{match.deaths}/{match.assists}
@@ -344,7 +344,7 @@ export function MatchDetailClient({
             <p className="text-xs text-muted-foreground">{t("kda")}</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="font-mono text-2xl font-bold text-gold">{match.cs}</p>
             <p className="text-xs text-muted-foreground">
@@ -352,7 +352,7 @@ export function MatchDetailClient({
             </p>
           </CardContent>
         </Card>
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="font-mono text-2xl font-bold text-gold">
               {((match.goldEarned || 0) / 1000).toFixed(1)}k
@@ -360,13 +360,13 @@ export function MatchDetailClient({
             <p className="text-xs text-muted-foreground">{t("gold")}</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="font-mono text-2xl font-bold text-gold">{match.visionScore}</p>
             <p className="text-xs text-muted-foreground">{t("vision")}</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="font-mono text-2xl font-bold">
               {formatDuration(match.gameDurationSeconds)}
@@ -374,7 +374,7 @@ export function MatchDetailClient({
             <p className="text-xs text-muted-foreground">{t("duration")}</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift surface-glow">
+        <Card className="surface-glow">
           <CardContent className="pt-4 pb-3 text-center">
             <p className="flex items-center justify-center gap-2 text-2xl font-bold">
               {match.runeKeystoneName ? (

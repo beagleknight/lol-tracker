@@ -395,6 +395,16 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Tailwind v4 no longer adds cursor: pointer to buttons.
+     Restore it for all interactive elements so clickable things
+     always show the hand cursor. */
+  button,
+  [role="button"],
+  select,
+  summary {
+    cursor: pointer;
+  }
+
   /* Focus-visible for native interactive elements not using UI components */
   button:not([data-slot="button"]):focus-visible,
   select:focus-visible {

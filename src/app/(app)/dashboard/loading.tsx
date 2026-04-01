@@ -16,7 +16,7 @@ export default function DashboardLoading() {
       {/* 4 stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="hover-lift surface-glow">
+          <Card key={i} className="surface-glow">
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-24" />
             </CardHeader>
