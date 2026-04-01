@@ -55,6 +55,13 @@ export function resultBorderColor(result: string): string {
   return "border-l-loss/60";
 }
 
+/** Subtle background tint for match cards — conveys result at a glance. */
+export function resultBgTint(result: string): string {
+  if (isWin(result)) return "bg-win/[0.04]";
+  if (isRemake(result)) return "";
+  return "bg-loss/[0.04]";
+}
+
 // ─── Stats ───────────────────────────────────────────────────────────────────
 
 /** Compute win rate as an integer percentage (0–100). Returns 0 if no games. */

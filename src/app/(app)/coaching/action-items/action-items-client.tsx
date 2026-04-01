@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { updateActionItemStatus, deleteActionItem, createActionItem } from "@/app/actions/coaching";
+import { EmptyState } from "@/components/empty-state";
 import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -288,15 +289,13 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
 
       {/* Items */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 py-16 text-center">
-          <ListChecks className="mb-3 h-8 w-8 text-gold" />
-          <p className="text-lg font-medium">
-            {items.length === 0 ? t("emptyStateTitle") : t("noFilterMatch")}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {items.length === 0 ? t("emptyStateDescription") : t("noFilterMatchDescription")}
-          </p>
-        </div>
+        <EmptyState
+          icon={ListChecks}
+          title={items.length === 0 ? t("emptyStateTitle") : t("noFilterMatch")}
+          description={
+            items.length === 0 ? t("emptyStateDescription") : t("noFilterMatchDescription")
+          }
+        />
       ) : (
         <>
           <div className="space-y-2">

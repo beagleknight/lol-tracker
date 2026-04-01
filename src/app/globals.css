@@ -20,6 +20,15 @@
       height: 0;
     }
   }
+
+  @keyframes fade-in-up {
+    from {
+      transform: translateY(8px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
 }
 
 @custom-variant data-open {
@@ -161,6 +170,18 @@
   --color-chart-promotion: var(--chart-promotion);
   --color-chart-demotion: var(--chart-demotion);
 
+  /* Rank tier colors */
+  --color-rank-iron: var(--rank-iron);
+  --color-rank-bronze: var(--rank-bronze);
+  --color-rank-silver: var(--rank-silver);
+  --color-rank-gold: var(--rank-gold);
+  --color-rank-platinum: var(--rank-platinum);
+  --color-rank-emerald: var(--rank-emerald);
+  --color-rank-diamond: var(--rank-diamond);
+  --color-rank-master: var(--rank-master);
+  --color-rank-grandmaster: var(--rank-grandmaster);
+  --color-rank-challenger: var(--rank-challenger);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -239,6 +260,18 @@
   --chart-reference: oklch(0.78 0.01 260);
   --chart-promotion: oklch(0.5 0.16 150);
   --chart-demotion: oklch(0.55 0.22 27);
+
+  /* Rank tier colors — light mode (darker for WCAG AA on light bg) */
+  --rank-iron: oklch(0.42 0.04 50);
+  --rank-bronze: oklch(0.45 0.1 55);
+  --rank-silver: oklch(0.52 0.03 250);
+  --rank-gold: oklch(0.55 0.15 80);
+  --rank-platinum: oklch(0.48 0.12 175);
+  --rank-emerald: oklch(0.48 0.16 155);
+  --rank-diamond: oklch(0.48 0.18 270);
+  --rank-master: oklch(0.45 0.2 300);
+  --rank-grandmaster: oklch(0.48 0.22 27);
+  --rank-challenger: oklch(0.55 0.16 90);
 }
 
 /* ===== DARK MODE (primary) ===== */
@@ -325,6 +358,18 @@
   --chart-reference: oklch(0.35 0.02 260);
   --chart-promotion: oklch(0.72 0.15 150);
   --chart-demotion: oklch(0.65 0.22 27);
+
+  /* Rank tier colors */
+  --rank-iron: oklch(0.52 0.04 50);
+  --rank-bronze: oklch(0.55 0.1 55);
+  --rank-silver: oklch(0.68 0.03 250);
+  --rank-gold: oklch(0.78 0.14 80);
+  --rank-platinum: oklch(0.65 0.12 175);
+  --rank-emerald: oklch(0.62 0.16 155);
+  --rank-diamond: oklch(0.6 0.18 270);
+  --rank-master: oklch(0.58 0.2 300);
+  --rank-grandmaster: oklch(0.62 0.22 27);
+  --rank-challenger: oklch(0.82 0.16 90);
 }
 
 @layer base {
@@ -348,6 +393,16 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tailwind v4 no longer adds cursor: pointer to buttons.
+     Restore it for all interactive elements so clickable things
+     always show the hand cursor. */
+  button,
+  [role="button"],
+  select,
+  summary {
+    cursor: pointer;
   }
 
   /* Focus-visible for native interactive elements not using UI components */
@@ -451,6 +506,28 @@
   }
   .hover-lift:hover {
     transform: translateY(-2px);
+    box-shadow:
+      0 4px 12px oklch(0 0 0 / 0.1),
+      0 8px 24px oklch(0 0 0 / 0.06);
+  }
+  :is(.dark) .hover-lift:hover {
+    box-shadow:
+      0 4px 12px oklch(0 0 0 / 0.4),
+      0 8px 24px oklch(0 0 0 / 0.25);
+  }
+
+  /* Entrance animation for page sections */
+  .animate-in-up {
+    animation: fade-in-up 0.35s ease-out both;
+  }
+  .animate-in-up-delay-1 {
+    animation: fade-in-up 0.35s ease-out 0.06s both;
+  }
+  .animate-in-up-delay-2 {
+    animation: fade-in-up 0.35s ease-out 0.12s both;
+  }
+  .animate-in-up-delay-3 {
+    animation: fade-in-up 0.35s ease-out 0.18s both;
   }
 
   /* Changelog MDX prose — lightweight typography for rendered markdown */
