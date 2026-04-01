@@ -163,84 +163,119 @@ export function CoachingHubClient({
               const dateStr = formatDate(session.date, locale, "datetime-short");
               const vodMatch = session.vodMatchId ? vodMatchMap[session.vodMatchId] : null;
               const topics: string[] = session.topics ? JSON.parse(session.topics) : [];
+              const now = new Date();
+              const isPastDue = session.date < now;
+              const daysPastDue = isPastDue
+                ? Math.floor((now.getTime() - session.date.getTime()) / (1000 * 60 * 60 * 24))
+                : 0;
+              const isOverdue = daysPastDue >= 2;
 
               return (
-                <Link key={session.id} href={`/coaching/${session.id}`}>
-                  <Card className="hover-lift cursor-pointer border-gold/20 bg-gold/5 transition-colors hover:bg-gold/10">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <GraduationCap className="h-5 w-5 shrink-0 text-gold" />
-                          <div>
-                            <CardTitle className="text-base">{session.coachName}</CardTitle>
-                            <CardDescription>{dateStr}</CardDescription>
+                <div key={session.id} className="space-y-1">
+                  <Link href={`/coaching/${session.id}`}>
+                    <Card
+                      className={`hover-lift cursor-pointer transition-colors ${
+                        isOverdue
+                          ? "border-loss/30 bg-loss/5 hover:bg-loss/10"
+                          : "border-gold/20 bg-gold/5 hover:bg-gold/10"
+                      }`}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <GraduationCap className="h-5 w-5 shrink-0 text-gold" />
+                            <div>
+                              <CardTitle className="text-base">{session.coachName}</CardTitle>
+                              <CardDescription>{dateStr}</CardDescription>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!session.vodMatchId && (
-                            <Badge
-                              variant="outline"
-                              className="border-warning/40 px-1.5 py-0 text-[10px] text-warning"
-                            >
-                              <AlertTriangle className="mr-0.5 h-2.5 w-2.5" />
-                              {t("badgeNoVod")}
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className="text-xs">
-                            {t("badgeScheduled")}
-                          </Badge>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex items-center gap-3">
-                        {vodMatch && (
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Image
-                              src={getChampionIconUrl(ddragonVersion, vodMatch.championName)}
-                              alt={vodMatch.championName}
-                              width={16}
-                              height={16}
-                              className="rounded"
-                            />
-                            {vodMatch.championName}
-                            {vodMatch.matchupChampionName && (
-                              <>
-                                {" "}
-                                {t("vs")}{" "}
-                                <Image
-                                  src={getChampionIconUrl(
-                                    ddragonVersion,
-                                    vodMatch.matchupChampionName,
-                                  )}
-                                  alt={vodMatch.matchupChampionName}
-                                  width={16}
-                                  height={16}
-                                  className="rounded"
-                                />
-                                {vodMatch.matchupChampionName}
-                              </>
-                            )}
-                          </div>
-                        )}
-                        {topics.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {topics.map((topic) => (
+                          <div className="flex items-center gap-2">
+                            {!session.vodMatchId && (
                               <Badge
-                                key={topic}
                                 variant="outline"
-                                className="px-1.5 py-0 text-[10px]"
+                                className="border-warning/40 px-1.5 py-0 text-[10px] text-warning"
                               >
-                                {topic}
+                                <AlertTriangle className="mr-0.5 h-2.5 w-2.5" />
+                                {t("badgeNoVod")}
                               </Badge>
-                            ))}
+                            )}
+                            <Badge variant="secondary" className="text-xs">
+                              {t("badgeScheduled")}
+                            </Badge>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center gap-3">
+                          {vodMatch && (
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Image
+                                src={getChampionIconUrl(ddragonVersion, vodMatch.championName)}
+                                alt={vodMatch.championName}
+                                width={16}
+                                height={16}
+                                className="rounded"
+                              />
+                              {vodMatch.championName}
+                              {vodMatch.matchupChampionName && (
+                                <>
+                                  {" "}
+                                  {t("vs")}{" "}
+                                  <Image
+                                    src={getChampionIconUrl(
+                                      ddragonVersion,
+                                      vodMatch.matchupChampionName,
+                                    )}
+                                    alt={vodMatch.matchupChampionName}
+                                    width={16}
+                                    height={16}
+                                    className="rounded"
+                                  />
+                                  {vodMatch.matchupChampionName}
+                                </>
+                              )}
+                            </div>
+                          )}
+                          {topics.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {topics.map((topic) => (
+                                <Badge
+                                  key={topic}
+                                  variant="outline"
+                                  className="px-1.5 py-0 text-[10px]"
+                                >
+                                  {topic}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                  {isPastDue && (
+                    <div className="flex items-center justify-end gap-2 px-1">
+                      <span
+                        className={`text-xs ${isOverdue ? "text-loss" : "text-muted-foreground"}`}
+                      >
+                        {isOverdue
+                          ? t("overdueSession", { days: daysPastDue })
+                          : t("readyToComplete")}
+                      </span>
+                      <Link href={`/coaching/${session.id}/complete`}>
+                        <Button
+                          size="sm"
+                          variant={isOverdue ? "destructive" : "default"}
+                          className="h-7 text-xs"
+                        >
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          {t("completeNow")}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

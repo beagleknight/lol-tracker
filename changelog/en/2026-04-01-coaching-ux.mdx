@@ -1,0 +1,52 @@
+---
+version: "2026.03.16"
+date: "2026-04-01"
+title: "Coaching Flow UX Improvements"
+tags: ["improvement"]
+---
+
+Several quality-of-life improvements to the coaching workflow — session management, action item tracking, and VOD selection are all smoother now.
+
+### VOD Selector Pagination (F3.1)
+
+The match selector when scheduling or editing a session now shows 10 matches at a time instead of dumping all 50 into a scrollable list. Click "Show more" to load the next batch.
+
+**Before** — all 50 matches in a flat scroll:
+
+![VOD selector before](/changelog/coaching-ux/before-new-session-top.png)
+
+**After** — 10 at a time with "Show more":
+
+![VOD selector with Show more](/changelog/coaching-ux/after-vod-annotated.png)
+
+### Complete Session CTA on Hub (F3.2)
+
+Scheduled sessions that are past their date now show a "Complete" button directly on the coaching hub card. Sessions 2+ days overdue get a red-tinted border to draw attention.
+
+**Before** — no way to complete from the hub:
+
+![Coaching hub before](/changelog/coaching-ux/before-coaching-hub.png)
+
+**After** — overdue indicator + Complete button:
+
+![Coaching hub with Complete CTA](/changelog/coaching-ux/after-hub-annotated.png)
+
+### Color-Coded Action Item Badges (F3.3)
+
+Action item status badges now use semantic colors: green for completed, gold for in progress, and neutral for pending. This applies across the session detail and action items pages.
+
+**Before** — all badges look the same:
+
+![Action items before](/changelog/coaching-ux/before-action-items-page.png)
+
+**After** — color-coded by status:
+
+![Color-coded badges](/changelog/coaching-ux/after-action-items-annotated.png)
+
+### Standalone Action Items (F3.4)
+
+You can now create action items without tying them to a coaching session. Use the "+ Add" button on the action items page to add quick items with a description and optional topic.
+
+### Focus Areas vs. Topics Covered (F3.6)
+
+When scheduling a session, focus areas are now preserved separately from the final topics covered after completion. Completed sessions show both "Focus Areas (planned)" and "Topics Covered (actual)" so you can compare what you intended to work on versus what actually got discussed.

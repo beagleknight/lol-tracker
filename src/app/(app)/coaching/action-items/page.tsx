@@ -22,7 +22,7 @@ export default async function ActionItemsPage() {
       sessionDate: coachingSessions.date,
     })
     .from(coachingActionItems)
-    .innerJoin(coachingSessions, eq(coachingActionItems.sessionId, coachingSessions.id))
+    .leftJoin(coachingSessions, eq(coachingActionItems.sessionId, coachingSessions.id))
     .where(eq(coachingActionItems.userId, user.id))
     .orderBy(coachingActionItems.createdAt);
 

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 
 import { scheduleCoachingSession } from "@/app/actions/coaching";
@@ -68,6 +68,11 @@ export function ScheduleSessionClient({
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
   const [customTopic, setCustomTopic] = useState("");
   const [showCoachSuggestions, setShowCoachSuggestions] = useState(false);
+  const MATCHES_PAGE_SIZE = 10;
+  const [matchesVisible, setMatchesVisible] = useState(MATCHES_PAGE_SIZE);
+  const showMoreMatches = useCallback(() => {
+    setMatchesVisible((prev) => prev + MATCHES_PAGE_SIZE);
+  }, []);
 
   // Filter coach suggestions based on input
   const filteredCoaches = useMemo(() => {
@@ -208,8 +213,8 @@ export function ScheduleSessionClient({
           {recentMatches.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("noMatchesFound")}</p>
           ) : (
-            <div className="max-h-60 space-y-1 overflow-y-auto">
-              {recentMatches.map((match) => {
+            <div className="max-h-80 space-y-1 overflow-y-auto">
+              {recentMatches.slice(0, matchesVisible).map((match) => {
                 const isSelected = selectedMatchId === match.id;
                 const dateStr = formatDate(match.gameDate, locale, "short-compact");
                 const matchHL = highlightsByMatch[match.id];
@@ -275,6 +280,17 @@ export function ScheduleSessionClient({
                   </button>
                 );
               })}
+              {matchesVisible < recentMatches.length && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-muted-foreground"
+                  onClick={showMoreMatches}
+                >
+                  {t("showMoreMatches", { remaining: recentMatches.length - matchesVisible })}
+                </Button>
+              )}
             </div>
           )}
 

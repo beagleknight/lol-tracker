@@ -18,6 +18,8 @@ export async function scheduleCoachingSession(data: {
 }) {
   const user = await requireUser();
 
+  const focusAreasJson = data.focusAreas?.length ? JSON.stringify(data.focusAreas) : null;
+
   const session = await db
     .insert(coachingSessions)
     .values({
@@ -26,7 +28,8 @@ export async function scheduleCoachingSession(data: {
       date: new Date(data.date),
       status: "scheduled",
       vodMatchId: data.vodMatchId ?? null,
-      topics: data.focusAreas?.length ? JSON.stringify(data.focusAreas) : null,
+      topics: focusAreasJson, // Pre-fill topics with focus areas (will be overwritten on completion)
+      focusAreas: focusAreasJson, // Preserved separately — never overwritten
     })
     .returning({ id: coachingSessions.id });
 
@@ -230,6 +233,29 @@ export async function deleteActionItem(itemId: number) {
 
   // Use "layout" type to revalidate the entire /coaching tree,
   // including /coaching/[id] detail pages that display action items.
+  revalidatePath("/coaching", "layout");
+  revalidatePath("/dashboard");
+  invalidateCoachingCaches(user.id);
+
+  return { success: true };
+}
+
+// ─── Create standalone action item (not tied to a session) ───────────────────
+
+export async function createActionItem(data: { description: string; topic?: string }) {
+  const user = await requireUser();
+
+  if (!data.description.trim()) {
+    return { error: "Description is required." };
+  }
+
+  await db.insert(coachingActionItems).values({
+    userId: user.id,
+    sessionId: null,
+    description: data.description.trim(),
+    topic: data.topic?.trim() || null,
+  });
+
   revalidatePath("/coaching", "layout");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);

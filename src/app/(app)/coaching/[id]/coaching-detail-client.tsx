@@ -145,7 +145,13 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
               ? "secondary"
               : "outline"
         }
-        className="shrink-0 text-xs"
+        className={`shrink-0 text-xs ${
+          item.status === "completed"
+            ? "border-win/30 bg-win/15 text-win"
+            : item.status === "in_progress"
+              ? "border-status-progress/30 bg-status-progress/15 text-status-progress"
+              : ""
+        }`}
       >
         {item.status.replace("_", " ")}
       </Badge>
@@ -169,6 +175,7 @@ export function CoachingDetailClient({
   const [isDeleting, startDelete] = useTransition();
 
   const topics: string[] = session.topics ? JSON.parse(session.topics) : [];
+  const focusAreas: string[] = session.focusAreas ? JSON.parse(session.focusAreas) : [];
 
   const isScheduled = session.status === "scheduled";
 
@@ -299,19 +306,42 @@ export function CoachingDetailClient({
         </Card>
       )}
 
-      {/* Topics */}
+      {/* Focus Areas (planned) — for completed sessions that have separate focusAreas */}
+      {!isScheduled && focusAreas.length > 0 && (
+        <div className="space-y-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            {t("focusAreasPlanned")}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {focusAreas.map((area) => (
+              <Badge key={area} variant="outline" className="border-gold/30 text-gold">
+                {area}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Topics Covered (actual) — or Focus Areas for scheduled sessions */}
       {topics.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {topics.map((topic) => (
-            <Badge key={topic} variant="secondary">
-              {topic}
-            </Badge>
-          ))}
-          {isScheduled && (
-            <span className="ml-1 self-center text-xs text-muted-foreground">
-              {t("focusAreasLabel")}
+        <div className="space-y-1">
+          {!isScheduled && focusAreas.length > 0 && (
+            <span className="text-xs font-medium text-muted-foreground">
+              {t("topicsCoveredActual")}
             </span>
           )}
+          <div className="flex flex-wrap gap-2">
+            {topics.map((topic) => (
+              <Badge key={topic} variant="secondary">
+                {topic}
+              </Badge>
+            ))}
+            {isScheduled && (
+              <span className="ml-1 self-center text-xs text-muted-foreground">
+                {t("focusAreasLabel")}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
