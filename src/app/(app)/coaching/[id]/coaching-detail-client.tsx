@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
@@ -90,22 +90,35 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   const t = useTranslations("CoachingDetail");
   const [isPending, startTransition] = useTransition();
 
+  // Optimistic status so the UI updates immediately on click (#74)
+  const [optimisticStatus, setOptimisticStatus] = useState(item.status);
+  // Sync with server-provided status when it changes (e.g. after revalidation)
+  useEffect(() => {
+    setOptimisticStatus(item.status);
+  }, [item.status]);
+
+  const nextStatusMap: Record<string, "pending" | "in_progress" | "completed"> = {
+    pending: "in_progress",
+    in_progress: "completed",
+    completed: "pending",
+  };
+
   function cycleStatus() {
-    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> = {
-      pending: "in_progress",
-      in_progress: "completed",
-      completed: "pending",
-    };
-    const next = nextStatus[item.status];
+    const next = nextStatusMap[optimisticStatus];
+    setOptimisticStatus(next);
     startTransition(async () => {
       try {
         await updateActionItemStatus(item.id, next);
         toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
       } catch {
+        // Revert on failure
+        setOptimisticStatus(item.status);
         toast.error(t("toasts.statusUpdateError"));
       }
     });
   }
+
+  const displayStatus = optimisticStatus;
 
   const icons = {
     pending: <Circle className="h-4 w-4 text-muted-foreground" />,
@@ -114,19 +127,23 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3">
+    <div
+      data-testid="action-item-row"
+      data-status={displayStatus}
+      className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
+    >
       <button
         onClick={cycleStatus}
         disabled={isPending}
         className="shrink-0 cursor-pointer"
         aria-label="Toggle action item status"
       >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : icons[item.status]}
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : icons[displayStatus]}
       </button>
       <div className="min-w-0 flex-1">
         <p
           className={`text-sm ${
-            item.status === "completed" ? "text-muted-foreground line-through" : ""
+            displayStatus === "completed" ? "text-muted-foreground line-through" : ""
           }`}
         >
           {item.description}
@@ -139,21 +156,21 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
       </div>
       <Badge
         variant={
-          item.status === "completed"
+          displayStatus === "completed"
             ? "default"
-            : item.status === "in_progress"
+            : displayStatus === "in_progress"
               ? "secondary"
               : "outline"
         }
         className={`shrink-0 text-xs ${
-          item.status === "completed"
+          displayStatus === "completed"
             ? "border-win/30 bg-win/15 text-win"
-            : item.status === "in_progress"
+            : displayStatus === "in_progress"
               ? "border-status-progress/30 bg-status-progress/15 text-status-progress"
               : ""
         }`}
       >
-        {item.status.replace("_", " ")}
+        {displayStatus.replace("_", " ")}
       </Badge>
     </div>
   );

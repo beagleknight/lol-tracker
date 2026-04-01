@@ -188,31 +188,24 @@ test.describe("Coaching flow", () => {
     // Wait for action items section to load
     await expect(page.getByText("Practice freezing near tower for 5 games").first()).toBeVisible();
 
-    // Action items are displayed with a status cycle button + text + status badge.
-    // Structure: row > [button(cycle), div(text+topic), div(status)]
-    // Use the main content area to avoid hidden duplicates in tab panels.
+    // Find the action item row using data-testid and filter by description text
     const mainContent = page.getByRole("main");
     const firstActionItemRow = mainContent
-      .getByText("Practice freezing near tower for 5 games")
-      .locator("../..");
+      .locator('[data-testid="action-item-row"]')
+      .filter({ hasText: "Practice freezing near tower for 5 games" });
+
+    // Verify initial status is pending
+    await expect(firstActionItemRow).toHaveAttribute("data-status", "pending");
+
+    // Click the cycle button — optimistic state updates the UI immediately
     const cycleButton = firstActionItemRow.locator("button").first();
     await expect(cycleButton).toBeVisible();
     await cycleButton.click();
 
-    // The status should cycle from "pending" to "in progress".
-    // Reload fallback: server-side revalidation can be slow on CI (see issue #74).
-    try {
-      await expect(firstActionItemRow.getByText("in progress")).toBeVisible({ timeout: 10_000 });
-    } catch {
-      await page.reload();
-      await expect(
-        page
-          .getByRole("main")
-          .getByText("Practice freezing near tower for 5 games")
-          .locator("../..")
-          .getByText("in progress"),
-      ).toBeVisible({ timeout: 10_000 });
-    }
+    // The status should cycle from "pending" to "in_progress" (optimistic update)
+    await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress", {
+      timeout: 5_000,
+    });
   });
 
   test("delete the new coaching session", async ({ page }) => {
