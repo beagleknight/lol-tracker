@@ -142,11 +142,15 @@ Before committing any file that adds a new `t()` call:
 
 # UI/UX PRs require screenshots — MANDATORY
 
-**Every PR that changes UI or UX MUST include before/after screenshots.** This is non-negotiable. Load the `ui-screenshots` OpenCode skill at the START of any UI/UX task — before writing any code — so you can capture "before" screenshots while the current state still exists.
+**BEFORE writing ANY code**, determine whether the task will change UI or UX. If it will — even partially — you MUST immediately load the `ui-screenshots` skill and capture "before" screenshots BEFORE touching any files. This is non-negotiable. Skipping this step means you lose the ability to capture the original state.
+
+**Trigger condition**: The task mentions ANY of: components, pages, styles, layout, icons, badges, cards, colors, opacity, visual treatment, position display, tooltips, dropdowns, modals, or any user-visible change. When in doubt, load the skill — it's cheap to load and expensive to forget.
+
+**MANDATORY first step for UI tasks**: `skill("ui-screenshots")` → capture "before" → then start coding.
 
 Checklist for any PR touching UI:
 
-1. **Load the `ui-screenshots` skill BEFORE making code changes**
+1. **Load the `ui-screenshots` skill BEFORE making code changes** — this is step ZERO, before any planning
 2. Capture "before" screenshots of affected pages/components
 3. Implement the changes
 4. Capture "after" screenshots and annotate them (red arrows/labels)
