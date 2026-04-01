@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
+import { invalidateSyncCaches } from "@/app/actions/sync";
+
 interface SyncProgress {
   current: number;
   total: number;
@@ -79,7 +81,7 @@ export function useSyncMatches(isLinked: boolean = false) {
           let buffer = "";
           let receivedFinal = false;
 
-          const processMessage = (msg: string) => {
+          const processMessage = async (msg: string) => {
             const dataLine = msg.split("\n").find((line) => line.startsWith("data: "));
             if (!dataLine) return;
 
@@ -122,6 +124,7 @@ export function useSyncMatches(isLinked: boolean = false) {
                       id: toastIdRef.current,
                       duration: 8000,
                     });
+                    await invalidateSyncCaches();
                     router.refresh();
                   } else if (!silent) {
                     // Manual/login sync: always show the result
@@ -163,7 +166,7 @@ export function useSyncMatches(isLinked: boolean = false) {
             buffer = messages.pop() || "";
 
             for (const msg of messages) {
-              processMessage(msg);
+              await processMessage(msg);
             }
           }
 
@@ -171,7 +174,7 @@ export function useSyncMatches(isLinked: boolean = false) {
           // The final SSE message may not have a trailing \n\n before
           // the server closes the stream.
           if (buffer.trim()) {
-            processMessage(buffer);
+            await processMessage(buffer);
           }
 
           // If the stream ended without a done/error event, show a warning

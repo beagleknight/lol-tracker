@@ -3,7 +3,6 @@ import { eq, desc } from "drizzle-orm";
 import { checkGoalAchievement } from "@/app/actions/goals";
 import { db } from "@/db";
 import { matches, rankSnapshots, users } from "@/db/schema";
-import { invalidateAllCaches } from "@/lib/cache";
 import {
   getMatchIds,
   getMatch,
@@ -249,10 +248,8 @@ export async function GET() {
         // Check if rank goal was achieved after syncing
         await checkGoalAchievement(user.id);
 
-        // Invalidate all cached data for this user after syncing new matches
-        if (syncedCount > 0) {
-          invalidateAllCaches(user.id);
-        }
+        // Cache invalidation is handled client-side via a Server Action
+        // after the "done" event (updateTag cannot be called from Route Handlers).
 
         const parts = [`Synced ${syncedCount} match${syncedCount !== 1 ? "es" : ""}`];
         if (failedCount > 0) {
