@@ -215,9 +215,10 @@ export async function updateActionItemStatus(
     })
     .where(and(eq(coachingActionItems.id, itemId), eq(coachingActionItems.userId, user.id)));
 
-  // Use "layout" type to revalidate the entire /coaching tree,
-  // including /coaching/[id] detail pages that display action items.
-  revalidatePath("/coaching", "layout");
+  // Use "page" type to revalidate page components under /coaching without
+  // re-rendering the layout tree — "layout" can cause client component
+  // remounts that destroy optimistic state (#102).
+  revalidatePath("/coaching", "page");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
 
@@ -231,9 +232,10 @@ export async function deleteActionItem(itemId: number) {
     .delete(coachingActionItems)
     .where(and(eq(coachingActionItems.id, itemId), eq(coachingActionItems.userId, user.id)));
 
-  // Use "layout" type to revalidate the entire /coaching tree,
-  // including /coaching/[id] detail pages that display action items.
-  revalidatePath("/coaching", "layout");
+  // Use "page" type to revalidate page components under /coaching without
+  // re-rendering the layout tree — "layout" can cause client component
+  // remounts that destroy optimistic state (#102).
+  revalidatePath("/coaching", "page");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
 
@@ -256,7 +258,7 @@ export async function createActionItem(data: { description: string; topic?: stri
     topic: data.topic?.trim() || null,
   });
 
-  revalidatePath("/coaching", "layout");
+  revalidatePath("/coaching", "page");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
 

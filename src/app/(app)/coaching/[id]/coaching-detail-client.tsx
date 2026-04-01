@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
@@ -97,12 +97,11 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
     setHydrated(true);
   }, []);
 
-  // Optimistic status so the UI updates immediately on click (#74)
-  const [optimisticStatus, setOptimisticStatus] = useState(item.status);
-  // Sync with server-provided status when it changes (e.g. after revalidation)
-  useEffect(() => {
-    setOptimisticStatus(item.status);
-  }, [item.status]);
+  // Optimistic status so the UI updates immediately on click (#74).
+  // useOptimistic survives server re-renders during a transition — unlike
+  // the previous useState + sync useEffect which could be clobbered by a
+  // revalidation flight arriving with stale props, causing flaky E2E (#102).
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(item.status);
 
   const nextStatusMap: Record<string, "pending" | "in_progress" | "completed"> = {
     pending: "in_progress",
@@ -112,14 +111,12 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
 
   function cycleStatus() {
     const next = nextStatusMap[optimisticStatus];
-    setOptimisticStatus(next);
     startTransition(async () => {
+      setOptimisticStatus(next);
       try {
         await updateActionItemStatus(item.id, next);
         toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
       } catch {
-        // Revert on failure
-        setOptimisticStatus(item.status);
         toast.error(t("toasts.statusUpdateError"));
       }
     });
