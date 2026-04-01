@@ -54,7 +54,7 @@
     "signInWithDiscord": "Iniciar sesión con Discord",
     "haveInviteCode": "¿Tienes un código de invitación?",
     "alreadyHaveAccount": "¿Ya tienes cuenta? Inicia sesión sin código.",
-    "demoModeTitle": "Modo Demo",
+    "demoModeTitle": "Modo demo",
     "demoModeDescription": "Selecciona una cuenta para explorar la app con datos de ejemplo.",
     "demoLoginButton": "Entrar",
     "demoRoleAdmin": "Admin",
@@ -69,7 +69,7 @@
     "lpTrendRecently": "{lpChange} LP recientemente",
     "lpTrendInDays": "{lpChange} LP en los últimos {days, plural, one {# día} other {# días}}",
     "noRankData": "Sin datos de rango aún. Actualiza tus partidas para ver tu rango.",
-    "sessionWinRate": "Win Rate de sesión",
+    "sessionWinRate": "Win rate de sesión",
     "currentStreak": "Racha actual",
     "noGamesYet": "Sin partidas aún.",
     "avgKdaLast10": "KDA promedio (últimas 10)",
@@ -126,7 +126,7 @@
     "notReviewed": "Sin revisar",
     "hasNotes": "Con notas",
     "noMatchesFiltered": "Ninguna partida coincide con tus filtros.",
-    "noMatchesEmpty": "Sin partidas aún. Haz clic en Actualizar Partidas para empezar.",
+    "noMatchesEmpty": "Sin partidas aún. Haz clic en Actualizar partidas para empezar.",
     "exportCsv": "Exportar CSV"
   },
   "MatchDetail": {
@@ -231,7 +231,7 @@
     }
   },
   "Scout": {
-    "pageTitle": "Explorador de Matchups",
+    "pageTitle": "Explorador de matchups",
     "pageDescription": "Informe de scouting pre-partida para tus matchups.",
     "yourChampionLabel": "Tu campeón",
     "yourChampionPlaceholder": "Cualquier campeón",
@@ -318,10 +318,10 @@
     "peakLabel": "Máximo: {rank}",
     "lpOverall": "{value} LP en total",
     "notEnoughRankData": "No hay suficientes datos de rango aún. Juega más partidas ranked para ver tu progresión de LP.",
-    "winRateOverTime": "Win Rate a lo largo del tiempo (media móvil de 10 partidas)",
+    "winRateOverTime": "Win rate a lo largo del tiempo (media móvil de 10 partidas)",
     "coachingBandsDescription": "Las áreas sombreadas muestran el tiempo entre sesiones de coaching.",
     "noCoachingSessions": "No hay sesiones de coaching para mostrar.",
-    "matchupWinRates": "Win Rate por matchup",
+    "matchupWinRates": "Win rate por matchup",
     "topMatchupsDescription": "Top 10 matchups más jugados",
     "noMatchupData": "Sin datos de matchup aún. Juega más partidas para ver win rates por matchup.",
     "runeKeystones": "Runas principales",
@@ -333,7 +333,7 @@
     "tooltips": {
       "peakRankAchieved": "Rango máximo alcanzado",
       "firstTimeInTier": "¡Primera vez en {tier}!",
-      "winRate": "Win Rate:",
+      "winRate": "Win rate:",
       "gameNumber": "Partida #{index}"
     },
     "chartLabels": {
@@ -344,7 +344,7 @@
     "tableHeaders": {
       "keystone": "Runa",
       "games": "Partidas",
-      "winRate": "Win Rate",
+      "winRate": "Win rate",
       "wl": "V/D",
       "champion": "Campeón",
       "avgKda": "KDA prom."
@@ -403,7 +403,7 @@
     "noActionItems": "No hay tareas para esta sesión.",
     "progressSinceSession": "Progreso desde esta sesión",
     "progressDescription": "{count, plural, one {# partida jugada} other {# partidas jugadas}} desde esta sesión de coaching.",
-    "winRate": "Win Rate",
+    "winRate": "Win rate",
     "avgKda": "KDA prom.",
     "relatedNotes": "Notas relacionadas",
     "perfect": "Perfecto",
@@ -554,9 +554,9 @@
     },
     "stats": {
       "gamesTogetherLabel": "Partidas juntos",
-      "duoWinRateLabel": "Win Rate en dúo",
+      "duoWinRateLabel": "Win rate en dúo",
       "winsLosses": "{wins}V / {losses}D",
-      "soloWinRateLabel": "Win Rate en solitario",
+      "soloWinRateLabel": "Win rate en solitario",
       "soloGamesCount": "{soloGames} partidas solo",
       "duoDiffLabel": "Diferencia dúo",
       "vsSolo": "vs solo"
