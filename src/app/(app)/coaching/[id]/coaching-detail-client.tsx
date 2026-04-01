@@ -90,6 +90,13 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
   const t = useTranslations("CoachingDetail");
   const [isPending, startTransition] = useTransition();
 
+  // Signal that React has hydrated this component (event handlers attached).
+  // Used by E2E tests to avoid clicking before hydration completes (#95).
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
   // Optimistic status so the UI updates immediately on click (#74)
   const [optimisticStatus, setOptimisticStatus] = useState(item.status);
   // Sync with server-provided status when it changes (e.g. after revalidation)
@@ -130,6 +137,7 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
     <div
       data-testid="action-item-row"
       data-status={displayStatus}
+      data-hydrated={hydrated || undefined}
       className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
     >
       <button
