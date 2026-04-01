@@ -5,54 +5,54 @@ title: "Visual identity pass"
 tags: ["improvement"]
 ---
 
-A comprehensive visual identity overhaul — custom logo, rank-themed accents, consistent typography, match card tints, hover animations, and a shared empty-state component across the entire app.
+The whole app got a fresh look. New logo, rank-themed colors, better typography, and small animations that make everything feel more polished.
 
-### Custom Logo
+### Custom logo
 
-Replaced the generic Swords icon with a custom SVG diamond/shield logo with crosshair detail, used in the sidebar header and login page.
+The old generic swords icon is gone. LoL Tracker now has its own diamond/shield logo with a crosshair detail, visible in the sidebar and login page.
 
-**Before** — generic Swords icon:
+<div className="changelog-image-grid">
 
-![Before login](/changelog/visual-identity/before-login.png)
+![Login page with generic swords icon](/changelog/visual-identity/before-login.png)
 
-**After** — custom LoL Tracker logo:
+![Login page with new LoL Tracker logo](/changelog/visual-identity/after-login-annotated.png)
 
-![After login annotated](/changelog/visual-identity/after-login-annotated.png)
+</div>
 
-### Dashboard Rank Card
+### Dashboard rank card
 
-The rank card now displays the official rank emblem from Community Dragon alongside a gold-accented border and rank name.
+Your rank card now shows the official rank emblem with a gold-accented border and your rank name front and center.
 
-**Before** — plain rank card:
+<div className="changelog-image-grid">
 
-![Before dashboard](/changelog/visual-identity/before-dashboard.png)
+![Dashboard with plain rank card](/changelog/visual-identity/before-dashboard.png)
 
-**After** — emblem, gold border, mono stats:
+![Dashboard with rank emblem and gold border](/changelog/visual-identity/after-dashboard-annotated.png)
 
-![After dashboard annotated](/changelog/visual-identity/after-dashboard-annotated.png)
+</div>
 
-### Match Card Win/Loss Tints
+### Match card win/loss tints
 
-Match cards now show subtle green (win) or red (loss) background tints, making results scannable at a glance. Cards also lift on hover with a shadow effect.
+Match cards now have subtle green (win) or red (loss) background tints so you can scan results at a glance. They also lift slightly on hover.
 
-**Before** — identical card backgrounds:
+<div className="changelog-image-grid">
 
-![Before matches](/changelog/visual-identity/before-matches.png)
+![Match list with identical card backgrounds](/changelog/visual-identity/before-matches.png)
 
-**After** — tinted backgrounds + hover-lift:
+![Match list with tinted win/loss backgrounds](/changelog/visual-identity/after-matches-annotated.png)
 
-![After matches annotated](/changelog/visual-identity/after-matches-annotated.png)
+</div>
 
-### Monospace Stats Typography
+### Monospace stats
 
-All numeric stats (KDA, CS, gold, vision, duration, LP, win rates) now use the monospace font consistently across every page — dashboard, matches, match detail, analytics, review, coaching, and scout.
+All numbers (KDA, CS, gold, vision, duration, LP, win rates) now use the same monospace font everywhere. No more misaligned digits.
 
-### Shared Empty State Component
+### Shared empty states
 
-Replaced 10+ ad-hoc empty state implementations with a single reusable `EmptyState` component, used across scout, matches, analytics, review, coaching, goals, and action items.
+Pages that have no data yet (scout, matches, analytics, review, coaching, goals, action items) now show the same clean empty state instead of random one-offs.
 
-![Shared EmptyState](/changelog/visual-identity/after-scout-annotated.png)
+![Empty state on the scout page](/changelog/visual-identity/after-scout-annotated.png)
 
-### Entrance Animations
+### Entrance animations
 
-Page headers and key sections now slide up on load with staggered delays, adding a polished feel without impacting accessibility (animations respect `prefers-reduced-motion`).
+Page headers and sections slide in with a subtle stagger when you load a page. If your OS is set to reduce motion, these are automatically turned off.
