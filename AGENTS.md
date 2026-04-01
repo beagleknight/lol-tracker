@@ -131,6 +131,8 @@ Before committing any file that adds a new `t()` call:
 2. Add the key to `messages/en.json` under that namespace
 3. Add the Spanish translation to `messages/es.json` under the same namespace
 4. Verify with `npm run build` — the type system catches missing keys at build time
+
+**All UI copy MUST use sentence case.** Only the first word and proper nouns/acronyms are capitalized. No Title Case anywhere — not in i18n values, hardcoded strings, or changelog titles. See the `i18n` skill for the full list of preserved proper nouns and acronyms.
 <!-- END:i18n-aria-rules -->
 
 <!-- BEGIN:ui-screenshots-rules -->
