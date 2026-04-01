@@ -29,7 +29,10 @@
     "hasNotesNotReviewed": "Tiene notas, aún sin revisar",
     "win": "V",
     "loss": "D",
-    "remake": "R"
+    "remake": "R",
+    "positionMain": "{position} (rol principal)",
+    "positionSecondary": "{position} (secundario)",
+    "positionOffRole": "{position} (fuera de rol)"
   },
   "Pagination": {
     "ellipsis": "..."
@@ -619,6 +622,23 @@
       "setButton": "Establecer",
       "noUsersFound": "No se encontraron otros usuarios con cuentas de Riot vinculadas. ¡Invita a un amigo para empezar!"
     },
+    "rolePreferences": {
+      "title": "Preferencias de rol",
+      "description": "Configura tus roles principal y secundario. Las partidas fuera de rol aparecerán atenuadas en las tarjetas.",
+      "primaryLabel": "Rol principal",
+      "secondaryLabel": "Rol secundario",
+      "placeholder": "Seleccionar rol",
+      "nonePlaceholder": "Ninguno",
+      "saveButton": "Guardar",
+      "sameRoleError": "Los roles principal y secundario deben ser diferentes.",
+      "positions": {
+        "TOP": "Top",
+        "JUNGLE": "Jungla",
+        "MIDDLE": "Mid",
+        "BOTTOM": "Bot",
+        "UTILITY": "Support"
+      }
+    },
     "invites": {
       "title": "Invitar amigos",
       "badgeAdmin": "Admin",
@@ -647,7 +667,9 @@
       "duoPartnerSet": "Compañero de dúo establecido: {partnerName}",
       "duoPartnerCleared": "Compañero de dúo eliminado.",
       "localeUpdated": "Idioma y región actualizados.",
-      "languageUpdated": "Idioma actualizado."
+      "languageUpdated": "Idioma actualizado.",
+      "rolePreferencesSaved": "Preferencias de rol guardadas.",
+      "rolePreferencesSaveError": "Error al guardar las preferencias de rol."
     }
   },
   "Errors": {

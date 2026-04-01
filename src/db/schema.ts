@@ -21,6 +21,8 @@ export const users = sqliteTable("users", {
   puuid: text("puuid"),
   summonerId: text("summoner_id"),
   duoPartnerUserId: text("duo_partner_user_id"),
+  primaryRole: text("primary_role"), // Preferred primary position: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
+  secondaryRole: text("secondary_role"), // Preferred secondary position
   locale: text("locale").default("en-GB"),
   language: text("language").default("en"),
   role: text("role", { enum: ["admin", "user"] })
@@ -68,6 +70,7 @@ export const matches = sqliteTable(
     vodUrl: text("vod_url"), // Ascent VOD link
     // Metadata
     queueId: integer("queue_id"), // 420 = Solo/Duo
+    position: text("position"), // TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
     syncedAt: integer("synced_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -85,6 +88,7 @@ export const matches = sqliteTable(
     index("matches_user_game_date_idx").on(table.userId, table.gameDate),
     index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
     index("matches_user_duo_partner_idx").on(table.userId, table.duoPartnerPuuid),
+    index("matches_user_position_idx").on(table.userId, table.position),
   ],
 );
 

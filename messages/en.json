@@ -29,7 +29,10 @@
     "hasNotesNotReviewed": "Has notes, not yet reviewed",
     "win": "W",
     "loss": "L",
-    "remake": "R"
+    "remake": "R",
+    "positionMain": "{position} (main role)",
+    "positionSecondary": "{position} (secondary)",
+    "positionOffRole": "{position} (off-role)"
   },
   "Pagination": {
     "ellipsis": "..."
@@ -619,6 +622,23 @@
       "setButton": "Set",
       "noUsersFound": "No other users with linked Riot accounts found. Invite a friend to get started!"
     },
+    "rolePreferences": {
+      "title": "Role preferences",
+      "description": "Set your primary and secondary roles. Off-role games will appear dimmed on match cards.",
+      "primaryLabel": "Primary role",
+      "secondaryLabel": "Secondary role",
+      "placeholder": "Select role",
+      "nonePlaceholder": "None",
+      "saveButton": "Save",
+      "sameRoleError": "Primary and secondary roles must be different.",
+      "positions": {
+        "TOP": "Top",
+        "JUNGLE": "Jungle",
+        "MIDDLE": "Mid",
+        "BOTTOM": "Bot",
+        "UTILITY": "Support"
+      }
+    },
     "invites": {
       "title": "Invite friends",
       "badgeAdmin": "Admin",
@@ -647,7 +667,9 @@
       "duoPartnerSet": "Duo partner set to {partnerName}",
       "duoPartnerCleared": "Duo partner cleared.",
       "localeUpdated": "Language & region updated.",
-      "languageUpdated": "Language updated."
+      "languageUpdated": "Language updated.",
+      "rolePreferencesSaved": "Role preferences saved.",
+      "rolePreferencesSaveError": "Failed to save role preferences."
     }
   },
   "Errors": {

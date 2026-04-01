@@ -61,6 +61,7 @@ export default async function DashboardPage() {
         comment: true,
         duoPartnerPuuid: true,
         queueId: true,
+        position: true,
       },
     }),
 

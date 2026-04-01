@@ -25,6 +25,8 @@ export interface AuthUser {
   role?: string | null;
   locale?: string | null;
   language?: string | null;
+  primaryRole?: string | null;
+  secondaryRole?: string | null;
 }
 
 export interface UseAuthReturn {
