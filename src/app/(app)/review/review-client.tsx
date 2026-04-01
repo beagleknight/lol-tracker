@@ -18,6 +18,7 @@ import {
   X,
   Ellipsis,
   Sparkles,
+  Crosshair,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -1193,6 +1194,21 @@ export function ReviewClient({
           </DropdownMenu>
         )}
       </div>
+
+      {!user?.primaryRole && (
+        <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
+          <Crosshair className="h-4 w-4 shrink-0" />
+          <span>
+            {t.rich("setRolePreferences", {
+              link: (chunks) => (
+                <Link href="/settings" className="font-medium underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs value={tabValue} onValueChange={handleTabChange}>

@@ -67,6 +67,7 @@
   "Dashboard": {
     "heading": "Dashboard",
     "linkRiotAccount": "Link your Riot account in <link>Settings</link> to get started.",
+    "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
     "currentRank": "Current rank",
     "lpLabel": "{lp} LP",
     "lpTrendRecently": "{lpChange} LP recently",
@@ -115,6 +116,7 @@
     "heading": "Matches",
     "summary": "{totalMatches, plural, one {# game} other {# games}} · {wins}W {losses}L ({winRate}%)",
     "linkRiotAccount": "Link your Riot account in <link>Settings</link> to import games.",
+    "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
     "searchPlaceholder": "Search champion, matchup, notes...",
     "resultFilterPlaceholder": "Result",
     "allResults": "All results",
@@ -170,6 +172,7 @@
   },
   "Review": {
     "pageTitle": "Review",
+    "setRolePreferences": "Set your preferred roles in <link>Settings</link> to see which games are on-role.",
     "allCaughtUp": "All caught up! No games waiting for review.",
     "gamesWaitingForReview": "{count, plural, one {# game} other {# games}} waiting for review",
     "vs": "vs",
