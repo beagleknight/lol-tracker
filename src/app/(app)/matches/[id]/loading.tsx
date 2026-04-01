@@ -21,7 +21,7 @@ export default function MatchDetailLoading() {
       {/* 6 stat cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i} className="hover-lift surface-glow">
+          <Card key={i} className="surface-glow">
             <CardContent className="space-y-2 pt-4 pb-3 text-center">
               <Skeleton className="mx-auto h-7 w-16" />
               <Skeleton className="mx-auto h-3 w-12" />
