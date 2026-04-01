@@ -23,6 +23,7 @@ import { getMatchupReport, type MatchupReport } from "@/app/actions/live";
 import { getMatchupNotes, type MatchupNoteData } from "@/app/actions/matchup-notes";
 import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { ChampionCombobox, type ChampionRecommendations } from "@/components/champion-combobox";
+import { EmptyState } from "@/components/empty-state";
 import { MatchCard } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -160,7 +161,10 @@ function ScoutingReport({
                 <span className="text-win">{record.wins}W</span>{" "}
                 <span className="text-loss">{record.losses}L</span>
               </span>
-              <Badge variant={record.winRate >= 50 ? "default" : "destructive"} className="text-sm">
+              <Badge
+                variant={record.winRate >= 50 ? "default" : "destructive"}
+                className="font-mono text-sm"
+              >
                 {record.winRate}%
               </Badge>
             </div>
@@ -306,7 +310,7 @@ function ScoutingReport({
                       {pair.yourChampion} + {pair.duoChampion}
                     </span>
                   </div>
-                  <div className="text-right text-sm">
+                  <div className="text-right font-mono text-sm">
                     <span className={`font-bold ${pair.winRate >= 50 ? "text-win" : "text-loss"}`}>
                       {pair.winRate}%
                     </span>
@@ -652,17 +656,16 @@ export function ScoutClient({
       {/* No historical data state */}
       {!isLoadingReport && !report && enemyChampion && (
         <div className="space-y-6">
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-            <Swords className="mb-2 h-8 w-8 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              {yourChampion
+          <EmptyState
+            icon={Swords}
+            title={
+              yourChampion
                 ? t("noGamesFoundAsChampion", { yourChampion, enemyChampion })
-                : t("noGamesFound", { enemyChampion })}
-            </p>
-            {yourChampion && (
-              <p className="mt-1 text-sm text-muted-foreground">{t("clearYourChampionHint")}</p>
-            )}
-          </div>
+                : t("noGamesFound", { enemyChampion })
+            }
+            description={yourChampion ? t("clearYourChampionHint") : undefined}
+            className="py-12"
+          />
 
           {/* Still allow adding notes even without match history */}
           <NoDataNotesBubble
@@ -677,10 +680,11 @@ export function ScoutClient({
 
       {/* Initial state — no matchup selected */}
       {!enemyChampion && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <Crosshair className="mb-3 h-10 w-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground">{t("selectEnemyPrompt")}</p>
-        </div>
+        <EmptyState
+          icon={Crosshair}
+          title={t("selectEnemyPrompt")}
+          iconClassName="h-10 w-10 text-muted-foreground/50"
+        />
       )}
     </div>
   );

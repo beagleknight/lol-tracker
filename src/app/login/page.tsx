@@ -1,11 +1,12 @@
 "use client";
 
-import { Swords, Ticket, User, Shield } from "lucide-react";
+import { Ticket, User, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { demoLogin } from "@/app/actions/demo-login";
+import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +53,7 @@ function DemoLoginForm() {
     <Card className="surface-glow w-full max-w-md border-gold/20">
       <CardHeader className="text-center">
         <div className="glow-gold-sm mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
-          <Swords className="h-8 w-8 text-gold" />
+          <Logo className="h-8 w-8 text-gold" />
         </div>
         <CardTitle className="text-gradient-gold text-2xl">{t("demoModeTitle")}</CardTitle>
         <CardDescription>{t("demoModeDescription")}</CardDescription>
@@ -116,7 +117,7 @@ function DiscordLoginForm() {
     <Card className="surface-glow w-full max-w-md border-gold/20">
       <CardHeader className="text-center">
         <div className="glow-gold-sm mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
-          <Swords className="h-8 w-8 text-gold" />
+          <Logo className="h-8 w-8 text-gold" />
         </div>
         <CardTitle className="text-gradient-gold text-2xl">{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>

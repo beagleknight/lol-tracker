@@ -19,6 +19,7 @@ import { ChampionLink } from "@/components/champion-link";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { resultBgTint } from "@/lib/match-result";
 import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -130,7 +131,7 @@ export function MatchCard({
     <TooltipProvider>
       <Link
         href={`/matches/${match.id}`}
-        className={`block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50`}
+        className={`hover-lift block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>
           {/* Result bar */}

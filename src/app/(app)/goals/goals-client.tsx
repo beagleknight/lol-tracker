@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { Goal } from "@/db/schema";
 
 import { retireGoal, deleteGoal } from "@/app/actions/goals";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -37,7 +38,7 @@ export function GoalsClient({ goals, currentRank }: GoalsClientProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="animate-in-up flex items-center justify-between">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
@@ -56,19 +57,19 @@ export function GoalsClient({ goals, currentRank }: GoalsClientProps) {
       {activeGoal ? (
         <ActiveGoalCard goal={activeGoal} currentRank={currentRank} locale={locale} />
       ) : (
-        <Card className="border-dashed border-muted-foreground/25">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Target className="mb-3 h-8 w-8 text-gold" />
-            <p className="text-lg font-medium">{t("noActiveGoal")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("noActiveGoalDescription")}</p>
-            <Link href="/goals/new" className="mt-4">
+        <EmptyState
+          icon={Target}
+          title={t("noActiveGoal")}
+          description={t("noActiveGoalDescription")}
+          action={
+            <Link href="/goals/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 {t("setGoal")}
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       )}
 
       {/* Past Goals */}
