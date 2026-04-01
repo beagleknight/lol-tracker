@@ -42,15 +42,8 @@ Branch naming conventions:
 ### 2. Implement the changes
 
 - Make commits on the feature branch
-- **MANDATORY: Run format check, lint, and build locally before every push.** Do NOT rely on CI as the first check — catch errors locally:
-  ```bash
-  npm run fmt:check
-  npm run lint
-  npm run build
-  ```
-  If formatting is off, fix it with `npm run fmt` before committing.
-  Fix any lint errors before committing/pushing. Warnings from pre-existing code are acceptable, but new warnings from your changes should be fixed.
-- `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
+- **Formatting and linting are enforced automatically by a lefthook pre-commit hook** — `oxfmt --check` and `oxlint` run on staged files at commit time. If they fail, the commit is rejected. Fix formatting with `npm run fmt` and re-commit. You do NOT need to run `fmt:check` or `lint` manually before pushing — the hook handles it.
+- **MANDATORY: Run `npm run build` locally before every push.** Do NOT rely on CI as the first build check — catch errors locally. `npm run build` implicitly runs `tsc`, so a separate `npm run typecheck` is not required.
 - **MANDATORY: Run smoke tests locally before pushing when the PR touches UI.** Any change to components, styles, color tokens, ARIA attributes, layouts, or pages requires smoke tests to pass locally:
   ```bash
   npm run test:smoke
@@ -172,9 +165,9 @@ Do this even if the overall CI run eventually passes on retry. Flaky tests erode
 git checkout main && git pull
 git checkout -b fix/description
 # make changes
-npm run fmt:check && npm run lint && npm run build
+npm run build
 npm run test:smoke  # if touching UI/styles/a11y
-git add -A && git commit -m "fix: description"
+git add -A && git commit -m "fix: description"  # lefthook checks fmt + lint
 # add changelog entry
 git add -A && git commit -m "docs: add changelog entry"
 git push -u origin fix/description
@@ -186,8 +179,8 @@ gh pr create --title "fix: description" --body "..."
 ```bash
 git checkout main && git pull
 git checkout -b feat/description
-# implement in logical commits
-npm run fmt:check && npm run lint && npm run build
+# implement in logical commits (lefthook checks fmt + lint on each commit)
+npm run build
 npm run test:smoke  # if touching UI/styles/a11y
 npm run test:e2e    # if touching interactive flows
 # add changelog at the end
@@ -201,7 +194,7 @@ gh pr create --title "feat: description" --body "..."
 git checkout main && git pull
 git checkout -b chore/description
 # make changes
-npm run fmt:check && npm run lint && npm run build
+npm run build
 git push -u origin chore/description
 gh pr create --title "chore: description" --body "..." --label skip-changelog
 ```

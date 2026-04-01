@@ -142,7 +142,7 @@ export function ChampionCombobox({
               {hasRecommendations && <CommandSeparator />}
 
               {/* Full alphabetical list (excluding already-shown recommendations) */}
-              <CommandGroup heading={hasRecommendations ? "All Champions" : undefined}>
+              <CommandGroup heading={hasRecommendations ? "All champions" : undefined}>
                 {champions
                   .filter((name) => !hasRecommendations || !recommendedNames.has(name))
                   .map((name) => (
