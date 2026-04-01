@@ -16,6 +16,7 @@
 /playwright-report/
 /blob-report/
 tests/smoke/setup/.auth/
+.playwright-mcp/
 
 # temporary screenshots (audit, annotations, etc.)
 /screenshots/
