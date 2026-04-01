@@ -375,6 +375,9 @@
     "noGamesPlayed": "Sin partidas jugadas",
     "durationMinutes": "{minutes} min",
     "vs": "vs",
+    "completeNow": "Completar",
+    "readyToComplete": "Lista para completar",
+    "overdueSession": "{days, plural, one {# día} other {# días}} de retraso",
     "toasts": {
       "updateActionItemError": "No se pudo actualizar la tarea. Inténtalo de nuevo."
     }
@@ -387,6 +390,8 @@
     "sessionIsScheduledDescription": "Después del coaching, rellena las notas y tareas.",
     "completeSessionButton": "Completar sesión",
     "focusAreasLabel": "(áreas de enfoque)",
+    "focusAreasPlanned": "Áreas de enfoque (planificadas)",
+    "topicsCoveredActual": "Temas tratados",
     "sessionNotes": "Notas de sesión",
     "vodToReview": "VOD a revisar",
     "gameReviewed": "Partida revisada",
@@ -466,6 +471,7 @@
     "sessionNotesPlaceholder": "Puntos clave, lo que dijo el coach, áreas en las que enfocarse...",
     "cancelButton": "Cancelar",
     "saveChangesButton": "Guardar cambios",
+    "showMoreMatches": "Mostrar más ({remaining} restantes)",
     "toasts": {
       "coachNameRequired": "Introduce el nombre del coach.",
       "sessionUpdated": "¡Sesión actualizada correctamente!",
@@ -483,7 +489,12 @@
     "completed": "Completada",
     "allTopics": "Todos los temas",
     "emptyStateTitle": "Sin tareas aún",
-    "emptyStateDescription": "Crea sesiones de coaching para añadir tareas.",
+    "emptyStateDescription": "Crea sesiones de coaching o añade tareas independientes.",
+    "standalone": "Independiente",
+    "addButton": "Añadir",
+    "addDescriptionPlaceholder": "¿En qué quieres trabajar?",
+    "addTopicPlaceholder": "Tema (opcional)",
+    "addSubmit": "Añadir",
     "noFilterMatch": "Ninguna tarea coincide con tus filtros",
     "noFilterMatchDescription": "Prueba a ajustar los filtros.",
     "deleteConfirm": "¿Eliminar esta tarea? No se puede deshacer.",
@@ -491,7 +502,9 @@
       "statusUpdated": "Actualizada a {status}.",
       "statusUpdateError": "Error al actualizar el estado.",
       "itemDeleted": "Tarea eliminada.",
-      "deleteError": "Error al eliminar la tarea."
+      "deleteError": "Error al eliminar la tarea.",
+      "itemCreated": "¡Tarea creada!",
+      "createError": "Error al crear la tarea."
     }
   },
   "ScheduleSession": {
@@ -517,6 +530,7 @@
     "cancelButton": "Cancelar",
     "scheduleSessionButton": "Programar sesión",
     "vs": "vs",
+    "showMoreMatches": "Mostrar más ({remaining} restantes)",
     "toasts": {
       "coachNameRequired": "Introduce el nombre del coach.",
       "sessionScheduled": "¡Sesión de coaching programada!",

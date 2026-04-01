@@ -126,6 +126,7 @@ export const coachingSessions = sqliteTable(
     vodMatchId: text("vod_match_id"), // The specific match/VOD to review
     durationMinutes: integer("duration_minutes"),
     topics: text("topics"), // JSON array string e.g. '["laning","wave management"]'
+    focusAreas: text("focus_areas"), // JSON array — original pre-session focus areas (preserved after completion)
     notes: text("notes"),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -165,9 +166,9 @@ export const coachingActionItems = sqliteTable(
   "coaching_action_items",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    sessionId: integer("session_id")
-      .notNull()
-      .references(() => coachingSessions.id, { onDelete: "cascade" }),
+    sessionId: integer("session_id").references(() => coachingSessions.id, {
+      onDelete: "cascade",
+    }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
