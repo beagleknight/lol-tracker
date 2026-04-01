@@ -92,6 +92,7 @@ function ScoutingReport({
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
   const tAi = useTranslations("AiInsights");
+  const { user } = useAuth();
   const [notesOpen, setNotesOpen] = useState(false);
 
   const { activeNote, activeChampionName } = pickActiveNote(matchupNotes, yourChampionName);
@@ -358,6 +359,7 @@ function ScoutingReport({
                 reviewed: game.reviewed,
                 reviewNotes: game.reviewNotes,
                 duoPartnerPuuid: game.duoPartnerPuuid,
+                position: game.position,
               }}
               ddragonVersion={ddragonVersion}
               matchHighlights={game.highlights.map((h) => ({
@@ -366,6 +368,8 @@ function ScoutingReport({
                 topic: h.topic,
               }))}
               locale={locale}
+              userPrimaryRole={user?.primaryRole}
+              userSecondaryRole={user?.secondaryRole}
             />
           ))}
         </div>

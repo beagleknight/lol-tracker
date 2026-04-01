@@ -238,3 +238,46 @@ export async function updateLanguage(language: SupportedLanguage) {
 
   return { success: true };
 }
+
+// ─── Role Preferences ───────────────────────────────────────────────────────
+
+const VALID_POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
+
+/**
+ * Update the user's primary and secondary role preferences.
+ * Both are optional — passing null clears the preference.
+ */
+export async function updateRolePreferences(
+  primaryRole: string | null,
+  secondaryRole: string | null,
+) {
+  const user = await requireUser();
+
+  // Validate positions
+  if (primaryRole && !VALID_POSITIONS.includes(primaryRole as (typeof VALID_POSITIONS)[number])) {
+    return { error: "Invalid primary role." };
+  }
+  if (
+    secondaryRole &&
+    !VALID_POSITIONS.includes(secondaryRole as (typeof VALID_POSITIONS)[number])
+  ) {
+    return { error: "Invalid secondary role." };
+  }
+  if (primaryRole && secondaryRole && primaryRole === secondaryRole) {
+    return { error: "Primary and secondary roles must be different." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      primaryRole,
+      secondaryRole,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
+
+  return { success: true };
+}

@@ -11,6 +11,7 @@ import {
   Shield,
   Users,
   Globe,
+  Crosshair,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, useEffect } from "react";
@@ -26,7 +27,9 @@ import {
   clearDuoPartner,
   updateLocale,
   updateLanguage,
+  updateRolePreferences,
 } from "@/app/actions/settings";
+import { POSITIONS, PositionIcon } from "@/components/position-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,6 +94,17 @@ export default function SettingsPage() {
     }>
   >([]);
   const [duoLoading, setDuoLoading] = useState(false);
+
+  // ─── Role preferences state ───────────────────────────────────────────────
+  const [primaryRole, setPrimaryRole] = useState<string>(user?.primaryRole ?? "");
+  const [secondaryRole, setSecondaryRole] = useState<string>(user?.secondaryRole ?? "");
+
+  // Sync role state when session loads (useSession is async, so initial
+  // useState value is "" on first render)
+  useEffect(() => {
+    if (user?.primaryRole) setPrimaryRole(user.primaryRole);
+    if (user?.secondaryRole) setSecondaryRole(user.secondaryRole);
+  }, [user?.primaryRole, user?.secondaryRole]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -246,6 +260,24 @@ export default function SettingsPage() {
         toast.error(result.error);
       } else {
         toast.success(t("toasts.languageUpdated"));
+        await updateSession();
+      }
+    });
+  }
+
+  // ─── Role preferences handler ─────────────────────────────────────────────
+
+  function handleSaveRolePreferences() {
+    if (primaryRole && secondaryRole && primaryRole === secondaryRole) {
+      toast.error(t("rolePreferences.sameRoleError"));
+      return;
+    }
+    startTransition(async () => {
+      const result = await updateRolePreferences(primaryRole || null, secondaryRole || null);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("toasts.rolePreferencesSaved"));
         await updateSession();
       }
     });
@@ -466,6 +498,78 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Role Preferences Card */}
+      <Card className="surface-glow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crosshair className="h-5 w-5 text-gold" />
+            {t("rolePreferences.title")}
+          </CardTitle>
+          <CardDescription>{t("rolePreferences.description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="primary-role">{t("rolePreferences.primaryLabel")}</Label>
+              <Select value={primaryRole} onValueChange={(v) => v !== null && setPrimaryRole(v)}>
+                <SelectTrigger id="primary-role" className="w-full" disabled={isPending}>
+                  <SelectValue placeholder={t("rolePreferences.placeholder")}>
+                    {primaryRole && (
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={primaryRole} size={14} />
+                        {t(`rolePreferences.positions.${primaryRole}`)}
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {POSITIONS.map((pos) => (
+                    <SelectItem key={pos} value={pos}>
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={pos} size={14} />
+                        {t(`rolePreferences.positions.${pos}`)}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="secondary-role">{t("rolePreferences.secondaryLabel")}</Label>
+              <Select
+                value={secondaryRole}
+                onValueChange={(v) => v !== null && setSecondaryRole(v)}
+              >
+                <SelectTrigger id="secondary-role" className="w-full" disabled={isPending}>
+                  <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
+                    {secondaryRole && (
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={secondaryRole} size={14} />
+                        {t(`rolePreferences.positions.${secondaryRole}`)}
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {POSITIONS.filter((pos) => pos !== primaryRole).map((pos) => (
+                    <SelectItem key={pos} value={pos}>
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={pos} size={14} />
+                        {t(`rolePreferences.positions.${pos}`)}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button size="sm" onClick={handleSaveRolePreferences} disabled={isPending}>
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {t("rolePreferences.saveButton")}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Admin Section: Invite Friends */}
       {isAdmin && (

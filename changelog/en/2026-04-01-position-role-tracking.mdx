@@ -1,0 +1,47 @@
+---
+version: "2026.04.3"
+date: "2026-04-01"
+title: "Position tracking and role preferences"
+tags: ["feature"]
+---
+
+Every match now shows which lane you played, and you can set your preferred roles in settings so the app knows what's on-role and what's autofill.
+
+### How it works
+
+- **Position icon on every match card** across matches, dashboard, review, and scout pages.
+- **Color-coded by relevance**: gold for your main role, muted for secondary, orange for off-role/autofill.
+- **Off-role games get a dashed border** so your main-role games stand out visually.
+- **Role preferences in settings**: pick a primary and secondary role. The app uses these to decide what's on-role.
+
+Position data comes straight from the Riot API and is stored automatically when matches sync.
+
+### Match cards
+
+<div className="changelog-image-grid">
+
+![Before: match cards without position](/changelog/position-role-tracking/before-matches.png)
+
+![After: match cards with position icons and off-role opacity](/changelog/position-role-tracking/after-matches-annotated.png)
+
+</div>
+
+### Dashboard
+
+<div className="changelog-image-grid">
+
+![Before: dashboard without position](/changelog/position-role-tracking/before-dashboard.png)
+
+![After: dashboard with position icons](/changelog/position-role-tracking/after-dashboard-annotated.png)
+
+</div>
+
+### Settings
+
+<div className="changelog-image-grid">
+
+![Before: settings without role preferences](/changelog/position-role-tracking/before-settings.png)
+
+![After: role preferences card in settings](/changelog/position-role-tracking/after-settings-annotated.png)
+
+</div>

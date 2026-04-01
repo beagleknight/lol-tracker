@@ -29,7 +29,10 @@
     "hasNotesNotReviewed": "Tiene notas, aún sin revisar",
     "win": "V",
     "loss": "D",
-    "remake": "R"
+    "remake": "R",
+    "positionMain": "{position} (rol principal)",
+    "positionSecondary": "{position} (secundario)",
+    "positionOffRole": "{position} (fuera de rol)"
   },
   "Pagination": {
     "ellipsis": "..."
@@ -64,6 +67,7 @@
   "Dashboard": {
     "heading": "Panel",
     "linkRiotAccount": "Vincula tu cuenta de Riot en <link>Ajustes</link> para empezar.",
+    "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
     "currentRank": "Rango actual",
     "lpLabel": "{lp} LP",
     "lpTrendRecently": "{lpChange} LP recientemente",
@@ -112,6 +116,7 @@
     "heading": "Partidas",
     "summary": "{totalMatches, plural, one {# partida} other {# partidas}} · {wins}V {losses}D ({winRate}%)",
     "linkRiotAccount": "Vincula tu cuenta de Riot en <link>Ajustes</link> para importar partidas.",
+    "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
     "searchPlaceholder": "Buscar campeón, matchup, notas...",
     "resultFilterPlaceholder": "Resultado",
     "allResults": "Todos los resultados",
@@ -167,6 +172,7 @@
   },
   "Review": {
     "pageTitle": "Revisión",
+    "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
     "allCaughtUp": "¡Todo al día! No hay partidas pendientes de revisión.",
     "gamesWaitingForReview": "{count, plural, one {# partida} other {# partidas}} pendientes de revisión",
     "vs": "vs",
@@ -619,6 +625,23 @@
       "setButton": "Establecer",
       "noUsersFound": "No se encontraron otros usuarios con cuentas de Riot vinculadas. ¡Invita a un amigo para empezar!"
     },
+    "rolePreferences": {
+      "title": "Preferencias de rol",
+      "description": "Configura tus roles principal y secundario. Las partidas fuera de rol aparecerán atenuadas en las tarjetas.",
+      "primaryLabel": "Rol principal",
+      "secondaryLabel": "Rol secundario",
+      "placeholder": "Seleccionar rol",
+      "nonePlaceholder": "Ninguno",
+      "saveButton": "Guardar",
+      "sameRoleError": "Los roles principal y secundario deben ser diferentes.",
+      "positions": {
+        "TOP": "Top",
+        "JUNGLE": "Jungla",
+        "MIDDLE": "Mid",
+        "BOTTOM": "Bot",
+        "UTILITY": "Support"
+      }
+    },
     "invites": {
       "title": "Invitar amigos",
       "badgeAdmin": "Admin",
@@ -647,7 +670,9 @@
       "duoPartnerSet": "Compañero de dúo establecido: {partnerName}",
       "duoPartnerCleared": "Compañero de dúo eliminado.",
       "localeUpdated": "Idioma y región actualizados.",
-      "languageUpdated": "Idioma actualizado."
+      "languageUpdated": "Idioma actualizado.",
+      "rolePreferencesSaved": "Preferencias de rol guardadas.",
+      "rolePreferencesSaveError": "Error al guardar las preferencias de rol."
     }
   },
   "Errors": {

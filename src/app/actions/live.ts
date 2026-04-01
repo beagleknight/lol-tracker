@@ -34,6 +34,7 @@ interface MatchupGameDetail {
   vodUrl: string | null;
   duoPartnerPuuid: string | null;
   duoPartnerChampionName: string | null;
+  position: string | null;
   highlights: Array<{
     type: "highlight" | "lowlight";
     text: string;
@@ -246,6 +247,7 @@ async function getCachedMatchupReport(
       vodUrl: m.vodUrl ?? null,
       duoPartnerPuuid: m.duoPartnerPuuid ?? null,
       duoPartnerChampionName: m.duoPartnerChampionName ?? null,
+      position: m.position ?? null,
       highlights: highlightsByMatch.get(m.id) || [],
     };
   });

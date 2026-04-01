@@ -92,6 +92,7 @@ export default async function MatchesPage({
         queueId: true,
         syncedAt: true,
         duoPartnerPuuid: true,
+        position: true,
       },
     }),
     db.select({ total: count() }).from(matches).where(whereClause),
