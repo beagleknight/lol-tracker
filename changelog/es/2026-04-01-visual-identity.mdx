@@ -1,58 +1,58 @@
 ---
 version: "2026.03.17"
 date: "2026-04-01"
-title: "Identidad Visual"
+title: "Identidad visual renovada"
 tags: ["improvement"]
 ---
 
-Una revisión completa de la identidad visual — logo personalizado, acentos por rango, tipografía consistente, tintes en tarjetas de partida, animaciones hover y un componente de estado vacío compartido en toda la app.
+Toda la app tiene un aspecto nuevo. Nuevo logo, colores temáticos por rango, mejor tipografía y pequeñas animaciones que hacen que todo se sienta más pulido.
 
-### Logo Personalizado
+### Logo personalizado
 
-Se reemplazó el icono genérico de espadas por un logo SVG personalizado con forma de diamante/escudo y detalle de mira, usado en la barra lateral y la página de inicio de sesión.
+El viejo icono genérico de espadas ya no está. LoL Tracker ahora tiene su propio logo de diamante/escudo con un detalle de mira, visible en la barra lateral y la página de login.
 
-**Antes** — icono genérico de espadas:
+<div className="changelog-image-grid">
 
-![Antes login](/changelog/visual-identity/before-login.png)
+![Página de login con icono genérico de espadas](/changelog/visual-identity/before-login.png)
 
-**Después** — logo personalizado de LoL Tracker:
+![Página de login con el nuevo logo de LoL Tracker](/changelog/visual-identity/after-login-annotated.png)
 
-![Después login anotado](/changelog/visual-identity/after-login-annotated.png)
+</div>
 
-### Tarjeta de Rango en el Dashboard
+### Tarjeta de rango en el dashboard
 
-La tarjeta de rango ahora muestra el emblema oficial del rango de Community Dragon junto con un borde dorado y el nombre del rango.
+Tu tarjeta de rango ahora muestra el emblema oficial del rango con un borde dorado y el nombre de tu rango en grande.
 
-**Antes** — tarjeta de rango simple:
+<div className="changelog-image-grid">
 
-![Antes dashboard](/changelog/visual-identity/before-dashboard.png)
+![Dashboard con tarjeta de rango simple](/changelog/visual-identity/before-dashboard.png)
 
-**Después** — emblema, borde dorado, stats mono:
+![Dashboard con emblema de rango y borde dorado](/changelog/visual-identity/after-dashboard-annotated.png)
 
-![Después dashboard anotado](/changelog/visual-identity/after-dashboard-annotated.png)
+</div>
 
-### Tintes de Victoria/Derrota en Tarjetas
+### Tintes de victoria/derrota en tarjetas
 
-Las tarjetas de partida ahora muestran tintes de fondo sutiles en verde (victoria) o rojo (derrota), haciendo los resultados visibles de un vistazo. Las tarjetas también se elevan al pasar el ratón con efecto de sombra.
+Las tarjetas de partida ahora tienen un sutil tinte verde (victoria) o rojo (derrota) de fondo para que puedas escanear los resultados de un vistazo. También se elevan ligeramente al pasar el ratón.
 
-**Antes** — fondos de tarjeta idénticos:
+<div className="changelog-image-grid">
 
-![Antes partidas](/changelog/visual-identity/before-matches.png)
+![Lista de partidas con fondos de tarjeta idénticos](/changelog/visual-identity/before-matches.png)
 
-**Después** — fondos con tinte + elevación hover:
+![Lista de partidas con fondos tintados por victoria/derrota](/changelog/visual-identity/after-matches-annotated.png)
 
-![Después partidas anotado](/changelog/visual-identity/after-matches-annotated.png)
+</div>
 
-### Tipografía Monoespaciada en Stats
+### Stats en monoespaciada
 
-Todos los números (KDA, CS, oro, visión, duración, LP, tasas de victoria) ahora usan la fuente monoespaciada de forma consistente en todas las páginas — dashboard, partidas, detalle de partida, analíticas, revisión, coaching y scout.
+Todos los números (KDA, CS, oro, visión, duración, LP, win rates) ahora usan la misma fuente monoespaciada en todas partes. Se acabaron los dígitos desalineados.
 
-### Componente de Estado Vacío Compartido
+### Estados vacíos compartidos
 
-Se reemplazaron más de 10 implementaciones ad-hoc de estados vacíos con un único componente reutilizable `EmptyState`, usado en scout, partidas, analíticas, revisión, coaching, objetivos y acciones.
+Las páginas que aún no tienen datos (scout, partidas, analíticas, revisión, coaching, objetivos, tareas) ahora muestran el mismo estado vacío limpio en lugar de diseños aleatorios.
 
-![EmptyState compartido](/changelog/visual-identity/after-scout-annotated.png)
+![Estado vacío en la página de scout](/changelog/visual-identity/after-scout-annotated.png)
 
-### Animaciones de Entrada
+### Animaciones de entrada
 
-Los encabezados de página y secciones clave ahora se deslizan hacia arriba al cargar con retardos escalonados, añadiendo un acabado pulido sin afectar la accesibilidad (las animaciones respetan `prefers-reduced-motion`).
+Los encabezados de página y secciones aparecen con un sutil deslizamiento al cargar la página. Si tu SO está configurado para reducir el movimiento, se desactivan automáticamente.

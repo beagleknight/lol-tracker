@@ -5,48 +5,48 @@ title: "Coaching flow UX improvements"
 tags: ["improvement"]
 ---
 
-Several quality-of-life improvements to the coaching workflow — session management, action item tracking, and VOD selection are all smoother now.
+The coaching workflow got a bunch of fixes to make scheduling, completing sessions, and managing action items smoother.
 
-### VOD Selector Pagination (F3.1)
+### VOD selector pagination
 
-The match selector when scheduling or editing a session now shows 10 matches at a time instead of dumping all 50 into a scrollable list. Click "Show more" to load the next batch.
+When picking a match for your session, you now see 10 games at a time instead of all 50 in one long scroll. Hit "Show more" to load the next batch.
 
-**Before** — all 50 matches in a flat scroll:
+<div className="changelog-image-grid">
 
-![VOD selector before](/changelog/coaching-ux/before-new-session-top.png)
+![VOD selector showing all matches in a flat scroll](/changelog/coaching-ux/before-new-session-top.png)
 
-**After** — 10 at a time with "Show more":
+![VOD selector showing 10 matches with Show more button](/changelog/coaching-ux/after-vod-annotated.png)
 
-![VOD selector with Show more](/changelog/coaching-ux/after-vod-annotated.png)
+</div>
 
-### Complete Session CTA on Hub (F3.2)
+### Complete sessions from the hub
 
-Scheduled sessions that are past their date now show a "Complete" button directly on the coaching hub card. Sessions 2+ days overdue get a red-tinted border to draw attention.
+Overdue sessions now show a "Complete" button right on the coaching hub card. Sessions that are 2+ days past their date get a red border so they stand out.
 
-**Before** — no way to complete from the hub:
+<div className="changelog-image-grid">
 
-![Coaching hub before](/changelog/coaching-ux/before-coaching-hub.png)
+![Coaching hub with no completion option](/changelog/coaching-ux/before-coaching-hub.png)
 
-**After** — overdue indicator + Complete button:
+![Coaching hub with overdue indicator and Complete button](/changelog/coaching-ux/after-hub-annotated.png)
 
-![Coaching hub with Complete CTA](/changelog/coaching-ux/after-hub-annotated.png)
+</div>
 
-### Color-Coded Action Item Badges (F3.3)
+### Color-coded action item badges
 
-Action item status badges now use semantic colors: green for completed, gold for in progress, and neutral for pending. This applies across the session detail and action items pages.
+Action item badges now use color to show status: green for completed, gold for in progress, and neutral for pending. Works everywhere action items appear.
 
-**Before** — all badges look the same:
+<div className="changelog-image-grid">
 
-![Action items before](/changelog/coaching-ux/before-action-items-page.png)
+![Action items with identical badges](/changelog/coaching-ux/before-action-items-page.png)
 
-**After** — color-coded by status:
+![Action items with color-coded status badges](/changelog/coaching-ux/after-action-items-annotated.png)
 
-![Color-coded badges](/changelog/coaching-ux/after-action-items-annotated.png)
+</div>
 
-### Standalone Action Items (F3.4)
+### Standalone action items
 
-You can now create action items without tying them to a coaching session. Use the "+ Add" button on the action items page to add quick items with a description and optional topic.
+You can now create action items on their own, without tying them to a coaching session. Use the "+ Add" button on the action items page.
 
-### Focus Areas vs. Topics Covered (F3.6)
+### Focus areas vs. topics covered
 
-When scheduling a session, focus areas are now preserved separately from the final topics covered after completion. Completed sessions show both "Focus Areas (planned)" and "Topics Covered (actual)" so you can compare what you intended to work on versus what actually got discussed.
+When scheduling a session, your planned focus areas are now kept separate from the topics you actually covered. After completing a session, you can see both side by side.

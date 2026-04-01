@@ -5,10 +5,10 @@ title: "Base de accesibilidad"
 tags: ["improvement"]
 ---
 
-La aplicacion ahora cumple con los estandares de accesibilidad **WCAG 2.1 AA** con herramientas automatizadas para mantenerlo asi.
+La aplicación ahora cumple con los estándares de accesibilidad **WCAG 2.1 AA**, con comprobaciones automatizadas para mantenerlo así.
 
-- **Soporte para lectores de pantalla** — todos los botones con solo icono ahora tienen etiquetas descriptivas, las barras de progreso se anuncian correctamente y los elementos interactivos usan roles ARIA correctos
-- **Contraste de color** — los encabezados de la barra lateral, las etiquetas de victoria/derrota y los botones destructivos ahora cumplen con la relacion de contraste de 4.5:1
-- **Navegacion por teclado** — se agrego un enlace "Saltar al contenido principal", indicadores de foco visibles en todos los elementos interactivos y las insignias de temas/areas de enfoque ahora son operables por teclado
-- **Movimiento reducido** — las animaciones, transiciones y efectos hover se desactivan automaticamente cuando tu sistema operativo esta configurado para reducir el movimiento
-- **Escaneo automatizado** — nuevas pruebas de Playwright con axe-core escanean cada pagina en busca de violaciones, y las reglas de ESLint jsx-a11y detectan problemas en tiempo de compilacion
+- **Soporte para lectores de pantalla**: todos los botones con solo icono ahora tienen etiquetas descriptivas, las barras de progreso se anuncian correctamente y los elementos interactivos usan roles correctos.
+- **Contraste de color**: los textos y fondos de toda la app ahora cumplen con la relación de contraste de 4.5:1.
+- **Navegación por teclado**: un enlace "Saltar al contenido principal", indicadores de foco visibles en todos los elementos interactivos e insignias operables por teclado.
+- **Movimiento reducido**: las animaciones y efectos hover se desactivan automáticamente cuando tu SO está configurado para reducir el movimiento.
+- **Escaneo automatizado**: cada página se escanea en busca de violaciones de accesibilidad como parte de la suite de tests, para detectar regresiones pronto.
