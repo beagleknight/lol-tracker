@@ -49,6 +49,7 @@ async function getCachedCoachingHubData(userId: string) {
   // Build action items by session map
   const actionItemsBySession = new Map<number, { total: number; completed: number }>();
   for (const item of allActionItems) {
+    if (item.sessionId == null) continue; // standalone items — not tied to a session
     const existing = actionItemsBySession.get(item.sessionId) || {
       total: 0,
       completed: 0,
@@ -82,7 +83,7 @@ async function getCachedCoachingHubData(userId: string) {
     // Collect all action item topics per session for matching
     const topicsBySession = new Map<number, Set<string>>();
     for (const item of allActionItems) {
-      if (item.topic) {
+      if (item.topic && item.sessionId != null) {
         const set = topicsBySession.get(item.sessionId) || new Set();
         set.add(item.topic);
         topicsBySession.set(item.sessionId, set);

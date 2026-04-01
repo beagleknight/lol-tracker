@@ -375,6 +375,9 @@
     "noGamesPlayed": "No games played",
     "durationMinutes": "{minutes} min",
     "vs": "vs",
+    "completeNow": "Complete",
+    "readyToComplete": "Ready to complete",
+    "overdueSession": "{days, plural, one {# day} other {# days}} overdue",
     "toasts": {
       "updateActionItemError": "Couldn't update the action item. Please try again."
     }
@@ -387,6 +390,8 @@
     "sessionIsScheduledDescription": "After your coaching, fill in notes and action items.",
     "completeSessionButton": "Complete Session",
     "focusAreasLabel": "(focus areas)",
+    "focusAreasPlanned": "Focus Areas (planned)",
+    "topicsCoveredActual": "Topics Covered",
     "sessionNotes": "Session Notes",
     "vodToReview": "VOD to Review",
     "gameReviewed": "Game Reviewed",
@@ -466,6 +471,7 @@
     "sessionNotesPlaceholder": "Key takeaways, what the coach said, areas to focus on...",
     "cancelButton": "Cancel",
     "saveChangesButton": "Save Changes",
+    "showMoreMatches": "Show more ({remaining} remaining)",
     "toasts": {
       "coachNameRequired": "Please enter a coach name.",
       "sessionUpdated": "Session updated successfully!",
@@ -483,7 +489,12 @@
     "completed": "Completed",
     "allTopics": "All Topics",
     "emptyStateTitle": "No action items yet",
-    "emptyStateDescription": "Create coaching sessions to add action items.",
+    "emptyStateDescription": "Create coaching sessions or add standalone action items.",
+    "standalone": "Standalone",
+    "addButton": "Add",
+    "addDescriptionPlaceholder": "What do you want to work on?",
+    "addTopicPlaceholder": "Topic (optional)",
+    "addSubmit": "Add",
     "noFilterMatch": "No items match your filters",
     "noFilterMatchDescription": "Try adjusting your filters.",
     "deleteConfirm": "Delete this action item? This cannot be undone.",
@@ -491,7 +502,9 @@
       "statusUpdated": "Updated to {status}.",
       "statusUpdateError": "Failed to update status.",
       "itemDeleted": "Action item deleted.",
-      "deleteError": "Failed to delete action item."
+      "deleteError": "Failed to delete action item.",
+      "itemCreated": "Action item created!",
+      "createError": "Failed to create action item."
     }
   },
   "ScheduleSession": {
@@ -517,6 +530,7 @@
     "cancelButton": "Cancel",
     "scheduleSessionButton": "Schedule Session",
     "vs": "vs",
+    "showMoreMatches": "Show more ({remaining} remaining)",
     "toasts": {
       "coachNameRequired": "Please enter a coach name.",
       "sessionScheduled": "Coaching session scheduled!",
