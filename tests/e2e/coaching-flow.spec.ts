@@ -197,15 +197,18 @@ test.describe("Coaching flow", () => {
     // Verify initial status is pending
     await expect(firstActionItemRow).toHaveAttribute("data-status", "pending");
 
+    // Wait for React hydration — event handlers aren't attached until this
+    // attribute appears. Without this guard the click can be silently swallowed
+    // on slow CI runners, causing the test to flake (#95).
+    await expect(firstActionItemRow).toHaveAttribute("data-hydrated", "true");
+
     // Click the cycle button — optimistic state updates the UI immediately
     const cycleButton = firstActionItemRow.locator("button").first();
     await expect(cycleButton).toBeVisible();
     await cycleButton.click();
 
     // The status should cycle from "pending" to "in_progress" (optimistic update)
-    await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress", {
-      timeout: 5_000,
-    });
+    await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress");
   });
 
   test("delete the new coaching session", async ({ page }) => {
