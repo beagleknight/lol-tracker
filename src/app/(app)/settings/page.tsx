@@ -99,6 +99,13 @@ export default function SettingsPage() {
   const [primaryRole, setPrimaryRole] = useState<string>(user?.primaryRole ?? "");
   const [secondaryRole, setSecondaryRole] = useState<string>(user?.secondaryRole ?? "");
 
+  // Sync role state when session loads (useSession is async, so initial
+  // useState value is "" on first render)
+  useEffect(() => {
+    if (user?.primaryRole) setPrimaryRole(user.primaryRole);
+    if (user?.secondaryRole) setSecondaryRole(user.secondaryRole);
+  }, [user?.primaryRole, user?.secondaryRole]);
+
   useEffect(() => {
     if (isAdmin) {
       // Load invites
@@ -507,7 +514,14 @@ export default function SettingsPage() {
               <Label htmlFor="primary-role">{t("rolePreferences.primaryLabel")}</Label>
               <Select value={primaryRole} onValueChange={(v) => v !== null && setPrimaryRole(v)}>
                 <SelectTrigger id="primary-role" className="w-full" disabled={isPending}>
-                  <SelectValue placeholder={t("rolePreferences.placeholder")} />
+                  <SelectValue placeholder={t("rolePreferences.placeholder")}>
+                    {primaryRole && (
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={primaryRole} size={14} />
+                        {t(`rolePreferences.positions.${primaryRole}`)}
+                      </span>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {POSITIONS.map((pos) => (
@@ -528,7 +542,14 @@ export default function SettingsPage() {
                 onValueChange={(v) => v !== null && setSecondaryRole(v)}
               >
                 <SelectTrigger id="secondary-role" className="w-full" disabled={isPending}>
-                  <SelectValue placeholder={t("rolePreferences.nonePlaceholder")} />
+                  <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
+                    {secondaryRole && (
+                      <span className="inline-flex items-center gap-2">
+                        <PositionIcon position={secondaryRole} size={14} />
+                        {t(`rolePreferences.positions.${secondaryRole}`)}
+                      </span>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {POSITIONS.filter((pos) => pos !== primaryRole).map((pos) => (

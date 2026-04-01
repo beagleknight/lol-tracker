@@ -1,0 +1,47 @@
+---
+version: "2026.04.3"
+date: "2026-04-01"
+title: "Seguimiento de posicion y preferencias de rol"
+tags: ["feature"]
+---
+
+Cada partida ahora muestra en que linea jugaste, y puedes elegir tus roles preferidos en ajustes para que la app sepa que es tu rol principal y que es autofill.
+
+### Como funciona
+
+- **Icono de posicion en cada tarjeta de partida** en partidas, dashboard, revision y scout.
+- **Coloreado por relevancia**: dorado para tu rol principal, apagado para secundario, naranja para off-role/autofill.
+- **Las partidas off-role tienen un borde discontinuo** para que tus partidas en rol destaquen visualmente.
+- **Preferencias de rol en ajustes**: elige un rol principal y uno secundario. La app los usa para decidir que esta en rol.
+
+Los datos de posicion vienen directamente de la API de Riot y se guardan automaticamente cuando se sincronizan las partidas.
+
+### Tarjetas de partida
+
+<div className="changelog-image-grid">
+
+![Antes: tarjetas de partida sin posicion](/changelog/position-role-tracking/before-matches.png)
+
+![Despues: tarjetas con iconos de posicion y opacidad off-role](/changelog/position-role-tracking/after-matches-annotated.png)
+
+</div>
+
+### Dashboard
+
+<div className="changelog-image-grid">
+
+![Antes: dashboard sin posicion](/changelog/position-role-tracking/before-dashboard.png)
+
+![Despues: dashboard con iconos de posicion](/changelog/position-role-tracking/after-dashboard-annotated.png)
+
+</div>
+
+### Ajustes
+
+<div className="changelog-image-grid">
+
+![Antes: ajustes sin preferencias de rol](/changelog/position-role-tracking/before-settings.png)
+
+![Despues: tarjeta de preferencias de rol en ajustes](/changelog/position-role-tracking/after-settings-annotated.png)
+
+</div>
