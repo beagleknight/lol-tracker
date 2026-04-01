@@ -33,12 +33,12 @@ export default function MatchDetailError({
       <div className="flex gap-3">
         <Button onClick={() => unstable_retry()} className="gap-2">
           <RefreshCw className="h-4 w-4" />
-          Try Again
+          Try again
         </Button>
         <Link href="/matches">
           <Button variant="outline" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Matches
+            Back to matches
           </Button>
         </Link>
       </div>
