@@ -1,18 +1,16 @@
 ---
 version: "2026.04.4"
 date: "2026-04-01"
-title: "Multi-region support and onboarding foundation"
+title: "Multi-region support"
 tags: ["feature"]
 ---
 
-The app now supports all Riot server regions, so players outside Europe can link their accounts and sync matches. This is the first step toward multi-user beta readiness.
+You can now select your Riot server region so the app syncs matches from the correct server. Previously everything was hardcoded to EUW — now players on NA, KR, LAN, and all other regions can use the tracker properly.
 
 ### What changed
 
-- **Server region selector in settings** — choose your Riot server (EUW, NA, KR, etc.) from a dropdown in the Riot account card. The region is saved and used for all API calls.
-- **All Riot API calls are region-aware** — match history, rank data, and account lookups now route to the correct regional and platform endpoints based on your selected region.
-- **Onboarding redirect** — new users who haven't completed setup are automatically redirected to an onboarding page instead of landing on an empty dashboard.
-- **NewPlayer demo account** — a third demo user with no Riot account linked, for testing the onboarding flow.
+- **Region selector in settings** — choose your server (EUW, NA, KR, etc.) from the Riot account card in Settings. Your selection is saved and used for all match syncs and rank lookups.
+- **Region reminder** — if you have a linked Riot account but haven't selected a region yet, a banner on the dashboard, matches, and review pages will remind you to set it.
 
 ### Settings
 
@@ -23,19 +21,3 @@ The app now supports all Riot server regions, so players outside Europe can link
 ![After: settings with new server region dropdown](/changelog/multi-region-onboarding/after-settings.png)
 
 </div>
-
-### Login
-
-<div className="changelog-image-grid">
-
-![Before: login with two demo users](/changelog/multi-region-onboarding/before-login.png)
-
-![After: login with three demo users including NewPlayer](/changelog/multi-region-onboarding/after-login.png)
-
-</div>
-
-### Onboarding
-
-![New onboarding placeholder page](/changelog/multi-region-onboarding/after-onboarding.png)
-
-The full step-by-step onboarding wizard is coming in a follow-up PR.

@@ -1,41 +1,23 @@
 ---
 version: "2026.04.4"
 date: "2026-04-01"
-title: "Soporte multi-region y base de onboarding"
+title: "Soporte multi-región"
 tags: ["feature"]
 ---
 
-La app ahora soporta todos los servidores de Riot, para que jugadores fuera de Europa puedan vincular sus cuentas y sincronizar partidas. Este es el primer paso hacia la beta multi-usuario.
+Ahora puedes seleccionar tu servidor de Riot para que la app sincronice partidas del servidor correcto. Antes todo estaba fijado a EUW — ahora jugadores en NA, KR, LAN y todos los demás servidores pueden usar el tracker correctamente.
 
-### Que cambio
+### Qué cambió
 
-- **Selector de region en ajustes** — elige tu servidor de Riot (EUW, NA, KR, etc.) en un desplegable dentro de la tarjeta de cuenta Riot. La region se guarda y se usa en todas las llamadas a la API.
-- **Todas las llamadas a la API de Riot son region-aware** — historial de partidas, datos de ranked y busqueda de cuentas ahora se enrutan al endpoint regional y de plataforma correcto segun tu region.
-- **Redireccion de onboarding** — los usuarios nuevos que no han completado la configuracion son redirigidos automaticamente a una pagina de onboarding en lugar de ver un dashboard vacio.
-- **Cuenta demo NewPlayer** — un tercer usuario demo sin cuenta de Riot vinculada, para probar el flujo de onboarding.
+- **Selector de región en ajustes** — elige tu servidor (EUW, NA, KR, etc.) desde la tarjeta de cuenta Riot en Ajustes. Tu selección se guarda y se usa para sincronizar partidas y consultar tu rango.
+- **Recordatorio de región** — si tienes una cuenta de Riot vinculada pero no has seleccionado una región, un banner en el dashboard, partidas y revisión te recordará configurarla.
 
 ### Ajustes
 
 <div className="changelog-image-grid">
 
-![Antes: ajustes sin selector de region](/changelog/multi-region-onboarding/before-settings.png)
+![Antes: ajustes sin selector de región](/changelog/multi-region-onboarding/before-settings.png)
 
-![Despues: ajustes con nuevo desplegable de region del servidor](/changelog/multi-region-onboarding/after-settings.png)
-
-</div>
-
-### Inicio de sesion
-
-<div className="changelog-image-grid">
-
-![Antes: login con dos usuarios demo](/changelog/multi-region-onboarding/before-login.png)
-
-![Despues: login con tres usuarios demo incluyendo NewPlayer](/changelog/multi-region-onboarding/after-login.png)
+![Después: ajustes con nuevo desplegable de región del servidor](/changelog/multi-region-onboarding/after-settings.png)
 
 </div>
-
-### Onboarding
-
-![Nueva pagina de onboarding provisional](/changelog/multi-region-onboarding/after-onboarding.png)
-
-El asistente de onboarding paso a paso llegara en un PR posterior.

@@ -69,6 +69,7 @@
     "heading": "Panel",
     "linkRiotAccount": "Vincula tu cuenta de Riot en <link>Ajustes</link> para empezar.",
     "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
+    "selectRegion": "Selecciona tu región en <link>Ajustes</link> para asegurar que tus partidas se sincronicen del servidor correcto.",
     "currentRank": "Rango actual",
     "lpLabel": "{lp} LP",
     "lpTrendRecently": "{lpChange} LP recientemente",
@@ -118,6 +119,7 @@
     "summary": "{totalMatches, plural, one {# partida} other {# partidas}} · {wins}V {losses}D ({winRate}%)",
     "linkRiotAccount": "Vincula tu cuenta de Riot en <link>Ajustes</link> para importar partidas.",
     "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
+    "selectRegion": "Selecciona tu región en <link>Ajustes</link> para asegurar que tus partidas se sincronicen del servidor correcto.",
     "searchPlaceholder": "Buscar campeón, matchup, notas...",
     "resultFilterPlaceholder": "Resultado",
     "allResults": "Todos los resultados",
@@ -174,6 +176,7 @@
   "Review": {
     "pageTitle": "Revisión",
     "setRolePreferences": "Configura tus roles preferidos en <link>Ajustes</link> para ver que partidas son en tu rol.",
+    "selectRegion": "Selecciona tu región en <link>Ajustes</link> para asegurar que tus partidas se sincronicen del servidor correcto.",
     "allCaughtUp": "¡Todo al día! No hay partidas pendientes de revisión.",
     "gamesWaitingForReview": "{count, plural, one {# partida} other {# partidas}} pendientes de revisión",
     "vs": "vs",
