@@ -13,6 +13,8 @@ declare module "next-auth" {
       role?: string | null;
       locale?: string | null;
       language?: string | null;
+      primaryRole?: string | null;
+      secondaryRole?: string | null;
     };
   }
 }

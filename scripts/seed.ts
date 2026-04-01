@@ -138,6 +138,8 @@ const MAIN_USER = {
   locale: "en-GB",
   language: "en",
   role: "admin" as const,
+  primaryRole: "MIDDLE",
+  secondaryRole: "BOTTOM",
 };
 
 const DUO_USER = {
@@ -154,6 +156,8 @@ const DUO_USER = {
   locale: "en-GB",
   language: "en",
   role: "user" as const,
+  primaryRole: null,
+  secondaryRole: null,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -222,8 +226,8 @@ async function seed() {
 
   for (const u of [MAIN_USER, DUO_USER]) {
     await client.execute({
-      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, locale, language, role, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, locale, language, role, primary_role, secondary_role, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         u.id,
         u.discordId,
@@ -238,6 +242,8 @@ async function seed() {
         u.locale,
         u.language,
         u.role,
+        u.primaryRole,
+        u.secondaryRole,
         ts(now),
         ts(now),
       ],
@@ -286,6 +292,7 @@ async function seed() {
     reviewNotes: string | null;
     reviewSkipped: string | null;
     odometer: number;
+    position: string;
   }
 
   const seedMatches: SeedMatch[] = [];
@@ -308,6 +315,11 @@ async function seed() {
     const champion = rand() < 0.7 ? pick(MAIN_POOL) : pick(CHAMPIONS);
     const keystone = pick(KEYSTONES);
     const matchup = pick(CHAMPIONS.filter((c) => c.id !== champion.id));
+
+    // Position: ~70% mid, ~15% bot (secondary), ~15% off-role
+    const posRoll = rand();
+    const position =
+      posRoll < 0.7 ? "MIDDLE" : posRoll < 0.85 ? "BOTTOM" : pick(["TOP", "JUNGLE", "UTILITY"]);
 
     // Remakes have minimal stats
     const kills = isRemake ? 0 : randInt(1, 15);
@@ -376,6 +388,7 @@ async function seed() {
           ])
         : null,
       odometer: i + 1,
+      position,
     });
   }
 
@@ -388,10 +401,10 @@ async function seed() {
               kills, deaths, assists, cs, cs_per_min,
               game_duration_seconds, gold_earned, vision_score,
               comment, reviewed, review_notes, review_skipped_reason,
-              queue_id, synced_at, raw_match_json,
+              queue_id, position, synced_at, raw_match_json,
               duo_partner_puuid, duo_partner_champion_name,
               duo_partner_kills, duo_partner_deaths, duo_partner_assists
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         m.matchId,
         m.odometer,
@@ -417,6 +430,7 @@ async function seed() {
         m.reviewNotes,
         m.reviewSkipped,
         420,
+        m.position,
         ts(m.gameDate),
         null,
         m.hasDuo ? DUO_USER.puuid : null,

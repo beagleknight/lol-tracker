@@ -120,16 +120,19 @@ Create a temporary HTML file that composites the screenshot with SVG overlays:
 Serve this with a temporary HTTP server (Playwright cannot load `file://` URLs reliably):
 
 ```bash
-# Start temp server on port 4444
-npx http-server /tmp/annotation-workspace -p 4444 -c-1 --silent &
-ANNOTATION_PID=$!
+# CRITICAL: Start with `& disown` and redirect output — plain `&` blocks the Bash tool!
+lsof -ti :4444 | xargs kill -9 2>/dev/null || true
+npx http-server /tmp/annotation-workspace -p 4444 -c-1 --silent > /tmp/http-server.log 2>&1 & disown
+sleep 2
 
 # Screenshot with Playwright at 1280x720 viewport
-# ... (use browser tools to navigate to http://localhost:4444/annotation.html and screenshot)
+# Navigate to http://localhost:4444/annotation.html and screenshot
 
-# Clean up
-kill $ANNOTATION_PID
+# Clean up when done
+lsof -ti :4444 | xargs kill -9 2>/dev/null || true
 ```
+
+**GOTCHA**: `npx http-server ... &` (without `disown` and output redirection) will **block the Bash tool** and cause a timeout. This is the same issue as with `npx next start`. Always use: `command > /tmp/logfile 2>&1 & disown`
 
 ### 4. Store all screenshots
 
