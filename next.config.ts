@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.discordapp.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "raw.communitydragon.org",
+        pathname: "/latest/plugins/**",
+      },
     ],
   },
 };

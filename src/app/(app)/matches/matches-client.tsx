@@ -9,6 +9,7 @@ import { useState, useRef, useTransition, useCallback } from "react";
 
 import type { Match } from "@/db/schema";
 
+import { EmptyState } from "@/components/empty-state";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -212,7 +213,7 @@ export function MatchesClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="animate-in-up flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
           <p className="text-muted-foreground">
@@ -317,16 +318,17 @@ export function MatchesClient({
 
       {/* Match Cards */}
       {totalMatches === 0 && !isNavigating ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-          <p className="text-muted-foreground">
-            {filters.search ||
+        <EmptyState
+          title={
+            filters.search ||
             filters.result !== "all" ||
             filters.champion !== "all" ||
             filters.review !== "all"
               ? t("noMatchesFiltered")
-              : t("noMatchesEmpty")}
-          </p>
-        </div>
+              : t("noMatchesEmpty")
+          }
+          className="py-12"
+        />
       ) : (
         <>
           <div className="relative">

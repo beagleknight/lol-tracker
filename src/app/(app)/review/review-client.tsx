@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import type { Match } from "@/db/schema";
 
 import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
+import { EmptyState } from "@/components/empty-state";
 import {
   HighlightsEditor,
   HighlightsDisplay,
@@ -149,8 +150,12 @@ function MatchCardHeaderInfo({
           <ResultBadge result={match.result} />
         </div>
         <CardDescription className="inline-flex flex-wrap items-center gap-1">
-          {formatDate(match.gameDate, locale)} &middot; {match.kills}/{match.deaths}/{match.assists}{" "}
-          &middot; {formatDuration(match.gameDurationSeconds)} &middot; {t("vs")}{" "}
+          {formatDate(match.gameDate, locale)} &middot;{" "}
+          <span className="font-mono">
+            {match.kills}/{match.deaths}/{match.assists}
+          </span>{" "}
+          &middot; <span className="font-mono">{formatDuration(match.gameDurationSeconds)}</span>{" "}
+          &middot; {t("vs")}{" "}
           {match.matchupChampionName ? (
             <>
               <Image
@@ -775,24 +780,6 @@ function CompletedCard({
 
 // ─── Tab Content Wrapper ────────────────────────────────────────────────────
 
-function TabEmptyState({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-      <Icon className="mb-3 h-8 w-8 text-gold" />
-      <p className="text-lg font-medium">{title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
 // ─── Server-side pagination for Completed tab ───────────────────────────────
 
 function CompletedPagination({
@@ -1062,7 +1049,7 @@ export function ReviewClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="animate-in-up flex items-start justify-between gap-4">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
           {totalUnreviewed === 0 ? (
@@ -1197,7 +1184,7 @@ export function ReviewClient({
         <TabsContent value={0}>
           <div className="space-y-4 pt-4">
             {postGameMatches.length === 0 ? (
-              <TabEmptyState
+              <EmptyState
                 icon={CheckCircle2}
                 title={t("emptyStates.noPostGameTitle")}
                 description={t("emptyStates.noPostGameDescription")}
@@ -1234,7 +1221,7 @@ export function ReviewClient({
         <TabsContent value={1}>
           <div className="space-y-4 pt-4">
             {vodReviewMatches.length === 0 ? (
-              <TabEmptyState
+              <EmptyState
                 icon={Video}
                 title={t("emptyStates.noVodReviewTitle")}
                 description={t("emptyStates.noVodReviewDescription")}
@@ -1275,7 +1262,7 @@ export function ReviewClient({
               </div>
             )}
             {reviewedMatches.length === 0 && completedTotal === 0 ? (
-              <TabEmptyState
+              <EmptyState
                 icon={EyeOff}
                 title={t("emptyStates.noCompletedTitle")}
                 description={t("emptyStates.noCompletedDescription")}

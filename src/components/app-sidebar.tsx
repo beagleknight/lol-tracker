@@ -22,6 +22,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -176,7 +177,7 @@ function SidebarContent({
       {/* Logo + Sync */}
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2 font-semibold">
-          <Swords className="h-5 w-5 text-gold" />
+          <Logo className="h-5 w-5 text-gold" />
           <span className="text-gradient-gold">LoL Tracker</span>
         </div>
         <Button

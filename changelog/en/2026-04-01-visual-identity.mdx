@@ -1,0 +1,58 @@
+---
+version: "2026.03.17"
+date: "2026-04-01"
+title: "Visual Identity Pass"
+tags: ["improvement"]
+---
+
+A comprehensive visual identity overhaul — custom logo, rank-themed accents, consistent typography, match card tints, hover animations, and a shared empty-state component across the entire app.
+
+### Custom Logo
+
+Replaced the generic Swords icon with a custom SVG diamond/shield logo with crosshair detail, used in the sidebar header and login page.
+
+**Before** — generic Swords icon:
+
+![Before login](/changelog/visual-identity/before-login.png)
+
+**After** — custom LoL Tracker logo:
+
+![After login annotated](/changelog/visual-identity/after-login-annotated.png)
+
+### Dashboard Rank Card
+
+The rank card now displays the official rank emblem from Community Dragon alongside a gold-accented border and rank name.
+
+**Before** — plain rank card:
+
+![Before dashboard](/changelog/visual-identity/before-dashboard.png)
+
+**After** — emblem, gold border, mono stats:
+
+![After dashboard annotated](/changelog/visual-identity/after-dashboard-annotated.png)
+
+### Match Card Win/Loss Tints
+
+Match cards now show subtle green (win) or red (loss) background tints, making results scannable at a glance. Cards also lift on hover with a shadow effect.
+
+**Before** — identical card backgrounds:
+
+![Before matches](/changelog/visual-identity/before-matches.png)
+
+**After** — tinted backgrounds + hover-lift:
+
+![After matches annotated](/changelog/visual-identity/after-matches-annotated.png)
+
+### Monospace Stats Typography
+
+All numeric stats (KDA, CS, gold, vision, duration, LP, win rates) now use the monospace font consistently across every page — dashboard, matches, match detail, analytics, review, coaching, and scout.
+
+### Shared Empty State Component
+
+Replaced 10+ ad-hoc empty state implementations with a single reusable `EmptyState` component, used across scout, matches, analytics, review, coaching, goals, and action items.
+
+![Shared EmptyState](/changelog/visual-identity/after-scout-annotated.png)
+
+### Entrance Animations
+
+Page headers and key sections now slide up on load with staggered delays, adding a polished feel without impacting accessibility (animations respect `prefers-reduced-motion`).

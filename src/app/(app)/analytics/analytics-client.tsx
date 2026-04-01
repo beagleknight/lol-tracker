@@ -24,6 +24,7 @@ import {
 import type { RankSnapshot } from "@/db/schema";
 
 import { ChampionLink } from "@/components/champion-link";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -430,24 +431,24 @@ export function AnalyticsClient({
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
           <p className="text-muted-foreground">{t("importGamesFirst")}</p>
         </div>
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <BarChart3 className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-lg font-medium">{t("noDataYetTitle")}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t("noDataYetDescription")}</p>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title={t("noDataYetTitle")}
+          description={t("noDataYetDescription")}
+        />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="animate-in-up">
         <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">{t("gamesAnalyzed", { count: meaningfulCount })}</p>
       </div>
 
       {/* Rank Journey + Win Rate side-by-side */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="animate-in-up-delay-1 grid gap-6 lg:grid-cols-2">
         {rankChartData.length >= 2 && lpChartMeta ? (
           <Card className="surface-glow">
             <CardHeader>
@@ -978,16 +979,16 @@ export function AnalyticsClient({
                           {rune.name}
                         </span>
                       </TableCell>
-                      <TableCell className="text-center text-sm">{rune.games}</TableCell>
+                      <TableCell className="text-center font-mono text-sm">{rune.games}</TableCell>
                       <TableCell className="text-center">
                         <Badge
                           variant={rune.winRate >= 50 ? "default" : "destructive"}
-                          className="text-xs"
+                          className="font-mono text-xs"
                         >
                           {rune.winRate}%
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center text-sm text-muted-foreground">
+                      <TableCell className="text-center font-mono text-sm text-muted-foreground">
                         {rune.wins}W {rune.losses}L
                       </TableCell>
                     </TableRow>
@@ -1061,16 +1062,16 @@ export function AnalyticsClient({
                         textClassName="font-medium text-sm"
                       />
                     </TableCell>
-                    <TableCell className="text-center text-sm">{champ.games}</TableCell>
+                    <TableCell className="text-center font-mono text-sm">{champ.games}</TableCell>
                     <TableCell className="text-center">
                       <Badge
                         variant={champ.winRate >= 50 ? "default" : "destructive"}
-                        className="text-xs"
+                        className="font-mono text-xs"
                       >
                         {champ.winRate}%
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
+                    <TableCell className="text-center font-mono text-sm text-muted-foreground">
                       {champ.wins}W {champ.losses}L
                     </TableCell>
                     <TableCell className="text-center font-mono text-sm">

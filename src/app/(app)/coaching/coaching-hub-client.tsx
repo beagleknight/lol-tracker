@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
 import { updateActionItemStatus } from "@/app/actions/coaching";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,7 +120,7 @@ export function CoachingHubClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="animate-in-up flex items-center justify-between">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
@@ -138,17 +139,19 @@ export function CoachingHubClient({
 
       {/* Empty state */}
       {totalSessions === 0 && activeActionItems.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <GraduationCap className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-lg font-medium">{t("emptyStateTitle")}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t("emptyStateDescription")}</p>
-          <Link href="/coaching/new" className="mt-4">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("scheduleSessionButton")}
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          icon={GraduationCap}
+          title={t("emptyStateTitle")}
+          description={t("emptyStateDescription")}
+          action={
+            <Link href="/coaching/new">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                {t("scheduleSessionButton")}
+              </Button>
+            </Link>
+          }
+        />
       )}
 
       {/* Upcoming Sessions */}
@@ -393,7 +396,7 @@ export function CoachingHubClient({
                         <span className="text-loss">{interval.losses}L</span>
                       </span>
                       {interval.matchCount > 0 && (
-                        <span>
+                        <span className="font-mono">
                           {t("intervalWinRate", {
                             winRate: Math.round((interval.wins / interval.matchCount) * 100),
                           })}

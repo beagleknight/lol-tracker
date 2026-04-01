@@ -1,0 +1,58 @@
+---
+version: "2026.03.17"
+date: "2026-04-01"
+title: "Identidad Visual"
+tags: ["improvement"]
+---
+
+Una revisión completa de la identidad visual — logo personalizado, acentos por rango, tipografía consistente, tintes en tarjetas de partida, animaciones hover y un componente de estado vacío compartido en toda la app.
+
+### Logo Personalizado
+
+Se reemplazó el icono genérico de espadas por un logo SVG personalizado con forma de diamante/escudo y detalle de mira, usado en la barra lateral y la página de inicio de sesión.
+
+**Antes** — icono genérico de espadas:
+
+![Antes login](/changelog/visual-identity/before-login.png)
+
+**Después** — logo personalizado de LoL Tracker:
+
+![Después login anotado](/changelog/visual-identity/after-login-annotated.png)
+
+### Tarjeta de Rango en el Dashboard
+
+La tarjeta de rango ahora muestra el emblema oficial del rango de Community Dragon junto con un borde dorado y el nombre del rango.
+
+**Antes** — tarjeta de rango simple:
+
+![Antes dashboard](/changelog/visual-identity/before-dashboard.png)
+
+**Después** — emblema, borde dorado, stats mono:
+
+![Después dashboard anotado](/changelog/visual-identity/after-dashboard-annotated.png)
+
+### Tintes de Victoria/Derrota en Tarjetas
+
+Las tarjetas de partida ahora muestran tintes de fondo sutiles en verde (victoria) o rojo (derrota), haciendo los resultados visibles de un vistazo. Las tarjetas también se elevan al pasar el ratón con efecto de sombra.
+
+**Antes** — fondos de tarjeta idénticos:
+
+![Antes partidas](/changelog/visual-identity/before-matches.png)
+
+**Después** — fondos con tinte + elevación hover:
+
+![Después partidas anotado](/changelog/visual-identity/after-matches-annotated.png)
+
+### Tipografía Monoespaciada en Stats
+
+Todos los números (KDA, CS, oro, visión, duración, LP, tasas de victoria) ahora usan la fuente monoespaciada de forma consistente en todas las páginas — dashboard, partidas, detalle de partida, analíticas, revisión, coaching y scout.
+
+### Componente de Estado Vacío Compartido
+
+Se reemplazaron más de 10 implementaciones ad-hoc de estados vacíos con un único componente reutilizable `EmptyState`, usado en scout, partidas, analíticas, revisión, coaching, objetivos y acciones.
+
+![EmptyState compartido](/changelog/visual-identity/after-scout-annotated.png)
+
+### Animaciones de Entrada
+
+Los encabezados de página y secciones clave ahora se deslizan hacia arriba al cargar con retardos escalonados, añadiendo un acabado pulido sin afectar la accesibilidad (las animaciones respetan `prefers-reduced-motion`).
