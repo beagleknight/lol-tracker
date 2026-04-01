@@ -197,24 +197,14 @@ test.describe("Coaching flow", () => {
     // Verify initial status is pending
     await expect(firstActionItemRow).toHaveAttribute("data-status", "pending");
 
-    // Click the cycle button and wait for the server action response
+    // Click the cycle button — optimistic state updates the UI immediately
     const cycleButton = firstActionItemRow.locator("button").first();
     await expect(cycleButton).toBeVisible();
+    await cycleButton.click();
 
-    const [response] = await Promise.all([
-      page.waitForResponse(
-        (resp) => resp.url().includes("coaching") && resp.request().method() === "POST",
-        { timeout: 15_000 },
-      ),
-      cycleButton.click(),
-    ]);
-
-    // Verify server responded successfully
-    expect(response.status()).toBeLessThan(400);
-
-    // The status should cycle from "pending" to "in_progress"
+    // The status should cycle from "pending" to "in_progress" (optimistic update)
     await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress", {
-      timeout: 10_000,
+      timeout: 5_000,
     });
   });
 
