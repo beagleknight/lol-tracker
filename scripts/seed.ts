@@ -123,6 +123,7 @@ const _TOPICS = [
 
 const MAIN_USER_ID = "demo-user-0001-0001-000000000001";
 const DUO_USER_ID = "demo-user-0002-0002-000000000002";
+const NEW_PLAYER_ID = "demo-user-0003-0003-000000000003";
 
 const MAIN_USER = {
   id: MAIN_USER_ID,
@@ -135,6 +136,8 @@ const MAIN_USER = {
   puuid: "demo-puuid-main-0000000000000000000000000000000000000000",
   summonerId: "demo-summoner-main",
   duoPartnerUserId: DUO_USER_ID,
+  region: "euw1",
+  onboardingCompleted: true,
   locale: "en-GB",
   language: "en",
   role: "admin" as const,
@@ -153,6 +156,28 @@ const DUO_USER = {
   puuid: "demo-puuid-duo-00000000000000000000000000000000000000000",
   summonerId: "demo-summoner-duo",
   duoPartnerUserId: MAIN_USER_ID,
+  region: "euw1",
+  onboardingCompleted: true,
+  locale: "en-GB",
+  language: "en",
+  role: "user" as const,
+  primaryRole: null,
+  secondaryRole: null,
+};
+
+const NEW_PLAYER = {
+  id: NEW_PLAYER_ID,
+  discordId: "demo_discord_003",
+  name: "NewPlayer",
+  image: null,
+  email: "newplayer@example.com",
+  riotGameName: null,
+  riotTagLine: null,
+  puuid: null,
+  summonerId: null,
+  duoPartnerUserId: null,
+  region: null,
+  onboardingCompleted: false,
   locale: "en-GB",
   language: "en",
   role: "user" as const,
@@ -224,10 +249,10 @@ async function seed() {
   console.log("Creating users...");
   const now = new Date("2026-03-25T10:00:00Z");
 
-  for (const u of [MAIN_USER, DUO_USER]) {
+  for (const u of [MAIN_USER, DUO_USER, NEW_PLAYER]) {
     await client.execute({
-      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, locale, language, role, primary_role, secondary_role, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         u.id,
         u.discordId,
@@ -239,6 +264,8 @@ async function seed() {
         u.puuid,
         u.summonerId,
         u.duoPartnerUserId,
+        u.region,
+        u.onboardingCompleted ? 1 : 0,
         u.locale,
         u.language,
         u.role,
@@ -739,7 +766,7 @@ async function seed() {
 
   // ─── Summary ─────────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
-  console.log(`  Users:            2`);
+  console.log(`  Users:            3`);
   console.log(`  Matches:          ${totalMatches}`);
   console.log(`  Rank snapshots:   ${rankProgression.length}`);
   console.log(`  Coaching sessions: ${sessions.length}`);
@@ -747,9 +774,10 @@ async function seed() {
   console.log(`  Highlights:       ${highlights.length}`);
   console.log(`  Goals:            2`);
   console.log(`  Invites:          1`);
-  console.log(`\nDemo user login:`);
-  console.log(`  Name: ${MAIN_USER.name}`);
-  console.log(`  Riot ID: ${MAIN_USER.riotGameName}#${MAIN_USER.riotTagLine}`);
+  console.log(`\nDemo user logins:`);
+  console.log(`  ${MAIN_USER.name} (admin, Riot linked, onboarding done)`);
+  console.log(`  ${DUO_USER.name} (user, Riot linked, onboarding done)`);
+  console.log(`  ${NEW_PLAYER.name} (user, no Riot account, needs onboarding)`);
 }
 
 seed().catch((err) => {

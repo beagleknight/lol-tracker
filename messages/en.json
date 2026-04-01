@@ -62,7 +62,8 @@
     "demoLoginButton": "Log in",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "User",
-    "demoNoRiotAccount": "No Riot account linked"
+    "demoNoRiotAccount": "No Riot account linked",
+    "demoNeedsSetup": "Needs setup"
   },
   "Dashboard": {
     "heading": "Dashboard",
@@ -601,6 +602,8 @@
       "description": "Link your Riot Games account to sync your ranked games automatically.",
       "riotIdLabel": "Riot ID",
       "riotIdPlaceholder": "beagleknight#euw",
+      "regionLabel": "Server region",
+      "regionPlaceholder": "Select region",
       "linkButton": "Link",
       "unlinkButton": "Unlink",
       "unlinkHelpText": "Unlinking will not delete your imported match data.",
@@ -670,6 +673,7 @@
       "duoPartnerSet": "Duo partner set to {partnerName}",
       "duoPartnerCleared": "Duo partner cleared.",
       "localeUpdated": "Language & region updated.",
+      "regionUpdated": "Server region updated.",
       "languageUpdated": "Language updated.",
       "rolePreferencesSaved": "Role preferences saved.",
       "rolePreferencesSaveError": "Failed to save role preferences."

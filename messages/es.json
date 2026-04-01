@@ -62,7 +62,8 @@
     "demoLoginButton": "Entrar",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "Usuario",
-    "demoNoRiotAccount": "Sin cuenta de Riot vinculada"
+    "demoNoRiotAccount": "Sin cuenta de Riot vinculada",
+    "demoNeedsSetup": "Necesita configuración"
   },
   "Dashboard": {
     "heading": "Panel",
@@ -601,6 +602,8 @@
       "description": "Vincula tu cuenta de Riot Games para sincronizar tus partidas ranked automáticamente.",
       "riotIdLabel": "Riot ID",
       "riotIdPlaceholder": "beagleknight#euw",
+      "regionLabel": "Región del servidor",
+      "regionPlaceholder": "Seleccionar región",
       "linkButton": "Vincular",
       "unlinkButton": "Desvincular",
       "unlinkHelpText": "Desvincular no eliminará tus datos de partidas importadas.",
@@ -670,6 +673,7 @@
       "duoPartnerSet": "Compañero de dúo establecido: {partnerName}",
       "duoPartnerCleared": "Compañero de dúo eliminado.",
       "localeUpdated": "Idioma y región actualizados.",
+      "regionUpdated": "Región del servidor actualizada.",
       "languageUpdated": "Idioma actualizado.",
       "rolePreferencesSaved": "Preferencias de rol guardadas.",
       "rolePreferencesSaveError": "Error al guardar las preferencias de rol."

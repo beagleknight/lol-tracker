@@ -1,0 +1,41 @@
+---
+version: "2026.04.4"
+date: "2026-04-01"
+title: "Multi-region support and onboarding foundation"
+tags: ["feature"]
+---
+
+The app now supports all Riot server regions, so players outside Europe can link their accounts and sync matches. This is the first step toward multi-user beta readiness.
+
+### What changed
+
+- **Server region selector in settings** — choose your Riot server (EUW, NA, KR, etc.) from a dropdown in the Riot account card. The region is saved and used for all API calls.
+- **All Riot API calls are region-aware** — match history, rank data, and account lookups now route to the correct regional and platform endpoints based on your selected region.
+- **Onboarding redirect** — new users who haven't completed setup are automatically redirected to an onboarding page instead of landing on an empty dashboard.
+- **NewPlayer demo account** — a third demo user with no Riot account linked, for testing the onboarding flow.
+
+### Settings
+
+<div className="changelog-image-grid">
+
+![Before: settings without region selector](/changelog/multi-region-onboarding/before-settings.png)
+
+![After: settings with new server region dropdown](/changelog/multi-region-onboarding/after-settings.png)
+
+</div>
+
+### Login
+
+<div className="changelog-image-grid">
+
+![Before: login with two demo users](/changelog/multi-region-onboarding/before-login.png)
+
+![After: login with three demo users including NewPlayer](/changelog/multi-region-onboarding/after-login.png)
+
+</div>
+
+### Onboarding
+
+![New onboarding placeholder page](/changelog/multi-region-onboarding/after-onboarding.png)
+
+The full step-by-step onboarding wizard is coming in a follow-up PR.

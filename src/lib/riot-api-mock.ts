@@ -29,6 +29,7 @@ const DEMO_DUO = {
 export async function mockGetAccountByRiotId(
   gameName: string,
   tagLine: string,
+  _region?: string,
 ): Promise<{ puuid: string; gameName: string; tagLine: string }> {
   // Match against seeded accounts
   const lower = gameName.toLowerCase();
@@ -51,7 +52,10 @@ export async function mockGetAccountByRiotId(
 
 // ─── Mock: getSoloQueueEntryByPuuid ──────────────────────────────────────────
 
-export async function mockGetSoloQueueEntryByPuuid(puuid: string): Promise<{
+export async function mockGetSoloQueueEntryByPuuid(
+  puuid: string,
+  _region?: string,
+): Promise<{
   leagueId: string;
   summonerId: string;
   queueType: string;
@@ -80,14 +84,14 @@ export async function mockGetSoloQueueEntryByPuuid(puuid: string): Promise<{
 
 // ─── Mock: getMatchIds ───────────────────────────────────────────────────────
 
-export async function mockGetMatchIds(): Promise<string[]> {
+export async function mockGetMatchIds(_region?: string): Promise<string[]> {
   // All matches are already seeded — return empty to simulate "no new matches"
   return [];
 }
 
 // ─── Mock: getMatch ──────────────────────────────────────────────────────────
 
-export async function mockGetMatch(matchId: string): Promise<RiotMatch> {
+export async function mockGetMatch(matchId: string, _region?: string): Promise<RiotMatch> {
   // This should rarely be called in demo mode since getMatchIds returns [],
   // but provide a minimal valid response in case it is.
   return {
