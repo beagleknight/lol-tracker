@@ -80,6 +80,7 @@ export function ChampionLink({
           alt={champion}
           width={iconSize}
           height={iconSize}
+          unoptimized={iconSize <= 32}
           className="rounded"
         />
       )}

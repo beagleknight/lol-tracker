@@ -972,6 +972,7 @@ export function AnalyticsClient({
                                 alt={rune.name}
                                 width={18}
                                 height={18}
+                                unoptimized
                                 className="rounded"
                               />
                             ) : null;

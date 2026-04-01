@@ -265,6 +265,7 @@ export function EditSessionClient({
                         alt={match.championName}
                         width={20}
                         height={20}
+                        unoptimized
                         className="rounded"
                       />
                       {match.championName}
@@ -278,6 +279,7 @@ export function EditSessionClient({
                             alt={match.matchupChampionName}
                             width={16}
                             height={16}
+                            unoptimized
                             className="rounded"
                           />
                           {match.matchupChampionName}

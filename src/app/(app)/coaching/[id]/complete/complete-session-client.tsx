@@ -180,6 +180,7 @@ export function CompleteSessionClient({
                   alt={vodMatch.championName}
                   width={24}
                   height={24}
+                  unoptimized
                   className="rounded"
                 />
                 <span className="text-sm">{vodMatch.championName}</span>
