@@ -218,6 +218,7 @@ export function CoachingHubClient({
                                 alt={vodMatch.championName}
                                 width={16}
                                 height={16}
+                                unoptimized
                                 className="rounded"
                               />
                               {vodMatch.championName}
@@ -233,6 +234,7 @@ export function CoachingHubClient({
                                     alt={vodMatch.matchupChampionName}
                                     width={16}
                                     height={16}
+                                    unoptimized
                                     className="rounded"
                                   />
                                   {vodMatch.matchupChampionName}

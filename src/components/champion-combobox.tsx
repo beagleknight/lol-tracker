@@ -91,6 +91,7 @@ export function ChampionCombobox({
                 alt={value}
                 width={20}
                 height={20}
+                unoptimized
                 className="rounded"
               />
               {value}
@@ -127,6 +128,7 @@ export function ChampionCombobox({
                               alt={c.name}
                               width={20}
                               height={20}
+                              unoptimized
                               className="rounded"
                             />
                             {c.name}
@@ -160,6 +162,7 @@ export function ChampionCombobox({
                         alt={name}
                         width={20}
                         height={20}
+                        unoptimized
                         className="rounded"
                       />
                       {name}

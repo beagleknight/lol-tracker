@@ -292,6 +292,7 @@ export function MatchesClient({
                     alt={c}
                     width={16}
                     height={16}
+                    unoptimized
                     className="rounded"
                   />
                   {c}

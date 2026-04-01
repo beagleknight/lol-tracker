@@ -51,6 +51,7 @@ function ChampionIcon({
       alt={championName}
       width={size}
       height={size}
+      unoptimized={size <= 32}
       className="rounded"
     />
   );
@@ -215,6 +216,7 @@ function ScoutingReport({
                           alt={rune.keystoneName}
                           width={18}
                           height={18}
+                          unoptimized
                           className="rounded"
                         />
                       ) : null;
