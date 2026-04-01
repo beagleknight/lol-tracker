@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   Download,
   Crosshair,
+  Globe,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -260,6 +261,21 @@ export function MatchesClient({
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
             {t.rich("setRolePreferences", {
+              link: (chunks) => (
+                <Link href="/settings" className="font-medium underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
+        </div>
+      )}
+
+      {isRiotLinked && !user?.region && (
+        <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
+          <Globe className="h-4 w-4 shrink-0" />
+          <span>
+            {t.rich("selectRegion", {
               link: (chunks) => (
                 <Link href="/settings" className="font-medium underline">
                   {chunks}

@@ -21,6 +21,7 @@ import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
 import {
   linkRiotAccount,
   unlinkRiotAccount,
+  updateRegion,
   getRegisteredUsers,
   getDuoPartner,
   setDuoPartner,
@@ -46,6 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
 import { useAuth } from "@/lib/auth-client";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
+import { PLATFORM_IDS, PLATFORM_LABELS } from "@/lib/riot-api";
 
 interface InviteItem {
   id: number;
@@ -60,6 +62,7 @@ export default function SettingsPage() {
   const { user, updateSession } = useAuth();
   const t = useTranslations("Settings");
   const [riotId, setRiotId] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState(user?.region ?? "euw1");
   const [isPending, startTransition] = useTransition();
 
   const isLinked = !!user?.riotGameName;
@@ -104,7 +107,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user?.primaryRole) setPrimaryRole(user.primaryRole);
     if (user?.secondaryRole) setSecondaryRole(user.secondaryRole);
-  }, [user?.primaryRole, user?.secondaryRole]);
+    if (user?.region) setSelectedRegion(user.region);
+  }, [user?.primaryRole, user?.secondaryRole, user?.region]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -142,6 +146,7 @@ export default function SettingsPage() {
     startTransition(async () => {
       const formData = new FormData();
       formData.set("riotId", riotId);
+      formData.set("region", selectedRegion);
       const result = await linkRiotAccount(formData);
 
       if (result.error) {
@@ -237,6 +242,20 @@ export default function SettingsPage() {
 
   // ─── Locale handler ─────────────────────────────────────────────────────
 
+  function handleRegionChange(region: string | null) {
+    if (!region) return;
+    setSelectedRegion(region);
+    startTransition(async () => {
+      const result = await updateRegion(region);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("toasts.regionUpdated"));
+        await updateSession();
+      }
+    });
+  }
+
   function handleLocaleChange(locale: string | null) {
     if (!locale) return;
     startTransition(async () => {
@@ -326,10 +345,51 @@ export default function SettingsPage() {
                   {t("riotAccount.unlinkButton")}
                 </Button>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="region-select">{t("riotAccount.regionLabel")}</Label>
+                <Select value={selectedRegion} onValueChange={handleRegionChange}>
+                  <SelectTrigger
+                    id="region-select"
+                    className="w-full max-w-xs"
+                    disabled={isPending}
+                  >
+                    <SelectValue placeholder={t("riotAccount.regionPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORM_IDS.map((id) => (
+                      <SelectItem key={id} value={id}>
+                        {PLATFORM_LABELS[id]} ({id})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <p className="text-xs text-muted-foreground">{t("riotAccount.unlinkHelpText")}</p>
             </div>
           ) : (
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="region-select">{t("riotAccount.regionLabel")}</Label>
+                <Select
+                  value={selectedRegion}
+                  onValueChange={(v) => v !== null && setSelectedRegion(v)}
+                >
+                  <SelectTrigger
+                    id="region-select"
+                    className="w-full max-w-xs"
+                    disabled={isPending}
+                  >
+                    <SelectValue placeholder={t("riotAccount.regionPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORM_IDS.map((id) => (
+                      <SelectItem key={id} value={id}>
+                        {PLATFORM_LABELS[id]} ({id})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="riot-id">{t("riotAccount.riotIdLabel")}</Label>
                 <div className="flex gap-2">
