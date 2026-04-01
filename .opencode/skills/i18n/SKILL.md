@@ -62,12 +62,12 @@ All user-facing text **MUST** use sentence case. Only the first word of a phrase
 
 ### What sentence case looks like
 
-| Wrong (Title Case)            | Right (sentence case)          |
-| ----------------------------- | ------------------------------ |
-| "Current Rank"                | "Current rank"                 |
-| "Session Win Rate"            | "Session win rate"             |
-| "VOD Review Notes"            | "VOD review notes"             |
-| "Back to Matches"             | "Back to matches"              |
+| Wrong (Title Case)              | Right (sentence case)           |
+| ------------------------------- | ------------------------------- |
+| "Current Rank"                  | "Current rank"                  |
+| "Session Win Rate"              | "Session win rate"              |
+| "VOD Review Notes"              | "VOD review notes"              |
+| "Back to Matches"               | "Back to matches"               |
 | "Coaching Flow UX Improvements" | "Coaching flow UX improvements" |
 
 ### Proper nouns to preserve (always capitalized)

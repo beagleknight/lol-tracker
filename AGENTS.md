@@ -12,7 +12,9 @@ Before making ANY code change:
 
 Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only — in that case add the `skip-changelog` label.
 
-**MANDATORY: Run `npm run fmt:check`, `npm run lint`, and `npm run build` locally BEFORE pushing.** Do not rely on CI as the first lint/build check — catch errors locally first.
+**Formatting and linting are enforced automatically by a lefthook pre-commit hook** — `oxfmt --check` and `oxlint` run on staged files at commit time. If they fail, the commit is rejected. Fix formatting with `npm run fmt` and re-commit. You do NOT need to run `fmt:check` or `lint` manually before pushing — the hook handles it.
+
+**MANDATORY: Run `npm run build` locally BEFORE pushing.** Do not rely on CI as the first build check — catch errors locally first.
 
 **MANDATORY: Run `npm run test:smoke` locally BEFORE pushing when the PR touches UI.** Any change to components, styles, color tokens, ARIA attributes, layouts, or pages requires smoke tests to pass locally. This catches a11y violations (color-contrast, missing labels, etc.) that would otherwise only fail in CI. Do NOT skip this step — pushing code that fails smoke tests wastes a CI round-trip.
 
@@ -133,6 +135,7 @@ Before committing any file that adds a new `t()` call:
 4. Verify with `npm run build` — the type system catches missing keys at build time
 
 **All UI copy MUST use sentence case.** Only the first word and proper nouns/acronyms are capitalized. No Title Case anywhere — not in i18n values, hardcoded strings, or changelog titles. See the `i18n` skill for the full list of preserved proper nouns and acronyms.
+
 <!-- END:i18n-aria-rules -->
 
 <!-- BEGIN:ui-screenshots-rules -->
