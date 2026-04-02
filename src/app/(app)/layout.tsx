@@ -41,6 +41,7 @@ async function SidebarWithUser() {
         riotGameName: user.riotGameName,
         riotTagLine: user.riotTagLine,
         puuid: user.puuid,
+        role: user.role,
       }}
       reviewCounts={{
         postGame: reviewCounts?.postGame ?? 0,

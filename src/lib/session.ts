@@ -19,7 +19,12 @@ export const getCurrentUser = cache(async () => {
     where: eq(users.id, session.user.id),
   });
 
-  return user || null;
+  if (!user) return null;
+
+  // Deactivated users are treated as logged out — invalidates active JWT sessions
+  if (user.deactivatedAt) return null;
+
+  return user;
 });
 
 export async function requireUser() {

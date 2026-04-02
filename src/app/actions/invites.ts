@@ -30,9 +30,11 @@ export async function createInvite() {
   const admin = await requireAdmin();
 
   const code = generateCode();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
   await db.insert(invites).values({
     code,
     createdBy: admin.id,
+    expiresAt,
   });
 
   return { code };
@@ -65,6 +67,7 @@ export async function getInvites() {
     usedBy: invite.usedBy,
     usedByName: invite.usedBy ? (userNameMap.get(invite.usedBy) ?? null) : null,
     usedAt: invite.usedAt,
+    expiresAt: invite.expiresAt,
   }));
 }
 

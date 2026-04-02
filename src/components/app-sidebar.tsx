@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Sparkles,
   Target,
+  Shield,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -79,6 +80,7 @@ interface SidebarProps {
     riotGameName?: string | null;
     riotTagLine?: string | null;
     puuid?: string | null;
+    role?: string | null;
   };
   reviewCounts?: {
     postGame: number;
@@ -172,6 +174,12 @@ function SidebarContent({
     item.href === "/changelog" && hasUnseenChangelog ? { ...item, dot: true } : item,
   );
 
+  // Conditionally add Admin link for admin users
+  const isAdmin = user.role === "admin";
+  const adminNav: NavItem[] = isAdmin
+    ? [{ label: t("navAdmin"), href: "/admin", icon: Shield }]
+    : [];
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo + Sync */}
@@ -237,6 +245,9 @@ function SidebarContent({
 
         <div className="space-y-1">
           {bottomNavWithDot.map((item) => (
+            <NavLink key={item.href} item={item} onClick={onNavClick} />
+          ))}
+          {adminNav.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
         </div>

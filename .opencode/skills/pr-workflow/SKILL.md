@@ -122,7 +122,22 @@ The audience is **League of Legends players** who want to know what changed. Not
 | "i18n files updated"         | (skip, internal detail)                                   |
 | "query parameter"            | (describe the user-visible effect instead)                |
 
-**Internal-only changes get no changelog.** If a change is purely internal with zero user-visible impact (code style, tag cleanup, typography convention name, dependency bumps), either fold a one-liner into a related user-facing entry or skip the changelog entirely (use `skip-changelog` label). Examples of things that should NOT get their own changelog entry: adopting sentence case, simplifying changelog filter tags, updating linting config, renaming internal variables.
+**Changelog litmus test — MANDATORY.** Before writing any changelog, ask: _"Would a League of Legends player notice this change during normal use without being told about it?"_ If no, use `skip-changelog`.
+
+**Examples that PASS the test** (need a changelog):
+
+- Duo partner picker redesigned → player interacts with it directly
+- New onboarding wizard → every new player goes through it
+- Match cards show role icons → visible on every match
+
+**Examples that FAIL the test** (use `skip-changelog`):
+
+- Rate limiter / sync queue → invisible plumbing, players just see "syncing"
+- Admin dashboard / user management → only the admin sees it, not players
+- Invite expiration logic → players just use a code that works or doesn't
+- CI config, linting rules, skill file updates → purely internal
+- Dependency bumps, code style changes, variable renames → purely internal
+- Database migrations with no UI change → invisible to players
 
 **Litmus test — MANDATORY before writing any changelog entry:** Ask yourself: _"Would a League of Legends player notice this change during normal use without being told about it?"_ If the answer is no, use `skip-changelog`. This test catches the most common mistake: writing changelogs for infrastructure that only surfaces as internal status messages, error prevention, or performance improvements under load. Examples that **fail** the litmus test (use `skip-changelog`): rate limiters, sync queues, database migrations, caching layers, CI config, internal error handling, monitoring. Examples that **pass** the litmus test (write a changelog): new search UI, redesigned match cards, new coaching feature, bug fix where matches weren't loading.
 

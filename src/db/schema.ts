@@ -32,6 +32,7 @@ export const users = sqliteTable("users", {
   role: text("role", { enum: ["admin", "user"] })
     .notNull()
     .default("user"),
+  deactivatedAt: integer("deactivated_at", { mode: "timestamp" }), // null = active
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -208,6 +209,7 @@ export const invites = sqliteTable("invites", {
     .references(() => users.id, { onDelete: "cascade" }),
   usedBy: text("used_by").references(() => users.id, { onDelete: "set null" }),
   usedAt: integer("used_at", { mode: "timestamp" }),
+  expiresAt: integer("expires_at", { mode: "timestamp" }), // null = never expires (legacy)
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -347,4 +349,5 @@ export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
 export type MatchupNote = typeof matchupNotes.$inferSelect;
 export type AiInsight = typeof aiInsights.$inferSelect;
+export type Invite = typeof invites.$inferSelect;
 export type SyncLock = typeof syncLocks.$inferSelect;
