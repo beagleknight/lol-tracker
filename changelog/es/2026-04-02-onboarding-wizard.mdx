@@ -1,27 +1,25 @@
 ---
 version: "2026.04.5"
 date: "2026-04-02"
-title: "Asistente de onboarding y sincronización por lotes"
+title: "Configuración guiada para nuevos jugadores"
 tags: ["feature"]
 ---
 
-Los nuevos usuarios ahora reciben un asistente guiado de 4 pasos en lugar de llegar directamente a un dashboard vacío. El sistema de sincronización de partidas también se refactorizó para funcionar por lotes, evitando timeouts en Vercel.
+Los nuevos jugadores ahora reciben un asistente de configuración paso a paso en lugar de llegar a un dashboard vacío. La sincronización de partidas también es más fiable ahora, especialmente para jugadores con un historial largo.
 
-### Asistente de onboarding
+### Asistente de configuración
 
-Cuando un nuevo usuario inicia sesión por primera vez, se le redirige a un asistente a pantalla completa que le guía por:
+Cuando inicias sesión por primera vez, un asistente a pantalla completa te guía por todo:
 
-1. **Elige tu servidor** — selecciona tu región de Riot desde un desplegable
-2. **Vincula tu cuenta de Riot** — introduce tu Riot ID (NombreDeJuego#TagLine) para conectar vía la API de Riot
-3. **Preferencias de rol** — opcionalmente elige tu rol principal y secundario (se puede omitir)
-4. **Sincronizar partidas** — importa tus 10 partidas clasificatorias más recientes con una barra de progreso en vivo, y después accede al dashboard
+1. **Elige tu servidor** — selecciona tu región de Riot (EUW, NA, KR, etc.)
+2. **Vincula tu cuenta de Riot** — introduce tu Riot ID (NombreDeJuego#TagLine) para conectar tu cuenta
+3. **Preferencias de rol** — opcionalmente elige tu rol principal y secundario (puedes saltarte este paso)
+4. **Importa tus partidas** — tus 10 partidas clasificatorias más recientes se importan con una barra de progreso en vivo, y después llegas al dashboard
 
 ![Paso 1: selector de región con barra de progreso](/changelog/onboarding-wizard/after-step1-annotated.png)
 
 ![Paso 2: vinculación de cuenta Riot](/changelog/onboarding-wizard/after-step2-annotated.png)
 
-### Sincronización de partidas por lotes
+### Sincronización de partidas más fluida
 
-La API de sincronización ahora soporta un parámetro `?limit=N`. Cuando se establece, solo se sincronizan N partidas por solicitud y la respuesta incluye cuántas quedan. El hook `useSyncMatches` continúa automáticamente en lotes de 20 con un retraso de 1,5 segundos entre cada uno, para que historiales de partidas grandes no corran el riesgo de alcanzar el timeout de funciones de Vercel.
-
-Después de completar el onboarding, una cookie `sync_on_login` activa la barra lateral para continuar sincronizando las partidas restantes en segundo plano.
+Las partidas ahora se sincronizan en bloques más pequeños para que nada se pierda, incluso si tienes cientos de partidas en tu historial. Después de que el asistente termina, las partidas restantes siguen sincronizándose en segundo plano mientras exploras el dashboard.
