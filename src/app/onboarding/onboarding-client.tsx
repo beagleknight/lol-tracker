@@ -213,7 +213,14 @@ function RolesStep({
               className="w-full"
               aria-label={t("roles.primaryLabel")}
             >
-              <SelectValue placeholder={t("roles.placeholder")} />
+              <SelectValue placeholder={t("roles.placeholder")}>
+                {primaryRole && (
+                  <span className="inline-flex items-center gap-2">
+                    <PositionIcon position={primaryRole} size={14} />
+                    {t(`roles.positions.${primaryRole}`)}
+                  </span>
+                )}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {POSITIONS.map((pos) => (
@@ -240,7 +247,14 @@ function RolesStep({
               className="w-full"
               aria-label={t("roles.secondaryLabel")}
             >
-              <SelectValue placeholder={t("roles.nonePlaceholder")} />
+              <SelectValue placeholder={t("roles.nonePlaceholder")}>
+                {secondaryRole && secondaryRole !== "none" && (
+                  <span className="inline-flex items-center gap-2">
+                    <PositionIcon position={secondaryRole} size={14} />
+                    {t(`roles.positions.${secondaryRole}`)}
+                  </span>
+                )}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">{t("roles.nonePlaceholder")}</SelectItem>
