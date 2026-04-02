@@ -1,0 +1,1 @@
+UPDATE `users` SET `onboarding_completed` = true WHERE `puuid` IS NOT NULL;
