@@ -413,109 +413,111 @@ export function DashboardClient({
 
         {/* Right Column */}
         <div className="space-y-4">
-          {/* Upcoming Coaching Session */}
-          {upcomingSession ? (
-            <Card className="surface-glow border-gold/20">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Calendar className="h-4 w-4 text-gold" />
-                  {t("nextSession")}
-                </CardTitle>
-                <Link href={`/coaching/${upcomingSession.id}`}>
-                  <Button variant="ghost" size="sm">
-                    {t("view")}
-                    <ChevronRight className="ml-1 h-3 w-3" />
-                  </Button>
-                </Link>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm font-medium">{upcomingSession.coachName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatDate(upcomingSession.date, locale, "datetime-short")}
-                </p>
-                {!upcomingSession.vodMatchId && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-warning">
-                    <AlertCircle className="h-3 w-3" />
-                    {t("noVodSelected")}
-                  </p>
-                )}
-                {(() => {
-                  const now = new Date();
-                  const diff = upcomingSession.date.getTime() - now.getTime();
-                  if (diff <= 0) {
-                    const daysOverdue = Math.floor(-diff / (1000 * 60 * 60 * 24));
-                    const isOverdue = daysOverdue >= 2;
-                    return (
-                      <Badge
-                        className={`mt-2 text-xs ${
-                          isOverdue
-                            ? "border-loss/30 bg-loss/10 text-loss"
-                            : "border-gold/30 bg-gold/20 text-gold"
-                        }`}
-                      >
-                        {isOverdue
-                          ? t("readyToCompleteDaysAgo", { days: daysOverdue })
-                          : t("readyToComplete")}
-                      </Badge>
-                    );
-                  }
-                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                  const timeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-                  return (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {t("sessionIn", { timeStr })}
-                    </p>
-                  );
-                })()}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="surface-glow border-border/50">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  {t("nextSession")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
-                <Link href="/coaching/new" className="mt-2 inline-block">
-                  <Button variant="outline" size="sm">
-                    {t("scheduleOne")}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          )}
+          {/* Coaching Widget — unified card adapting to session state */}
+          {(() => {
+            const cadenceColors = {
+              good: "text-win",
+              warning: "text-warning",
+              overdue: "text-loss",
+            };
+            const badgeClasses = {
+              good: "bg-win/20 text-win border-win/30",
+              warning: "bg-warning/20 text-warning border-warning/30",
+              overdue: "bg-loss/10 text-loss border-loss/30",
+            };
 
-          {/* Last Coaching Session — cadence indicator (hidden when there's an upcoming session) */}
-          {!upcomingSession &&
-          lastCompletedSession &&
-          coachingCadence &&
-          daysSinceLastCoaching !== null ? (
-            (() => {
-              const cadenceColors = {
-                good: "text-win",
-                warning: "text-warning",
-                overdue: "text-loss",
-              };
+            // State 1: Has upcoming session
+            if (upcomingSession) {
+              return (
+                <Card className="surface-glow border-gold/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Calendar className="h-4 w-4 text-gold" />
+                      {t("coachingWidget")}
+                    </CardTitle>
+                    <Link href={`/coaching/${upcomingSession.id}`}>
+                      <Button variant="ghost" size="sm">
+                        {t("view")}
+                        <ChevronRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium">{upcomingSession.coachName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(upcomingSession.date, locale, "datetime-short")}
+                      </p>
+                      {!upcomingSession.vodMatchId && (
+                        <p className="mt-1 flex items-center gap-1 text-xs text-warning">
+                          <AlertCircle className="h-3 w-3" />
+                          {t("noVodSelected")}
+                        </p>
+                      )}
+                      {(() => {
+                        const now = new Date();
+                        const diff = upcomingSession.date.getTime() - now.getTime();
+                        if (diff <= 0) {
+                          const daysOverdue = Math.floor(-diff / (1000 * 60 * 60 * 24));
+                          const isOverdue = daysOverdue >= 2;
+                          return (
+                            <Badge
+                              className={`mt-2 text-xs ${
+                                isOverdue
+                                  ? "border-loss/30 bg-loss/10 text-loss"
+                                  : "border-gold/30 bg-gold/20 text-gold"
+                              }`}
+                            >
+                              {isOverdue
+                                ? t("readyToCompleteDaysAgo", { days: daysOverdue })
+                                : t("readyToComplete")}
+                            </Badge>
+                          );
+                        }
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const timeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+                        return (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {t("sessionIn", { timeStr })}
+                          </p>
+                        );
+                      })()}
+                    </div>
+                    {lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null && (
+                      <div className="flex items-center gap-2 border-t border-border/50 pt-3 text-xs text-muted-foreground">
+                        <GraduationCap
+                          className={`h-3.5 w-3.5 ${cadenceColors[coachingCadence]}`}
+                        />
+                        <span>
+                          {t("lastSessionLabel")}{" "}
+                          {daysSinceLastCoaching === 0
+                            ? t("today").toLowerCase()
+                            : t("daysAgo", { days: daysSinceLastCoaching })}
+                        </span>
+                        <Badge className={`ml-auto text-[10px] ${badgeClasses[coachingCadence]}`}>
+                          {t(`cadence.${coachingCadence}`)}
+                        </Badge>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            // State 2: No upcoming session + has completed session
+            if (lastCompletedSession && coachingCadence && daysSinceLastCoaching !== null) {
               const borderColors = {
                 good: "border-win/20",
                 warning: "border-warning/20",
                 overdue: "border-loss/20",
-              };
-              const badgeClasses = {
-                good: "bg-win/20 text-win border-win/30",
-                warning: "bg-warning/20 text-warning border-warning/30",
-                overdue: "bg-loss/10 text-loss border-loss/30",
               };
               return (
                 <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
-                      {t("lastCoaching")}
+                      {t("coachingWidget")}
                     </CardTitle>
                     <Link href={`/coaching/${lastCompletedSession.id}`}>
                       <Button variant="ghost" size="sm">
@@ -536,28 +538,36 @@ export function DashboardClient({
                     <Badge className={`mt-2 text-xs ${badgeClasses[coachingCadence]}`}>
                       {t(`cadence.${coachingCadence}`)}
                     </Badge>
+                    <Link href="/coaching/new" className="mt-3 block">
+                      <Button variant="outline" size="sm" className="w-full">
+                        {t("scheduleNext")}
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               );
-            })()
-          ) : !upcomingSession ? (
-            <Card className="surface-glow border-border/50">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  {t("lastCoaching")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{t("noCompletedSessions")}</p>
-                <Link href="/coaching/new" className="mt-2 inline-block">
-                  <Button variant="outline" size="sm">
-                    {t("scheduleOne")}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : null}
+            }
+
+            // State 3: No sessions at all
+            return (
+              <Card className="surface-glow border-border/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                    {t("coachingWidget")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
+                  <Link href="/coaching/new" className="mt-2 inline-block">
+                    <Button variant="outline" size="sm">
+                      {t("scheduleOne")}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Goal Widget */}
           {activeGoal && currentRank ? (
