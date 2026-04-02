@@ -126,10 +126,13 @@ test.describe("Settings flow", () => {
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
 
     // Search for the duo partner by name.
-    // Use click + pressSequentially instead of fill for reliable React onChange
-    // triggering on CI (Base UI inputs sometimes miss fill events).
+    // Use fill() for atomic value setting — pressSequentially races with React's
+    // controlled input re-renders on slow CI, causing keystrokes to be clobbered.
     await searchInput.click();
-    await searchInput.pressSequentially("Duo", { delay: 50 });
+    await searchInput.fill("Duo");
+
+    // Verify the input accepted the value (guards against controlled input issues)
+    await expect(searchInput).toHaveValue("Duo");
 
     // Wait for search results to appear (300ms debounce + server action)
     await expect(page.getByText("DuoPartner#EUW")).toBeVisible({ timeout: 15_000 });
