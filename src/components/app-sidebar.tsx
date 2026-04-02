@@ -79,7 +79,7 @@ interface SidebarProps {
     image?: string | null;
     riotGameName?: string | null;
     riotTagLine?: string | null;
-    puuid?: string | null;
+    isRiotLinked?: boolean;
     role?: string | null;
   };
   reviewCounts?: {
@@ -137,7 +137,7 @@ function SidebarContent({
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
-  const isLinked = !!user.puuid;
+  const isLinked = !!user.isRiotLinked;
   const { isSyncing, handleSync } = useSyncMatches(isLinked);
 
   // Track whether there are unseen changelog entries

@@ -33,6 +33,7 @@ import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
 import { PREDEFINED_TOPICS } from "@/lib/topics";
+import { safeExternalUrl } from "@/lib/url";
 
 interface VodMatch {
   id: string;
@@ -199,7 +200,7 @@ export function CompleteSessionClient({
                 <div className="flex items-center gap-2">
                   <Video className="h-3.5 w-3.5 text-electric" />
                   <a
-                    href={vodMatch.vodUrl}
+                    href={safeExternalUrl(vodMatch.vodUrl) ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="truncate text-xs text-electric hover:underline"

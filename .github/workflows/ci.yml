@@ -137,3 +137,16 @@ jobs:
           fi
           echo "Changelog files changed:"
           echo "$CHANGED"
+
+  audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - name: Check for high/critical vulnerabilities (production)
+        run: npm audit --omit=dev --audit-level=high

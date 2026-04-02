@@ -126,7 +126,7 @@ function DiscordLoginForm() {
   function handleSignIn() {
     // If invite code is provided, store it in a cookie before redirecting
     if (inviteCode.trim()) {
-      document.cookie = `invite-code=${encodeURIComponent(inviteCode.trim())}; path=/; max-age=300; SameSite=Lax`;
+      document.cookie = `invite-code=${encodeURIComponent(inviteCode.trim())}; path=/; max-age=300; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
     }
     void login("discord", { callbackUrl: "/dashboard" });
   }

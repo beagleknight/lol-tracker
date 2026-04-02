@@ -274,3 +274,21 @@ const champions = await db
   .from(matches)
   .where(eq(matches.userId, user.id));
 ```
+
+## Security
+
+### Always scope queries by userId
+
+Every DB query in a server action must filter by `userId: user.id` from `requireUser()`. Never trust a userId from client input.
+
+### SQL injection
+
+Drizzle ORM parameterises all queries automatically. When using `sql` tagged template literals, values are parameterised — never use string concatenation or interpolation for user input in SQL.
+
+```typescript
+// GOOD — parameterised
+sql`${matches.championName} LIKE ${pattern}`;
+
+// BAD — string interpolation (never do this)
+sql`champion_name LIKE '${userInput}'`;
+```

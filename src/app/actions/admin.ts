@@ -4,15 +4,7 @@ import { eq, count, max, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { users, matches } from "@/db/schema";
-import { requireUser } from "@/lib/session";
-
-async function requireAdmin() {
-  const user = await requireUser();
-  if (user.role !== "admin") {
-    throw new Error("Unauthorized: admin access required");
-  }
-  return user;
-}
+import { requireAdmin } from "@/lib/session";
 
 export interface AdminUser {
   id: string;

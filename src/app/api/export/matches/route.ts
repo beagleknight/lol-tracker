@@ -6,6 +6,10 @@ import { getCurrentUser } from "@/lib/session";
 
 // ─── CSV Helpers ─────────────────────────────────────────────────────────────
 
+// Safety limit — prevents unbounded queries on the free-tier DB.
+// 10 000 rows ≈ ~3 years of daily play. Adjust if needed.
+const EXPORT_LIMIT = 10_000;
+
 /** Escape a value for CSV: wrap in quotes if it contains commas, quotes, or newlines. */
 function csvEscape(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined) return "";
@@ -141,6 +145,7 @@ export async function GET(request: Request) {
   const allMatches = await db.query.matches.findMany({
     where: and(...conditions),
     orderBy: desc(matches.gameDate),
+    limit: EXPORT_LIMIT,
     columns: {
       id: true,
       gameDate: true,

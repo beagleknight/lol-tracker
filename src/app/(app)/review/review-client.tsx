@@ -68,6 +68,7 @@ import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { SKIP_REVIEW_REASONS } from "@/lib/topics";
+import { safeExternalUrl } from "@/lib/url";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -524,7 +525,7 @@ function VodReviewCard({
             />
             {match.vodUrl && (
               <a
-                href={match.vodUrl}
+                href={safeExternalUrl(match.vodUrl) ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-electric hover:underline"
@@ -779,7 +780,7 @@ function CompletedCard({
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           {match.vodUrl && (
             <a
-              href={match.vodUrl}
+              href={safeExternalUrl(match.vodUrl) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-electric hover:underline"
@@ -1209,7 +1210,7 @@ export function ReviewClient({
         </div>
       )}
 
-      {user?.puuid && !user?.region && (
+      {user?.isRiotLinked && !user?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
