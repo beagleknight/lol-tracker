@@ -6,18 +6,27 @@ import { toast } from "sonner";
 
 import { invalidateSyncCaches } from "@/app/actions/sync";
 
-interface SyncProgress {
+export interface SyncProgress {
   current: number;
   total: number;
   synced: number;
   failed: number;
+  remaining: number;
   message: string;
 }
 
 interface SyncOptions {
   /** When true, skip the loading toast. Only show a toast if new matches are found. */
   silent?: boolean;
+  /** Max matches to sync in this request. Omit for unlimited (batched continuation). */
+  limit?: number;
 }
+
+/** Batch size for automatic continuation when syncing all remaining matches */
+const CONTINUATION_BATCH_SIZE = 20;
+
+/** Delay between continuation batches (ms) */
+const CONTINUATION_DELAY_MS = 1500;
 
 /** Stale threshold: auto-sync when tab regains focus after 30 minutes of inactivity */
 const STALE_THRESHOLD_MS = 30 * 60 * 1000;
@@ -53,6 +62,7 @@ export function useSyncMatches(isLinked: boolean = false) {
       if (isSyncingRef.current) return;
 
       const silent = options?.silent ?? false;
+      const callerLimit = options?.limit;
 
       isSyncingRef.current = true;
       setIsSyncing(true);
@@ -64,131 +74,168 @@ export function useSyncMatches(isLinked: boolean = false) {
         toastIdRef.current = undefined;
       }
 
-      // Use fetch + ReadableStream instead of EventSource to avoid
-      // spurious onerror firing when the server closes the stream.
-      fetch("/api/sync")
-        .then(async (res) => {
-          if (!res.ok || !res.body) {
-            throw new Error(
-              res.ok
-                ? "No response body"
-                : `Something went wrong while fetching matches. Please try again.`,
-            );
-          }
+      // Tracks cumulative synced/failed across continuation batches
+      let cumulativeSynced = 0;
+      let cumulativeFailed = 0;
 
-          const reader = res.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-          let receivedFinal = false;
+      const runBatch = async (limit?: number): Promise<void> => {
+        const url = limit ? `/api/sync?limit=${limit}` : "/api/sync";
+        const res = await fetch(url);
 
-          const processMessage = async (msg: string) => {
-            const dataLine = msg.split("\n").find((line) => line.startsWith("data: "));
-            if (!dataLine) return;
+        if (!res.ok || !res.body) {
+          throw new Error(
+            res.ok
+              ? "No response body"
+              : `Something went wrong while fetching matches. Please try again.`,
+          );
+        }
 
-            try {
-              const data = JSON.parse(dataLine.slice(6));
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let receivedFinal = false;
+        let batchRemaining = 0;
 
-              switch (data.type) {
-                case "status":
-                  if (!silent) {
-                    toast.loading(data.message, { id: toastIdRef.current });
-                  }
-                  break;
+        const processMessage = async (msg: string) => {
+          const dataLine = msg.split("\n").find((line) => line.startsWith("data: "));
+          if (!dataLine) return;
 
-                case "progress": {
-                  const pct = Math.round((data.current / data.total) * 100);
-                  setProgress({
-                    current: data.current,
-                    total: data.total,
-                    synced: data.synced,
-                    failed: data.failed,
-                    message: data.message,
-                  });
-                  // For silent syncs that DO find new matches, upgrade to a visible toast
-                  if (silent && data.synced > 0 && !toastIdRef.current) {
-                    toastIdRef.current = toast.loading(
-                      `${data.message} (${data.synced} imported, ${pct}%)`,
-                    );
-                  } else {
-                    toast.loading(`${data.message} (${data.synced} imported, ${pct}%)`, {
-                      id: toastIdRef.current,
-                    });
-                  }
-                  break;
+          try {
+            const data = JSON.parse(dataLine.slice(6));
+
+            switch (data.type) {
+              case "status":
+                if (!silent) {
+                  toast.loading(data.message, { id: toastIdRef.current });
                 }
+                break;
 
-                case "done":
-                  receivedFinal = true;
-                  if (data.synced > 0) {
-                    toast.success(data.message, {
-                      id: toastIdRef.current,
-                      duration: 8000,
-                    });
-                    await invalidateSyncCaches();
-                    router.refresh();
-                  } else if (!silent) {
-                    // Manual/login sync: always show the result
-                    toast.info(data.message, {
-                      id: toastIdRef.current,
-                      duration: 8000,
-                    });
-                    router.refresh();
-                  }
-                  // Silent sync with 0 new matches: no toast, no refresh
-                  break;
-
-                case "error":
-                  receivedFinal = true;
-                  if (!silent || toastIdRef.current) {
-                    toast.error(data.message, {
-                      id: toastIdRef.current,
-                      duration: 10000,
-                    });
-                  }
-                  break;
+              case "progress": {
+                const batchSynced = cumulativeSynced + data.synced;
+                const batchFailed = cumulativeFailed + data.failed;
+                const pct = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
+                setProgress({
+                  current: data.current,
+                  total: data.total,
+                  synced: batchSynced,
+                  failed: batchFailed,
+                  remaining: data.remaining ?? 0,
+                  message: data.message,
+                });
+                // For silent syncs that DO find new matches, upgrade to a visible toast
+                if (silent && batchSynced > 0 && !toastIdRef.current) {
+                  toastIdRef.current = toast.loading(
+                    `${data.message} (${batchSynced} imported, ${pct}%)`,
+                  );
+                } else {
+                  toast.loading(`${data.message} (${batchSynced} imported, ${pct}%)`, {
+                    id: toastIdRef.current,
+                  });
+                }
+                break;
               }
-            } catch {
-              // Ignore parse errors
+
+              case "done":
+                receivedFinal = true;
+                cumulativeSynced += data.synced ?? 0;
+                cumulativeFailed += data.failed ?? 0;
+                batchRemaining = data.remaining ?? 0;
+                setProgress((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        remaining: batchRemaining,
+                        synced: cumulativeSynced,
+                        failed: cumulativeFailed,
+                      }
+                    : null,
+                );
+                break;
+
+              case "error":
+                receivedFinal = true;
+                if (!silent || toastIdRef.current) {
+                  toast.error(data.message, {
+                    id: toastIdRef.current,
+                    duration: 10000,
+                  });
+                }
+                break;
             }
-          };
-
-          while (true) {
-            const { done, value } = await reader.read();
-
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-
-            // SSE format: "data: {...}\n\n"
-            // Process all complete messages in the buffer
-            const messages = buffer.split("\n\n");
-            // Keep the last (possibly incomplete) chunk in the buffer
-            buffer = messages.pop() || "";
-
-            for (const msg of messages) {
-              await processMessage(msg);
-            }
+          } catch {
+            // Ignore parse errors
           }
+        };
 
-          // Process any remaining data in the buffer after stream ends.
-          // The final SSE message may not have a trailing \n\n before
-          // the server closes the stream.
-          if (buffer.trim()) {
-            await processMessage(buffer);
-          }
+        while (true) {
+          const { done, value } = await reader.read();
 
-          // If the stream ended without a done/error event, show a warning
-          // (this shouldn't happen — indicates the server closed unexpectedly)
-          if (!receivedFinal && !silent) {
-            toast.warning("Update ended unexpectedly. Check if your matches are up to date.", {
-              id: toastIdRef.current,
-              duration: 8000,
-            });
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // SSE format: "data: {...}\n\n"
+          // Process all complete messages in the buffer
+          const messages = buffer.split("\n\n");
+          // Keep the last (possibly incomplete) chunk in the buffer
+          buffer = messages.pop() || "";
+
+          for (const msg of messages) {
+            await processMessage(msg);
           }
-        })
+        }
+
+        // Process any remaining data in the buffer after stream ends.
+        if (buffer.trim()) {
+          await processMessage(buffer);
+        }
+
+        // If the stream ended without a done/error event, show a warning
+        if (!receivedFinal && !silent) {
+          toast.warning("Update ended unexpectedly. Check if your matches are up to date.", {
+            id: toastIdRef.current,
+            duration: 8000,
+          });
+          return;
+        }
+
+        // Batched continuation: when there are remaining matches and the caller
+        // didn't set a specific limit (i.e., this is a full sync), keep going
+        // in batches until all matches are synced.
+        if (batchRemaining > 0 && callerLimit == null) {
+          toast.loading(`Syncing remaining matches (${batchRemaining} left)...`, {
+            id: toastIdRef.current,
+          });
+          await new Promise((resolve) => setTimeout(resolve, CONTINUATION_DELAY_MS));
+          await runBatch(CONTINUATION_BATCH_SIZE);
+          return;
+        }
+
+        // All batches complete — show final result
+        if (cumulativeSynced > 0) {
+          const parts = [`Synced ${cumulativeSynced} match${cumulativeSynced !== 1 ? "es" : ""}`];
+          if (cumulativeFailed > 0) parts.push(`(${cumulativeFailed} failed)`);
+          toast.success(parts.join(" ") + ".", {
+            id: toastIdRef.current,
+            duration: 8000,
+          });
+          await invalidateSyncCaches();
+          router.refresh();
+        } else if (!silent) {
+          toast.info("No new matches found.", {
+            id: toastIdRef.current,
+            duration: 8000,
+          });
+          router.refresh();
+        }
+      };
+
+      // Start the first batch. If caller set a limit, use it.
+      // If no limit, use CONTINUATION_BATCH_SIZE for the first batch too
+      // so each individual request stays within Vercel function timeout.
+      const firstBatchLimit = callerLimit ?? CONTINUATION_BATCH_SIZE;
+      runBatch(firstBatchLimit)
         .catch((error) => {
-          // Only fires on actual network errors (fetch failure, aborted, etc.)
-          // NOT on clean server-side stream close.
           if (!silent || toastIdRef.current) {
             const message =
               error instanceof Error ? error.message : "Connection lost while updating matches.";

@@ -769,5 +769,61 @@
       "deleteError": "Failed to delete goal.",
       "goalAchieved": "Goal achieved! Congratulations!"
     }
+  },
+  "Onboarding": {
+    "title": "Welcome to lol-tracker",
+    "subtitle": "Let's get your account set up in a few quick steps.",
+    "step": "Step {current} of {total}",
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip",
+    "region": {
+      "heading": "Choose your server",
+      "description": "Select the Riot server where you play. This ensures your matches sync from the correct region.",
+      "label": "Server region",
+      "placeholder": "Select region"
+    },
+    "riotAccount": {
+      "heading": "Link your Riot account",
+      "description": "Enter your Riot ID to import your ranked match history. This is required for tracking.",
+      "riotIdLabel": "Riot ID",
+      "riotIdPlaceholder": "GameName#TagLine",
+      "linkButton": "Link account",
+      "linking": "Linking...",
+      "linked": "Account linked",
+      "linkedDescription": "Connected as {gameName}#{tagLine}",
+      "formatError": "Please enter your Riot ID as GameName#TagLine"
+    },
+    "roles": {
+      "heading": "Choose your roles",
+      "description": "Set your preferred positions. Off-role games will be visually dimmed in your match history.",
+      "primaryLabel": "Primary role",
+      "secondaryLabel": "Secondary role",
+      "placeholder": "Select role",
+      "nonePlaceholder": "None",
+      "positions": {
+        "TOP": "Top",
+        "JUNGLE": "Jungle",
+        "MIDDLE": "Mid",
+        "BOTTOM": "Bot",
+        "UTILITY": "Support"
+      }
+    },
+    "sync": {
+      "heading": "Sync your games",
+      "description": "Import your recent ranked matches. The rest will sync automatically in the background after setup.",
+      "syncButton": "Sync recent games",
+      "syncing": "Syncing matches...",
+      "syncComplete": "Synced {count} matches",
+      "syncError": "Sync failed. You can try again or continue \u2014 your games will sync automatically later.",
+      "completeButton": "Go to dashboard",
+      "completing": "Finishing setup..."
+    },
+    "toasts": {
+      "linkSuccess": "Linked to {gameName}#{tagLine}",
+      "rolesSaved": "Role preferences saved.",
+      "completeError": "Failed to complete setup. Please try again.",
+      "rolesError": "Failed to save role preferences."
+    }
   }
 }
