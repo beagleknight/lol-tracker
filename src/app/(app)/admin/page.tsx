@@ -251,8 +251,9 @@ function InvitesSection() {
   }
 
   function handleCopyCode(code: string) {
-    void navigator.clipboard.writeText(code);
-    toast.success(t("toasts.codeCopied"));
+    const url = `${window.location.origin}/login?invite=${encodeURIComponent(code)}`;
+    void navigator.clipboard.writeText(url);
+    toast.success(t("toasts.linkCopied"));
   }
 
   function handleDelete(id: number) {
