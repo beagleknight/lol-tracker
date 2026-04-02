@@ -516,9 +516,9 @@
       0 8px 24px oklch(0 0 0 / 0.25);
   }
 
-  /* Off-role match card — faded to de-emphasize */
+  /* Off-role match card — desaturated to de-emphasize */
   .off-role-stripes {
-    opacity: 0.8;
+    filter: grayscale(100%) brightness(0.7);
   }
 
   /* Entrance animation for page sections */
