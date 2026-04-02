@@ -1,0 +1,20 @@
+---
+version: "2026.04.6"
+date: "2026-04-02"
+title: "Smarter match syncing for multiple players"
+tags: ["improvement"]
+---
+
+Match syncing is now much smarter when multiple players use the app at the same time.
+
+### What changed
+
+- **No more stepping on each other**: When several players sync at once, the app now takes turns so nobody's sync gets interrupted or slowed down by others.
+- **Automatic speed control**: The app reads how much of its request allowance it has left and slows down or speeds up accordingly. No more sudden timeouts or failed syncs.
+- **One sync at a time per player**: If you have multiple tabs open and accidentally trigger sync twice, the duplicate is ignored instead of causing errors.
+- **Crash-safe**: If a sync gets interrupted (e.g., you close the tab), the lock automatically expires after 5 minutes so your next sync won't be blocked.
+
+### What you'll notice
+
+- If someone else is currently syncing, you'll see **"Waiting for your turn..."** instead of an error. Your sync will start automatically once a slot opens up.
+- Sync speed may vary — the app is deliberately pacing itself to stay within its request limits. This is normal and expected.
