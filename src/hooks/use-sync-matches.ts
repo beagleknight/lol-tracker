@@ -110,6 +110,25 @@ export function useSyncMatches(isLinked: boolean = false) {
                 }
                 break;
 
+              case "waiting":
+                // Queued behind other syncs — always show this even in silent mode
+                if (!toastIdRef.current) {
+                  toastIdRef.current = toast.loading(data.message);
+                } else {
+                  toast.loading(data.message, { id: toastIdRef.current });
+                }
+                break;
+
+              case "locked":
+                // User already has a sync in progress (e.g., from another tab)
+                if (!silent || toastIdRef.current) {
+                  toast.info(data.message, {
+                    id: toastIdRef.current,
+                    duration: 6000,
+                  });
+                }
+                break;
+
               case "progress": {
                 const batchSynced = cumulativeSynced + data.synced;
                 const batchFailed = cumulativeFailed + data.failed;

@@ -3,6 +3,7 @@ import { eq, desc } from "drizzle-orm";
 import { checkGoalAchievement } from "@/app/actions/goals";
 import { db } from "@/db";
 import { matches, rankSnapshots, users } from "@/db/schema";
+import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
 import {
   getMatchIds,
   getMatch,
@@ -12,15 +13,31 @@ import {
   extractDuoPartnerData,
   getKeystoneName,
   getSoloQueueEntryByPuuid,
+  getLastRateLimitInfo,
   RiotApiError,
 } from "@/lib/riot-api";
 import { getCurrentUser } from "@/lib/session";
+import {
+  acquireSyncLock,
+  releaseSyncLock,
+  getActiveSyncCount,
+  extendSyncLock,
+} from "@/lib/sync-lock";
 
 function sseMessage(data: Record<string, unknown>): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 
 const MAX_BATCH_LIMIT = 50;
+
+/** Max time to wait for a sync slot before giving up (30 seconds). */
+const MAX_QUEUE_WAIT_MS = 30_000;
+
+/** Interval between polling for a free sync slot (3 seconds). */
+const QUEUE_POLL_INTERVAL_MS = 3_000;
+
+/** Extend lock every 20 matches to prevent expiry during long syncs. */
+const HEARTBEAT_INTERVAL = 20;
 
 export async function GET(request: Request) {
   const user = await getCurrentUser();
@@ -57,7 +74,68 @@ export async function GET(request: Request) {
         }
       };
 
+      // ── Acquire sync lock ────────────────────────────────────────────
+      let lockAcquired = false;
+
       try {
+        const lockResult = await acquireSyncLock(user.id);
+
+        if (lockResult.status === "already_locked") {
+          send({
+            type: "locked",
+            message: "A sync is already in progress. Please wait for it to finish.",
+          });
+          controller.close();
+          return;
+        }
+
+        if (lockResult.status === "too_many_syncs") {
+          // Wait for a slot to open up, polling periodically
+          send({
+            type: "waiting",
+            message: "Other players are syncing. Waiting for your turn...",
+          });
+
+          const waitStart = Date.now();
+          let acquired = false;
+
+          while (Date.now() - waitStart < MAX_QUEUE_WAIT_MS) {
+            await new Promise((resolve) => setTimeout(resolve, QUEUE_POLL_INTERVAL_MS));
+
+            const retryResult = await acquireSyncLock(user.id);
+            if (retryResult.status === "acquired") {
+              acquired = true;
+              break;
+            }
+            if (retryResult.status === "already_locked") {
+              // This user already started a sync from another tab while waiting
+              send({
+                type: "locked",
+                message: "A sync is already in progress. Please wait for it to finish.",
+              });
+              controller.close();
+              return;
+            }
+            // Still too_many_syncs — keep waiting
+            send({
+              type: "waiting",
+              message: "Other players are syncing. Waiting for your turn...",
+            });
+          }
+
+          if (!acquired) {
+            send({
+              type: "error",
+              message: "Timed out waiting for a sync slot. Please try again in a minute.",
+            });
+            controller.close();
+            return;
+          }
+        }
+
+        lockAcquired = true;
+
+        // ── Sync logic (same as before, with adaptive delays) ────────────
         send({ type: "status", message: "Checking existing matches..." });
 
         // Check which matches we already have
@@ -100,7 +178,12 @@ export async function GET(request: Request) {
           });
 
           if (batch.length < PAGE_SIZE) break;
-          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Adaptive delay for match list pagination
+          const activeSyncs = await getActiveSyncCount();
+          const rateLimitInfo = getLastRateLimitInfo();
+          const delay = calculateAdaptiveDelay(rateLimitInfo, activeSyncs);
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
 
         // Filter to only new matches
@@ -260,8 +343,17 @@ export async function GET(request: Request) {
             message: `Syncing match ${i + 1} of ${newMatchIds.length}...`,
           });
 
-          // Delay between API calls to respect rate limits
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          // Adaptive delay between API calls based on rate limit headers
+          // and number of concurrent syncs. This replaces the old fixed 100ms delay.
+          const activeSyncs = await getActiveSyncCount();
+          const rateLimitInfo = getLastRateLimitInfo();
+          const delay = calculateAdaptiveDelay(rateLimitInfo, activeSyncs);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+
+          // Heartbeat: extend lock expiry every N matches to prevent timeout
+          if ((i + 1) % HEARTBEAT_INTERVAL === 0) {
+            await extendSyncLock(user.id);
+          }
         }
 
         // Capture rank snapshot
@@ -296,6 +388,14 @@ export async function GET(request: Request) {
         console.error("Sync error:", message);
         send({ type: "error", message });
       } finally {
+        // Always release the lock when done (success, error, or crash)
+        if (lockAcquired) {
+          try {
+            await releaseSyncLock(user.id);
+          } catch (e) {
+            console.error("Failed to release sync lock:", e);
+          }
+        }
         try {
           controller.close();
         } catch {
