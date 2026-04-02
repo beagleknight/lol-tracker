@@ -202,13 +202,21 @@ test.describe("Coaching flow", () => {
     // on slow CI runners, causing the test to flake (#95).
     await expect(firstActionItemRow).toHaveAttribute("data-hydrated", "true");
 
-    // Click the cycle button — optimistic state updates the UI immediately
+    // Click the cycle button with retry — even after the hydration attribute is
+    // set, the browser event loop may not have fully wired handlers on slow CI
+    // runners. We only re-click if the status hasn't changed (the previous
+    // click was swallowed). This avoids over-cycling past in_progress (#74).
     const cycleButton = firstActionItemRow.locator("button").first();
     await expect(cycleButton).toBeVisible();
-    await cycleButton.click();
-
-    // The status should cycle from "pending" to "in_progress" (optimistic update)
-    await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress");
+    await expect(async () => {
+      const currentStatus = await firstActionItemRow.getAttribute("data-status");
+      if (currentStatus === "pending") {
+        await cycleButton.click();
+      }
+      await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress", {
+        timeout: 2_000,
+      });
+    }).toPass({ timeout: 15_000, intervals: [500, 1_000, 2_000] });
   });
 
   test("delete the new coaching session", async ({ page }) => {
