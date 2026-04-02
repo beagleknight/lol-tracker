@@ -135,6 +135,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
       matchupNotes={matchupNotesData}
       ddragonVersion={ddragonVersion}
       userPuuid={matchPuuid}
+      userPrimaryRole={user.primaryRole}
       isAiConfigured={aiConfigured}
       cachedAiInsight={cachedAiInsight}
     />
