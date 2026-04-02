@@ -627,7 +627,10 @@
       "description": "Choose your duo partner to track shared games and synergy stats.",
       "partnerLabel": "Duo partner",
       "clearButton": "Clear",
-      "selectPrompt": "Select a registered user as your duo partner:",
+      "searchPlaceholder": "Search by Riot ID...",
+      "searchHint": "Type at least 2 characters to search",
+      "searching": "Searching...",
+      "noResults": "No players found for \"{query}\"",
       "setButton": "Set",
       "noUsersFound": "No other users with linked Riot accounts found. Invite a friend to get started!"
     },

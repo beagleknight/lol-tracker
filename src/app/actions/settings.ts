@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, and, isNotNull, ne } from "drizzle-orm";
+import { eq, and, isNotNull, ne, like, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
@@ -111,11 +111,18 @@ export async function updateRegion(region: string) {
 // ─── Duo Partner (continued) ────────────────────────────────────────────────
 
 /**
- * Get all registered users with linked Riot accounts (excluding current user).
- * Used to populate the duo partner picker.
+ * Search registered users by Riot ID (gameName or tagLine).
+ * Returns max 5 results. Does NOT return puuid (privacy).
  */
-export async function getRegisteredUsers() {
+export async function searchUsers(query: string) {
   const user = await requireUser();
+
+  const trimmed = query.trim();
+  if (trimmed.length < 2) {
+    return [];
+  }
+
+  const pattern = `%${trimmed}%`;
 
   const result = await db
     .select({
@@ -123,10 +130,16 @@ export async function getRegisteredUsers() {
       name: users.name,
       riotGameName: users.riotGameName,
       riotTagLine: users.riotTagLine,
-      puuid: users.puuid,
     })
     .from(users)
-    .where(and(ne(users.id, user.id), isNotNull(users.puuid)));
+    .where(
+      and(
+        ne(users.id, user.id),
+        isNotNull(users.puuid),
+        or(like(users.riotGameName, pattern), like(users.riotTagLine, pattern)),
+      ),
+    )
+    .limit(5);
 
   return result;
 }
