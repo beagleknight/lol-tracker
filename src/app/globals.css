@@ -530,8 +530,8 @@
         -45deg,
         transparent,
         transparent 6px,
-        oklch(0.5 0 0 / 0.5) 6px,
-        oklch(0.5 0 0 / 0.5) 12px
+        oklch(0.5 0 0 / 0.08) 6px,
+        oklch(0.5 0 0 / 0.08) 12px
       ),
       oklch(0 0 0 / 0.5);
     pointer-events: none;
