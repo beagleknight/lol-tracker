@@ -1,0 +1,27 @@
+---
+version: "2026.04.5"
+date: "2026-04-02"
+title: "Onboarding wizard and batched sync"
+tags: ["feature"]
+---
+
+New users now get a guided 4-step onboarding wizard instead of being dropped straight into an empty dashboard. The match sync system was also refactored to work in batches, preventing timeouts on Vercel.
+
+### Onboarding wizard
+
+When a new user signs in for the first time, they are redirected to a full-screen wizard that walks them through:
+
+1. **Choose your server** — select your Riot region from a dropdown
+2. **Link your Riot account** — enter your Riot ID (GameName#TagLine) to connect via the Riot API
+3. **Role preferences** — optionally pick your primary and secondary roles (can be skipped)
+4. **Sync matches** — import your 10 most recent ranked games with a live progress bar, then land on the dashboard
+
+![Step 1: region selector with progress bar](/changelog/onboarding-wizard/after-step1-annotated.png)
+
+![Step 2: Riot account linking](/changelog/onboarding-wizard/after-step2-annotated.png)
+
+### Batched match sync
+
+The sync API now supports a `?limit=N` query parameter. When set, only N matches are synced per request and the response includes how many remain. The `useSyncMatches` hook automatically continues in batches of 20 with a 1.5-second delay between each, so large match histories no longer risk hitting the Vercel function timeout.
+
+After onboarding completes, a `sync_on_login` cookie triggers the sidebar to pick up and sync remaining matches in the background.

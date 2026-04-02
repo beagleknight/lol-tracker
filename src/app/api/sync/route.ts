@@ -20,7 +20,9 @@ function sseMessage(data: Record<string, unknown>): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 
-export async function GET() {
+const MAX_BATCH_LIMIT = 50;
+
+export async function GET(request: Request) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -33,6 +35,13 @@ export async function GET() {
       { status: 400 },
     );
   }
+
+  // Optional ?limit=N — sync at most N matches per request (for batched sync)
+  const url = new URL(request.url);
+  const limitParam = url.searchParams.get("limit");
+  const batchLimit = limitParam
+    ? Math.min(Math.max(parseInt(limitParam, 10) || MAX_BATCH_LIMIT, 1), MAX_BATCH_LIMIT)
+    : null;
 
   const region = user.region || "euw1";
 
@@ -95,9 +104,9 @@ export async function GET() {
         }
 
         // Filter to only new matches
-        const newMatchIds = allMatchIds.filter((id) => !existingIds.has(id));
+        const allNewMatchIds = allMatchIds.filter((id) => !existingIds.has(id));
 
-        if (newMatchIds.length === 0) {
+        if (allNewMatchIds.length === 0) {
           // Still capture rank snapshot
           const rankWarning = await captureRankSnapshot(user.id, user.puuid!, region);
           // Check if rank goal was achieved
@@ -105,10 +114,15 @@ export async function GET() {
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
-          send({ type: "done", synced: 0, message: msg });
+          send({ type: "done", synced: 0, remaining: 0, message: msg });
           controller.close();
           return;
         }
+
+        // When a batch limit is set, only sync the first N matches.
+        // Riot returns newest-first, so this syncs the most recent games.
+        const newMatchIds = batchLimit ? allNewMatchIds.slice(0, batchLimit) : allNewMatchIds;
+        const remaining = allNewMatchIds.length - newMatchIds.length;
 
         // Capture rank snapshot BEFORE syncing — gives a "before" data point
         // so the LP chart shows the delta across this sync session
@@ -263,6 +277,9 @@ export async function GET() {
         if (failedCount > 0) {
           parts.push(`(${failedCount} failed)`);
         }
+        if (remaining > 0) {
+          parts.push(`(${remaining} remaining)`);
+        }
         if (rankWarning) {
           parts.push(rankWarning);
         }
@@ -271,6 +288,7 @@ export async function GET() {
           type: "done",
           synced: syncedCount,
           failed: failedCount,
+          remaining,
           message: parts.join(" ") + ".",
         });
       } catch (error) {

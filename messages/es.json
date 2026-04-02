@@ -769,5 +769,61 @@
       "deleteError": "Error al eliminar el objetivo.",
       "goalAchieved": "¡Objetivo logrado! ¡Felicidades!"
     }
+  },
+  "Onboarding": {
+    "title": "Bienvenido a lol-tracker",
+    "subtitle": "Vamos a configurar tu cuenta en unos pocos pasos.",
+    "step": "Paso {current} de {total}",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "skip": "Saltar",
+    "region": {
+      "heading": "Elige tu servidor",
+      "description": "Selecciona el servidor de Riot donde juegas. Así tus partidas se sincronizarán desde la región correcta.",
+      "label": "Servidor",
+      "placeholder": "Seleccionar región"
+    },
+    "riotAccount": {
+      "heading": "Vincula tu cuenta de Riot",
+      "description": "Introduce tu Riot ID para importar tu historial de partidas clasificatorias. Es obligatorio para el seguimiento.",
+      "riotIdLabel": "Riot ID",
+      "riotIdPlaceholder": "Nombre#Etiqueta",
+      "linkButton": "Vincular cuenta",
+      "linking": "Vinculando...",
+      "linked": "Cuenta vinculada",
+      "linkedDescription": "Conectado como {gameName}#{tagLine}",
+      "formatError": "Introduce tu Riot ID como Nombre#Etiqueta"
+    },
+    "roles": {
+      "heading": "Elige tus roles",
+      "description": "Configura tus posiciones preferidas. Las partidas fuera de rol se mostrarán atenuadas en tu historial.",
+      "primaryLabel": "Rol principal",
+      "secondaryLabel": "Rol secundario",
+      "placeholder": "Seleccionar rol",
+      "nonePlaceholder": "Ninguno",
+      "positions": {
+        "TOP": "Top",
+        "JUNGLE": "Jungla",
+        "MIDDLE": "Mid",
+        "BOTTOM": "Bot",
+        "UTILITY": "Soporte"
+      }
+    },
+    "sync": {
+      "heading": "Sincroniza tus partidas",
+      "description": "Importa tus partidas clasificatorias recientes. El resto se sincronizará automáticamente en segundo plano.",
+      "syncButton": "Sincronizar partidas recientes",
+      "syncing": "Sincronizando partidas...",
+      "syncComplete": "{count} partidas sincronizadas",
+      "syncError": "Error de sincronización. Puedes reintentar o continuar — tus partidas se sincronizarán automáticamente después.",
+      "completeButton": "Ir al panel",
+      "completing": "Finalizando configuración..."
+    },
+    "toasts": {
+      "linkSuccess": "Vinculado a {gameName}#{tagLine}",
+      "rolesSaved": "Preferencias de rol guardadas.",
+      "completeError": "Error al completar la configuración. Inténtalo de nuevo.",
+      "rolesError": "Error al guardar las preferencias de rol."
+    }
   }
 }
