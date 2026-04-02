@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
 import { invalidateReviewCaches } from "@/lib/cache";
 import { requireUser } from "@/lib/session";
+import { validateVodUrl } from "@/lib/url";
 
 /**
  * Save a complete post-game review in one action:
@@ -46,12 +47,18 @@ export async function savePostGameReview(
     );
   }
 
+  // Validate VOD URL scheme (reject javascript:, data:, etc.)
+  const sanitisedVodUrl = validateVodUrl(data.vodUrl);
+  if (data.vodUrl?.trim() && !sanitisedVodUrl) {
+    return { error: "Invalid VOD URL. Only http:// and https:// links are allowed." };
+  }
+
   // Update match fields
   await db
     .update(matches)
     .set({
       comment: data.comment || null,
-      vodUrl: data.vodUrl || null,
+      vodUrl: sanitisedVodUrl,
       reviewed: data.reviewed ?? false,
       reviewNotes: data.reviewNotes || null,
       reviewSkippedReason: data.reviewSkippedReason || null,

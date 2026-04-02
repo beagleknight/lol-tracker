@@ -83,7 +83,7 @@ interface DashboardClientProps {
     name?: string | null;
     riotGameName?: string | null;
     riotTagLine?: string | null;
-    puuid?: string | null;
+    isRiotLinked?: boolean;
   };
   recentMatches: DashboardMatch[];
   highlightsPerMatch: Record<string, MatchHighlightData[]>;
@@ -144,7 +144,7 @@ export function DashboardClient({
   const t = useTranslations("Dashboard");
   const { user: authUser } = useAuth();
   const locale = authUser?.locale ?? DEFAULT_LOCALE;
-  const isLinked = !!user.puuid;
+  const isLinked = !!user.isRiotLinked;
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
 

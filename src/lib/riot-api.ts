@@ -188,6 +188,24 @@ export class RiotApiError extends Error {
     super(message);
     this.name = "RiotApiError";
   }
+
+  /** Return a safe message that can be shown to the client (no internal details). */
+  get userMessage(): string {
+    switch (this.status) {
+      case 401:
+      case 403:
+        return "Riot API authorization failed. Please try again later.";
+      case 404:
+        return "Riot account not found. Please check your Riot ID and region.";
+      case 429:
+        return "Too many requests to Riot servers. Please wait a moment and try again.";
+      case 503:
+      case 504:
+        return "Riot servers are temporarily unavailable. Please try again later.";
+      default:
+        return "An error occurred while communicating with Riot servers.";
+    }
+  }
 }
 
 async function riotFetch<T>(url: string, retries = 5): Promise<T> {
@@ -228,7 +246,9 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
     }
 
     const body = await response.text().catch(() => "");
-    throw new RiotApiError(response.status, `Riot API error ${response.status}: ${body}`);
+    // Log full detail server-side, but throw a generic message for client safety
+    console.error(`Riot API error ${response.status} for ${url}: ${body}`);
+    throw new RiotApiError(response.status, `Riot API error ${response.status}`);
   }
 
   // Should never reach here, but TypeScript needs it

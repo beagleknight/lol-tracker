@@ -235,7 +235,7 @@ export default async function DashboardPage() {
         name: user.name,
         riotGameName: user.riotGameName,
         riotTagLine: user.riotTagLine,
-        puuid: user.puuid,
+        isRiotLinked: !!user.puuid,
       }}
       recentMatches={recentMatches}
       highlightsPerMatch={highlightsPerMatch}

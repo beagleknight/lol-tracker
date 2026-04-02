@@ -42,6 +42,7 @@ export async function completeOnboarding() {
     path: "/",
     httpOnly: false,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60,
   });
 

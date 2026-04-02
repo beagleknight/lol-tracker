@@ -165,3 +165,26 @@ If you forgot to capture "before" screenshots, check out `main`, capture them, t
 Full workflow details are in the `ui-screenshots` OpenCode skill.
 
 <!-- END:ui-screenshots-rules -->
+
+<!-- BEGIN:security-rules -->
+
+# Security — MANDATORY
+
+**Every server action and API route MUST call `requireUser()` or `requireAdmin()` as its first operation.** All DB queries must be scoped with `userId: user.id` from the authenticated session. Never accept a `userId` parameter from the client.
+
+**Functions that accept a `userId` parameter MUST NOT be exported from `"use server"` files.** Place them in `src/lib/` instead — otherwise any client can invoke them with an arbitrary user ID.
+
+**User-supplied URLs (VOD links, etc.) MUST be validated:**
+
+1. On write: use `validateVodUrl()` from `src/lib/url.ts` in the server action
+2. On render: use `safeExternalUrl()` from `src/lib/url.ts` in the `href` attribute
+
+**Never expose raw API errors, status codes, or stack traces to the client.** Use `RiotApiError.userMessage` for Riot API errors and generic messages for everything else.
+
+**All cookies MUST include the `Secure` flag** (with protocol check for client-side cookies).
+
+**When adding new external resources** (CDN, images, scripts), update the CSP in `next.config.ts`. Never use `*` wildcards.
+
+Full security patterns are in the `security` OpenCode skill.
+
+<!-- END:security-rules -->

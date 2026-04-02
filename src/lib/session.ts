@@ -34,3 +34,11 @@ export async function requireUser() {
   }
   return user;
 }
+
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (user.role !== "admin") {
+    throw new Error("Unauthorized: admin access required");
+  }
+  return user;
+}

@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import { invites, users } from "@/db/schema";
-import { requireUser } from "@/lib/session";
+import { requireAdmin } from "@/lib/session";
 
 function generateCode(): string {
   // 8-char alphanumeric code (URL-safe, easy to copy-paste)
@@ -16,14 +16,6 @@ function generateCode(): string {
     code += chars[byte % chars.length];
   }
   return code;
-}
-
-async function requireAdmin() {
-  const user = await requireUser();
-  if (user.role !== "admin") {
-    throw new Error("Unauthorized: admin access required");
-  }
-  return user;
 }
 
 export async function createInvite() {

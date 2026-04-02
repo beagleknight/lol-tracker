@@ -9,7 +9,7 @@ import { users } from "@/db/schema";
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n/request";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
-import { getAccountByRiotId, PLATFORM_IDS } from "@/lib/riot-api";
+import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
 export async function linkRiotAccount(formData: FormData) {
@@ -55,7 +55,9 @@ export async function linkRiotAccount(formData: FormData) {
       tagLine: account.tagLine,
     };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to link Riot account";
+    console.error("linkRiotAccount error:", error);
+    const message =
+      error instanceof RiotApiError ? error.userMessage : "Failed to link Riot account";
     return { error: message };
   }
 }
@@ -161,7 +163,6 @@ export async function getDuoPartner() {
       name: true,
       riotGameName: true,
       riotTagLine: true,
-      puuid: true,
     },
   });
 
@@ -277,6 +278,7 @@ export async function updateLanguage(language: SupportedLanguage) {
     path: "/",
     httpOnly: false,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 365, // 1 year
   });
 

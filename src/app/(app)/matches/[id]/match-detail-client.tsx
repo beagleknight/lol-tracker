@@ -41,6 +41,7 @@ import {
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrl } from "@/lib/riot-api";
+import { safeExternalUrl } from "@/lib/url";
 
 /** Slim participant — only fields needed for the match detail view */
 type SlimParticipant = Pick<
@@ -546,7 +547,7 @@ export function MatchDetailClient({
                           {t("ascentVod")}
                         </p>
                         <a
-                          href={match.vodUrl!}
+                          href={safeExternalUrl(match.vodUrl) ?? "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-sm text-electric hover:underline"
