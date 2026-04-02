@@ -77,6 +77,31 @@ tags: ["feature"]
 
 Body uses standard Markdown: **bold**, lists, `### headings`.
 
+#### Audience and tone
+
+The audience is **League of Legends players** who want to know what changed. Not developers, not designers. Write like you're telling a friend what's new. Casual, direct, no jargon. Talk about what changed **in their experience**, not how it was built.
+
+**Forbidden terms** (never use in changelog body or title):
+
+- Web/dev technology: API, HTTP, HTML, CSS, SSE, REST, JSON, webhook, endpoint, route, middleware, query parameter, cookie, hook, component, refactor, payload, cache (as a noun), i18n, locale, lightbox, monospace, em-dash, CalVer, WCAG, ARIA, axe-core, contrast ratio, semantic, token
+- Infrastructure: Vercel, Turso, SQLite, Drizzle, Next.js, React, server action, server component, RSC, CDN, deploy, build, CI
+- If a player wouldn't understand a term without googling it, don't use it.
+
+**Rephrase guide:**
+
+| Instead of                   | Write                                                     |
+| ---------------------------- | --------------------------------------------------------- |
+| "Riot API"                   | "your match data from Riot" or "synced from your account" |
+| "batched sync"               | "matches sync in smaller chunks so nothing gets lost"     |
+| "cookie triggers sync"       | (just don't mention it)                                   |
+| "lightbox"                   | "image zoom"                                              |
+| "WCAG 2.1 AA compliance"     | "readable and usable for everyone"                        |
+| "refactored the sync system" | "match syncing is now more reliable"                      |
+| "i18n files updated"         | (skip, internal detail)                                   |
+| "query parameter"            | (describe the user-visible effect instead)                |
+
+**Internal-only changes get no changelog.** If a change is purely internal with zero user-visible impact (code style, tag cleanup, typography convention name, dependency bumps), either fold a one-liner into a related user-facing entry or skip the changelog entirely (use `skip-changelog` label). Examples of things that should NOT get their own changelog entry: adopting sentence case, simplifying changelog filter tags, updating linting config, renaming internal variables.
+
 Version scheme — **CalVer** (`YYYY.MM.N`):
 
 - `YYYY` = calendar year (e.g. 2026)
