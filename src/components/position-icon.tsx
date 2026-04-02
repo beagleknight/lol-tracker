@@ -8,27 +8,24 @@ export type Position = "TOP" | "JUNGLE" | "MIDDLE" | "BOTTOM" | "UTILITY";
 /** All valid position values */
 export const POSITIONS: Position[] = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
 
-/** Role relevance relative to user preferences */
-export type RoleRelevance = "main" | "secondary" | "off-role" | "unknown";
+/** Role relevance relative to user preferences — two tiers only. */
+export type RoleRelevance = "main" | "off-role" | "unknown";
 
 // ─── Role relevance logic ───────────────────────────────────────────────────
 
 /**
- * Determine how relevant a match position is relative to the user's role preferences.
+ * Determine how relevant a match position is relative to the user's primary role.
  *
  * - `"main"` — matches the user's primary role
- * - `"secondary"` — matches the user's secondary role
- * - `"off-role"` — neither primary nor secondary (autofill)
+ * - `"off-role"` — any other position (secondary, autofill, etc.)
  * - `"unknown"` — position data or role preferences are missing
  */
 export function getRoleRelevance(
   position: string | null | undefined,
   userPrimaryRole: string | null | undefined,
-  userSecondaryRole: string | null | undefined,
 ): RoleRelevance {
   if (!position || !userPrimaryRole) return "unknown";
   if (position === userPrimaryRole) return "main";
-  if (userSecondaryRole && position === userSecondaryRole) return "secondary";
   return "off-role";
 }
 

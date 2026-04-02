@@ -24,6 +24,7 @@ import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-in
 import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { ChampionLink } from "@/components/champion-link";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,7 @@ interface MatchDetailClientProps {
   matchupNotes: MatchupNoteData[];
   ddragonVersion: string;
   userPuuid: string;
+  userPrimaryRole?: string | null;
   isAiConfigured: boolean;
   cachedAiInsight: InsightResult | null;
 }
@@ -186,6 +188,7 @@ export function MatchDetailClient({
   matchupNotes,
   ddragonVersion,
   userPuuid,
+  userPrimaryRole,
   isAiConfigured,
   cachedAiInsight,
 }: MatchDetailClientProps) {
@@ -193,6 +196,10 @@ export function MatchDetailClient({
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
   const tAi = useTranslations("AiInsights");
+
+  // Role relevance
+  const roleRelevance = getRoleRelevance(match.position, userPrimaryRole);
+  const isOffRole = roleRelevance === "off-role";
 
   // Split participants into teams
   const blueTeam = participants?.filter((p) => p.teamId === 100) || [];
@@ -260,6 +267,28 @@ export function MatchDetailClient({
                 />
               </div>
               <p className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+                {match.position && (
+                  <>
+                    <PositionIcon
+                      position={match.position}
+                      size={16}
+                      className={`-my-0.5 inline ${roleRelevance === "main" ? "text-gold" : roleRelevance === "off-role" ? "text-warning" : "text-muted-foreground"}`}
+                      aria-hidden="true"
+                    />
+                    <span className={isOffRole ? "text-warning" : ""}>
+                      {getPositionLabel(match.position)}
+                    </span>
+                    {isOffRole && (
+                      <Badge
+                        variant="outline"
+                        className="border-warning/30 px-1.5 py-0 text-[10px] text-warning"
+                      >
+                        {t("offRole")}
+                      </Badge>
+                    )}
+                    &middot;{" "}
+                  </>
+                )}
                 {formatDate(match.gameDate, locale, "datetime")} &middot;{" "}
                 {formatDuration(match.gameDurationSeconds)}
                 {match.runeKeystoneName && (
@@ -317,8 +346,8 @@ export function MatchDetailClient({
         </div>
       )}
 
-      {/* Review this game CTA */}
-      {!match.reviewed && (
+      {/* Review this game CTA — hidden for off-role matches */}
+      {!match.reviewed && !isOffRole && (
         <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
           <ClipboardEdit className="h-5 w-5 shrink-0 text-gold" />
           <div className="flex-1">

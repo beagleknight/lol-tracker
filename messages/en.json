@@ -32,7 +32,6 @@
     "loss": "L",
     "remake": "R",
     "positionMain": "{position} (main role)",
-    "positionSecondary": "{position} (secondary)",
     "positionOffRole": "{position} (off-role)"
   },
   "Pagination": {
@@ -177,7 +176,8 @@
     "reviewNotes": "Review notes",
     "skipped": "Skipped: {reason}",
     "markedAsReviewed": "Marked as reviewed",
-    "reviewedWithCoach": "Reviewed with {coachName}"
+    "reviewedWithCoach": "Reviewed with {coachName}",
+    "offRole": "off-role"
   },
   "Review": {
     "pageTitle": "Review",

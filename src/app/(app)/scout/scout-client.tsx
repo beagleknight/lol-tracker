@@ -369,7 +369,6 @@ function ScoutingReport({
               }))}
               locale={locale}
               userPrimaryRole={user?.primaryRole}
-              userSecondaryRole={user?.secondaryRole}
             />
           ))}
         </div>
