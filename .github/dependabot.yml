@@ -20,6 +20,7 @@ updates:
       - beagleknight
     labels:
       - dependencies
+      - skip-changelog
     # Also check GitHub Actions versions
   - package-ecosystem: github-actions
     directory: /
@@ -31,3 +32,4 @@ updates:
     labels:
       - dependencies
       - github-actions
+      - skip-changelog
