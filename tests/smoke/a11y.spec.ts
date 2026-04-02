@@ -21,6 +21,7 @@ const authenticatedPages = [
   { name: "Review", path: "/review" },
   { name: "Goals", path: "/goals" },
   { name: "Settings", path: "/settings" },
+  { name: "Admin", path: "/admin" },
 ];
 
 const publicPages = [{ name: "Login", path: "/login" }];

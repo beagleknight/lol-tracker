@@ -30,6 +30,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
         if (!existing) return false;
 
+        // Block deactivated users
+        if (existing.deactivatedAt) {
+          return "/login?error=account-deactivated";
+        }
+
         const cookieStore = await cookies();
         cookieStore.set("language", existing.language || "en", {
           path: "/",
@@ -55,6 +60,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (existing) {
+          // Block deactivated users
+          if (existing.deactivatedAt) {
+            return "/login?error=account-deactivated";
+          }
+
           // Returning user — update name/image
           await db
             .update(users)
@@ -119,6 +129,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!invite || invite.usedBy) {
           return "/login?error=invite-invalid";
+        }
+
+        // Check if invite has expired
+        if (invite.expiresAt && invite.expiresAt < new Date()) {
+          return "/login?error=invite-expired";
         }
 
         // Valid invite — create user and mark invite as used
