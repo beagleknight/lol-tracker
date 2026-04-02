@@ -518,7 +518,7 @@
 
   /* Off-role match card — desaturated to de-emphasize */
   .off-role-stripes {
-    filter: grayscale(100%) brightness(0.85);
+    filter: grayscale(100%) brightness(0.95);
   }
 
   /* Entrance animation for page sections */
