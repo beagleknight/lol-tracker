@@ -12,6 +12,8 @@ Before making ANY code change:
 
 Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only — in that case add the `skip-changelog` label. **Litmus test:** "Would a League of Legends player notice this change during normal use without being told about it?" If not, use `skip-changelog`.
 
+**MANDATORY: Changelog images must use the 2-column grid layout.** When a changelog includes two or more related images (before/after, sequential steps), wrap them in `<div className="changelog-image-grid">`. Always write descriptive alt text — it renders as a visible caption. Do NOT use separate `### Before` / `### After` headings. See the `pr-workflow` skill for the exact template.
+
 **Formatting and linting are enforced automatically by a lefthook pre-commit hook** — `oxfmt --check` and `oxlint` run on staged files at commit time. If they fail, the commit is rejected. Fix formatting with `npm run fmt` and re-commit. You do NOT need to run `fmt:check` or `lint` manually before pushing — the hook handles it.
 
 **MANDATORY: Run `npm run build` locally BEFORE pushing.** Do not rely on CI as the first build check — catch errors locally first.

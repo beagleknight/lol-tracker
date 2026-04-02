@@ -108,10 +108,10 @@ test.describe("Settings flow", () => {
     await page.goto("/settings");
 
     // Wait for duo partner section to load (it fetches async).
-    // After loading, either the Clear button or the select prompt appears.
+    // After loading, either the Clear button or the search input appears.
     const clearButton = page.getByRole("button", { name: "Clear" });
-    const selectPrompt = page.getByText("Select a registered user as your duo partner:");
-    await expect(clearButton.or(selectPrompt)).toBeVisible({ timeout: 15_000 });
+    const searchInput = page.getByPlaceholder("Search by Riot ID...");
+    await expect(clearButton.or(searchInput)).toBeVisible({ timeout: 15_000 });
 
     // If there's already a duo partner set, clear it first
     const hasDuoPartner = await clearButton.isVisible().catch(() => false);
@@ -122,10 +122,19 @@ test.describe("Settings flow", () => {
       });
     }
 
-    // Now the selection prompt should appear
-    await expect(selectPrompt).toBeVisible({ timeout: 10_000 });
+    // Now the search input should appear
+    await expect(searchInput).toBeVisible({ timeout: 10_000 });
 
-    // Click "Set" button next to a user
+    // Search for the duo partner by name.
+    // Use click + pressSequentially instead of fill for reliable React onChange
+    // triggering on CI (Base UI inputs sometimes miss fill events).
+    await searchInput.click();
+    await searchInput.pressSequentially("Duo", { delay: 50 });
+
+    // Wait for search results to appear (300ms debounce + server action)
+    await expect(page.getByText("DuoPartner#EUW")).toBeVisible({ timeout: 15_000 });
+
+    // Click "Set" button next to the result
     const setButton = page.getByRole("button", { name: "Set" }).first();
     await setButton.click();
 
@@ -161,8 +170,8 @@ test.describe("Settings flow", () => {
     // Should now show "Not Set" badge
     await expect(page.locator('[data-slot="badge"]').filter({ hasText: "Not Set" })).toBeVisible();
 
-    // Should show the selection prompt again
-    await expect(page.getByText("Select a registered user as your duo partner")).toBeVisible({
+    // Should show the search input again
+    await expect(page.getByPlaceholder("Search by Riot ID...")).toBeVisible({
       timeout: 10_000,
     });
   });

@@ -77,6 +77,28 @@ tags: ["feature"]
 
 Body uses standard Markdown: **bold**, lists, `### headings`.
 
+#### Image layout rules
+
+**MANDATORY: When a changelog includes two or more related images (before/after pairs, sequential steps, side-by-side comparisons), they MUST be wrapped in the 2-column grid layout.** No exceptions.
+
+```mdx
+<div className="changelog-image-grid">
+
+![Before: description of the old state](/changelog/slug/before-image.png)
+
+![After: description of the new state](/changelog/slug/after-image.png)
+
+</div>
+```
+
+Rules:
+
+1. **Always use the grid** for any pair of related images — before/after, step 1/step 2, old/new
+2. **Always write descriptive alt text** — it renders as a visible caption (`<figcaption>`) below each image. Good: `"Before: flat list of all players"`. Bad: `"screenshot"`.
+3. **Blank lines are required** between the `<div>` tags and the images — MDX needs them to parse the Markdown image syntax
+4. Single standalone images (not part of a pair) can appear inline without the grid
+5. Do NOT use separate `### Before` / `### After` headings with images underneath — use the grid instead
+
 #### Audience and tone
 
 The audience is **League of Legends players** who want to know what changed. Not developers, not designers. Write like you're telling a friend what's new. Casual, direct, no jargon. Talk about what changed **in their experience**, not how it was built.
