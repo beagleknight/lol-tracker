@@ -875,7 +875,8 @@
       "generateError": "Error al generar invitación.",
       "deleteSuccess": "Invitación eliminada.",
       "deleteError": "Error al eliminar invitación.",
-      "codeCopied": "Código de invitación copiado al portapapeles."
+      "codeCopied": "Código de invitación copiado al portapapeles.",
+      "linkCopied": "Enlace de invitación copiado al portapapeles."
     }
   }
 }
