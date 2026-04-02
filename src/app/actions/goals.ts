@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
 import { invalidateGoalsCaches } from "@/lib/cache";
-import { hasReachedTarget } from "@/lib/rank";
 import { requireUser } from "@/lib/session";
 
 // ─── Create a new goal ──────────────────────────────────────────────────────
@@ -104,46 +103,4 @@ export async function deleteGoal(goalId: number) {
   invalidateGoalsCaches(user.id);
 
   return { success: true };
-}
-
-// ─── Check goal achievement ─────────────────────────────────────────────────
-// Called after each rank snapshot capture (from sync route).
-// Returns true if the goal was just achieved.
-
-export async function checkGoalAchievement(userId: string): Promise<boolean> {
-  const activeGoal = await db.query.goals.findFirst({
-    where: and(eq(goals.userId, userId), eq(goals.status, "active")),
-  });
-
-  if (!activeGoal) return false;
-
-  const latestSnapshot = await db.query.rankSnapshots.findFirst({
-    where: eq(rankSnapshots.userId, userId),
-    orderBy: desc(rankSnapshots.capturedAt),
-  });
-
-  if (!latestSnapshot?.tier) return false;
-
-  const reached = hasReachedTarget(
-    latestSnapshot.tier,
-    latestSnapshot.division,
-    latestSnapshot.lp ?? 0,
-    activeGoal.targetTier,
-    activeGoal.targetDivision,
-  );
-
-  if (reached) {
-    await db
-      .update(goals)
-      .set({
-        status: "achieved",
-        achievedAt: new Date(),
-      })
-      .where(eq(goals.id, activeGoal.id));
-
-    invalidateGoalsCaches(userId);
-    return true;
-  }
-
-  return false;
 }

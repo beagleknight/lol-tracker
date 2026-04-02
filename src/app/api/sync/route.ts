@@ -1,8 +1,8 @@
 import { eq, desc } from "drizzle-orm";
 
-import { checkGoalAchievement } from "@/app/actions/goals";
 import { db } from "@/db";
 import { matches, rankSnapshots, users } from "@/db/schema";
+import { checkGoalAchievement } from "@/lib/goals";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
 import {
   getMatchIds,
@@ -384,8 +384,11 @@ export async function GET(request: Request) {
           message: parts.join(" ") + ".",
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to sync matches";
-        console.error("Sync error:", message);
+        console.error("Sync error:", error);
+        const message =
+          error instanceof RiotApiError
+            ? error.userMessage
+            : "Failed to sync matches. Please try again.";
         send({ type: "error", message });
       } finally {
         // Always release the lock when done (success, error, or crash)

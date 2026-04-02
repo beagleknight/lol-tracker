@@ -171,3 +171,17 @@ export const requireUser = cache(async () => {
 | `UNTRUST_HOST` error                | Missing `AUTH_TRUST_HOST` on Vercel                             | Add `AUTH_TRUST_HOST=true` env var                                      |
 | Infinite redirect loop              | Middleware misconfigured or `signIn` callback returning falsy   | Check callback return values, ensure login page is public               |
 | Session missing custom fields       | Not extending session type or not mapping in `session` callback | Extend `Session` type in `types/next-auth.d.ts`, map fields in callback |
+
+## Security
+
+### Session data minimization
+
+The JWT session should contain only the minimum data needed by client components. Sensitive identifiers like `puuid` should NOT be in the session — use `isRiotLinked: boolean` instead. Server components that need the full user record should call `requireUser()` which reads from the DB.
+
+### Cookie security
+
+All cookies set by Auth.js and custom code must include the `Secure` flag. Auth.js handles this automatically in production. For custom cookies (invite codes, onboarding state), set `secure: true` explicitly.
+
+### requireUser() and requireAdmin()
+
+Both are in `src/lib/session.ts`. Every server action and API route must call one as its first operation. `requireAdmin()` is used for admin-only actions and is also checked at the layout level in `src/app/(app)/admin/layout.tsx`.

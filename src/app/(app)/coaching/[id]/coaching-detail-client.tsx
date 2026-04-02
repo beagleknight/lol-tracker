@@ -35,6 +35,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
+import { safeExternalUrl } from "@/lib/url";
 
 interface LinkedMatch {
   id: string;
@@ -452,7 +453,7 @@ export function CoachingDetailClient({
                       <div className="ml-3 flex items-center gap-2">
                         <Video className="h-3.5 w-3.5 text-electric" />
                         <a
-                          href={match.vodUrl}
+                          href={safeExternalUrl(match.vodUrl) ?? "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 truncate text-xs text-electric hover:underline"

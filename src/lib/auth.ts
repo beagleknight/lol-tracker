@@ -40,6 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           path: "/",
           httpOnly: false,
           sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
           maxAge: 60 * 60 * 24 * 365,
         });
         if (existing.puuid) {
@@ -47,6 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             path: "/",
             httpOnly: false,
             sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
             maxAge: 60,
           });
         }
@@ -81,6 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             path: "/",
             httpOnly: false, // Client JS needs to read it
             sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24 * 365, // 1 year
           });
 
@@ -90,6 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               path: "/",
               httpOnly: false, // Client JS needs to read it
               sameSite: "lax",
+              secure: process.env.NODE_ENV === "production",
               maxAge: 60, // Short-lived — consumed once by the client
             });
           }
@@ -172,7 +176,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.id = dbUser.id;
           session.user.riotGameName = dbUser.riotGameName;
           session.user.riotTagLine = dbUser.riotTagLine;
-          session.user.puuid = dbUser.puuid;
+          session.user.isRiotLinked = !!dbUser.puuid;
           session.user.region = dbUser.region;
           session.user.onboardingCompleted = dbUser.onboardingCompleted;
           session.user.role = dbUser.role;

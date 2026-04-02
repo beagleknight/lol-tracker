@@ -262,3 +262,24 @@ The `rawMatchJson` column stores the full Riot match detail response (50-100KB p
 4. **Exclude from processing queries** — if a feature reads matches for processing (not display), it likely doesn't need rawMatchJson either.
 
 See `nextjs-performance` skill for the full server-side data extraction pattern.
+
+## Security
+
+### Error sanitization
+
+`RiotApiError` has a `userMessage` getter that maps status codes to safe user-facing messages. Never expose raw Riot API errors, status codes, or response bodies to the client.
+
+```typescript
+catch (err) {
+  if (err instanceof RiotApiError) {
+    return { error: err.userMessage };  // safe for client
+  }
+  return { error: "An unexpected error occurred." };
+}
+```
+
+### API key protection
+
+- `RIOT_API_KEY` is server-only — never expose in client bundles or CSP
+- The key is only read in `src/lib/riot-api.ts` server-side functions
+- All Riot data flows: server action/route → DB → client component (never direct client→Riot)

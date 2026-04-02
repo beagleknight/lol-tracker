@@ -21,7 +21,7 @@ export interface AuthUser {
   image?: string | null;
   riotGameName?: string | null;
   riotTagLine?: string | null;
-  puuid?: string | null;
+  isRiotLinked?: boolean;
   region?: string | null;
   onboardingCompleted?: boolean;
   role?: string | null;
