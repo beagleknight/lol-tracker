@@ -364,6 +364,82 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="border-t border-border/30 pt-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                  <Crosshair className="h-4 w-4 text-gold" />
+                  {t("rolePreferences.title")}
+                </h3>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  {t("rolePreferences.description")}
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="primary-role">{t("rolePreferences.primaryLabel")}</Label>
+                    <Select
+                      value={primaryRole}
+                      onValueChange={(v) => v !== null && setPrimaryRole(v)}
+                    >
+                      <SelectTrigger id="primary-role" className="w-full" disabled={isPending}>
+                        <SelectValue placeholder={t("rolePreferences.placeholder")}>
+                          {primaryRole && (
+                            <span className="inline-flex items-center gap-2">
+                              <PositionIcon position={primaryRole} size={14} />
+                              {t(`rolePreferences.positions.${primaryRole}`)}
+                            </span>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POSITIONS.map((pos) => (
+                          <SelectItem key={pos} value={pos}>
+                            <span className="inline-flex items-center gap-2">
+                              <PositionIcon position={pos} size={14} />
+                              {t(`rolePreferences.positions.${pos}`)}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="secondary-role">{t("rolePreferences.secondaryLabel")}</Label>
+                    <Select
+                      value={secondaryRole}
+                      onValueChange={(v) => v !== null && setSecondaryRole(v)}
+                    >
+                      <SelectTrigger id="secondary-role" className="w-full" disabled={isPending}>
+                        <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
+                          {secondaryRole && (
+                            <span className="inline-flex items-center gap-2">
+                              <PositionIcon position={secondaryRole} size={14} />
+                              {t(`rolePreferences.positions.${secondaryRole}`)}
+                            </span>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POSITIONS.filter((pos) => pos !== primaryRole).map((pos) => (
+                          <SelectItem key={pos} value={pos}>
+                            <span className="inline-flex items-center gap-2">
+                              <PositionIcon position={pos} size={14} />
+                              {t(`rolePreferences.positions.${pos}`)}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="mt-3"
+                  onClick={handleSaveRolePreferences}
+                  disabled={isPending}
+                >
+                  {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {t("rolePreferences.saveButton")}
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground">{t("riotAccount.unlinkHelpText")}</p>
             </div>
           ) : (
@@ -558,78 +634,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Role Preferences Card */}
-      <Card className="surface-glow">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crosshair className="h-5 w-5 text-gold" />
-            {t("rolePreferences.title")}
-          </CardTitle>
-          <CardDescription>{t("rolePreferences.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="primary-role">{t("rolePreferences.primaryLabel")}</Label>
-              <Select value={primaryRole} onValueChange={(v) => v !== null && setPrimaryRole(v)}>
-                <SelectTrigger id="primary-role" className="w-full" disabled={isPending}>
-                  <SelectValue placeholder={t("rolePreferences.placeholder")}>
-                    {primaryRole && (
-                      <span className="inline-flex items-center gap-2">
-                        <PositionIcon position={primaryRole} size={14} />
-                        {t(`rolePreferences.positions.${primaryRole}`)}
-                      </span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {POSITIONS.map((pos) => (
-                    <SelectItem key={pos} value={pos}>
-                      <span className="inline-flex items-center gap-2">
-                        <PositionIcon position={pos} size={14} />
-                        {t(`rolePreferences.positions.${pos}`)}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="secondary-role">{t("rolePreferences.secondaryLabel")}</Label>
-              <Select
-                value={secondaryRole}
-                onValueChange={(v) => v !== null && setSecondaryRole(v)}
-              >
-                <SelectTrigger id="secondary-role" className="w-full" disabled={isPending}>
-                  <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
-                    {secondaryRole && (
-                      <span className="inline-flex items-center gap-2">
-                        <PositionIcon position={secondaryRole} size={14} />
-                        {t(`rolePreferences.positions.${secondaryRole}`)}
-                      </span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {POSITIONS.filter((pos) => pos !== primaryRole).map((pos) => (
-                    <SelectItem key={pos} value={pos}>
-                      <span className="inline-flex items-center gap-2">
-                        <PositionIcon position={pos} size={14} />
-                        {t(`rolePreferences.positions.${pos}`)}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button size="sm" onClick={handleSaveRolePreferences} disabled={isPending}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {t("rolePreferences.saveButton")}
-          </Button>
-        </CardContent>
-      </Card>
 
       {/* Admin Section: Invite Friends */}
       {isAdmin && (
