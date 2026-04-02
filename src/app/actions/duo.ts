@@ -21,7 +21,6 @@ export interface DuoPartnerInfo {
   name: string | null;
   riotGameName: string | null;
   riotTagLine: string | null;
-  puuid: string | null;
 }
 
 export interface DuoStats {
@@ -77,7 +76,6 @@ export async function getDuoPartnerInfo(): Promise<DuoPartnerInfo | null> {
       name: true,
       riotGameName: true,
       riotTagLine: true,
-      puuid: true,
     },
   });
 
