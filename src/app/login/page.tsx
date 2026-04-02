@@ -119,8 +119,9 @@ function DiscordLoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
-  const [showInvite, setShowInvite] = useState(!!error);
-  const [inviteCode, setInviteCode] = useState("");
+  const inviteParam = searchParams.get("invite") ?? "";
+  const [showInvite, setShowInvite] = useState(!!error || !!inviteParam);
+  const [inviteCode, setInviteCode] = useState(inviteParam);
 
   function handleSignIn() {
     // If invite code is provided, store it in a cookie before redirecting

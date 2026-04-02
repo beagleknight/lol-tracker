@@ -875,7 +875,8 @@
       "generateError": "Failed to generate invite.",
       "deleteSuccess": "Invite deleted.",
       "deleteError": "Failed to delete invite.",
-      "codeCopied": "Invite code copied to clipboard."
+      "codeCopied": "Invite code copied to clipboard.",
+      "linkCopied": "Invite link copied to clipboard."
     }
   }
 }
