@@ -1,27 +1,25 @@
 ---
 version: "2026.04.5"
 date: "2026-04-02"
-title: "Onboarding wizard and batched sync"
+title: "Guided setup for new players"
 tags: ["feature"]
 ---
 
-New users now get a guided 4-step onboarding wizard instead of being dropped straight into an empty dashboard. The match sync system was also refactored to work in batches, preventing timeouts on Vercel.
+New players now get a step-by-step setup wizard instead of being dropped into an empty dashboard. Match syncing is also more reliable now, especially for players with a long match history.
 
-### Onboarding wizard
+### Setup wizard
 
-When a new user signs in for the first time, they are redirected to a full-screen wizard that walks them through:
+When you sign in for the first time, a full-screen wizard walks you through everything:
 
-1. **Choose your server** — select your Riot region from a dropdown
-2. **Link your Riot account** — enter your Riot ID (GameName#TagLine) to connect via the Riot API
-3. **Role preferences** — optionally pick your primary and secondary roles (can be skipped)
-4. **Sync matches** — import your 10 most recent ranked games with a live progress bar, then land on the dashboard
+1. **Choose your server** — pick your Riot region (EUW, NA, KR, etc.)
+2. **Link your Riot account** — enter your Riot ID (GameName#TagLine) to connect your account
+3. **Role preferences** — optionally pick your primary and secondary roles (you can skip this)
+4. **Import your matches** — your 10 most recent ranked games are imported with a live progress bar, then you land on the dashboard
 
 ![Step 1: region selector with progress bar](/changelog/onboarding-wizard/after-step1-annotated.png)
 
 ![Step 2: Riot account linking](/changelog/onboarding-wizard/after-step2-annotated.png)
 
-### Batched match sync
+### Smoother match syncing
 
-The sync API now supports a `?limit=N` query parameter. When set, only N matches are synced per request and the response includes how many remain. The `useSyncMatches` hook automatically continues in batches of 20 with a 1.5-second delay between each, so large match histories no longer risk hitting the Vercel function timeout.
-
-After onboarding completes, a `sync_on_login` cookie triggers the sidebar to pick up and sync remaining matches in the background.
+Matches now sync in smaller chunks so nothing gets lost, even if you have hundreds of games in your history. After the setup wizard finishes, any remaining matches continue syncing in the background while you explore the dashboard.
