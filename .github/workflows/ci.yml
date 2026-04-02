@@ -13,7 +13,7 @@ jobs:
     name: Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -25,7 +25,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -37,7 +37,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -53,7 +53,7 @@ jobs:
       # Auth.js requires AUTH_SECRET at build time; everything else is lazy.
       AUTH_SECRET: ci-placeholder-secret-not-real
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -70,7 +70,7 @@ jobs:
       NEXT_PUBLIC_DEMO_MODE: "true"
       TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -99,7 +99,7 @@ jobs:
       NEXT_PUBLIC_DEMO_MODE: "true"
       TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
@@ -125,7 +125,7 @@ jobs:
     # Skip this check if the PR has the 'skip-changelog' label
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Check for changelog entry
@@ -142,7 +142,7 @@ jobs:
     name: Security audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
