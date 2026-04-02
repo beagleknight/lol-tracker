@@ -220,7 +220,7 @@ function RolesStep({
                 <SelectItem key={pos} value={pos}>
                   <span className="flex items-center gap-2">
                     <PositionIcon position={pos} size={14} />
-                    {t(`roles.positions.${pos}` as Parameters<typeof t>[0])}
+                    {t(`roles.positions.${pos}`)}
                   </span>
                 </SelectItem>
               ))}
@@ -248,7 +248,7 @@ function RolesStep({
                 <SelectItem key={pos} value={pos}>
                   <span className="flex items-center gap-2">
                     <PositionIcon position={pos} size={14} />
-                    {t(`roles.positions.${pos}` as Parameters<typeof t>[0])}
+                    {t(`roles.positions.${pos}`)}
                   </span>
                 </SelectItem>
               ))}
