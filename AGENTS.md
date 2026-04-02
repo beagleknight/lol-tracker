@@ -10,7 +10,7 @@ Before making ANY code change:
 2. If on `main`, create a feature branch first: `git checkout -b feat/description` (or `fix/`, `refactor/`, `chore/`)
 3. If already on a feature branch, proceed
 
-Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only — in that case add the `skip-changelog` label. **Litmus test:** "Would a League of Legends player notice this change during normal use without being told about it?" If not, use `skip-changelog`.
+Every PR must include a changelog entry (`changelog/en/*.mdx` + `changelog/es/*.mdx`) unless it's infrastructure-only or admin-only — in that case add the `skip-changelog` label. **Litmus test**: _"Would a League of Legends player notice this change during normal use without being told about it?"_ If no, use `skip-changelog`. Admin-only features (user management, admin dashboard), rate limiters, sync queues, CI config, and dependency bumps all fail this test.
 
 **MANDATORY: Changelog images must use the 2-column grid layout.** When a changelog includes two or more related images (before/after, sequential steps), wrap them in `<div className="changelog-image-grid">`. Always write descriptive alt text — it renders as a visible caption. Do NOT use separate `### Before` / `### After` headings. See the `pr-workflow` skill for the exact template.
 

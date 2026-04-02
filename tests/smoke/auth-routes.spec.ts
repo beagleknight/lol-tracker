@@ -37,6 +37,7 @@ const AUTHENTICATED_ROUTES = [
   { path: "/review", name: "Post-game review" },
   { path: "/changelog", name: "Changelog" },
   { path: "/settings", name: "Settings" },
+  { path: "/admin", name: "Admin panel" },
 ];
 
 for (const route of AUTHENTICATED_ROUTES) {

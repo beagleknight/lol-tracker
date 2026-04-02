@@ -150,6 +150,16 @@ function DiscordLoginForm() {
             {t("errorInviteInvalid")}
           </div>
         )}
+        {error === "invite-expired" && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            {t("errorInviteExpired")}
+          </div>
+        )}
+        {error === "account-deactivated" && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            {t("errorAccountDeactivated")}
+          </div>
+        )}
 
         {showInvite && (
           <div className="space-y-2">
