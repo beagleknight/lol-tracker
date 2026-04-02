@@ -12,9 +12,10 @@ import {
   Users,
   Globe,
   Crosshair,
+  Search,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
 import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
@@ -22,7 +23,7 @@ import {
   linkRiotAccount,
   unlinkRiotAccount,
   updateRegion,
-  getRegisteredUsers,
+  searchUsers,
   getDuoPartner,
   setDuoPartner,
   clearDuoPartner,
@@ -87,15 +88,17 @@ export default function SettingsPage() {
     riotGameName: string | null;
     riotTagLine: string | null;
   } | null>(null);
-  const [registeredUsers, setRegisteredUsers] = useState<
+  const [duoSearchQuery, setDuoSearchQuery] = useState("");
+  const [duoSearchResults, setDuoSearchResults] = useState<
     Array<{
       id: string;
       name: string | null;
       riotGameName: string | null;
       riotTagLine: string | null;
-      puuid: string | null;
     }>
   >([]);
+  const [duoSearching, setDuoSearching] = useState(false);
+  const duoSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [duoLoading, setDuoLoading] = useState(false);
 
   // ─── Role preferences state ───────────────────────────────────────────────
@@ -125,10 +128,9 @@ export default function SettingsPage() {
   useEffect(() => {
     if (isLinked) {
       setDuoLoading(true);
-      Promise.all([getDuoPartner(), getRegisteredUsers()])
-        .then(([partner, users]) => {
+      getDuoPartner()
+        .then((partner) => {
           setDuoPartnerState(partner);
-          setRegisteredUsers(users);
         })
         .catch(() => toast.error(t("toasts.loadDuoPartnerError")))
         .finally(() => setDuoLoading(false));
@@ -223,9 +225,11 @@ export default function SettingsPage() {
         toast.error(result.error);
       } else {
         toast.success(t("toasts.duoPartnerSet", { partnerName: result.partnerName ?? "" }));
-        // Refresh duo partner state
+        // Refresh duo partner state and clear search
         const partner = await getDuoPartner();
         setDuoPartnerState(partner);
+        setDuoSearchQuery("");
+        setDuoSearchResults([]);
       }
     });
   }
@@ -239,6 +243,39 @@ export default function SettingsPage() {
       }
     });
   }
+
+  // ─── Duo partner search ─────────────────────────────────────────────────
+
+  const handleDuoSearch = useCallback(
+    (query: string) => {
+      setDuoSearchQuery(query);
+      setDuoSearchResults([]);
+
+      if (duoSearchTimer.current) {
+        clearTimeout(duoSearchTimer.current);
+      }
+
+      if (query.trim().length < 2) {
+        setDuoSearching(false);
+        return;
+      }
+
+      setDuoSearching(true);
+      duoSearchTimer.current = setTimeout(() => {
+        void (async () => {
+          try {
+            const results = await searchUsers(query);
+            setDuoSearchResults(results);
+          } catch {
+            toast.error(t("toasts.loadDuoPartnerError"));
+          } finally {
+            setDuoSearching(false);
+          }
+        })();
+      }, 300);
+    },
+    [t],
+  );
 
   // ─── Locale handler ─────────────────────────────────────────────────────
 
@@ -597,39 +634,64 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </div>
-            ) : registeredUsers.length > 0 ? (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">{t("duoPartner.selectPrompt")}</p>
-                <div className="space-y-2">
-                  {registeredUsers.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gold">
-                          {u.riotGameName}#{u.riotTagLine}
-                        </p>
-                        {u.name && <p className="text-xs text-muted-foreground">{u.name}</p>}
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleSetDuoPartner(u.id)}
-                        disabled={isPending}
-                      >
-                        {isPending ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Users className="mr-2 h-4 w-4" />
-                        )}
-                        {t("duoPartner.setButton")}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder={t("duoPartner.searchPlaceholder")}
+                    value={duoSearchQuery}
+                    onChange={(e) => handleDuoSearch(e.target.value)}
+                    className="pl-9"
+                    aria-label={t("duoPartner.searchPlaceholder")}
+                  />
+                </div>
+                {duoSearchQuery.trim().length < 2 && (
+                  <p className="text-sm text-muted-foreground">{t("duoPartner.searchHint")}</p>
+                )}
+                {duoSearching && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("duoPartner.searching")}
+                  </div>
+                )}
+                {!duoSearching &&
+                  duoSearchQuery.trim().length >= 2 &&
+                  duoSearchResults.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("duoPartner.noResults", { query: duoSearchQuery.trim() })}
+                    </p>
+                  )}
+                {duoSearchResults.length > 0 && (
+                  <div className="space-y-2">
+                    {duoSearchResults.map((u) => (
+                      <div
+                        key={u.id}
+                        className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gold">
+                            {u.riotGameName}#{u.riotTagLine}
+                          </p>
+                          {u.name && <p className="text-xs text-muted-foreground">{u.name}</p>}
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSetDuoPartner(u.id)}
+                          disabled={isPending}
+                        >
+                          {isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Users className="mr-2 h-4 w-4" />
+                          )}
+                          {t("duoPartner.setButton")}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

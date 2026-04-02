@@ -627,7 +627,10 @@
       "description": "Elige tu compañero de dúo para registrar partidas compartidas y estadísticas de sinergia.",
       "partnerLabel": "Compañero de dúo",
       "clearButton": "Quitar",
-      "selectPrompt": "Selecciona un usuario registrado como tu compañero de dúo:",
+      "searchPlaceholder": "Buscar por Riot ID...",
+      "searchHint": "Escribe al menos 2 caracteres para buscar",
+      "searching": "Buscando...",
+      "noResults": "No se encontraron jugadores para \"{query}\"",
       "setButton": "Establecer",
       "noUsersFound": "No se encontraron otros usuarios con cuentas de Riot vinculadas. ¡Invita a un amigo para empezar!"
     },
