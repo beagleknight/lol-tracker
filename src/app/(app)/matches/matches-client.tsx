@@ -388,7 +388,6 @@ export function MatchesClient({
                   matchHighlights={highlightsPerMatch[match.id] || []}
                   locale={locale}
                   userPrimaryRole={user?.primaryRole}
-                  userSecondaryRole={user?.secondaryRole}
                 />
               ))}
             </div>

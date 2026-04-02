@@ -88,7 +88,6 @@ export function MatchCard({
   variant = "default",
   showScoutLink = false,
   userPrimaryRole,
-  userSecondaryRole,
 }: {
   match: MatchCardData;
   ddragonVersion: string;
@@ -97,13 +96,12 @@ export function MatchCard({
   variant?: "default" | "compact";
   showScoutLink?: boolean;
   userPrimaryRole?: string | null;
-  userSecondaryRole?: string | null;
 }) {
   const t = useTranslations("MatchCard");
   const isCompact = variant === "compact";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
-  const roleRelevance = getRoleRelevance(match.position, userPrimaryRole, userSecondaryRole);
+  const roleRelevance = getRoleRelevance(match.position, userPrimaryRole);
   const isOffRole = roleRelevance === "off-role";
   const kda =
     match.deaths === 0
@@ -140,27 +138,23 @@ export function MatchCard({
   const positionIconColor =
     roleRelevance === "main"
       ? "text-gold"
-      : roleRelevance === "secondary"
-        ? "text-muted-foreground"
-        : roleRelevance === "off-role"
-          ? "text-warning"
-          : "text-muted-foreground";
+      : roleRelevance === "off-role"
+        ? "text-warning"
+        : "text-muted-foreground";
 
   const positionTooltipText = match.position
     ? roleRelevance === "main"
       ? t("positionMain", { position: getPositionLabel(match.position) })
-      : roleRelevance === "secondary"
-        ? t("positionSecondary", { position: getPositionLabel(match.position) })
-        : roleRelevance === "off-role"
-          ? t("positionOffRole", { position: getPositionLabel(match.position) })
-          : getPositionLabel(match.position)
+      : roleRelevance === "off-role"
+        ? t("positionOffRole", { position: getPositionLabel(match.position) })
+        : getPositionLabel(match.position)
     : null;
 
   return (
     <TooltipProvider>
       <Link
         href={`/matches/${match.id}`}
-        className={`hover-lift block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${resultBgTint(match.result)}${isOffRole ? " border-dashed border-muted-foreground/30" : ""}`}
+        className={`block rounded-lg border transition-all ${isOffRole ? "off-role-stripes bg-surface-elevated/50" : `hover-lift bg-card hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>
           {/* Result bar */}

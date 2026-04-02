@@ -138,15 +138,13 @@ function MatchCardHeaderInfo({
 }) {
   const t = useTranslations("Review");
   const { user } = useAuth();
-  const roleRelevance = getRoleRelevance(match.position, user?.primaryRole, user?.secondaryRole);
+  const roleRelevance = getRoleRelevance(match.position, user?.primaryRole);
   const positionIconColor =
     roleRelevance === "main"
       ? "text-gold"
-      : roleRelevance === "secondary"
-        ? "text-muted-foreground"
-        : roleRelevance === "off-role"
-          ? "text-warning"
-          : "text-muted-foreground";
+      : roleRelevance === "off-role"
+        ? "text-warning"
+        : "text-muted-foreground";
 
   return (
     <div className="flex items-center gap-3">

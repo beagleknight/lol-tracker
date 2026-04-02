@@ -403,7 +403,6 @@ export function DashboardClient({
                     variant="compact"
                     showScoutLink
                     userPrimaryRole={authUser?.primaryRole}
-                    userSecondaryRole={authUser?.secondaryRole}
                   />
                 ))}
               </div>
