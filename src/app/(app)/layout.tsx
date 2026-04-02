@@ -23,10 +23,10 @@ async function SidebarWithUser() {
     redirect("/onboarding");
   }
 
-  // Lightweight count for sidebar review badges (excludes remakes)
+  // Lightweight count for sidebar review badges (excludes remakes + off-role)
   const [reviewCounts, latestVersion] = await Promise.all([
     db
-      .select(sidebarReviewCountsSelect())
+      .select(sidebarReviewCountsSelect(user.primaryRole))
       .from(matches)
       .where(eq(matches.userId, user.id))
       .then((rows) => rows[0]),

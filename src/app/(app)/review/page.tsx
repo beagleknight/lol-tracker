@@ -1,4 +1,4 @@
-import { eq, ne, and, asc, desc, inArray, count } from "drizzle-orm";
+import { eq, ne, and, asc, desc, inArray, count, or, isNull } from "drizzle-orm";
 
 import type { Match } from "@/db/schema";
 
@@ -60,8 +60,15 @@ export default async function ReviewPage({
     queueId: true,
     syncedAt: true,
     duoPartnerPuuid: true,
+    position: true,
     // rawMatchJson excluded — not needed for review list
   } as const;
+
+  // Only show main-role games in the review queue (off-role excluded).
+  // Games with unknown position (NULL) are included to avoid hiding data.
+  const unreviewedPositionFilter = user.primaryRole
+    ? or(eq(matches.position, user.primaryRole), isNull(matches.position))
+    : undefined;
 
   // Fetch DDragon version + unreviewed matches + paginated reviewed matches + reviewed count
   const [ddragonVersion, unreviewedMatches, reviewedMatches, reviewedCountResult] =
@@ -72,6 +79,7 @@ export default async function ReviewPage({
           eq(matches.userId, user.id),
           eq(matches.reviewed, false),
           ne(matches.result, "Remake"),
+          unreviewedPositionFilter,
         ),
         orderBy: asc(matches.gameDate),
         limit: 50,

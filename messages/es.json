@@ -32,7 +32,6 @@
     "loss": "D",
     "remake": "R",
     "positionMain": "{position} (rol principal)",
-    "positionSecondary": "{position} (secundario)",
     "positionOffRole": "{position} (fuera de rol)"
   },
   "Pagination": {
@@ -177,7 +176,8 @@
     "reviewNotes": "Notas de revisión",
     "skipped": "Omitida: {reason}",
     "markedAsReviewed": "Marcada como revisada",
-    "reviewedWithCoach": "Revisada con {coachName}"
+    "reviewedWithCoach": "Revisada con {coachName}",
+    "offRole": "fuera de rol"
   },
   "Review": {
     "pageTitle": "Revisión",

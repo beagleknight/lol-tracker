@@ -120,14 +120,20 @@ export const championSynergySelect = {
 
 /**
  * Sidebar/layout review badge query: counts unreviewed games excluding remakes.
+ * When `primaryRole` is provided, off-role matches (position != primaryRole) are excluded.
+ * Games with NULL position are always included (unknown = not excluded).
  */
-export function sidebarReviewCountsSelect() {
+export function sidebarReviewCountsSelect(primaryRole?: string | null) {
+  const roleFilter = primaryRole
+    ? sql`AND (${matches.position} = ${primaryRole} OR ${matches.position} IS NULL)`
+    : sql``;
+
   return {
     postGame:
-      sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND ${matches.comment} IS NULL AND NOT EXISTS (
+      sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' ${roleFilter} AND ${matches.comment} IS NULL AND NOT EXISTS (
       SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id}
     ) THEN 1 ELSE 0 END)`.as("post_game"),
-    vod: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
+    vod: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' ${roleFilter} AND (
       ${matches.comment} IS NOT NULL
       OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
     ) THEN 1 ELSE 0 END)`.as("vod"),
