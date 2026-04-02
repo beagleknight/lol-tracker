@@ -323,6 +323,18 @@ export const aiInsights = sqliteTable(
   ],
 );
 
+// ─── Sync Locks ─────────────────────────────────────────────────────────────
+
+export const syncLocks = sqliteTable("sync_locks", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  lockedAt: integer("locked_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+});
+
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
@@ -335,3 +347,4 @@ export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
 export type MatchupNote = typeof matchupNotes.$inferSelect;
 export type AiInsight = typeof aiInsights.$inferSelect;
+export type SyncLock = typeof syncLocks.$inferSelect;
