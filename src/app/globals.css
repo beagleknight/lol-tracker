@@ -529,8 +529,8 @@
       -45deg,
       transparent,
       transparent 6px,
-      oklch(0.5 0 0 / 0.1) 6px,
-      oklch(0.5 0 0 / 0.1) 12px
+      oklch(0.5 0 0 / 0.25) 6px,
+      oklch(0.5 0 0 / 0.25) 12px
     );
     pointer-events: none;
     border-radius: inherit;
