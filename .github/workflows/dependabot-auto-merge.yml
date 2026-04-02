@@ -14,12 +14,11 @@ jobs:
   auto-merge:
     name: Auto-merge Dependabot PR
     runs-on: ubuntu-latest
-    # Only run when CI succeeded AND the PR was opened by Dependabot
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    # Only run when CI succeeded (actor check moved into the job —
+    # workflow_run.actor reflects who triggered CI, not the PR author)
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Get PR number
+      - name: Get PR number and verify author
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,13 +26,25 @@ jobs:
           # workflow_run doesn't directly give us the PR number — look it up
           # from the head branch of the triggering run
           HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
-          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" \
-            --head "$HEAD_BRANCH" --state open --json number --jq '.[0].number')
+          PR_JSON=$(gh pr list --repo "${{ github.repository }}" \
+            --head "$HEAD_BRANCH" --state open \
+            --json number,author --jq '.[0] // empty')
 
-          if [ -z "$PR_NUMBER" ]; then
+          if [ -z "$PR_JSON" ]; then
             echo "No open PR found for branch $HEAD_BRANCH"
             exit 0
           fi
+
+          PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+          PR_AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
+
+          echo "PR #$PR_NUMBER by $PR_AUTHOR"
+
+          if [ "$PR_AUTHOR" != "app/dependabot" ]; then
+            echo "Not a Dependabot PR — skipping"
+            exit 0
+          fi
+
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Check update type
