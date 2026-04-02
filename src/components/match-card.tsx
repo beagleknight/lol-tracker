@@ -154,7 +154,7 @@ export function MatchCard({
     <TooltipProvider>
       <Link
         href={`/matches/${match.id}`}
-        className={`hover-lift block rounded-lg border bg-card transition-all hover:bg-surface-elevated/50 ${isOffRole ? "off-role-stripes" : resultBgTint(match.result)}`}
+        className={`block rounded-lg border transition-all ${isOffRole ? "off-role-stripes bg-surface-elevated/50" : `hover-lift bg-card hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>
           {/* Result bar */}
