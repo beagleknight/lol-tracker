@@ -125,11 +125,14 @@ test.describe("Settings flow", () => {
     // Now the search input should appear
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
 
-    // Search for the duo partner by name
-    await searchInput.fill("Duo");
+    // Search for the duo partner by name.
+    // Use click + pressSequentially instead of fill for reliable React onChange
+    // triggering on CI (Base UI inputs sometimes miss fill events).
+    await searchInput.click();
+    await searchInput.pressSequentially("Duo", { delay: 50 });
 
-    // Wait for search results to appear
-    await expect(page.getByText("DuoPartner#EUW")).toBeVisible({ timeout: 10_000 });
+    // Wait for search results to appear (300ms debounce + server action)
+    await expect(page.getByText("DuoPartner#EUW")).toBeVisible({ timeout: 15_000 });
 
     // Click "Set" button next to the result
     const setButton = page.getByRole("button", { name: "Set" }).first();
