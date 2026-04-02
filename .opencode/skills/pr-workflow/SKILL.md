@@ -102,6 +102,8 @@ The audience is **League of Legends players** who want to know what changed. Not
 
 **Internal-only changes get no changelog.** If a change is purely internal with zero user-visible impact (code style, tag cleanup, typography convention name, dependency bumps), either fold a one-liner into a related user-facing entry or skip the changelog entirely (use `skip-changelog` label). Examples of things that should NOT get their own changelog entry: adopting sentence case, simplifying changelog filter tags, updating linting config, renaming internal variables.
 
+**Litmus test — MANDATORY before writing any changelog entry:** Ask yourself: _"Would a League of Legends player notice this change during normal use without being told about it?"_ If the answer is no, use `skip-changelog`. This test catches the most common mistake: writing changelogs for infrastructure that only surfaces as internal status messages, error prevention, or performance improvements under load. Examples that **fail** the litmus test (use `skip-changelog`): rate limiters, sync queues, database migrations, caching layers, CI config, internal error handling, monitoring. Examples that **pass** the litmus test (write a changelog): new search UI, redesigned match cards, new coaching feature, bug fix where matches weren't loading.
+
 Version scheme — **CalVer** (`YYYY.MM.N`):
 
 - `YYYY` = calendar year (e.g. 2026)

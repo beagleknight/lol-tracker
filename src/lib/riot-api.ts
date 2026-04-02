@@ -1,6 +1,7 @@
 // Riot Games API service layer
 // Docs: https://developer.riotgames.com/docs/lol
 
+import { type RateLimitInfo, parseRateLimitHeaders } from "@/lib/rate-limiter";
 import {
   mockGetAccountByRiotId,
   mockGetSoloQueueEntryByPuuid,
@@ -12,6 +13,20 @@ const _isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 function getRiotApiKey(): string {
   return process.env.RIOT_API_KEY!;
+}
+
+// ─── Rate Limit State ────────────────────────────────────────────────────────
+// Updated on every successful riotFetch call. The sync route reads this to
+// calculate adaptive delays between match fetches.
+
+let _lastRateLimitInfo: RateLimitInfo | null = null;
+
+/**
+ * Get the most recent rate limit info from the last Riot API response.
+ * Returns null if no API calls have been made yet or headers were missing.
+ */
+export function getLastRateLimitInfo(): RateLimitInfo | null {
+  return _lastRateLimitInfo;
 }
 
 // ─── Region Mapping ─────────────────────────────────────────────────────────
@@ -183,6 +198,12 @@ async function riotFetch<T>(url: string, retries = 5): Promise<T> {
       },
       cache: "no-store",
     });
+
+    // Capture rate limit headers from every response (even 429s)
+    const rateLimitInfo = parseRateLimitHeaders(response.headers);
+    if (rateLimitInfo) {
+      _lastRateLimitInfo = rateLimitInfo;
+    }
 
     if (response.ok) {
       return response.json();
