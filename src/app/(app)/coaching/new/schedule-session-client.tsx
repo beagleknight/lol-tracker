@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, ArrowLeft, Video, Check, Calendar, X } from "lucide-react";
+import { Loader2, Video, Check, Calendar, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { useState, useTransition, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 
 import { scheduleCoachingSession } from "@/app/actions/coaching";
+import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
 import { ResultBar } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
@@ -137,11 +138,7 @@ export function ScheduleSessionClient({
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/coaching">
-          <Button variant="ghost" size="icon" aria-label="Back to coaching">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <BackButton />
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>

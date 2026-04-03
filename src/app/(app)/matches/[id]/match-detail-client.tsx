@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   GraduationCap,
   ClipboardEdit,
   Link as LinkIcon,
@@ -22,6 +21,7 @@ import type { RiotMatchParticipant } from "@/lib/riot-api";
 import { ReadOnlyMatchupNotes } from "@/app/(app)/scout/matchup-notes";
 import { generatePostGameInsight, type InsightResult } from "@/app/actions/ai-insights";
 import { AiInsightDrawer } from "@/components/ai-insight-card";
+import { BackButton } from "@/components/back-button";
 import { ChampionLink } from "@/components/champion-link";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
@@ -216,11 +216,7 @@ export function MatchDetailClient({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/matches">
-          <Button variant="ghost" size="icon" aria-label="Back to matches">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <BackButton />
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <ChampionLink
