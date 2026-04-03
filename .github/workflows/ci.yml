@@ -3,17 +3,9 @@ name: CI
 on:
   pull_request:
     branches: [main]
-  # Allow the Dependabot lockfile-fix workflow to re-trigger CI after pushing
-  # a corrected lockfile (pushes from GITHUB_TOKEN don't trigger workflows).
-  workflow_dispatch:
-    inputs:
-      pr_head_ref:
-        description: "PR branch name (used for concurrency grouping)"
-        required: false
-        type: string
 
 concurrency:
-  group: ci-${{ github.head_ref || inputs.pr_head_ref || github.ref }}
+  group: ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -130,8 +122,8 @@ jobs:
   changelog:
     name: Changelog
     runs-on: ubuntu-latest
-    # Skip this check if the PR has the 'skip-changelog' label or if triggered via workflow_dispatch
-    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}
+    # Skip this check if the PR has the 'skip-changelog' label
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}
     steps:
       - uses: actions/checkout@v6
         with:

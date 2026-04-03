@@ -6,19 +6,19 @@ on:
 
 permissions:
   contents: write
-  actions: write
+  pull-requests: write
 
 jobs:
   fix-lockfile:
     name: Regenerate lockfile
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
     steps:
       - uses: actions/checkout@v6
         with:
-          # Check out the PR branch so we can push back to it
           ref: ${{ github.head_ref }}
-          # Use a token that can push to Dependabot branches
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v6
@@ -48,12 +48,207 @@ jobs:
           git commit -m "chore: regenerate lockfile with Node $(node -v) / npm $(npm -v)"
           git push
 
-      - name: Re-trigger CI
-        if: steps.diff.outputs.changed == 'true'
+  # When the lockfile was fixed, the GITHUB_TOKEN push won't re-trigger the
+  # pull_request CI workflow (GitHub anti-recursion). Run CI checks inline
+  # instead, then auto-merge if everything passes.
+  ci-typecheck:
+    name: Typecheck (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  ci-lint:
+    name: Lint (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  ci-format:
+    name: Format (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - run: npm run fmt:check
+
+  ci-build:
+    name: Build (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      AUTH_SECRET: ci-placeholder-secret-not-real
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  ci-smoke:
+    name: Smoke Tests (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      AUTH_SECRET: smoke-test-secret-at-least-32-characters
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_DEMO_MODE: "true"
+      TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Build app
+        run: npm run build
+      - name: Run smoke tests
+        run: npm run test:smoke
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test-report
+          path: playwright-report/
+          retention-days: 7
+
+  ci-e2e:
+    name: E2E Tests (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      AUTH_SECRET: smoke-test-secret-at-least-32-characters
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_DEMO_MODE: "true"
+      TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Build app
+        run: npm run build
+      - name: Run E2E tests
+        run: npm run test:e2e
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-test-report
+          path: playwright-report/
+          retention-days: 7
+
+  ci-audit:
+    name: Security audit (post-fix)
+    needs: fix-lockfile
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - name: Check for high/critical vulnerabilities (production)
+        run: npm audit --omit=dev --audit-level=high
+
+  auto-merge:
+    name: Auto-merge Dependabot PR
+    needs:
+      - fix-lockfile
+      - ci-typecheck
+      - ci-lint
+      - ci-format
+      - ci-build
+      - ci-smoke
+      - ci-e2e
+      - ci-audit
+    if: needs.fix-lockfile.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check update type
+        id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh workflow run CI \
-            --repo "${{ github.repository }}" \
-            --ref "${{ github.head_ref }}" \
-            --field pr_head_ref="${{ github.head_ref }}"
+          LABELS=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --json labels --jq '.labels[].name')
+
+          echo "Labels: $LABELS"
+
+          if echo "$LABELS" | grep -q "semver-major"; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+            echo "Major version bump detected — skipping auto-merge"
+          else
+            echo "type=minor-or-patch" >> "$GITHUB_OUTPUT"
+            echo "Patch/minor update — will auto-merge"
+          fi
+
+      - name: Approve and merge
+        if: steps.check.outputs.type == 'minor-or-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr review "$PR_NUMBER" --repo "${{ github.repository }}" --approve \
+            --body "Auto-approved: Dependabot patch/minor update. CI passed (post lockfile fix)."
+          gh pr merge "$PR_NUMBER" --repo "${{ github.repository }}" --squash \
+            --body "Auto-merged by Dependabot pipeline after lockfile fix and CI passed."
+
+      - name: Comment on major bump
+        if: steps.check.outputs.type == 'major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --body "This is a **major version bump** — skipping auto-merge. Please review manually."
