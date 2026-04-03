@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   fix-lockfile:
@@ -46,3 +47,13 @@ jobs:
           git add package-lock.json
           git commit -m "chore: regenerate lockfile with Node $(node -v) / npm $(npm -v)"
           git push
+
+      - name: Re-trigger CI
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run CI \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.head_ref }}" \
+            --field pr_head_ref="${{ github.head_ref }}"
