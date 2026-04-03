@@ -25,7 +25,7 @@ jobs:
           node-version-file: ".tool-versions"
 
       - name: Regenerate lockfile
-        run: npm install --package-lock-only
+        run: npm install --package-lock-only --ignore-scripts
 
       - name: Check for lockfile changes
         id: diff
