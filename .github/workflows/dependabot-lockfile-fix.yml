@@ -1,0 +1,48 @@
+name: Fix Dependabot lockfile
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-lockfile:
+    name: Regenerate lockfile
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Check out the PR branch so we can push back to it
+          ref: ${{ github.head_ref }}
+          # Use a token that can push to Dependabot branches
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+
+      - name: Regenerate lockfile
+        run: npm install --package-lock-only
+
+      - name: Check for lockfile changes
+        id: diff
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Lockfile is already in sync — nothing to do"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Lockfile has changes — will push"
+          fi
+
+      - name: Push updated lockfile
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: regenerate lockfile with Node $(node -v) / npm $(npm -v)"
+          git push
