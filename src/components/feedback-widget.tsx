@@ -208,7 +208,7 @@ export function FeedbackWidget() {
               <span className="sr-only">{t("loading")}</span>
             </div>
           )}
-          <div ref={cannyContainerRef} data-canny className="h-full" />
+          <div ref={cannyContainerRef} data-canny className="h-full p-4" />
         </div>
       </div>
     </>
