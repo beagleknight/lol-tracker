@@ -3,6 +3,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "@/db";
 import { matches, rankSnapshots, users } from "@/db/schema";
 import { checkGoalAchievement } from "@/lib/goals";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
 import {
   getMatchIds,
@@ -73,6 +74,17 @@ export async function GET(request: Request) {
           // Stream may already be closed (client disconnected) — ignore
         }
       };
+
+      // ── Rate limit check ───────────────────────────────────────────
+      const rateCheck = await checkRateLimit(user.id, "sync");
+      if (!rateCheck.allowed) {
+        send({
+          type: "error",
+          message: `You can only sync once every 5 minutes. Try again in ${rateCheck.retryAfter} seconds.`,
+        });
+        controller.close();
+        return;
+      }
 
       // ── Acquire sync lock ────────────────────────────────────────────
       let lockAcquired = false;
