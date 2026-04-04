@@ -1,0 +1,32 @@
+---
+version: "2026.04.8"
+date: "2026-04-04"
+title: "Coaching cadence settings and settings tabs"
+tags: ["feature", "improvement"]
+---
+
+You can now choose how often you want coaching sessions — weekly, biweekly, every three weeks, or monthly. The dashboard coaching widget adapts its urgency indicators to your chosen cadence instead of using fixed thresholds.
+
+- **Configurable coaching cadence**: Pick your preferred coaching frequency from preset buttons in the new Preferences tab. The dashboard uses your setting to determine when sessions are "on track", "due soon", or "overdue".
+- **Settings redesign with tabs**: The settings page is now organized into three tabs — Account (Riot account, roles), Preferences (language, region, coaching cadence), and Duo (duo partner management).
+- **Smarter dashboard widget**: When you're on track, the widget shows how many days until your next session is due. The buffer window is always 7 days past your cadence before marking overdue.
+
+### Settings
+
+<div className="changelog-image-grid">
+
+![Before: flat list of settings cards with no organization](/changelog/coaching-cadence-settings/before-settings.png)
+
+![After: tabbed layout with coaching cadence presets in the Preferences tab](/changelog/coaching-cadence-settings/after-settings-preferences-annotated.png)
+
+</div>
+
+### Dashboard
+
+<div className="changelog-image-grid">
+
+![Before: coaching widget with hardcoded 14/21 day thresholds](/changelog/coaching-cadence-settings/before-dashboard.png)
+
+![After: coaching widget uses your configured cadence with dynamic thresholds](/changelog/coaching-cadence-settings/after-dashboard-annotated.png)
+
+</div>

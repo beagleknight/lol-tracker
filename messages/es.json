@@ -100,8 +100,10 @@
     "readyToComplete": "Lista para completar",
     "readyToCompleteDaysAgo": "Lista para completar · hace {days, plural, one {# día} other {# días}}",
     "sessionIn": "En {timeStr}",
-    "noCoachingSessions": "No hay sesiones de coaching programadas.",
+    "noCoachingSessions": "Sin sesiones de coaching aún.",
+    "scheduleFirst": "Programa tu primera sesión",
     "scheduleOne": "Programar una",
+    "nextDueIn": "Próxima en {days, plural, one {# día} other {# días}}",
     "actionItems": "Tareas",
     "actionItemInProgress": "En progreso",
     "actionItemPending": "Pendiente",
@@ -604,6 +606,11 @@
   "Settings": {
     "title": "Ajustes",
     "description": "Administra tu cuenta e integración con Riot Games.",
+    "tabs": {
+      "account": "Cuenta",
+      "preferences": "Preferencias",
+      "duo": "Dúo"
+    },
     "riotAccount": {
       "title": "Cuenta de Riot",
       "badgeLinked": "Vinculada",
@@ -657,6 +664,15 @@
         "UTILITY": "Soporte"
       }
     },
+    "coachingCadence": {
+      "title": "Cadencia de coaching",
+      "description": "Con qué frecuencia quieres tener una sesión de coaching. Controla los estados de urgencia del widget de coaching en el panel.",
+      "weekly": "Semanal",
+      "biweekly": "Quincenal",
+      "threeWeeks": "Cada 3 semanas",
+      "monthly": "Mensual",
+      "currentLabel": "Cada {days, plural, one {# día} other {# días}}"
+    },
     "invites": {
       "title": "Invitar amigos",
       "badgeAdmin": "Admin",
@@ -688,7 +704,9 @@
       "regionUpdated": "Región del servidor actualizada.",
       "languageUpdated": "Idioma actualizado.",
       "rolePreferencesSaved": "Preferencias de rol guardadas.",
-      "rolePreferencesSaveError": "Error al guardar las preferencias de rol."
+      "rolePreferencesSaveError": "Error al guardar las preferencias de rol.",
+      "cadenceUpdated": "Cadencia de coaching actualizada.",
+      "cadenceUpdateError": "Error al actualizar la cadencia de coaching."
     }
   },
   "Errors": {

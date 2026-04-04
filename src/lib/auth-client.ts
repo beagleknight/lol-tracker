@@ -29,6 +29,7 @@ export interface AuthUser {
   language?: string | null;
   primaryRole?: string | null;
   secondaryRole?: string | null;
+  coachingCadenceDays?: number | null;
 }
 
 export interface UseAuthReturn {
