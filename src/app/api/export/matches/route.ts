@@ -2,6 +2,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { matches } from "@/db/schema";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/session";
 
 // ─── CSV Helpers ─────────────────────────────────────────────────────────────
@@ -105,6 +106,15 @@ export async function GET(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit check
+  const rateCheck = await checkRateLimit(user.id, "export");
+  if (!rateCheck.allowed) {
+    return Response.json(
+      { error: `Rate limit exceeded. Try again in ${rateCheck.retryAfter} seconds.` },
+      { status: 429, headers: { "Retry-After": String(rateCheck.retryAfter) } },
+    );
   }
 
   // Parse filter params (same as matches page)

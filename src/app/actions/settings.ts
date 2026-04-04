@@ -9,11 +9,20 @@ import { users } from "@/db/schema";
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n/request";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
+
+  // Rate limit check
+  const rateCheck = await checkRateLimit(user.id, "riot_lookup");
+  if (!rateCheck.allowed) {
+    return {
+      error: `Rate limit exceeded. Try again in ${rateCheck.retryAfter} seconds.`,
+    };
+  }
 
   const riotId = formData.get("riotId") as string;
   if (!riotId || !riotId.includes("#")) {

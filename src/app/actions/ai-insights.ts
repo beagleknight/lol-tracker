@@ -11,6 +11,7 @@ import { buildMatchupContext } from "@/lib/ai/context";
 import { buildPostGameContext } from "@/lib/ai/context";
 import { buildMatchupPrompt, buildPostGamePrompt } from "@/lib/ai/prompts";
 import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { requireUser } from "@/lib/session";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -149,6 +150,14 @@ export async function generateMatchupInsight(
     }
   }
 
+  // Rate limit check (after cache — cached results don't count)
+  const rateCheck = await checkRateLimit(user.id, "ai_insight");
+  if (!rateCheck.allowed) {
+    return {
+      error: `Rate limit exceeded. Try again in ${rateCheck.retryAfter} seconds.`,
+    };
+  }
+
   // Check daily limit
   const used = await getDailyUsage(user.id);
   if (used >= DAILY_LIMIT) {
@@ -249,6 +258,14 @@ export async function generatePostGameInsight(
         completionTokens: existing.completionTokens,
       };
     }
+  }
+
+  // Rate limit check (after cache — cached results don't count)
+  const rateCheck = await checkRateLimit(user.id, "ai_insight");
+  if (!rateCheck.allowed) {
+    return {
+      error: `Rate limit exceeded. Try again in ${rateCheck.retryAfter} seconds.`,
+    };
   }
 
   // Check daily limit
