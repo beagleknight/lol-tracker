@@ -292,6 +292,34 @@ export async function updateLanguage(language: SupportedLanguage) {
 
 const VALID_POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
 
+// ─── Coaching Cadence ───────────────────────────────────────────────────────
+
+const VALID_CADENCE_DAYS = [7, 14, 21, 30] as const;
+
+/**
+ * Update the user's coaching cadence preference (how often to schedule coaching).
+ */
+export async function updateCoachingCadence(days: number) {
+  const user = await requireUser();
+
+  if (!VALID_CADENCE_DAYS.includes(days as (typeof VALID_CADENCE_DAYS)[number])) {
+    return { error: "Invalid coaching cadence." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      coachingCadenceDays: days,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
+
+  return { success: true };
+}
+
 /**
  * Update the user's primary and secondary role preferences.
  * Both are optional — passing null clears the preference.

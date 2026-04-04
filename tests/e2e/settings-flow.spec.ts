@@ -26,6 +26,9 @@ test.describe("Settings flow", () => {
     // Language & Region card should be visible
     await expect(page.getByText("Language & Region")).toBeVisible();
 
+    // Navigate to Duo tab — settings now uses tabs
+    await page.getByRole("tab", { name: "Duo" }).click();
+
     // Duo Partner card should be visible (DemoPlayer is linked)
     await expect(page.getByText("Duo Partner").first()).toBeVisible();
   });
@@ -107,6 +110,9 @@ test.describe("Settings flow", () => {
   test("set duo partner and verify", async ({ page }) => {
     await page.goto("/settings");
 
+    // Navigate to Duo tab — settings now uses tabs
+    await page.getByRole("tab", { name: "Duo" }).click();
+
     // Wait for duo partner section to load (it fetches async).
     // After loading, either the Clear button or the search input appears.
     const clearButton = page.getByRole("button", { name: "Clear" });
@@ -154,6 +160,9 @@ test.describe("Settings flow", () => {
 
   test("clear duo partner and verify", async ({ page }) => {
     await page.goto("/settings");
+
+    // Navigate to Duo tab — settings now uses tabs
+    await page.getByRole("tab", { name: "Duo" }).click();
 
     // Wait for the duo partner to load
     await expect(page.getByText("Duo Partner").first()).toBeVisible({ timeout: 10_000 });

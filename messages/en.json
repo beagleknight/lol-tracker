@@ -100,8 +100,10 @@
     "readyToComplete": "Ready to complete",
     "readyToCompleteDaysAgo": "Ready to complete · {days, plural, one {# day} other {# days}} ago",
     "sessionIn": "In {timeStr}",
-    "noCoachingSessions": "No coaching sessions scheduled.",
+    "noCoachingSessions": "No coaching sessions yet.",
+    "scheduleFirst": "Schedule your first session",
     "scheduleOne": "Schedule one",
+    "nextDueIn": "Next due in {days, plural, one {# day} other {# days}}",
     "actionItems": "Action items",
     "actionItemInProgress": "In progress",
     "actionItemPending": "Pending",
@@ -604,6 +606,11 @@
   "Settings": {
     "title": "Settings",
     "description": "Manage your account and Riot Games integration.",
+    "tabs": {
+      "account": "Account",
+      "preferences": "Preferences",
+      "duo": "Duo"
+    },
     "riotAccount": {
       "title": "Riot account",
       "badgeLinked": "Linked",
@@ -657,6 +664,15 @@
         "UTILITY": "Support"
       }
     },
+    "coachingCadence": {
+      "title": "Coaching cadence",
+      "description": "How often you want to have a coaching session. This controls the dashboard coaching widget's urgency states.",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "threeWeeks": "Every 3 weeks",
+      "monthly": "Monthly",
+      "currentLabel": "Every {days, plural, one {# day} other {# days}}"
+    },
     "invites": {
       "title": "Invite friends",
       "badgeAdmin": "Admin",
@@ -688,7 +704,9 @@
       "regionUpdated": "Server region updated.",
       "languageUpdated": "Language updated.",
       "rolePreferencesSaved": "Role preferences saved.",
-      "rolePreferencesSaveError": "Failed to save role preferences."
+      "rolePreferencesSaveError": "Failed to save role preferences.",
+      "cadenceUpdated": "Coaching cadence updated.",
+      "cadenceUpdateError": "Failed to update coaching cadence."
     }
   },
   "Errors": {

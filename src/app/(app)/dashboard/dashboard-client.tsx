@@ -96,6 +96,7 @@ interface DashboardClientProps {
   activeGoal: Goal | null;
   lastCompletedSession: LastCompletedSession | null;
   daysSinceLastCoaching: number | null;
+  coachingCadenceDays: number;
   currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
 }
@@ -138,6 +139,7 @@ export function DashboardClient({
   activeGoal,
   lastCompletedSession,
   daysSinceLastCoaching,
+  coachingCadenceDays,
   currentRank,
   ddragonVersion,
 }: DashboardClientProps) {
@@ -148,12 +150,14 @@ export function DashboardClient({
   const streak = getStreak(recentMatches);
   const rankInfo = getRankDisplay(latestRank);
 
-  // Coaching cadence
+  // Coaching cadence — dynamic thresholds based on user preference
+  // good: within cadence, warning: cadence to cadence+7 (buffer), overdue: beyond cadence+7
+  const cadenceBuffer = 7;
   const coachingCadence: "good" | "warning" | "overdue" | null =
     daysSinceLastCoaching !== null
-      ? daysSinceLastCoaching < 14
+      ? daysSinceLastCoaching < coachingCadenceDays
         ? "good"
-        : daysSinceLastCoaching <= 21
+        : daysSinceLastCoaching <= coachingCadenceDays + cadenceBuffer
           ? "warning"
           : "overdue"
       : null;
@@ -511,6 +515,7 @@ export function DashboardClient({
                 warning: "border-warning/20",
                 overdue: "border-loss/20",
               };
+              const daysUntilDue = coachingCadenceDays - daysSinceLastCoaching;
               return (
                 <Card className={`surface-glow ${borderColors[coachingCadence]}`}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -537,6 +542,11 @@ export function DashboardClient({
                     <Badge className={`mt-2 text-xs ${badgeClasses[coachingCadence]}`}>
                       {t(`cadence.${coachingCadence}`)}
                     </Badge>
+                    {coachingCadence === "good" && daysUntilDue > 0 && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t("nextDueIn", { days: daysUntilDue })}
+                      </p>
+                    )}
                     <Link href="/coaching/new" className="mt-3 block">
                       <Button variant="outline" size="sm" className="w-full">
                         {t("scheduleNext")}
@@ -560,7 +570,7 @@ export function DashboardClient({
                   <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
                   <Link href="/coaching/new" className="mt-2 inline-block">
                     <Button variant="outline" size="sm">
-                      {t("scheduleOne")}
+                      {t("scheduleFirst")}
                     </Button>
                   </Link>
                 </CardContent>

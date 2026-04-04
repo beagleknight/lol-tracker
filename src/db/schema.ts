@@ -27,6 +27,7 @@ export const users = sqliteTable("users", {
     .default(false),
   primaryRole: text("primary_role"), // Preferred primary position: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
   secondaryRole: text("secondary_role"), // Preferred secondary position
+  coachingCadenceDays: integer("coaching_cadence_days").notNull().default(14), // How often to schedule coaching (days)
   locale: text("locale").default("en-GB"),
   language: text("language").default("en"),
   role: text("role", { enum: ["admin", "user"] })

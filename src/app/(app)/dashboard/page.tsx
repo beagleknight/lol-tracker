@@ -252,6 +252,7 @@ export default async function DashboardPage() {
           ? Math.floor((Date.now() - lastCompletedSession.date.getTime()) / (1000 * 60 * 60 * 24))
           : null
       }
+      coachingCadenceDays={user.coachingCadenceDays}
       currentRank={
         latestRankOrUndef?.tier
           ? {
