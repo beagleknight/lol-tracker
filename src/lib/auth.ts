@@ -184,6 +184,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.language = dbUser.language;
           session.user.primaryRole = dbUser.primaryRole;
           session.user.secondaryRole = dbUser.secondaryRole;
+          session.user.coachingCadenceDays = dbUser.coachingCadenceDays;
         }
       }
       return session;

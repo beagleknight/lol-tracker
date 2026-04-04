@@ -17,6 +17,7 @@ declare module "next-auth" {
       language?: string | null;
       primaryRole?: string | null;
       secondaryRole?: string | null;
+      coachingCadenceDays?: number | null;
     };
   }
 }

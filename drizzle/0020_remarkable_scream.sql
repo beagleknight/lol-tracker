@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `coaching_cadence_days` integer DEFAULT 14 NOT NULL;
