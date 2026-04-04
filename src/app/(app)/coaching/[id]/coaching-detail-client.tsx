@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   Loader2,
   GraduationCap,
   Trash2,
@@ -26,6 +25,7 @@ import { toast } from "sonner";
 import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
 import { updateActionItemStatus, deleteCoachingSession } from "@/app/actions/coaching";
+import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
@@ -262,11 +262,7 @@ export function CoachingDetailClient({
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/coaching">
-          <Button variant="ghost" size="icon" aria-label="Back to coaching">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <BackButton />
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-gold" />

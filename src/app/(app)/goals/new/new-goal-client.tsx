@@ -1,6 +1,6 @@
 "use client";
 
-import { Target, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { Target, Loader2, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { createGoal } from "@/app/actions/goals";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -89,11 +90,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/goals">
-          <Button variant="ghost" size="icon" aria-label="Back to goals">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <BackButton />
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">
             {t("newGoalTitle")}

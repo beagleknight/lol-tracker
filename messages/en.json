@@ -722,6 +722,7 @@
     "pageIndicator": "Page {current} of {total}"
   },
   "Common": {
+    "backToPreviousPage": "Back to previous page",
     "resultW": "W",
     "resultL": "L",
     "resultR": "R",

@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Loader2,
-  Plus,
-  X,
-  ArrowLeft,
-  Video,
-  GraduationCap,
-  Clock,
-  CheckCircle,
-} from "lucide-react";
+import { Loader2, Plus, X, Video, GraduationCap, Clock, CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import Image from "next/image";
@@ -21,6 +12,7 @@ import { toast } from "sonner";
 import type { CoachingSession } from "@/db/schema";
 
 import { completeCoachingSession } from "@/app/actions/coaching";
+import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
 import { ResultBadge } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
@@ -154,11 +146,7 @@ export function CompleteSessionClient({
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href={`/coaching/${session.id}`}>
-          <Button variant="ghost" size="icon" aria-label="Back to session">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <BackButton />
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
