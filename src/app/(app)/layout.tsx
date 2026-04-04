@@ -6,7 +6,6 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import { FeedbackWidget } from "@/components/feedback-widget";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches } from "@/db/schema";
@@ -84,7 +83,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </main>
           </div>
           <Toaster />
-          <FeedbackWidget />
         </LocalizedContent>
       </Suspense>
     </AuthProvider>

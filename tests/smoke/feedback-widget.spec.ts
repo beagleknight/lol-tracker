@@ -7,6 +7,7 @@ import { test, expect } from "@playwright/test";
  * data to the Canny board. We intercept the SDK and SSO requests
  * to ensure the integration plumbing works correctly.
  *
+ * The feedback trigger is a sidebar nav item (not a floating button).
  * We block the Canny SDK globally via beforeEach so the external
  * script never prevents the `load` event from firing.
  */
@@ -32,19 +33,19 @@ test.describe("Feedback widget", () => {
     });
   });
 
-  test("floating button is visible on authenticated pages", async ({ page }) => {
+  test("feedback button is visible in sidebar", async ({ page }) => {
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await expect(feedbackButton).toBeVisible();
   });
 
-  test("clicking the button opens the feedback panel", async ({ page }) => {
+  test("clicking the sidebar button opens the feedback panel", async ({ page }) => {
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await feedbackButton.click();
 
     const panel = page.getByRole("dialog", {
@@ -57,7 +58,7 @@ test.describe("Feedback widget", () => {
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await feedbackButton.click();
 
     const panel = page.getByRole("dialog", {
@@ -71,47 +72,40 @@ test.describe("Feedback widget", () => {
     await expect(panel).toHaveClass(/translate-x-full/);
   });
 
-  test("clicking the button again closes the panel", async ({ page }) => {
+  test("panel close button closes the panel", async ({ page }) => {
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
-
-    // Open
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await feedbackButton.click();
+
     const panel = page.getByRole("dialog", {
       name: /feedback|sugerencias/i,
     });
     await expect(panel).toBeVisible();
 
-    // Close by clicking button again
-    await feedbackButton.click();
+    // Close via the panel's close button
+    const closeButton = panel.getByRole("button", { name: /close|cerrar/i });
+    await closeButton.click();
+
     await expect(panel).toHaveClass(/translate-x-full/);
   });
 
   test("SSO endpoint is called when panel opens", async ({ page }) => {
-    let ssoCalled = false;
-
-    // Override the SSO route to track calls
-    await page.route("**/api/canny/sso", (route) => {
-      ssoCalled = true;
-      void route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ token: "mock-sso-token" }),
-      });
-    });
-
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
+    // Start waiting for the SSO request before clicking
+    const ssoRequestPromise = page.waitForRequest((req) => req.url().includes("/api/canny/sso"), {
+      timeout: 10000,
+    });
+
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await feedbackButton.click();
 
-    // Wait a moment for the fetch to happen
-    await page.waitForTimeout(1000);
-
-    expect(ssoCalled).toBe(true);
+    // Wait for the SSO request to be made
+    const ssoRequest = await ssoRequestPromise;
+    expect(ssoRequest.url()).toContain("/api/canny/sso");
   });
 
   test("Canny SDK script is requested when panel opens", async ({ page }) => {
@@ -130,7 +124,7 @@ test.describe("Feedback widget", () => {
     await page.goto("/dashboard");
     await page.getByRole("main").waitFor({ state: "visible" });
 
-    const feedbackButton = page.getByRole("button", { name: /send feedback|enviar sugerencias/i });
+    const feedbackButton = page.getByRole("button", { name: /^feedback$|^sugerencias$/i });
     await feedbackButton.click();
 
     // Wait for SDK to be requested

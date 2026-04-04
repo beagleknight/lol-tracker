@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquarePlus, X, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -48,13 +48,16 @@ function loadCannySDK(): Promise<void> {
   });
 }
 
-export function FeedbackWidget() {
+interface FeedbackPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function FeedbackPanel({ isOpen, onClose }: FeedbackPanelProps) {
   const t = useTranslations("Feedback");
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const cannyContainerRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape key
@@ -63,33 +66,27 @@ export function FeedbackWidget() {
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
+        onClose();
       }
     }
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Close on click outside
   useEffect(() => {
     if (!isOpen) return;
 
     function handleClickOutside(e: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onClose();
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const renderCannyWidget = useCallback(async () => {
     if (!BOARD_TOKEN) return;
@@ -132,12 +129,9 @@ export function FeedbackWidget() {
     }
   }, [sdkLoaded]);
 
-  const handleToggle = useCallback(() => {
-    const willOpen = !isOpen;
-    setIsOpen(willOpen);
-
-    if (willOpen) {
-      // Render widget after panel opens (need the DOM element to exist)
+  // Render Canny widget when panel opens
+  useEffect(() => {
+    if (isOpen) {
       requestAnimationFrame(() => {
         void renderCannyWidget();
       });
@@ -148,23 +142,6 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* Floating button */}
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={handleToggle}
-        aria-label={t("buttonLabel")}
-        aria-expanded={isOpen}
-        aria-controls="feedback-panel"
-        className="text-gold-foreground fixed right-6 bottom-6 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-gold shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gold/90 focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none md:h-14 md:w-14"
-      >
-        {isOpen ? (
-          <X className="h-5 w-5 md:h-6 md:w-6" />
-        ) : (
-          <MessageSquarePlus className="h-5 w-5 md:h-6 md:w-6" />
-        )}
-      </button>
-
       {/* Backdrop */}
       {isOpen && (
         <div
@@ -189,10 +166,7 @@ export function FeedbackWidget() {
           <h2 className="text-lg font-semibold text-foreground">{t("panelTitle")}</h2>
           <button
             type="button"
-            onClick={() => {
-              setIsOpen(false);
-              buttonRef.current?.focus();
-            }}
+            onClick={onClose}
             aria-label={t("close")}
             className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
           >
@@ -213,4 +187,9 @@ export function FeedbackWidget() {
       </div>
     </>
   );
+}
+
+/** Returns true if the Canny board token is configured */
+export function isFeedbackEnabled(): boolean {
+  return !!BOARD_TOKEN;
 }
