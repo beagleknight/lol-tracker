@@ -10,13 +10,13 @@ const isDev = process.env.NODE_ENV === "development";
 
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://sdk.canny.io`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://ddragon.leagueoflegends.com https://cdn.discordapp.com https://raw.communitydragon.org",
+  "img-src 'self' data: blob: https://ddragon.leagueoflegends.com https://cdn.discordapp.com https://raw.communitydragon.org https://*.canny.io",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://*.canny.io",
   "object-src 'none'",
-  "frame-src 'none'",
+  "frame-src https://*.canny.io",
   "worker-src 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
