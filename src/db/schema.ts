@@ -326,6 +326,29 @@ export const aiInsights = sqliteTable(
   ],
 );
 
+// ─── Rate Limit Events ──────────────────────────────────────────────────────
+
+export const rateLimitEvents = sqliteTable(
+  "rate_limit_events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    action: text("action").notNull(), // e.g. "sync", "export", "ai_insight", "riot_lookup"
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    index("rate_limit_events_user_action_created_idx").on(
+      table.userId,
+      table.action,
+      table.createdAt,
+    ),
+  ],
+);
+
 // ─── Sync Locks ─────────────────────────────────────────────────────────────
 
 export const syncLocks = sqliteTable("sync_locks", {
@@ -352,3 +375,4 @@ export type MatchupNote = typeof matchupNotes.$inferSelect;
 export type AiInsight = typeof aiInsights.$inferSelect;
 export type Invite = typeof invites.$inferSelect;
 export type SyncLock = typeof syncLocks.$inferSelect;
+export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
