@@ -15,6 +15,7 @@
     "navSettings": "Ajustes",
     "navWhatsNew": "Novedades",
     "navAdmin": "Admin",
+    "navFeedback": "Sugerencias",
     "sectionTracker": "Seguimiento",
     "sectionInsights": "Análisis",
     "sectionCoaching": "Coaching"
@@ -900,5 +901,11 @@
       "codeCopied": "Código de invitación copiado al portapapeles.",
       "linkCopied": "Enlace de invitación copiado al portapapeles."
     }
+  },
+  "Feedback": {
+    "buttonLabel": "Enviar sugerencias",
+    "panelTitle": "Sugerencias y comentarios",
+    "close": "Cerrar panel de sugerencias",
+    "loading": "Cargando widget de sugerencias…"
   }
 }

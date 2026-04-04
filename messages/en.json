@@ -15,6 +15,7 @@
     "navSettings": "Settings",
     "navWhatsNew": "What's new",
     "navAdmin": "Admin",
+    "navFeedback": "Feedback",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
     "sectionCoaching": "Coaching"
@@ -900,5 +901,11 @@
       "codeCopied": "Invite code copied to clipboard.",
       "linkCopied": "Invite link copied to clipboard."
     }
+  },
+  "Feedback": {
+    "buttonLabel": "Send feedback",
+    "panelTitle": "Feedback & suggestions",
+    "close": "Close feedback panel",
+    "loading": "Loading feedback widget…"
   }
 }
