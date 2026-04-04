@@ -30,6 +30,7 @@ export default defineConfig({
       ? `npm run start -- --port ${TEST_PORT}`
       : `npm run build && npm run start -- --port ${TEST_PORT}`,
     port: TEST_PORT,
+    timeout: 180_000,
     reuseExistingServer: !isCI,
     env: {
       NEXT_PUBLIC_DEMO_MODE: "true",
@@ -37,6 +38,7 @@ export default defineConfig({
       AUTH_TRUST_HOST: "true",
       TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
       TURSO_AUTH_TOKEN: "",
+      NEXT_PUBLIC_CANNY_BOARD_TOKEN: "test-board-token",
     },
   },
 

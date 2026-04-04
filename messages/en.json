@@ -900,5 +900,11 @@
       "codeCopied": "Invite code copied to clipboard.",
       "linkCopied": "Invite link copied to clipboard."
     }
+  },
+  "Feedback": {
+    "buttonLabel": "Send feedback",
+    "panelTitle": "Feedback & suggestions",
+    "close": "Close feedback panel",
+    "loading": "Loading feedback widget…"
   }
 }
