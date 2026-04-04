@@ -23,10 +23,13 @@ test.describe("Settings flow", () => {
     // Riot account card should show "Linked" since DemoPlayer has a Riot account
     await expect(page.getByText("Linked").first()).toBeVisible();
 
+    // Navigate to Preferences tab — Language & Region is now in Preferences
+    await page.getByRole("tab", { name: "Preferences" }).click();
+
     // Language & Region card should be visible
     await expect(page.getByText("Language & Region")).toBeVisible();
 
-    // Navigate to Duo tab — settings now uses tabs
+    // Navigate to Duo tab
     await page.getByRole("tab", { name: "Duo" }).click();
 
     // Duo Partner card should be visible (DemoPlayer is linked)
@@ -35,6 +38,9 @@ test.describe("Settings flow", () => {
 
   test("change language to Spanish and back to English", async ({ page }) => {
     await page.goto("/settings");
+
+    // Navigate to Preferences tab — Language & Region is now in Preferences
+    await page.getByRole("tab", { name: "Preferences" }).click();
 
     // ----- Switch to Spanish -----
     // Use role-based selector instead of #id to avoid strict mode violations
@@ -55,6 +61,9 @@ test.describe("Settings flow", () => {
     await expect(page.getByText("Ajustes").first()).toBeVisible({
       timeout: 10_000,
     });
+
+    // Navigate to Preferences tab (in Spanish: "Preferencias")
+    await page.getByRole("tab", { name: "Preferencias" }).click();
 
     // ----- Switch back to English -----
     // In Spanish, the label is "Idioma de la interfaz"
@@ -79,6 +88,9 @@ test.describe("Settings flow", () => {
 
   test("change locale and verify date format preview", async ({ page }) => {
     await page.goto("/settings");
+
+    // Navigate to Preferences tab — locale selector is now in Preferences
+    await page.getByRole("tab", { name: "Preferences" }).click();
 
     // Click the locale select trigger — use role-based selector to avoid
     // strict mode violations from SSR hydration duplicating DOM nodes on CI

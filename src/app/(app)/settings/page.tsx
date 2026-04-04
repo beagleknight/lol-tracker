@@ -314,14 +314,14 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account">
-        <TabsList>
+        <TabsList variant="line">
           <TabsTrigger value="account">{t("tabs.account")}</TabsTrigger>
           <TabsTrigger value="preferences">{t("tabs.preferences")}</TabsTrigger>
           <TabsTrigger value="duo">{t("tabs.duo")}</TabsTrigger>
         </TabsList>
 
         {/* ─── Account Tab ──────────────────────────────────────────── */}
-        <TabsContent value="account">
+        <TabsContent value="account" className="mt-4">
           <div className="space-y-6">
             {/* Riot Account Card */}
             <Card className="surface-glow">
@@ -530,7 +530,12 @@ export default function SettingsPage() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
 
+        {/* ─── Preferences Tab ──────────────────────────────────────── */}
+        <TabsContent value="preferences" className="mt-4">
+          <div className="space-y-6">
             {/* Language & Region Card */}
             <Card className="surface-glow">
               <CardHeader>
@@ -585,12 +590,7 @@ export default function SettingsPage() {
                 </p>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
 
-        {/* ─── Preferences Tab ──────────────────────────────────────── */}
-        <TabsContent value="preferences">
-          <div className="space-y-6">
             {/* Coaching Cadence Card */}
             <Card className="surface-glow">
               <CardHeader>
@@ -630,7 +630,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* ─── Duo Tab ──────────────────────────────────────────────── */}
-        <TabsContent value="duo">
+        <TabsContent value="duo" className="mt-4">
           <div className="space-y-6">
             {isLinked ? (
               <Card className="surface-glow">
