@@ -80,7 +80,7 @@ export function FeedbackClient() {
       if (window.Canny && cannyContainerRef.current) {
         window.Canny("render", {
           boardToken: BOARD_TOKEN,
-          basePath: null,
+          basePath: "/feedback",
           ssoToken,
           theme: "dark",
           onLoadCallback: () => {
@@ -110,7 +110,7 @@ export function FeedbackClient() {
           <span className="sr-only">{t("loading")}</span>
         </div>
       )}
-      <div ref={cannyContainerRef} data-canny />
+      <div ref={cannyContainerRef} data-canny className="-mx-[20px]" />
     </div>
   );
 }
