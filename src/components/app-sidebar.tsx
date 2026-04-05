@@ -22,9 +22,8 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
-import { FeedbackPanel, isFeedbackEnabled } from "@/components/feedback-widget";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,6 +61,7 @@ const navDefs = {
   ],
   bottom: [
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
+    { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
     { key: "navSettings" as const, href: "/settings", icon: Settings },
   ],
 } as const;
@@ -137,8 +137,7 @@ function SidebarContent({
   reviewCounts,
   latestChangelogVersion,
   onNavClick,
-  onFeedbackClick,
-}: SidebarProps & { onNavClick?: () => void; onFeedbackClick?: () => void }) {
+}: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
   const isLinked = !!user.isRiotLinked;
   const { isSyncing, handleSync } = useSyncMatches(isLinked);
@@ -250,19 +249,6 @@ function SidebarContent({
           {bottomNavWithDot.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
-          {isFeedbackEnabled() && (
-            <button
-              type="button"
-              onClick={() => {
-                onFeedbackClick?.();
-                onNavClick?.();
-              }}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
-            >
-              <MessageSquarePlus className="h-4 w-4 shrink-0" />
-              <span className="flex-1 text-left">{t("navFeedback")}</span>
-            </button>
-          )}
           {adminNav.map((item) => (
             <NavLink key={item.href} item={item} onClick={onNavClick} />
           ))}
@@ -307,9 +293,6 @@ function SidebarContent({
 
 export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-
-  const handleFeedbackClose = useCallback(() => setFeedbackOpen(false), []);
 
   return (
     <>
@@ -346,12 +329,8 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
           reviewCounts={reviewCounts}
           latestChangelogVersion={latestChangelogVersion}
           onNavClick={() => setMobileOpen(false)}
-          onFeedbackClick={() => setFeedbackOpen(true)}
         />
       </aside>
-
-      {/* Feedback panel */}
-      <FeedbackPanel isOpen={feedbackOpen} onClose={handleFeedbackClose} />
     </>
   );
 }

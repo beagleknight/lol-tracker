@@ -20,6 +20,7 @@ const authenticatedPages = [
   { name: "Coaching", path: "/coaching" },
   { name: "Review", path: "/review" },
   { name: "Goals", path: "/goals" },
+  { name: "Feedback", path: "/feedback" },
   { name: "Settings", path: "/settings" },
   { name: "Admin", path: "/admin" },
 ];
