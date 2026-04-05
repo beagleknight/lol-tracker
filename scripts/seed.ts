@@ -277,12 +277,17 @@ async function seed() {
     });
   }
 
-  // ─── Invite ──────────────────────────────────────────────────────────────
-  console.log("Creating invite...");
+  // ─── Invites ─────────────────────────────────────────────────────────────
+  console.log("Creating invites...");
   await client.execute({
     sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
     args: ["DEMO-INVITE-001", MAIN_USER_ID, DUO_USER_ID, ts(now), ts(now)],
+  });
+  await client.execute({
+    sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
+          VALUES (?, ?, ?, ?, ?)`,
+    args: ["DEMO-INVITE-002", MAIN_USER_ID, NEW_PLAYER_ID, ts(now), ts(now)],
   });
 
   // ─── Matches ─────────────────────────────────────────────────────────────
