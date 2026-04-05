@@ -903,9 +903,8 @@
     }
   },
   "Feedback": {
-    "buttonLabel": "Send feedback",
-    "panelTitle": "Feedback & suggestions",
-    "close": "Close feedback panel",
+    "pageTitle": "Feedback & suggestions",
+    "pageSubtitle": "Share your ideas, report bugs, or vote on what we should build next.",
     "loading": "Loading feedback widget…"
   }
 }

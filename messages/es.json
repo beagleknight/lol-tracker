@@ -903,9 +903,8 @@
     }
   },
   "Feedback": {
-    "buttonLabel": "Enviar sugerencias",
-    "panelTitle": "Sugerencias y comentarios",
-    "close": "Cerrar panel de sugerencias",
+    "pageTitle": "Sugerencias y comentarios",
+    "pageSubtitle": "Comparte tus ideas, reporta errores o vota por lo que deberíamos construir.",
     "loading": "Cargando widget de sugerencias…"
   }
 }
