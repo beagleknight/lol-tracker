@@ -4,31 +4,33 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-      time: "09:00"
-      timezone: Europe/Madrid
-    # Group minor/patch updates into a single PR to reduce noise
+      interval: monthly
+    # Group ALL updates (minor, patch, AND major) into a single PR.
+    # Major bumps are reviewed manually before merging; the auto-merge
+    # workflow skips PRs with the semver-major label.
     groups:
-      minor-and-patch:
+      all-dependencies:
         update-types:
+          - major
           - minor
           - patch
-    # Major version bumps get individual PRs for manual review
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     reviewers:
       - beagleknight
     labels:
       - dependencies
       - skip-changelog
-    # Also check GitHub Actions versions
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-      time: "09:00"
-      timezone: Europe/Madrid
+      interval: monthly
+    groups:
+      all-actions:
+        update-types:
+          - major
+          - minor
+          - patch
     labels:
       - dependencies
       - github-actions
