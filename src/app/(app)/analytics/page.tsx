@@ -41,7 +41,10 @@ async function getCachedAnalyticsData(userId: string, riotAccountId: string | nu
       },
     }),
     db.query.rankSnapshots.findMany({
-      where: and(eq(rankSnapshots.userId, userId), accountScope(rankSnapshots.riotAccountId, riotAccountId)),
+      where: and(
+        eq(rankSnapshots.userId, userId),
+        accountScope(rankSnapshots.riotAccountId, riotAccountId),
+      ),
       orderBy: asc(rankSnapshots.capturedAt),
     }),
     getLatestVersion(),

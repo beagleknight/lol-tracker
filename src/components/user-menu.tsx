@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  Check,
-  ChevronDown,
-  LogOut,
-  Moon,
-  Monitor,
-  Plus,
-  Settings,
-  Sun,
-} from "lucide-react";
-import { useTheme } from "next-themes";
+import { Check, ChevronDown, LogOut, Moon, Monitor, Plus, Settings, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore, useTransition } from "react";
@@ -106,7 +97,13 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
     <Monitor className="h-4 w-4" />
   );
 
-  const themeLabel = !mounted ? "Dark" : theme === "dark" ? "Dark" : theme === "light" ? "Light" : "System";
+  const themeLabel = !mounted
+    ? "Dark"
+    : theme === "dark"
+      ? "Dark"
+      : theme === "light"
+        ? "Light"
+        : "System";
 
   return (
     <DropdownMenu>
@@ -206,7 +203,7 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
           </DropdownMenuItem>
         )}
 
-        {(accounts.length > 0) && <DropdownMenuSeparator />}
+        {accounts.length > 0 && <DropdownMenuSeparator />}
 
         {/* Theme toggle */}
         <DropdownMenuItem onClick={cycleTheme}>

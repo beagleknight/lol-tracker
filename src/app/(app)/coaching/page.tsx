@@ -4,8 +4,8 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { coachingSessions, coachingActionItems, matches, matchHighlights } from "@/db/schema";
 import { coachingTag } from "@/lib/cache";
-import { isMeaningful } from "@/lib/match-result";
 import { accountScope } from "@/lib/match-queries";
+import { isMeaningful } from "@/lib/match-result";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 

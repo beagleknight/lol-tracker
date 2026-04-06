@@ -13,7 +13,10 @@ export default async function ScheduleCoachingSessionPage() {
 
   const [recentMatches, ddragonVersion, previousCoaches] = await Promise.all([
     db.query.matches.findMany({
-      where: and(eq(matches.userId, user.id), accountScope(matches.riotAccountId, user.activeRiotAccountId)),
+      where: and(
+        eq(matches.userId, user.id),
+        accountScope(matches.riotAccountId, user.activeRiotAccountId),
+      ),
       orderBy: desc(matches.gameDate),
       limit: 50,
       columns: {

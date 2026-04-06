@@ -73,7 +73,10 @@ export default async function DashboardPage() {
 
     // Latest rank snapshot (for current rank display)
     db.query.rankSnapshots.findFirst({
-      where: and(eq(rankSnapshots.userId, user.id), accountScope(rankSnapshots.riotAccountId, accountId)),
+      where: and(
+        eq(rankSnapshots.userId, user.id),
+        accountScope(rankSnapshots.riotAccountId, accountId),
+      ),
       orderBy: desc(rankSnapshots.capturedAt),
     }),
 
@@ -226,7 +229,10 @@ export default async function DashboardPage() {
       })) ??
       (await db.query.rankSnapshots.findFirst({
         // Fall back to the very oldest snapshot if none predates the window
-        where: and(eq(rankSnapshots.userId, user.id), accountScope(rankSnapshots.riotAccountId, accountId)),
+        where: and(
+          eq(rankSnapshots.userId, user.id),
+          accountScope(rankSnapshots.riotAccountId, accountId),
+        ),
         orderBy: asc(rankSnapshots.capturedAt),
       }));
 

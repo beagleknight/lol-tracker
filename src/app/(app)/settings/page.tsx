@@ -818,7 +818,8 @@ export default function SettingsPage() {
                                   ) : null}
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground"
+                                    aria-label={t("riotAccounts.editLabelButton")}
+                                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                                     onClick={() => {
                                       setEditingLabelId(account.id);
                                       setEditingLabelValue(account.label ?? "");
@@ -829,7 +830,7 @@ export default function SettingsPage() {
                                   </button>
                                 </div>
                               )}
-                              <span className="mt-0.5 block text-xs text-muted-foreground/50">
+                              <span className="mt-0.5 block text-xs text-muted-foreground">
                                 {PLATFORM_LABELS[account.region] ?? account.region}
                               </span>
                             </div>

@@ -28,7 +28,12 @@ async function SidebarWithUser() {
     db
       .select(sidebarReviewCountsSelect(user.primaryRole))
       .from(matches)
-      .where(and(eq(matches.userId, user.id), accountScope(matches.riotAccountId, user.activeRiotAccountId)))
+      .where(
+        and(
+          eq(matches.userId, user.id),
+          accountScope(matches.riotAccountId, user.activeRiotAccountId),
+        ),
+      )
       .then((rows) => rows[0]),
     getLatestChangelogVersion(),
     db

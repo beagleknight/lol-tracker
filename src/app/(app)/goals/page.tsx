@@ -12,7 +12,10 @@ export default async function GoalsPage() {
 
   const [allGoals, latestSnapshot] = await Promise.all([
     db.query.goals.findMany({
-      where: and(eq(goals.userId, user.id), accountScope(goals.riotAccountId, user.activeRiotAccountId)),
+      where: and(
+        eq(goals.userId, user.id),
+        accountScope(goals.riotAccountId, user.activeRiotAccountId),
+      ),
       orderBy: desc(goals.createdAt),
     }),
     db.query.rankSnapshots.findFirst({
