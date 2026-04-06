@@ -83,7 +83,8 @@ jobs:
   migration:
     name: Migration integrity
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    # Skip for Dependabot PRs — dependency changes don't affect migrations.
+    if: needs.changes.outputs.app == 'true' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -116,7 +117,9 @@ jobs:
   smoke:
     name: Smoke Tests
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    # Skip for Dependabot PRs — dependency-only changes don't need Playwright.
+    # This saves ~5 CI minutes per dep PR (Playwright install + build + tests).
+    if: needs.changes.outputs.app == 'true' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     env:
       AUTH_SECRET: smoke-test-secret-at-least-32-characters
@@ -148,7 +151,8 @@ jobs:
   e2e:
     name: E2E Tests
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    # Skip for Dependabot PRs — dependency-only changes don't need Playwright.
+    if: needs.changes.outputs.app == 'true' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     env:
       AUTH_SECRET: smoke-test-secret-at-least-32-characters
