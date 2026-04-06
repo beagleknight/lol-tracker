@@ -183,6 +183,13 @@
       "when": 1775779200001,
       "tag": "0025_discoverable_column",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1775865600000,
+      "tag": "0026_migrate_existing_riot_accounts",
+      "breakpoints": true
     }
   ]
 }
