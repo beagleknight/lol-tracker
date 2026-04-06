@@ -27,7 +27,8 @@
     "switchedTo": "Cambiado a {gameName}#{tagLine}",
     "theme": "Tema: {theme}",
     "logout": "Cerrar sesión",
-    "premiumBadge": "Miembro premium"
+    "premiumBadge": "Miembro premium",
+    "adminBadge": "Admin"
   },
   "MatchCard": {
     "vs": "vs",

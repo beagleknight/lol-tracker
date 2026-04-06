@@ -1,6 +1,16 @@
 "use client";
 
-import { Check, ChevronDown, Crown, LogOut, Moon, Monitor, Settings, Sun } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Crown,
+  LogOut,
+  Moon,
+  Monitor,
+  Settings,
+  Shield,
+  Sun,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -128,6 +138,9 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
             <p className="truncate text-sm font-medium">{user.name}</p>
             {user.role === "premium" && (
               <Crown className="h-3.5 w-3.5 shrink-0 text-gold" aria-label={t("premiumBadge")} />
+            )}
+            {user.role === "admin" && (
+              <Shield className="h-3.5 w-3.5 shrink-0 text-gold" aria-label={t("adminBadge")} />
             )}
           </div>
           {activeAccount && (
