@@ -26,7 +26,10 @@ export default async function MatchesPage({
   const review = typeof params.review === "string" ? params.review : "all";
 
   // Build WHERE conditions
-  const conditions = [eq(matches.userId, user.id)];
+  const conditions = [
+    eq(matches.userId, user.id),
+    user.activeRiotAccountId ? eq(matches.riotAccountId, user.activeRiotAccountId) : sql`0`, // no active account → match nothing
+  ];
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));
   }
@@ -100,7 +103,12 @@ export default async function MatchesPage({
     db
       .selectDistinct({ championName: matches.championName })
       .from(matches)
-      .where(eq(matches.userId, user.id)),
+      .where(
+        and(
+          eq(matches.userId, user.id),
+          user.activeRiotAccountId ? eq(matches.riotAccountId, user.activeRiotAccountId) : sql`0`,
+        ),
+      ),
     getLatestVersion(),
     // Win/loss stats for the filtered set
     db.select(winLossRemakeSelect).from(matches).where(whereClause),
@@ -119,6 +127,9 @@ export default async function MatchesPage({
       ? await db.query.matchHighlights.findMany({
           where: and(
             eq(matchHighlights.userId, user.id),
+            user.activeRiotAccountId
+              ? eq(matchHighlights.riotAccountId, user.activeRiotAccountId)
+              : sql`0`,
             inArray(matchHighlights.matchId, matchIds),
           ),
           columns: {

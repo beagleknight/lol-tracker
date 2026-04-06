@@ -1,9 +1,22 @@
 // Shared Drizzle SQL fragments for match result filtering and aggregation.
 // Keeps all remake-aware query logic in one place.
 
-import { sql, type SQL } from "drizzle-orm";
+import { eq, sql, type SQL } from "drizzle-orm";
 
 import { matches, matchHighlights } from "@/db/schema";
+
+// ─── Account Scoping ─────────────────────────────────────────────────────────
+
+/**
+ * Builds a SQL condition that scopes a query to a specific Riot account.
+ * When `accountId` is null (no account linked), returns `sql\`0\``
+ * (always-false) so queries return empty results instead of crashing.
+ *
+ * Usage: `.where(and(eq(table.userId, userId), accountScope(table.riotAccountId, accountId)))`
+ */
+export function accountScope(column: Parameters<typeof eq>[0], accountId: string | null): SQL {
+  return accountId ? eq(column, accountId) : sql`0`;
+}
 
 // ─── SQL Fragments ───────────────────────────────────────────────────────────
 

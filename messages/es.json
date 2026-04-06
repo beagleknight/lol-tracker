@@ -18,7 +18,15 @@
     "navFeedback": "Sugerencias",
     "sectionTracker": "Seguimiento",
     "sectionInsights": "Análisis",
-    "sectionCoaching": "Coaching"
+    "sectionCoaching": "Coaching",
+    "accountSwitcher": "Cambiar cuenta",
+    "accountSwitcherLabel": "Cuenta activa",
+    "primaryBadge": "Principal",
+    "addAccount": "Añadir cuenta",
+    "manageAccounts": "Gestionar cuentas",
+    "switchedTo": "Cambiado a {gameName}#{tagLine}",
+    "theme": "Tema: {theme}",
+    "logout": "Cerrar sesión"
   },
   "MatchCard": {
     "vs": "vs",
@@ -674,6 +682,34 @@
       "monthly": "Mensual",
       "currentLabel": "Cada {days, plural, one {# día} other {# días}}"
     },
+    "riotAccounts": {
+      "title": "Cuentas vinculadas",
+      "description": "Gestiona tus cuentas de Riot vinculadas. Puedes vincular hasta 5 cuentas.",
+      "badgeActive": "Activa",
+      "badgePrimary": "Principal",
+      "emptyState": "Sin cuentas vinculadas aún. Vincula tu primera cuenta de Riot para empezar.",
+      "addAccountTitle": "Añadir cuenta",
+      "addAccountDescription": "Vincula otra cuenta de Riot para seguir varias cuentas.",
+      "riotIdLabel": "Riot ID",
+      "riotIdPlaceholder": "NombreDeJuego#Etiqueta",
+      "regionLabel": "Región",
+      "regionPlaceholder": "Seleccionar región",
+      "addButton": "Añadir",
+      "switchButton": "Cambiar",
+      "setPrimaryButton": "Establecer como principal",
+      "removeButton": "Eliminar",
+      "labelPlaceholder": "Etiqueta (opcional)",
+      "saveLabelButton": "Guardar",
+      "editLabelButton": "Editar etiqueta",
+      "cancelButton": "Cancelar",
+      "removeConfirm": "¿Eliminar esta cuenta? Tus datos de partidas se conservarán.",
+      "cannotRemovePrimary": "No se puede eliminar la cuenta principal.",
+      "accountLimitReached": "Has alcanzado el máximo de 5 cuentas vinculadas.",
+      "accountCount": "{count} de {max} cuentas",
+      "rolesLabel": "Roles",
+      "rolesDescription": "Roles principal y secundario para esta cuenta",
+      "roleSaved": "Roles actualizados para esta cuenta."
+    },
     "invites": {
       "title": "Invitar amigos",
       "badgeAdmin": "Admin",
@@ -707,7 +743,17 @@
       "rolePreferencesSaved": "Preferencias de rol guardadas.",
       "rolePreferencesSaveError": "Error al guardar las preferencias de rol.",
       "cadenceUpdated": "Cadencia de coaching actualizada.",
-      "cadenceUpdateError": "Error al actualizar la cadencia de coaching."
+      "cadenceUpdateError": "Error al actualizar la cadencia de coaching.",
+      "accountAdded": "Vinculado a {gameName}#{tagLine}.",
+      "accountAddError": "Error al añadir la cuenta.",
+      "accountRemoved": "Cuenta eliminada.",
+      "accountRemoveError": "Error al eliminar la cuenta.",
+      "accountSwitched": "Cambiado a {gameName}#{tagLine}.",
+      "accountSwitchError": "Error al cambiar de cuenta.",
+      "accountSetPrimary": "Establecida como cuenta principal.",
+      "accountSetPrimaryError": "Error al establecer como cuenta principal.",
+      "accountLabelSaved": "Etiqueta guardada.",
+      "accountLabelError": "Error al guardar la etiqueta."
     }
   },
   "Errors": {

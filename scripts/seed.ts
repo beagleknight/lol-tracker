@@ -125,6 +125,10 @@ const MAIN_USER_ID = "demo-user-0001-0001-000000000001";
 const DUO_USER_ID = "demo-user-0002-0002-000000000002";
 const NEW_PLAYER_ID = "demo-user-0003-0003-000000000003";
 
+const MAIN_RIOT_ACCOUNT_ID = "demo-riot-acct-0001-000000000001";
+const MAIN_SMURF_ACCOUNT_ID = "demo-riot-acct-0003-000000000003";
+const DUO_RIOT_ACCOUNT_ID = "demo-riot-acct-0002-000000000002";
+
 const MAIN_USER = {
   id: MAIN_USER_ID,
   discordId: "demo_discord_001",
@@ -143,6 +147,7 @@ const MAIN_USER = {
   role: "admin" as const,
   primaryRole: "MIDDLE",
   secondaryRole: "BOTTOM",
+  activeRiotAccountId: MAIN_RIOT_ACCOUNT_ID,
 };
 
 const DUO_USER = {
@@ -163,6 +168,7 @@ const DUO_USER = {
   role: "user" as const,
   primaryRole: null,
   secondaryRole: null,
+  activeRiotAccountId: DUO_RIOT_ACCOUNT_ID,
 };
 
 const NEW_PLAYER = {
@@ -183,6 +189,7 @@ const NEW_PLAYER = {
   role: "user" as const,
   primaryRole: null,
   secondaryRole: null,
+  activeRiotAccountId: null,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -242,6 +249,7 @@ async function seed() {
     DELETE FROM rank_snapshots;
     DELETE FROM matches;
     DELETE FROM invites;
+    DELETE FROM riot_accounts;
     DELETE FROM users;
   `);
 
@@ -251,8 +259,8 @@ async function seed() {
 
   for (const u of [MAIN_USER, DUO_USER, NEW_PLAYER]) {
     await client.execute({
-      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, active_riot_account_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         u.id,
         u.discordId,
@@ -271,6 +279,7 @@ async function seed() {
         u.role,
         u.primaryRole,
         u.secondaryRole,
+        u.activeRiotAccountId,
         ts(now),
         ts(now),
       ],
@@ -288,6 +297,67 @@ async function seed() {
     sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
     args: ["DEMO-INVITE-002", MAIN_USER_ID, NEW_PLAYER_ID, ts(now), ts(now)],
+  });
+
+  // ─── Riot Accounts ──────────────────────────────────────────────────────
+  console.log("Creating riot accounts...");
+
+  await client.execute({
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_RIOT_ACCOUNT_ID,
+      MAIN_USER_ID,
+      MAIN_USER.puuid,
+      MAIN_USER.riotGameName,
+      MAIN_USER.riotTagLine,
+      MAIN_USER.summonerId,
+      MAIN_USER.region,
+      1,
+      null,
+      MAIN_USER.primaryRole,
+      MAIN_USER.secondaryRole,
+      ts(now),
+    ],
+  });
+
+  // Smurf account for main user (to show account switcher in demo)
+  await client.execute({
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_SMURF_ACCOUNT_ID,
+      MAIN_USER_ID,
+      "demo-puuid-smurf-000000000000000000000000000000000000000",
+      "SmurfAccount",
+      "EUW",
+      "demo-summoner-smurf",
+      "euw1",
+      0,
+      "Smurf",
+      "TOP",
+      "JUNGLE",
+      ts(now),
+    ],
+  });
+
+  await client.execute({
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      DUO_RIOT_ACCOUNT_ID,
+      DUO_USER_ID,
+      DUO_USER.puuid,
+      DUO_USER.riotGameName,
+      DUO_USER.riotTagLine,
+      DUO_USER.summonerId,
+      DUO_USER.region,
+      1,
+      null,
+      DUO_USER.primaryRole,
+      DUO_USER.secondaryRole,
+      ts(now),
+    ],
   });
 
   // ─── Matches ─────────────────────────────────────────────────────────────
@@ -427,7 +497,7 @@ async function seed() {
   for (const m of seedMatches) {
     await client.execute({
       sql: `INSERT INTO matches (
-              id, odometer, user_id, game_date, result,
+              id, odometer, user_id, riot_account_id, game_date, result,
               champion_id, champion_name, rune_keystone_id, rune_keystone_name,
               matchup_champion_id, matchup_champion_name,
               kills, deaths, assists, cs, cs_per_min,
@@ -436,11 +506,12 @@ async function seed() {
               queue_id, position, synced_at, raw_match_json,
               duo_partner_puuid, duo_partner_champion_name,
               duo_partner_kills, duo_partner_deaths, duo_partner_assists
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         m.matchId,
         m.odometer,
         MAIN_USER_ID,
+        MAIN_RIOT_ACCOUNT_ID,
         ts(m.gameDate),
         m.result,
         m.champion.id,
@@ -497,10 +568,11 @@ async function seed() {
 
   for (const snap of rankProgression) {
     await client.execute({
-      sql: `INSERT INTO rank_snapshots (user_id, captured_at, tier, division, lp, wins, losses)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         MAIN_USER_ID,
+        MAIN_RIOT_ACCOUNT_ID,
         ts(new Date(snap.date + "T12:00:00Z")),
         snap.tier,
         snap.division,
@@ -720,9 +792,9 @@ async function seed() {
 
   for (const h of highlights) {
     await client.execute({
-      sql: `INSERT INTO match_highlights (match_id, user_id, type, text, topic, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [h.matchId, MAIN_USER_ID, h.type, h.text, h.topic, ts(now)],
+      sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [h.matchId, MAIN_USER_ID, MAIN_RIOT_ACCOUNT_ID, h.type, h.text, h.topic, ts(now)],
     });
   }
 
@@ -731,10 +803,11 @@ async function seed() {
 
   // Goal 1: Achieved — "Reach Gold IV" (started in Silver I, achieved ~Feb 7)
   await client.execute({
-    sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO goals (user_id, riot_account_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
+      MAIN_RIOT_ACCOUNT_ID,
       "Reach Gold IV",
       "GOLD",
       "IV",
@@ -751,10 +824,11 @@ async function seed() {
 
   // Goal 2: Active — "Reach Platinum IV" (started in Gold III)
   await client.execute({
-    sql: `INSERT INTO goals (user_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO goals (user_id, riot_account_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
+      MAIN_RIOT_ACCOUNT_ID,
       "Reach Platinum IV",
       "PLATINUM",
       "IV",

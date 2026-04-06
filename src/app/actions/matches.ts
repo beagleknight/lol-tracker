@@ -40,6 +40,7 @@ export async function savePostGameReview(
       data.highlights.map((item) => ({
         matchId,
         userId: user.id,
+        riotAccountId: user.activeRiotAccountId,
         type: item.type,
         text: item.text,
         topic: item.topic || null,
@@ -76,13 +77,18 @@ export async function savePostGameReview(
 export async function bulkMarkReviewed(skipReason: string) {
   const user = await requireUser();
 
+  const conditions = [eq(matches.userId, user.id), eq(matches.reviewed, false)];
+  if (user.activeRiotAccountId) {
+    conditions.push(eq(matches.riotAccountId, user.activeRiotAccountId));
+  }
+
   const result = await db
     .update(matches)
     .set({
       reviewed: true,
       reviewSkippedReason: skipReason,
     })
-    .where(and(eq(matches.userId, user.id), eq(matches.reviewed, false)));
+    .where(and(...conditions));
 
   const count = result.rowsAffected ?? 0;
 

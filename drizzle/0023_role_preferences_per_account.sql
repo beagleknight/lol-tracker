@@ -1,0 +1,3 @@
+ALTER TABLE `riot_accounts` ADD `primary_role` text;--> statement-breakpoint
+ALTER TABLE `riot_accounts` ADD `secondary_role` text;--> statement-breakpoint
+UPDATE `riot_accounts` SET `primary_role` = (SELECT `primary_role` FROM `users` WHERE `users`.`id` = `riot_accounts`.`user_id`), `secondary_role` = (SELECT `secondary_role` FROM `users` WHERE `users`.`id` = `riot_accounts`.`user_id`) WHERE `is_primary` = 1;

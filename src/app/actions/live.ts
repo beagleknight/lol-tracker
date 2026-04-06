@@ -95,6 +95,7 @@ export interface MatchupReport {
 async function getCachedMatchupReport(
   userId: string,
   userPuuid: string | null,
+  riotAccountId: string | null,
   matchupChampionName: string,
   yourChampionName: string | undefined,
 ): Promise<MatchupReport | null> {
@@ -107,6 +108,9 @@ async function getCachedMatchupReport(
     eq(matches.userId, userId),
     eq(matches.matchupChampionName, matchupChampionName),
   ];
+  if (riotAccountId) {
+    conditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
   if (yourChampionName) {
     conditions.push(eq(matches.championName, yourChampionName));
   }
@@ -177,14 +181,19 @@ async function getCachedMatchupReport(
   // Individual game details — extract items from rawMatchJson
   // Also fetch highlights for all matches in one query
   const matchIds = matchRows.map((m) => m.id);
+  const highlightConditions = [
+    eq(matchHighlights.userId, userId),
+    inArray(matchHighlights.matchId, matchIds),
+  ];
+  if (riotAccountId) {
+    highlightConditions.push(eq(matchHighlights.riotAccountId, riotAccountId));
+  }
   const allHighlights =
     matchIds.length > 0
       ? await db
           .select()
           .from(matchHighlights)
-          .where(
-            and(eq(matchHighlights.userId, userId), inArray(matchHighlights.matchId, matchIds)),
-          )
+          .where(and(...highlightConditions))
       : [];
 
   // Group highlights by matchId
@@ -256,6 +265,9 @@ async function getCachedMatchupReport(
   // If yourChampionName is set, compare against all games as that champion.
   // Otherwise, compare against all user games.
   const overallConditions = [eq(matches.userId, userId), notRemake];
+  if (riotAccountId) {
+    overallConditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
   if (yourChampionName) {
     overallConditions.push(eq(matches.championName, yourChampionName));
   }
@@ -329,7 +341,13 @@ export async function getMatchupReport(
   yourChampionName?: string,
 ): Promise<MatchupReport | null> {
   const user = await requireUser();
-  return getCachedMatchupReport(user.id, user.puuid ?? null, matchupChampionName, yourChampionName);
+  return getCachedMatchupReport(
+    user.id,
+    user.puuid ?? null,
+    user.activeRiotAccountId ?? null,
+    matchupChampionName,
+    yourChampionName,
+  );
 }
 
 // ─── getAllChampionNames ────────────────────────────────────────────────────
@@ -365,11 +383,17 @@ export interface ChampionPickCount {
  */
 async function getCachedMostPlayedChampions(
   userId: string,
+  riotAccountId: string | null,
   limit: number,
 ): Promise<ChampionPickCount[]> {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(scoutTag(userId));
+
+  const conditions = [eq(matches.userId, userId)];
+  if (riotAccountId) {
+    conditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
 
   const rows = await db
     .select({
@@ -377,7 +401,7 @@ async function getCachedMostPlayedChampions(
       games: sql<number>`count(*)`.as("games"),
     })
     .from(matches)
-    .where(eq(matches.userId, userId))
+    .where(and(...conditions))
     .groupBy(matches.championName)
     .orderBy(sql`count(*) desc`)
     .limit(limit);
@@ -387,7 +411,7 @@ async function getCachedMostPlayedChampions(
 
 export async function getMostPlayedChampions(limit = 10): Promise<ChampionPickCount[]> {
   const user = await requireUser();
-  return getCachedMostPlayedChampions(user.id, limit);
+  return getCachedMostPlayedChampions(user.id, user.activeRiotAccountId ?? null, limit);
 }
 
 /**
@@ -396,11 +420,17 @@ export async function getMostPlayedChampions(limit = 10): Promise<ChampionPickCo
  */
 async function getCachedMostFacedOpponents(
   userId: string,
+  riotAccountId: string | null,
   limit: number,
 ): Promise<ChampionPickCount[]> {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(scoutTag(userId));
+
+  const conditions = [eq(matches.userId, userId), sql`${matches.matchupChampionName} is not null`];
+  if (riotAccountId) {
+    conditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
 
   const rows = await db
     .select({
@@ -408,7 +438,7 @@ async function getCachedMostFacedOpponents(
       games: sql<number>`count(*)`.as("games"),
     })
     .from(matches)
-    .where(and(eq(matches.userId, userId), sql`${matches.matchupChampionName} is not null`))
+    .where(and(...conditions))
     .groupBy(matches.matchupChampionName)
     .orderBy(sql`count(*) desc`)
     .limit(limit);
@@ -418,5 +448,5 @@ async function getCachedMostFacedOpponents(
 
 export async function getMostFacedOpponents(limit = 10): Promise<ChampionPickCount[]> {
   const user = await requireUser();
-  return getCachedMostFacedOpponents(user.id, limit);
+  return getCachedMostFacedOpponents(user.id, user.activeRiotAccountId ?? null, limit);
 }

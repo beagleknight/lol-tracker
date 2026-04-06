@@ -1,7 +1,8 @@
-import { eq, desc, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import { matches, matchHighlights, coachingSessions } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -12,7 +13,10 @@ export default async function ScheduleCoachingSessionPage() {
 
   const [recentMatches, ddragonVersion, previousCoaches] = await Promise.all([
     db.query.matches.findMany({
-      where: eq(matches.userId, user.id),
+      where: and(
+        eq(matches.userId, user.id),
+        accountScope(matches.riotAccountId, user.activeRiotAccountId),
+      ),
       orderBy: desc(matches.gameDate),
       limit: 50,
       columns: {
@@ -40,7 +44,11 @@ export default async function ScheduleCoachingSessionPage() {
   const allHighlights =
     matchIds.length > 0
       ? await db.query.matchHighlights.findMany({
-          where: inArray(matchHighlights.matchId, matchIds),
+          where: and(
+            eq(matchHighlights.userId, user.id),
+            accountScope(matchHighlights.riotAccountId, user.activeRiotAccountId),
+            inArray(matchHighlights.matchId, matchIds),
+          ),
           columns: {
             matchId: true,
             type: true,

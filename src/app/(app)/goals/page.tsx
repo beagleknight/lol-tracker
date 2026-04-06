@@ -1,7 +1,8 @@
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
 
 import { GoalsClient } from "./goals-client";
@@ -11,11 +12,17 @@ export default async function GoalsPage() {
 
   const [allGoals, latestSnapshot] = await Promise.all([
     db.query.goals.findMany({
-      where: eq(goals.userId, user.id),
+      where: and(
+        eq(goals.userId, user.id),
+        accountScope(goals.riotAccountId, user.activeRiotAccountId),
+      ),
       orderBy: desc(goals.createdAt),
     }),
     db.query.rankSnapshots.findFirst({
-      where: eq(rankSnapshots.userId, user.id),
+      where: and(
+        eq(rankSnapshots.userId, user.id),
+        accountScope(rankSnapshots.riotAccountId, user.activeRiotAccountId),
+      ),
       orderBy: desc(rankSnapshots.capturedAt),
     }),
   ]);
