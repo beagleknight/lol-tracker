@@ -151,6 +151,8 @@ Naming convention:
 
 ### 5. Embed in changelog and PR
 
+**CRITICAL: NEVER include screenshots of demo-only UI in changelogs or PR descriptions.** The login screen (with DemoPlayer/DuoPartner/AdminUser buttons) is demo-mode infrastructure — real users authenticate via Discord OAuth and never see it. If a real user would never see the screen, it must not appear in the changelog. This also applies to any demo-specific labels, badges, or UI elements visible only in demo mode.
+
 #### Changelog MDX
 
 Use plain markdown image syntax (NOT `next/image` — `compileMDX` from `next-mdx-remote/rsc` doesn't support it):
@@ -293,10 +295,11 @@ npm run test:e2e
 1. [ ] "Before" screenshots captured BEFORE making changes
 2. [ ] "After" screenshots captured and annotated with red arrows/labels
 3. [ ] All images stored in `public/changelog/<slug>/`
-4. [ ] Changelog MDX (both `en/` and `es/`) includes embedded screenshots
-5. [ ] PR description includes before/after images with correct GitHub blob URLs
-6. [ ] `npx oxfmt --write <file>` run on EVERY file created or edited
-7. [ ] `npx oxfmt --check src/ messages/ changelog/ .opencode/` passes
-8. [ ] `npm run test:smoke` passes locally before pushing
-9. [ ] `npm run test:e2e` passes locally (if touching interactive flows)
-10. [ ] Dev server shut down after screenshot session (`lsof -ti :3777 | xargs kill -9`)
+4. [ ] **No demo-only UI in changelogs** — login screen, demo user buttons, seed data labels must NEVER appear
+5. [ ] Changelog MDX (both `en/` and `es/`) includes embedded screenshots
+6. [ ] PR description includes before/after images with correct GitHub blob URLs
+7. [ ] `npx oxfmt --write <file>` run on EVERY file created or edited
+8. [ ] `npx oxfmt --check src/ messages/ changelog/ .opencode/` passes
+9. [ ] `npm run test:smoke` passes locally before pushing
+10. [ ] `npm run test:e2e` passes locally (if touching interactive flows)
+11. [ ] Dev server shut down after screenshot session (`lsof -ti :3777 | xargs kill -9`)

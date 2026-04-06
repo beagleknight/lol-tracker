@@ -184,6 +184,8 @@ If you forgot to capture "before" screenshots, check out `main`, capture them, t
 
 Full workflow details are in the `ui-screenshots` OpenCode skill.
 
+**MANDATORY: NEVER include login screen screenshots in changelogs or PR descriptions.** The login screen is only visible in demo mode (DemoPlayer/DuoPartner/AdminUser buttons). Real users authenticate via Discord OAuth and never see this screen. Screenshots of it leak internal demo infrastructure to players. This applies to any demo-only UI — if a real user would never see it, it must not appear in the changelog.
+
 <!-- END:ui-screenshots-rules -->
 
 <!-- BEGIN:security-rules -->
