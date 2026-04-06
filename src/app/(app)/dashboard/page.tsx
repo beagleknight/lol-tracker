@@ -1,4 +1,4 @@
-import { eq, desc, and, count, sql, asc, lte, ne, inArray, type SQL } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc, lte, ne, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,6 +9,7 @@ import {
   coachingSessions,
   goals,
 } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { toCumulativeLP } from "@/lib/rank";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
@@ -18,13 +19,6 @@ import { DashboardClient } from "./dashboard-client";
 export default async function DashboardPage() {
   const user = await requireUser();
   const accountId = user.activeRiotAccountId;
-
-  // Helper: scopes a query to the active riot account.
-  // When accountId is null (no account linked), returns sql`0` (always-false)
-  // so account-scoped queries return empty results.
-  function accountFilter(column: Parameters<typeof eq>[0]): SQL {
-    return accountId ? eq(column, accountId) : sql`0`;
-  }
 
   // Run ALL independent queries in parallel — single round-trip window
   const [
@@ -44,7 +38,7 @@ export default async function DashboardPage() {
     db.query.matches.findMany({
       where: and(
         eq(matches.userId, user.id),
-        accountFilter(matches.riotAccountId),
+        accountScope(matches.riotAccountId, accountId),
         ne(matches.result, "Remake"),
       ),
       orderBy: desc(matches.gameDate),
@@ -79,7 +73,7 @@ export default async function DashboardPage() {
 
     // Latest rank snapshot (for current rank display)
     db.query.rankSnapshots.findFirst({
-      where: and(eq(rankSnapshots.userId, user.id), accountFilter(rankSnapshots.riotAccountId)),
+      where: and(eq(rankSnapshots.userId, user.id), accountScope(rankSnapshots.riotAccountId, accountId)),
       orderBy: desc(rankSnapshots.capturedAt),
     }),
 
@@ -119,7 +113,7 @@ export default async function DashboardPage() {
         ),
       })
       .from(matches)
-      .where(and(eq(matches.userId, user.id), accountFilter(matches.riotAccountId))),
+      .where(and(eq(matches.userId, user.id), accountScope(matches.riotAccountId, accountId))),
 
     // Next upcoming (scheduled) coaching session
     db.query.coachingSessions.findFirst({
@@ -137,7 +131,7 @@ export default async function DashboardPage() {
     db.query.goals.findFirst({
       where: and(
         eq(goals.userId, user.id),
-        accountFilter(goals.riotAccountId),
+        accountScope(goals.riotAccountId, accountId),
         eq(goals.status, "active"),
       ),
     }),
@@ -177,7 +171,7 @@ export default async function DashboardPage() {
       ? await db.query.matchHighlights.findMany({
           where: and(
             eq(matchHighlights.userId, user.id),
-            accountFilter(matchHighlights.riotAccountId),
+            accountScope(matchHighlights.riotAccountId, accountId),
             inArray(matchHighlights.matchId, recentMatchIds),
           ),
           columns: {
@@ -225,14 +219,14 @@ export default async function DashboardPage() {
       (await db.query.rankSnapshots.findFirst({
         where: and(
           eq(rankSnapshots.userId, user.id),
-          accountFilter(rankSnapshots.riotAccountId),
+          accountScope(rankSnapshots.riotAccountId, accountId),
           lte(rankSnapshots.capturedAt, oldestGameDate),
         ),
         orderBy: desc(rankSnapshots.capturedAt),
       })) ??
       (await db.query.rankSnapshots.findFirst({
         // Fall back to the very oldest snapshot if none predates the window
-        where: and(eq(rankSnapshots.userId, user.id), accountFilter(rankSnapshots.riotAccountId)),
+        where: and(eq(rankSnapshots.userId, user.id), accountScope(rankSnapshots.riotAccountId, accountId)),
         orderBy: asc(rankSnapshots.capturedAt),
       }));
 

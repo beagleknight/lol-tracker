@@ -2,6 +2,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { matches } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/session";
 
@@ -127,7 +128,7 @@ export async function GET(request: Request) {
   // Build WHERE conditions
   const conditions = [
     eq(matches.userId, user.id),
-    eq(matches.riotAccountId, user.activeRiotAccountId!),
+    accountScope(matches.riotAccountId, user.activeRiotAccountId),
   ];
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));

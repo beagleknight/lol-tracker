@@ -5,12 +5,13 @@ import { db } from "@/db";
 import { coachingSessions, coachingActionItems, matches, matchHighlights } from "@/db/schema";
 import { coachingTag } from "@/lib/cache";
 import { isMeaningful } from "@/lib/match-result";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
 import { CoachingHubClient } from "./coaching-hub-client";
 
-async function getCachedCoachingHubData(userId: string, riotAccountId: string) {
+async function getCachedCoachingHubData(userId: string, riotAccountId: string | null) {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(coachingTag(userId));
@@ -37,7 +38,7 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string) {
       ? await db.query.matches.findMany({
           where: and(
             eq(matches.userId, userId),
-            eq(matches.riotAccountId, riotAccountId),
+            accountScope(matches.riotAccountId, riotAccountId),
             inArray(matches.id, vodMatchIds),
           ),
           columns: {
@@ -103,7 +104,7 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string) {
       const intervalMatches = await db.query.matches.findMany({
         where: and(
           eq(matches.userId, userId),
-          eq(matches.riotAccountId, riotAccountId),
+          accountScope(matches.riotAccountId, riotAccountId),
           gt(matches.gameDate, current.date),
           lte(matches.gameDate, endDate),
         ),
@@ -125,7 +126,7 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string) {
         const intervalHighlights = await db.query.matchHighlights.findMany({
           where: and(
             eq(matchHighlights.userId, userId),
-            eq(matchHighlights.riotAccountId, riotAccountId),
+            accountScope(matchHighlights.riotAccountId, riotAccountId),
             inArray(matchHighlights.matchId, intervalMatchIds),
           ),
           columns: { topic: true },
@@ -172,7 +173,7 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string) {
 
 export default async function CoachingHubPage() {
   const user = await requireUser();
-  const data = await getCachedCoachingHubData(user.id, user.activeRiotAccountId!);
+  const data = await getCachedCoachingHubData(user.id, user.activeRiotAccountId);
 
   return (
     <CoachingHubClient

@@ -11,7 +11,7 @@ import { db } from "@/db";
 import { matches, riotAccounts } from "@/db/schema";
 import { AuthProvider } from "@/lib/auth-client";
 import { getLatestChangelogVersion } from "@/lib/changelog";
-import { sidebarReviewCountsSelect } from "@/lib/match-queries";
+import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
 
 async function SidebarWithUser() {
@@ -28,7 +28,7 @@ async function SidebarWithUser() {
     db
       .select(sidebarReviewCountsSelect(user.primaryRole))
       .from(matches)
-      .where(and(eq(matches.userId, user.id), eq(matches.riotAccountId, user.activeRiotAccountId!)))
+      .where(and(eq(matches.userId, user.id), accountScope(matches.riotAccountId, user.activeRiotAccountId)))
       .then((rows) => rows[0]),
     getLatestChangelogVersion(),
     db

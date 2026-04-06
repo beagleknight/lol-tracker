@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { coachingSessions, matches, matchHighlights } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -51,7 +52,7 @@ export default async function CompleteCoachingSessionPage({
             and(
               eq(matches.id, session.vodMatchId),
               eq(matches.userId, user.id),
-              eq(matches.riotAccountId, user.activeRiotAccountId!),
+              accountScope(matches.riotAccountId, user.activeRiotAccountId),
             ),
           )
       : Promise.resolve([]),
@@ -61,7 +62,7 @@ export default async function CompleteCoachingSessionPage({
           where: and(
             eq(matchHighlights.matchId, session.vodMatchId),
             eq(matchHighlights.userId, user.id),
-            eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
+            accountScope(matchHighlights.riotAccountId, user.activeRiotAccountId),
           ),
           columns: {
             type: true,

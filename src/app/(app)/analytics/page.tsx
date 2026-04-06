@@ -1,9 +1,10 @@
-import { eq, asc, and, sql, type SQL } from "drizzle-orm";
+import { eq, asc, and, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
 import { matches, coachingSessions, rankSnapshots, goals } from "@/db/schema";
 import { analyticsTag, goalsTag } from "@/lib/cache";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -14,15 +15,9 @@ async function getCachedAnalyticsData(userId: string, riotAccountId: string | nu
   cacheLife("hours");
   cacheTag(analyticsTag(userId), goalsTag(userId));
 
-  // When riotAccountId is null (no account linked), returns sql`0` (always-false)
-  // so account-scoped queries return empty results.
-  function accountFilter(column: Parameters<typeof eq>[0]): SQL {
-    return riotAccountId ? eq(column, riotAccountId) : sql`0`;
-  }
-
   const [allMatches, sessions, ranks, ddragonVersion, activeGoal] = await Promise.all([
     db.query.matches.findMany({
-      where: and(eq(matches.userId, userId), accountFilter(matches.riotAccountId)),
+      where: and(eq(matches.userId, userId), accountScope(matches.riotAccountId, riotAccountId)),
       orderBy: asc(matches.gameDate),
       columns: {
         gameDate: true,
@@ -46,14 +41,14 @@ async function getCachedAnalyticsData(userId: string, riotAccountId: string | nu
       },
     }),
     db.query.rankSnapshots.findMany({
-      where: and(eq(rankSnapshots.userId, userId), accountFilter(rankSnapshots.riotAccountId)),
+      where: and(eq(rankSnapshots.userId, userId), accountScope(rankSnapshots.riotAccountId, riotAccountId)),
       orderBy: asc(rankSnapshots.capturedAt),
     }),
     getLatestVersion(),
     db.query.goals.findFirst({
       where: and(
         eq(goals.userId, userId),
-        accountFilter(goals.riotAccountId),
+        accountScope(goals.riotAccountId, riotAccountId),
         eq(goals.status, "active"),
       ),
       columns: {

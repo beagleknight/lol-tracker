@@ -24,7 +24,9 @@
     "primaryBadge": "Principal",
     "addAccount": "Añadir cuenta",
     "manageAccounts": "Gestionar cuentas",
-    "switchedTo": "Cambiado a {gameName}#{tagLine}"
+    "switchedTo": "Cambiado a {gameName}#{tagLine}",
+    "theme": "Tema: {theme}",
+    "logout": "Cerrar sesión"
   },
   "MatchCard": {
     "vs": "vs",
@@ -616,8 +618,7 @@
     "tabs": {
       "account": "Cuenta",
       "preferences": "Preferencias",
-      "duo": "Dúo",
-      "accounts": "Cuentas"
+      "duo": "Dúo"
     },
     "riotAccount": {
       "title": "Cuenta de Riot",

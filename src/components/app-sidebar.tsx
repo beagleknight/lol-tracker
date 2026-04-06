@@ -8,7 +8,6 @@ import {
   GraduationCap,
   ClipboardCheck,
   Settings,
-  LogOut,
   ListChecks,
   Menu,
   X,
@@ -25,16 +24,13 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
-import { logout } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
-import { AccountSwitcher, type RiotAccountItem } from "./account-switcher";
+import { UserMenu, type RiotAccountItem } from "./user-menu";
 
 interface NavItem {
   label: string;
@@ -264,41 +260,11 @@ function SidebarContent({
       {/* User section */}
       <Separator />
       <div className="p-3">
-        <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <Avatar className="h-8 w-8 ring-2 ring-gold/20">
-            <AvatarImage src={user.image || undefined} />
-            <AvatarFallback className="bg-gold/10 text-gold">
-              {(user.name || "U").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{user.name}</p>
-            {user.riotGameName && riotAccounts && riotAccounts.length > 1 ? (
-              <AccountSwitcher
-                accounts={riotAccounts}
-                activeAccountId={activeRiotAccountId ?? null}
-              />
-            ) : (
-              user.riotGameName && (
-                <p className="truncate text-xs text-gold/70">
-                  {user.riotGameName}#{user.riotTagLine}
-                </p>
-              )
-            )}
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 hover:text-destructive"
-              onClick={() => void logout({ callbackUrl: "/login" })}
-              aria-label="Log out"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <UserMenu
+          user={user}
+          accounts={riotAccounts ?? []}
+          activeAccountId={activeRiotAccountId ?? null}
+        />
       </div>
     </div>
   );

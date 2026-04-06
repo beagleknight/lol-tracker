@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
 
 import { NewGoalClient } from "./new-goal-client";
@@ -14,7 +15,7 @@ export default async function NewGoalPage() {
   const activeGoal = await db.query.goals.findFirst({
     where: and(
       eq(goals.userId, user.id),
-      eq(goals.riotAccountId, user.activeRiotAccountId!),
+      accountScope(goals.riotAccountId, user.activeRiotAccountId),
       eq(goals.status, "active"),
     ),
   });
@@ -27,7 +28,7 @@ export default async function NewGoalPage() {
   const latestSnapshot = await db.query.rankSnapshots.findFirst({
     where: and(
       eq(rankSnapshots.userId, user.id),
-      eq(rankSnapshots.riotAccountId, user.activeRiotAccountId!),
+      accountScope(rankSnapshots.riotAccountId, user.activeRiotAccountId),
     ),
     orderBy: desc(rankSnapshots.capturedAt),
   });

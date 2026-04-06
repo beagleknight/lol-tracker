@@ -68,7 +68,7 @@ const CADENCE_OPTIONS = [
   { days: 30, key: "monthly" as const },
 ];
 
-const VALID_TABS = ["account", "preferences", "duo", "accounts"] as const;
+const VALID_TABS = ["account", "preferences", "duo"] as const;
 
 export default function SettingsPage() {
   const { user, updateSession } = useAuth();
@@ -150,9 +150,9 @@ export default function SettingsPage() {
   const [editingLabelValue, setEditingLabelValue] = useState("");
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
-  // Load riot accounts on mount and when tab changes to accounts
+  // Load riot accounts on mount and when tab changes to account
   useEffect(() => {
-    if (activeTab === "accounts") {
+    if (activeTab === "account") {
       setAccountsLoading(true);
       getUserRiotAccounts()
         .then((accts) => setRiotAccounts(accts))
@@ -475,7 +475,6 @@ export default function SettingsPage() {
           <TabsTrigger value="account">{t("tabs.account")}</TabsTrigger>
           <TabsTrigger value="preferences">{t("tabs.preferences")}</TabsTrigger>
           <TabsTrigger value="duo">{t("tabs.duo")}</TabsTrigger>
-          <TabsTrigger value="accounts">{t("tabs.accounts")}</TabsTrigger>
         </TabsList>
 
         {/* ─── Account Tab ──────────────────────────────────────────── */}
@@ -688,245 +687,8 @@ export default function SettingsPage() {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
 
-        {/* ─── Preferences Tab ──────────────────────────────────────── */}
-        <TabsContent value="preferences" className="mt-4">
-          <div className="space-y-6">
-            {/* Language & Region Card */}
-            <Card className="surface-glow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-gold" />
-                  {t("languageCard.title")}
-                </CardTitle>
-                <CardDescription>{t("languageCard.description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="language-select">{t("languageCard.languageLabel")}</Label>
-                  <Select value={userLanguage} onValueChange={handleLanguageChange}>
-                    <SelectTrigger
-                      id="language-select"
-                      className="w-full max-w-xs"
-                      disabled={isPending}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SUPPORTED_LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="locale-select">{t("languageCard.formatLabel")}</Label>
-                  <Select value={userLocale} onValueChange={handleLocaleChange}>
-                    <SelectTrigger
-                      id="locale-select"
-                      className="w-full max-w-xs"
-                      disabled={isPending}
-                    >
-                      <SelectValue placeholder={t("languageCard.selectPlaceholder")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SUPPORTED_LOCALES.map((loc) => (
-                        <SelectItem key={loc.value} value={loc.value}>
-                          {loc.label} ({loc.description})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("languageCard.previewPrefix")}{" "}
-                  {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Coaching Cadence Card */}
-            <Card className="surface-glow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-gold" />
-                  {t("coachingCadence.title")}
-                </CardTitle>
-                <CardDescription>{t("coachingCadence.description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {CADENCE_OPTIONS.map((option) => (
-                    <Button
-                      key={option.days}
-                      variant={cadenceDays === option.days ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleCadenceChange(option.days)}
-                      disabled={isPending}
-                      className={
-                        cadenceDays === option.days
-                          ? "border-gold/30 bg-gold/20 text-gold hover:bg-gold/30"
-                          : ""
-                      }
-                    >
-                      {t(`coachingCadence.${option.key}`)}
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("coachingCadence.currentLabel", {
-                    days: cadenceDays,
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ─── Duo Tab ──────────────────────────────────────────────── */}
-        <TabsContent value="duo" className="mt-4">
-          <div className="space-y-6">
-            {isLinked ? (
-              <Card className="surface-glow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-gold" />
-                    {t("duoPartner.title")}
-                    {duoPartner ? (
-                      <Badge
-                        variant="default"
-                        className="ml-2 border border-gold/30 bg-gold/20 text-gold"
-                      >
-                        {t("duoPartner.badgeSet")}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="ml-2">
-                        {t("duoPartner.badgeNotSet")}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <CardDescription>{t("duoPartner.description")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {duoLoading ? (
-                    <div className="flex items-center gap-4 rounded-lg border border-border/30 p-4">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-5 w-40" />
-                      </div>
-                    </div>
-                  ) : duoPartner ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
-                        <div className="flex-1">
-                          <p className="text-sm text-muted-foreground">
-                            {t("duoPartner.partnerLabel")}
-                          </p>
-                          <p className="text-lg font-semibold text-gold">
-                            {duoPartner.riotGameName}#{duoPartner.riotTagLine}
-                          </p>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleClearDuoPartner}
-                          disabled={isPending}
-                        >
-                          {isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Unlink className="mr-2 h-4 w-4" />
-                          )}
-                          {t("duoPartner.clearButton")}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder={t("duoPartner.searchPlaceholder")}
-                          value={duoSearchQuery}
-                          onChange={(e) => handleDuoSearch(e.target.value)}
-                          className="pl-9"
-                          aria-label={t("duoPartner.searchPlaceholder")}
-                        />
-                      </div>
-                      {duoSearchQuery.trim().length < 2 && (
-                        <p className="text-sm text-muted-foreground">
-                          {t("duoPartner.searchHint")}
-                        </p>
-                      )}
-                      {duoSearching && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          {t("duoPartner.searching")}
-                        </div>
-                      )}
-                      {!duoSearching &&
-                        duoSearchQuery.trim().length >= 2 &&
-                        duoSearchResults.length === 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            {t("duoPartner.noResults", {
-                              query: duoSearchQuery.trim(),
-                            })}
-                          </p>
-                        )}
-                      {duoSearchResults.length > 0 && (
-                        <div className="space-y-2">
-                          {duoSearchResults.map((u) => (
-                            <div
-                              key={u.id}
-                              className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gold">
-                                  {u.riotGameName}#{u.riotTagLine}
-                                </p>
-                                {u.name && (
-                                  <p className="text-xs text-muted-foreground">{u.name}</p>
-                                )}
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => handleSetDuoPartner(u.id)}
-                                disabled={isPending}
-                              >
-                                {isPending ? (
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Users className="mr-2 h-4 w-4" />
-                                )}
-                                {t("duoPartner.setButton")}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="surface-glow">
-                <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* ─── Accounts Tab ─────────────────────────────────────────── */}
-        <TabsContent value="accounts" className="mt-4">
-          <div className="space-y-6">
-            {/* Linked Accounts List */}
+            {/* ─── Linked Accounts ─────────────────────────────────── */}
             <Card className="surface-glow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1198,6 +960,238 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground">
                     {t("riotAccounts.accountLimitReached")}
                   </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* ─── Preferences Tab ──────────────────────────────────────── */}
+        <TabsContent value="preferences" className="mt-4">
+          <div className="space-y-6">
+            {/* Language & Region Card */}
+            <Card className="surface-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-gold" />
+                  {t("languageCard.title")}
+                </CardTitle>
+                <CardDescription>{t("languageCard.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="language-select">{t("languageCard.languageLabel")}</Label>
+                  <Select value={userLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger
+                      id="language-select"
+                      className="w-full max-w-xs"
+                      disabled={isPending}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_LANGUAGES.map((lang) => (
+                        <SelectItem key={lang.value} value={lang.value}>
+                          {lang.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="locale-select">{t("languageCard.formatLabel")}</Label>
+                  <Select value={userLocale} onValueChange={handleLocaleChange}>
+                    <SelectTrigger
+                      id="locale-select"
+                      className="w-full max-w-xs"
+                      disabled={isPending}
+                    >
+                      <SelectValue placeholder={t("languageCard.selectPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_LOCALES.map((loc) => (
+                        <SelectItem key={loc.value} value={loc.value}>
+                          {loc.label} ({loc.description})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("languageCard.previewPrefix")}{" "}
+                  {previewDate ? formatDate(previewDate, userLocale, "datetime") : "—"}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Coaching Cadence Card */}
+            <Card className="surface-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-gold" />
+                  {t("coachingCadence.title")}
+                </CardTitle>
+                <CardDescription>{t("coachingCadence.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {CADENCE_OPTIONS.map((option) => (
+                    <Button
+                      key={option.days}
+                      variant={cadenceDays === option.days ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleCadenceChange(option.days)}
+                      disabled={isPending}
+                      className={
+                        cadenceDays === option.days
+                          ? "border-gold/30 bg-gold/20 text-gold hover:bg-gold/30"
+                          : ""
+                      }
+                    >
+                      {t(`coachingCadence.${option.key}`)}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("coachingCadence.currentLabel", {
+                    days: cadenceDays,
+                  })}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ─── Duo Tab ──────────────────────────────────────────────── */}
+        <TabsContent value="duo" className="mt-4">
+          <div className="space-y-6">
+            {isLinked ? (
+              <Card className="surface-glow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-gold" />
+                    {t("duoPartner.title")}
+                    {duoPartner ? (
+                      <Badge
+                        variant="default"
+                        className="ml-2 border border-gold/30 bg-gold/20 text-gold"
+                      >
+                        {t("duoPartner.badgeSet")}
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="ml-2">
+                        {t("duoPartner.badgeNotSet")}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <CardDescription>{t("duoPartner.description")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {duoLoading ? (
+                    <div className="flex items-center gap-4 rounded-lg border border-border/30 p-4">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-5 w-40" />
+                      </div>
+                    </div>
+                  ) : duoPartner ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground">
+                            {t("duoPartner.partnerLabel")}
+                          </p>
+                          <p className="text-lg font-semibold text-gold">
+                            {duoPartner.riotGameName}#{duoPartner.riotTagLine}
+                          </p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleClearDuoPartner}
+                          disabled={isPending}
+                        >
+                          {isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Unlink className="mr-2 h-4 w-4" />
+                          )}
+                          {t("duoPartner.clearButton")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder={t("duoPartner.searchPlaceholder")}
+                          value={duoSearchQuery}
+                          onChange={(e) => handleDuoSearch(e.target.value)}
+                          className="pl-9"
+                          aria-label={t("duoPartner.searchPlaceholder")}
+                        />
+                      </div>
+                      {duoSearchQuery.trim().length < 2 && (
+                        <p className="text-sm text-muted-foreground">
+                          {t("duoPartner.searchHint")}
+                        </p>
+                      )}
+                      {duoSearching && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {t("duoPartner.searching")}
+                        </div>
+                      )}
+                      {!duoSearching &&
+                        duoSearchQuery.trim().length >= 2 &&
+                        duoSearchResults.length === 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            {t("duoPartner.noResults", {
+                              query: duoSearchQuery.trim(),
+                            })}
+                          </p>
+                        )}
+                      {duoSearchResults.length > 0 && (
+                        <div className="space-y-2">
+                          {duoSearchResults.map((u) => (
+                            <div
+                              key={u.id}
+                              className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gold">
+                                  {u.riotGameName}#{u.riotTagLine}
+                                </p>
+                                {u.name && (
+                                  <p className="text-xs text-muted-foreground">{u.name}</p>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleSetDuoPartner(u.id)}
+                                disabled={isPending}
+                              >
+                                {isPending ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Users className="mr-2 h-4 w-4" />
+                                )}
+                                {t("duoPartner.setButton")}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="surface-glow">
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
                 </CardContent>
               </Card>
             )}
