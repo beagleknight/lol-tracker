@@ -8,9 +8,10 @@ import { users, riotAccounts } from "@/db/schema";
 import { invalidateAllCaches } from "@/lib/cache";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
-import { requireUser } from "@/lib/session";
+import { isPremium, requireUser } from "@/lib/session";
 
-const MAX_RIOT_ACCOUNTS = 5;
+const MAX_RIOT_ACCOUNTS_PREMIUM = 5;
+const MAX_RIOT_ACCOUNTS_FREE = 1;
 
 // ─── Add Riot Account ───────────────────────────────────────────────────────
 
@@ -45,14 +46,18 @@ export async function addRiotAccount(formData: FormData) {
     return { error: "Invalid Riot ID format. Use GameName#TagLine" };
   }
 
-  // Check account limit
+  // Check account limit (premium: 5, free: 1)
   const [{ total }] = await db
     .select({ total: count() })
     .from(riotAccounts)
     .where(eq(riotAccounts.userId, user.id));
 
-  if (total >= MAX_RIOT_ACCOUNTS) {
-    return { error: `You can link up to ${MAX_RIOT_ACCOUNTS} Riot accounts.` };
+  const maxAccounts = isPremium(user) ? MAX_RIOT_ACCOUNTS_PREMIUM : MAX_RIOT_ACCOUNTS_FREE;
+  if (total >= maxAccounts) {
+    if (!isPremium(user)) {
+      return { error: "premiumRequired" };
+    }
+    return { error: `You can link up to ${maxAccounts} Riot accounts.` };
   }
 
   try {

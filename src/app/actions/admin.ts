@@ -14,7 +14,7 @@ export interface AdminUser {
   riotGameName: string | null;
   riotTagLine: string | null;
   region: string | null;
-  role: "admin" | "user";
+  role: "admin" | "premium" | "free";
   deactivatedAt: Date | null;
   createdAt: Date;
   matchCount: number;
@@ -87,6 +87,30 @@ export async function reactivateUser(userId: string) {
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));
+
+  return { success: true };
+}
+
+export async function updateUserRole(userId: string, role: "premium" | "free") {
+  const admin = await requireAdmin();
+
+  // Can't change your own role
+  if (userId === admin.id) {
+    throw new Error("Cannot change your own role");
+  }
+
+  // Validate the role value
+  if (role !== "premium" && role !== "free") {
+    throw new Error("Invalid role");
+  }
+
+  // Don't allow changing admin roles through this action
+  const [target] = await db.select({ role: users.role }).from(users).where(eq(users.id, userId));
+  if (!target || target.role === "admin") {
+    throw new Error("Cannot change admin role");
+  }
+
+  await db.update(users).set({ role, updatedAt: new Date() }).where(eq(users.id, userId));
 
   return { success: true };
 }

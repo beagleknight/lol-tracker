@@ -113,6 +113,7 @@ export function AiInsightDrawer({
   const [insight, setInsight] = useState<InsightResult | null>(cachedInsight ?? null);
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
+  const [premiumRequired, setPremiumRequired] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
@@ -123,8 +124,11 @@ export function AiInsightDrawer({
         const result = await onGenerate(forceRegenerate);
         if (isError(result)) {
           setError(result.error);
-          if (result.limitReached) setLimitReached(true);
-          if (result.limitReached) {
+          if (result.premiumRequired) {
+            setPremiumRequired(true);
+            toast.error(t("toasts.premiumRequired"));
+          } else if (result.limitReached) {
+            setLimitReached(true);
             toast.error(t("toasts.limitReached"));
           } else {
             toast.error(t("toasts.error"));
@@ -144,11 +148,11 @@ export function AiInsightDrawer({
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
       setOpen(isOpen);
-      if (isOpen && !insight && !isPending && isConfigured && !limitReached) {
+      if (isOpen && !insight && !isPending && isConfigured && !limitReached && !premiumRequired) {
         handleGenerate(false);
       }
     },
-    [insight, isPending, isConfigured, limitReached, handleGenerate],
+    [insight, isPending, isConfigured, limitReached, premiumRequired, handleGenerate],
   );
 
   if (!isConfigured) return null;
@@ -229,7 +233,7 @@ export function AiInsightDrawer({
                   <AlertCircle className="h-4 w-4" />
                   {error}
                 </div>
-                {!limitReached && (
+                {!limitReached && !premiumRequired && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -240,7 +244,10 @@ export function AiInsightDrawer({
                     {t("generateButton")}
                   </Button>
                 )}
-                {limitReached && (
+                {premiumRequired && (
+                  <p className="text-xs text-muted-foreground">{t("premiumRequired")}</p>
+                )}
+                {limitReached && !premiumRequired && (
                   <p className="text-xs text-muted-foreground">{t("dailyLimitReached")}</p>
                 )}
               </div>

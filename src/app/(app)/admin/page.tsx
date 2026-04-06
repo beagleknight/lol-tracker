@@ -1,11 +1,28 @@
 "use client";
 
-import { Copy, Loader2, Plus, Shield, Trash2, Ticket, UserCheck, UserX, Users } from "lucide-react";
+import {
+  Copy,
+  Crown,
+  Loader2,
+  Plus,
+  Shield,
+  Trash2,
+  Ticket,
+  UserCheck,
+  UserX,
+  Users,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
-import { getUsers, deactivateUser, reactivateUser, type AdminUser } from "@/app/actions/admin";
+import {
+  getUsers,
+  deactivateUser,
+  reactivateUser,
+  updateUserRole,
+  type AdminUser,
+} from "@/app/actions/admin";
 import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +93,23 @@ function UsersSection() {
     });
   }
 
+  function handleToggleRole(userId: string, currentRole: string) {
+    const newRole = currentRole === "premium" ? "free" : "premium";
+    startTransition(async () => {
+      try {
+        await updateUserRole(userId, newRole);
+        toast.success(
+          newRole === "premium"
+            ? t("toasts.grantPremiumSuccess")
+            : t("toasts.revokePremiumSuccess"),
+        );
+        await loadUsers();
+      } catch {
+        toast.error(t("toasts.roleChangeError"));
+      }
+    });
+  }
+
   return (
     <Card className="surface-glow">
       <CardHeader>
@@ -132,7 +166,21 @@ function UsersSection() {
                           className="shrink-0 border-gold/30 text-xs text-gold"
                         >
                           <Shield className="mr-1 h-3 w-3" />
-                          Admin
+                          {t("roleAdmin")}
+                        </Badge>
+                      )}
+                      {u.role === "premium" && (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 border-blue-400/30 text-xs text-blue-400"
+                        >
+                          <Crown className="mr-1 h-3 w-3" />
+                          {t("rolePremium")}
+                        </Badge>
+                      )}
+                      {u.role === "free" && (
+                        <Badge variant="outline" className="shrink-0 text-xs text-muted-foreground">
+                          {t("roleFree")}
                         </Badge>
                       )}
                       {isYou && (
@@ -164,7 +212,29 @@ function UsersSection() {
 
                   {/* Actions */}
                   {!isYou && (
-                    <div className="shrink-0">
+                    <div className="flex shrink-0 gap-1.5">
+                      {u.role !== "admin" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleRole(u.id, u.role)}
+                          disabled={isPending}
+                          className={`gap-1.5 ${
+                            u.role === "premium"
+                              ? "text-muted-foreground hover:bg-muted/50"
+                              : "text-blue-400 hover:bg-blue-400/10"
+                          }`}
+                        >
+                          {isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Crown className="h-3.5 w-3.5" />
+                          )}
+                          {u.role === "premium"
+                            ? t("revokePremiumButton")
+                            : t("grantPremiumButton")}
+                        </Button>
+                      )}
                       {isDeactivated ? (
                         <Button
                           variant="outline"

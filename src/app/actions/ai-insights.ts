@@ -12,11 +12,12 @@ import { buildPostGameContext } from "@/lib/ai/context";
 import { buildMatchupPrompt, buildPostGamePrompt } from "@/lib/ai/prompts";
 import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { requireUser } from "@/lib/session";
+import { isPremium, requireUser } from "@/lib/session";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const DAILY_LIMIT = 10;
+const PREMIUM_DAILY_LIMIT = 10;
+const FREE_DAILY_LIMIT = 0;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ export interface InsightResult {
 export interface InsightError {
   error: string;
   limitReached?: boolean;
+  premiumRequired?: boolean;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -76,10 +78,15 @@ export async function checkAiConfigured(): Promise<boolean> {
 
 // ─── Get daily usage stats ──────────────────────────────────────────────────
 
-export async function getAiDailyUsage(): Promise<{ used: number; limit: number }> {
+export async function getAiDailyUsage(): Promise<{
+  used: number;
+  limit: number;
+  premiumRequired: boolean;
+}> {
   const user = await requireUser();
+  const limit = isPremium(user) ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
   const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
-  return { used, limit: DAILY_LIMIT };
+  return { used, limit, premiumRequired: !isPremium(user) };
 }
 
 // ─── Get cached insight ─────────────────────────────────────────────────────
@@ -171,7 +178,14 @@ export async function generateMatchupInsight(
 
   // Check daily limit
   const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
-  if (used >= DAILY_LIMIT) {
+  const dailyLimit = isPremium(user) ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
+  if (used >= dailyLimit) {
+    if (!isPremium(user)) {
+      return {
+        error: "AI insights are a premium feature.",
+        premiumRequired: true,
+      };
+    }
     return { error: "Daily insight limit reached.", limitReached: true };
   }
 
@@ -288,7 +302,14 @@ export async function generatePostGameInsight(
 
   // Check daily limit
   const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
-  if (used >= DAILY_LIMIT) {
+  const dailyLimit = isPremium(user) ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
+  if (used >= dailyLimit) {
+    if (!isPremium(user)) {
+      return {
+        error: "AI insights are a premium feature.",
+        premiumRequired: true,
+      };
+    }
     return { error: "Daily insight limit reached.", limitReached: true };
   }
 

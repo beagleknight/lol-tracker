@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { type User, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // cache() deduplicates this call within a single request,
@@ -41,4 +41,16 @@ export async function requireAdmin() {
     throw new Error("Unauthorized: admin access required");
   }
   return user;
+}
+
+export async function requirePremium() {
+  const user = await requireUser();
+  if (!isPremium(user)) {
+    throw new Error("Unauthorized: premium access required");
+  }
+  return user;
+}
+
+export function isPremium(user: User): boolean {
+  return user.role === "admin" || user.role === "premium";
 }
