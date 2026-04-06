@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { Sparkles, Loader2, RefreshCw, AlertCircle, X } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, AlertCircle, X, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
@@ -110,6 +110,7 @@ export function AiInsightDrawer({
   onGenerate,
 }: AiInsightDrawerProps) {
   const t = useTranslations("AiInsights");
+  const tPremium = useTranslations("Premium");
   const [insight, setInsight] = useState<InsightResult | null>(cachedInsight ?? null);
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
@@ -226,14 +227,28 @@ export function AiInsightDrawer({
               </div>
             )}
 
+            {/* Premium gate state */}
+            {premiumRequired && !insight && !isPending && (
+              <div className="flex flex-col items-center gap-4 py-12">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
+                  <Crown className="h-7 w-7 text-gold" />
+                </div>
+                <h3 className="text-lg font-semibold">{tPremium("gateTitle")}</h3>
+                <p className="text-center text-sm text-muted-foreground">
+                  {tPremium("gateDescription")}
+                </p>
+                <p className="text-xs text-muted-foreground">{tPremium("gateContact")}</p>
+              </div>
+            )}
+
             {/* Error state (no insight) */}
-            {error && !insight && !isPending && (
+            {error && !insight && !isPending && !premiumRequired && (
               <div className="flex flex-col items-center gap-4 py-12">
                 <div className="flex items-center gap-2 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   {error}
                 </div>
-                {!limitReached && !premiumRequired && (
+                {!limitReached && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -244,10 +259,7 @@ export function AiInsightDrawer({
                     {t("generateButton")}
                   </Button>
                 )}
-                {premiumRequired && (
-                  <p className="text-xs text-muted-foreground">{t("premiumRequired")}</p>
-                )}
-                {limitReached && !premiumRequired && (
+                {limitReached && (
                   <p className="text-xs text-muted-foreground">{t("dailyLimitReached")}</p>
                 )}
               </div>

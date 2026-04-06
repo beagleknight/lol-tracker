@@ -6,9 +6,9 @@
 // create all tables. This script only inserts data — it does NOT
 // create tables.
 //
-// Creates 2 users, ~50 matches, rank snapshots, coaching sessions,
-// action items, highlights, and an invite. Uses a simple seeded PRNG
-// for reproducibility (same seed = same data every time).
+// Creates 3 users, ~75 matches (50 main + ~25 duo), rank snapshots,
+// coaching sessions, action items, highlights, and invites. Uses a
+// simple seeded PRNG for reproducibility (same seed = same data every time).
 
 import { createClient } from "@libsql/client";
 
@@ -166,8 +166,8 @@ const DUO_USER = {
   locale: "en-GB",
   language: "en",
   role: "premium" as const,
-  primaryRole: null,
-  secondaryRole: null,
+  primaryRole: "UTILITY",
+  secondaryRole: "MIDDLE",
   activeRiotAccountId: DUO_RIOT_ACCOUNT_ID,
 };
 
@@ -548,6 +548,221 @@ async function seed() {
     });
   }
 
+  // ─── Duo Partner Matches ──────────────────────────────────────────────────
+  // DuoPartner gets matches too, so you can test features like AI insights
+  // while logged in as the premium user. Shared games reuse the same Riot
+  // match ID (composite PK allows this), and DuoPartner also has solo games.
+
+  const duoMatches: Array<{
+    matchId: string;
+    odometer: number;
+    gameDate: Date;
+    champion: { id: number; name: string };
+    keystone: { id: number; name: string };
+    result: "Victory" | "Defeat" | "Remake";
+    kills: number;
+    deaths: number;
+    assists: number;
+    cs: number;
+    csPerMin: number;
+    durationSeconds: number;
+    goldEarned: number;
+    visionScore: number;
+    matchup: { id: number; name: string };
+    hasDuo: boolean;
+    position: string;
+    reviewed: boolean;
+    comment: string | null;
+    reviewNotes: string | null;
+    reviewSkipped: string | null;
+  }> = [];
+
+  let duoOdometer = 0;
+
+  // 1) Mirror shared games — main user's matches where hasDuo=true
+  for (const m of seedMatches) {
+    if (!m.hasDuo) continue;
+    duoOdometer++;
+
+    const supportChamp = pick(SUPPORT_CHAMPIONS);
+    const matchup = pick(SUPPORT_CHAMPIONS.filter((c) => c.id !== supportChamp.id));
+    const isRemake = m.result === "Remake";
+
+    // Support stats: fewer kills, more assists, lower cs
+    const kills = isRemake ? 0 : randInt(0, 5);
+    const deaths = isRemake ? 0 : randInt(1, 8);
+    const assists = isRemake ? 0 : randInt(5, 22);
+    const durationMin = m.durationSeconds / 60;
+    const cs = isRemake ? 0 : Math.round(durationMin * (1 + rand() * 2)); // 1–3 cs/min (support)
+    const csPerMin = isRemake ? 0 : Math.round((cs / durationMin) * 10) / 10;
+
+    const reviewRoll = rand();
+    const reviewed = isRemake ? false : reviewRoll < 0.25;
+    const skipped = isRemake ? false : reviewRoll >= 0.25 && reviewRoll < 0.35;
+
+    duoMatches.push({
+      matchId: m.matchId, // same Riot match — both players were in this game
+      odometer: duoOdometer,
+      gameDate: m.gameDate,
+      champion: supportChamp,
+      keystone: pick(KEYSTONES),
+      result: m.result, // same outcome
+      kills,
+      deaths,
+      assists,
+      cs,
+      csPerMin,
+      durationSeconds: m.durationSeconds,
+      goldEarned: isRemake ? randInt(400, 800) : randInt(5000, 12000),
+      visionScore: isRemake ? randInt(0, 3) : randInt(20, 70), // supports ward more
+      matchup,
+      hasDuo: true, // main user is the duo partner from this perspective
+      position: "UTILITY",
+      reviewed,
+      comment:
+        reviewed && rand() < 0.5
+          ? pick([
+              "Good peel in team fights",
+              "Roam timings were solid",
+              "Should have warded dragon pit earlier",
+              "Engage timing was off in the baron fight",
+              "Lane presence was strong, zoned well",
+            ])
+          : null,
+      reviewNotes: reviewed
+        ? pick([
+            "Work on roam timing after ADC backs",
+            "Vision score was excellent this game",
+            "Engage timing needs improvement",
+            "Good lane control with bushes",
+          ])
+        : null,
+      reviewSkipped: skipped ? pick(["Short game", "Nothing new to note"]) : null,
+    });
+  }
+
+  // 2) Solo games for DuoPartner (without the main user)
+  const duoSoloCount = 10;
+  const soloStart = new Date("2026-01-15T20:00:00Z");
+  const soloEnd = new Date("2026-03-20T22:00:00Z");
+  const soloSpan = soloEnd.getTime() - soloStart.getTime();
+
+  for (let i = 0; i < duoSoloCount; i++) {
+    duoOdometer++;
+    const gameDate = new Date(
+      soloStart.getTime() + (soloSpan / duoSoloCount) * i + randInt(0, 3600000),
+    );
+    const resultRoll = rand();
+    const result: "Victory" | "Defeat" | "Remake" =
+      resultRoll < 0.04 ? "Remake" : resultRoll < 0.04 + 0.96 * 0.5 ? "Victory" : "Defeat";
+    const isRemake = result === "Remake";
+    const durationSeconds = isRemake ? randInt(120, 210) : randInt(1200, 2400);
+    const durationMin = durationSeconds / 60;
+
+    const champion = pick(SUPPORT_CHAMPIONS);
+    const matchup = pick(SUPPORT_CHAMPIONS.filter((c) => c.id !== champion.id));
+
+    const kills = isRemake ? 0 : randInt(0, 6);
+    const deaths = isRemake ? 0 : randInt(1, 9);
+    const assists = isRemake ? 0 : randInt(4, 20);
+    const cs = isRemake ? 0 : Math.round(durationMin * (1 + rand() * 2));
+    const csPerMin = isRemake ? 0 : Math.round((cs / durationMin) * 10) / 10;
+
+    const reviewRoll = rand();
+    const reviewed = isRemake ? false : reviewRoll < 0.2;
+    const skipped = isRemake ? false : reviewRoll >= 0.2 && reviewRoll < 0.3;
+
+    duoMatches.push({
+      matchId: `EUW1_${8000000000 + i}`, // separate match IDs (solo games)
+      odometer: duoOdometer,
+      gameDate,
+      champion,
+      keystone: pick(KEYSTONES),
+      result,
+      kills,
+      deaths,
+      assists,
+      cs,
+      csPerMin,
+      durationSeconds,
+      goldEarned: isRemake ? randInt(400, 800) : randInt(5000, 12000),
+      visionScore: isRemake ? randInt(0, 3) : randInt(15, 60),
+      matchup,
+      hasDuo: false,
+      position: rand() < 0.8 ? "UTILITY" : pick(["MIDDLE", "BOTTOM"]),
+      reviewed,
+      comment:
+        reviewed && rand() < 0.5
+          ? pick([
+              "Played well from behind",
+              "Good roam bot after first back",
+              "Need to track enemy jungler better",
+            ])
+          : null,
+      reviewNotes: reviewed
+        ? pick([
+            "Focus on level 2 all-in timing",
+            "Ward coverage was lacking this game",
+            "Good engage patience in team fights",
+          ])
+        : null,
+      reviewSkipped: skipped ? pick(["Quick game", "Nothing notable"]) : null,
+    });
+  }
+
+  const totalDuoMatches = duoMatches.length;
+
+  for (const m of duoMatches) {
+    await client.execute({
+      sql: `INSERT INTO matches (
+              id, odometer, user_id, riot_account_id, game_date, result,
+              champion_id, champion_name, rune_keystone_id, rune_keystone_name,
+              matchup_champion_id, matchup_champion_name,
+              kills, deaths, assists, cs, cs_per_min,
+              game_duration_seconds, gold_earned, vision_score,
+              comment, reviewed, review_notes, review_skipped_reason,
+              queue_id, position, synced_at, raw_match_json,
+              duo_partner_puuid, duo_partner_champion_name,
+              duo_partner_kills, duo_partner_deaths, duo_partner_assists
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        m.matchId,
+        m.odometer,
+        DUO_USER_ID,
+        DUO_RIOT_ACCOUNT_ID,
+        ts(m.gameDate),
+        m.result,
+        m.champion.id,
+        m.champion.name,
+        m.keystone.id,
+        m.keystone.name,
+        m.matchup.id,
+        m.matchup.name,
+        m.kills,
+        m.deaths,
+        m.assists,
+        m.cs,
+        m.csPerMin,
+        m.durationSeconds,
+        m.goldEarned,
+        m.visionScore,
+        m.comment,
+        m.reviewed ? 1 : 0,
+        m.reviewNotes,
+        m.reviewSkipped,
+        420,
+        m.position,
+        ts(m.gameDate),
+        null,
+        m.hasDuo ? MAIN_USER.puuid : null,
+        m.hasDuo ? pick(MAIN_POOL).name : null,
+        m.hasDuo ? randInt(2, 12) : null,
+        m.hasDuo ? randInt(1, 8) : null,
+        m.hasDuo ? randInt(1, 15) : null,
+      ],
+    });
+  }
+
   // ─── Rank Snapshots ──────────────────────────────────────────────────────
   console.log("Creating rank snapshots...");
 
@@ -576,6 +791,41 @@ async function seed() {
       args: [
         MAIN_USER_ID,
         MAIN_RIOT_ACCOUNT_ID,
+        ts(new Date(snap.date + "T12:00:00Z")),
+        snap.tier,
+        snap.division,
+        snap.lp,
+        snap.wins,
+        snap.losses,
+      ],
+    });
+  }
+
+  // Duo partner rank snapshots — Support main climbing from Bronze I to Silver II
+  const duoRankProgression = [
+    { date: "2026-01-10", tier: "BRONZE", division: "I", lp: 65, wins: 10, losses: 12 },
+    { date: "2026-01-17", tier: "BRONZE", division: "I", lp: 82, wins: 14, losses: 14 },
+    { date: "2026-01-24", tier: "BRONZE", division: "I", lp: 98, wins: 18, losses: 15 },
+    { date: "2026-01-31", tier: "SILVER", division: "IV", lp: 20, wins: 22, losses: 18 },
+    { date: "2026-02-07", tier: "SILVER", division: "IV", lp: 55, wins: 26, losses: 20 },
+    { date: "2026-02-14", tier: "SILVER", division: "IV", lp: 40, wins: 28, losses: 24 },
+    { date: "2026-02-21", tier: "SILVER", division: "IV", lp: 78, wins: 32, losses: 26 },
+    { date: "2026-02-28", tier: "SILVER", division: "III", lp: 10, wins: 36, losses: 28 },
+    { date: "2026-03-04", tier: "SILVER", division: "III", lp: 42, wins: 39, losses: 30 },
+    { date: "2026-03-10", tier: "SILVER", division: "III", lp: 30, wins: 41, losses: 33 },
+    { date: "2026-03-14", tier: "SILVER", division: "III", lp: 65, wins: 44, losses: 35 },
+    { date: "2026-03-18", tier: "SILVER", division: "II", lp: 8, wins: 47, losses: 37 },
+    { date: "2026-03-22", tier: "SILVER", division: "II", lp: 25, wins: 49, losses: 39 },
+    { date: "2026-03-25", tier: "SILVER", division: "II", lp: 38, wins: 51, losses: 40 },
+  ];
+
+  for (const snap of duoRankProgression) {
+    await client.execute({
+      sql: `INSERT INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        DUO_USER_ID,
+        DUO_RIOT_ACCOUNT_ID,
         ts(new Date(snap.date + "T12:00:00Z")),
         snap.tier,
         snap.division,
@@ -849,8 +1099,10 @@ async function seed() {
   // ─── Summary ─────────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
   console.log(`  Users:            3`);
-  console.log(`  Matches:          ${totalMatches}`);
-  console.log(`  Rank snapshots:   ${rankProgression.length}`);
+  console.log(
+    `  Matches:          ${totalMatches + totalDuoMatches} (${totalMatches} main + ${totalDuoMatches} duo)`,
+  );
+  console.log(`  Rank snapshots:   ${rankProgression.length + duoRankProgression.length}`);
   console.log(`  Coaching sessions: ${sessions.length}`);
   console.log(`  Action items:     ${actionItems.length}`);
   console.log(`  Highlights:       ${highlights.length}`);
