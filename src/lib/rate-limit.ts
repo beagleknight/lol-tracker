@@ -112,3 +112,30 @@ export async function checkRateLimit(userId: string, action: string): Promise<Ra
 
   return { allowed: true };
 }
+
+/**
+ * Check whether a user has a recent rate-limit event for a given action,
+ * without recording a new one. Used to validate continuation requests —
+ * e.g., batched sync continuations that should bypass the rate limit but
+ * only if a recent initial sync already passed it.
+ *
+ * @param withinMs — look-back window in milliseconds (default: 30 seconds)
+ */
+export async function hasRecentEvent(
+  userId: string,
+  action: string,
+  withinMs = 30_000,
+): Promise<boolean> {
+  const threshold = new Date(Date.now() - withinMs);
+  const [result] = await db
+    .select({ total: sql<number>`count(*)` })
+    .from(rateLimitEvents)
+    .where(
+      and(
+        eq(rateLimitEvents.userId, userId),
+        eq(rateLimitEvents.action, action),
+        gt(rateLimitEvents.createdAt, threshold),
+      ),
+    );
+  return (result?.total ?? 0) > 0;
+}
