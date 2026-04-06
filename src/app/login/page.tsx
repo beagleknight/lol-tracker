@@ -7,6 +7,7 @@ import { Suspense, useState, useEffect } from "react";
 
 import { demoLogin, getDemoUsers, type DemoUserInfo } from "@/app/actions/demo-login";
 import { Logo } from "@/components/logo";
+import { RiotDisclaimer } from "@/components/riot-disclaimer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,10 +221,13 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <div className="bg-mesh flex min-h-screen items-center justify-center bg-background">
+    <div className="bg-mesh relative flex min-h-screen items-center justify-center bg-background">
       <Suspense>
         <LoginContent />
       </Suspense>
+      <div className="absolute inset-x-0 bottom-0">
+        <RiotDisclaimer />
+      </div>
     </div>
   );
 }
