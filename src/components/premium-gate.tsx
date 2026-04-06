@@ -11,7 +11,7 @@ export function PremiumGate() {
   return (
     <div className="relative">
       {/* Blurred placeholder content */}
-      <div className="pointer-events-none select-none blur-sm" aria-hidden="true">
+      <div className="pointer-events-none blur-sm select-none" aria-hidden="true">
         <div className="grid grid-cols-2 gap-4 p-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <Card key={i} className="p-4">
