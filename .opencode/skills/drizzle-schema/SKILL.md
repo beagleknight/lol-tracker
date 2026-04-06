@@ -83,10 +83,52 @@ Always add indexes when:
 1. Modify `src/db/schema.ts`
 2. Generate migration: `npx drizzle-kit generate`
 3. Review the generated SQL in `drizzle/XXXX_*.sql`
-4. Apply locally: restart dev server (local SQLite picks up schema changes automatically)
-5. **Apply to production Turso**: Write a standalone `scripts/apply-migration-XXXX.ts` script that uses `@libsql/client` directly with `cleanEnv()` banner stripping, then run via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`. See `vercel-turso-deploy` skill for the script template.
-6. Verify migration succeeded before pushing code
-7. **Push code only after production DB has the new schema** — Vercel does NOT run migrations on deploy
+4. **Review for data migration completeness** — see the "Data migration safety" section below
+5. Apply locally: restart dev server (local SQLite picks up schema changes automatically)
+6. **Apply to production Turso**: Write a standalone `scripts/apply-migration-XXXX.ts` script that uses `@libsql/client` directly with `cleanEnv()` banner stripping, then run via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`. See `vercel-turso-deploy` skill for the script template.
+7. Verify migration succeeded before pushing code
+8. **Push code only after production DB has the new schema** — Vercel does NOT run migrations on deploy
+
+### Data migration safety — MANDATORY
+
+**Incident reference**: Migration 0022 created the `riot_accounts` table but never copied existing user data from the `users` table. All production users lost their linked accounts and match history. CI didn't catch it because the seed script creates `riot_accounts` rows directly, masking the gap.
+
+**Rules for every migration:**
+
+1. **CREATE TABLE from existing data → include INSERT INTO ... SELECT FROM.**
+   When a new table replaces or extends data from an existing table, the migration SQL MUST copy existing data:
+
+   ```sql
+   -- BAD: creates an empty table, production users lose data
+   CREATE TABLE `riot_accounts` (...);
+
+   -- GOOD: creates the table AND migrates existing data
+   CREATE TABLE `riot_accounts` (...);
+   INSERT INTO `riot_accounts` (id, user_id, puuid, ...)
+   SELECT lower(hex(randomblob(16))), id, puuid, ...
+   FROM `users` WHERE `puuid` IS NOT NULL;
+   ```
+
+2. **New FK column → backfill existing rows.**
+   A new foreign key column that's NULL for all existing rows will make existing data invisible to queries that filter/join on it:
+
+   ```sql
+   ALTER TABLE `matches` ADD `riot_account_id` text REFERENCES riot_accounts(id);
+   -- MUST also backfill:
+   UPDATE `matches` SET `riot_account_id` = (
+     SELECT ra.id FROM `riot_accounts` ra
+     WHERE ra.user_id = `matches`.`user_id` AND ra.is_primary = 1
+   ) WHERE `riot_account_id` IS NULL;
+   ```
+
+3. **Seed script creates data for new table? That's a red flag.**
+   If the seed script directly inserts rows into a new table/column, ask: "Does the migration also handle this for existing production data?" The seed script creates demo data for testing — it does NOT run in production.
+
+4. **Mental production test.**
+   Before committing: "If I run this migration against a production database with 1000 users and 50,000 matches, will all existing data still be accessible through the new schema?" If the answer is no, the migration is incomplete.
+
+5. **Write a `.validate.sql` companion file.**
+   For any migration that creates tables or moves data, write `drizzle/XXXX_name.validate.sql` with assertions that verify data integrity. The migration runner executes these after applying the migration. See `scripts/migrate.ts` for the validation mechanism.
 
 ## Data sync (db-push / db-pull)
 

@@ -57,6 +57,26 @@ Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 
 <!-- END:turso-migration-rules -->
 
+<!-- BEGIN:migration-safety-rules -->
+
+# Migration data safety — MANDATORY
+
+**Every migration that creates a new table from existing data MUST include `INSERT INTO ... SELECT FROM` to populate it.** A CREATE TABLE without the corresponding data migration is a production outage waiting to happen.
+
+**Incident reference**: Migration 0022 created `riot_accounts` but never copied existing user Riot data into it. All production users lost visibility of their linked accounts and match history. The seed script masked the bug because it creates riot_accounts rows directly — CI tests passed because they run against a freshly seeded database, not a migrated one.
+
+Before committing ANY migration file (`drizzle/*.sql`), answer these questions:
+
+1. **Does this migration create a new table?** If yes, does existing data need to be migrated into it? Write the `INSERT INTO ... SELECT FROM` in the same migration file.
+2. **Does this migration add a foreign key column?** If yes, are existing rows backfilled? A new FK column that's NULL for all existing rows means all existing data becomes invisible to queries that join/filter on it.
+3. **Does this migration move data from one table to another** (e.g., denormalization, table split)? Both the source read and destination write must be in the migration.
+4. **Does the seed script create data for this new table/column directly?** If yes, that's a red flag — the migration itself should be creating that data for existing production rows. The seed script should only create demo/test fixtures, not compensate for missing migration logic.
+5. **If I run this migration against a production database with real users, will the app still work immediately after?** Test mentally: user logs in → navigates to dashboard → sees their data. If any step breaks, the migration is incomplete.
+
+**The seed script is NOT a substitute for data migrations.** The seed script creates demo data for local dev and CI tests. Production databases are populated by migrations and user activity — never by the seed script.
+
+<!-- END:migration-safety-rules -->
+
 <!-- BEGIN:env-safety-rules -->
 
 # Environment variable safety — MANDATORY

@@ -80,6 +80,20 @@ jobs:
       - run: npm ci
       - run: npm run fmt:check
 
+  migration:
+    name: Migration integrity
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:migration
+
   build:
     name: Build
     needs: changes
