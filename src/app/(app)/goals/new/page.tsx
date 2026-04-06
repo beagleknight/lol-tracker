@@ -12,7 +12,11 @@ export default async function NewGoalPage() {
 
   // Check for existing active goal — redirect if one exists
   const activeGoal = await db.query.goals.findFirst({
-    where: and(eq(goals.userId, user.id), eq(goals.status, "active")),
+    where: and(
+      eq(goals.userId, user.id),
+      eq(goals.riotAccountId, user.activeRiotAccountId!),
+      eq(goals.status, "active"),
+    ),
   });
 
   if (activeGoal) {
@@ -21,7 +25,10 @@ export default async function NewGoalPage() {
 
   // Get current rank
   const latestSnapshot = await db.query.rankSnapshots.findFirst({
-    where: eq(rankSnapshots.userId, user.id),
+    where: and(
+      eq(rankSnapshots.userId, user.id),
+      eq(rankSnapshots.riotAccountId, user.activeRiotAccountId!),
+    ),
     orderBy: desc(rankSnapshots.capturedAt),
   });
 

@@ -16,12 +16,13 @@ export const users = sqliteTable("users", {
   name: text("name"),
   image: text("image"),
   email: text("email"),
-  riotGameName: text("riot_game_name"),
-  riotTagLine: text("riot_tag_line"),
-  puuid: text("puuid"),
+  riotGameName: text("riot_game_name"), // Cache of active Riot account's gameName
+  riotTagLine: text("riot_tag_line"), // Cache of active Riot account's tagLine
+  puuid: text("puuid"), // Cache of active Riot account's PUUID
   summonerId: text("summoner_id"),
   duoPartnerUserId: text("duo_partner_user_id"),
-  region: text("region"), // Riot platform region: euw1, na1, kr, eun1, etc.
+  region: text("region"), // Cache of active Riot account's region
+  activeRiotAccountId: text("active_riot_account_id"), // FK to riotAccounts.id (set after table exists)
   onboardingCompleted: integer("onboarding_completed", { mode: "boolean" })
     .notNull()
     .default(false),
@@ -42,6 +43,35 @@ export const users = sqliteTable("users", {
     .$defaultFn(() => new Date()),
 });
 
+// ─── Riot Accounts ───────────────────────────────────────────────────────────
+// One user can link up to 5 Riot accounts (main + smurfs).
+// One account is marked as primary (first linked by default, changeable).
+// The user's activeRiotAccountId determines which account is currently in use.
+
+export const riotAccounts = sqliteTable(
+  "riot_accounts",
+  {
+    id: text("id").primaryKey(), // Generated UUID
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    puuid: text("puuid").notNull(),
+    riotGameName: text("riot_game_name").notNull(),
+    riotTagLine: text("riot_tag_line").notNull(),
+    summonerId: text("summoner_id"),
+    region: text("region").notNull(), // Riot platform region: euw1, na1, kr, eun1, etc.
+    isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
+    label: text("label"), // User-friendly nickname, e.g. "Main", "Smurf"
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    unique("riot_accounts_user_puuid_unq").on(table.userId, table.puuid),
+    index("riot_accounts_user_idx").on(table.userId),
+  ],
+);
+
 // ─── Matches ─────────────────────────────────────────────────────────────────
 
 export const matches = sqliteTable(
@@ -52,6 +82,9 @@ export const matches = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
     gameDate: integer("game_date", { mode: "timestamp" }).notNull(),
     result: text("result", { enum: ["Victory", "Defeat", "Remake"] }).notNull(),
     championId: integer("champion_id").notNull(),
@@ -95,6 +128,7 @@ export const matches = sqliteTable(
     index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
     index("matches_user_duo_partner_idx").on(table.userId, table.duoPartnerPuuid),
     index("matches_user_position_idx").on(table.userId, table.position),
+    index("matches_riot_account_idx").on(table.riotAccountId),
   ],
 );
 
@@ -107,6 +141,9 @@ export const rankSnapshots = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
     capturedAt: integer("captured_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -116,7 +153,10 @@ export const rankSnapshots = sqliteTable(
     wins: integer("wins").default(0),
     losses: integer("losses").default(0),
   },
-  (table) => [index("rank_snapshots_user_captured_idx").on(table.userId, table.capturedAt)],
+  (table) => [
+    index("rank_snapshots_user_captured_idx").on(table.userId, table.capturedAt),
+    index("rank_snapshots_riot_account_idx").on(table.riotAccountId),
+  ],
 );
 
 // ─── Coaching Sessions ───────────────────────────────────────────────────────
@@ -226,6 +266,9 @@ export const matchHighlights = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
     type: text("type", { enum: ["highlight", "lowlight"] }).notNull(),
     text: text("text").notNull(),
     topic: text("topic"), // Predefined topic from PREDEFINED_TOPICS, nullable
@@ -248,6 +291,9 @@ export const goals = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
     title: text("title").notNull(), // e.g. "Reach Platinum IV"
     // Target rank
     targetTier: text("target_tier").notNull(), // e.g. "PLATINUM"
@@ -310,6 +356,9 @@ export const aiInsights = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
     type: text("type", { enum: ["matchup", "post-game"] }).notNull(),
     contextKey: text("context_key").notNull(), // e.g. "ahri-vs-zed" or match ID
     content: text("content").notNull(),
@@ -364,6 +413,7 @@ export const syncLocks = sqliteTable("sync_locks", {
 // ─── Type Exports ────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
+export type RiotAccount = typeof riotAccounts.$inferSelect;
 export type Match = typeof matches.$inferSelect;
 /** The result column's union type, derived from the schema enum. */
 export type MatchResult = Match["result"];

@@ -28,6 +28,7 @@ export default async function ReviewPage({
 
   const reviewedWhere = and(
     eq(matches.userId, user.id),
+    eq(matches.riotAccountId, user.activeRiotAccountId!),
     eq(matches.reviewed, true),
     ne(matches.result, "Remake"),
   );
@@ -77,6 +78,7 @@ export default async function ReviewPage({
       db.query.matches.findMany({
         where: and(
           eq(matches.userId, user.id),
+          eq(matches.riotAccountId, user.activeRiotAccountId!),
           eq(matches.reviewed, false),
           ne(matches.result, "Remake"),
           unreviewedPositionFilter,
@@ -106,7 +108,11 @@ export default async function ReviewPage({
           .select()
           .from(matchHighlights)
           .where(
-            and(eq(matchHighlights.userId, user.id), inArray(matchHighlights.matchId, allMatchIds)),
+            and(
+              eq(matchHighlights.userId, user.id),
+              eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
+              inArray(matchHighlights.matchId, allMatchIds),
+            ),
           )
       : [];
 

@@ -53,16 +53,18 @@ function contextKey(type: InsightType, params: Record<string, string | undefined
   return params.matchId || "unknown";
 }
 
-async function getDailyUsage(userId: string): Promise<number> {
+async function getDailyUsage(userId: string, riotAccountId: string | null): Promise<number> {
+  const conditions = [
+    eq(aiInsights.userId, userId),
+    sql`${aiInsights.createdAt} >= ${Math.floor(todayStart().getTime() / 1000)}`,
+  ];
+  if (riotAccountId) {
+    conditions.push(eq(aiInsights.riotAccountId, riotAccountId));
+  }
   const [row] = await db
     .select({ count: sql<number>`COUNT(*)` })
     .from(aiInsights)
-    .where(
-      and(
-        eq(aiInsights.userId, userId),
-        sql`${aiInsights.createdAt} >= ${Math.floor(todayStart().getTime() / 1000)}`,
-      ),
-    );
+    .where(and(...conditions));
   return row?.count ?? 0;
 }
 
@@ -76,7 +78,7 @@ export async function checkAiConfigured(): Promise<boolean> {
 
 export async function getAiDailyUsage(): Promise<{ used: number; limit: number }> {
   const user = await requireUser();
-  const used = await getDailyUsage(user.id);
+  const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
   return { used, limit: DAILY_LIMIT };
 }
 
@@ -89,12 +91,17 @@ export async function getCachedInsight(
   const user = await requireUser();
   const key = contextKey(type, params);
 
+  const conditions = [
+    eq(aiInsights.userId, user.id),
+    eq(aiInsights.type, type),
+    eq(aiInsights.contextKey, key),
+  ];
+  if (user.activeRiotAccountId) {
+    conditions.push(eq(aiInsights.riotAccountId, user.activeRiotAccountId));
+  }
+
   const existing = await db.query.aiInsights.findFirst({
-    where: and(
-      eq(aiInsights.userId, user.id),
-      eq(aiInsights.type, type),
-      eq(aiInsights.contextKey, key),
-    ),
+    where: and(...conditions),
   });
 
   if (!existing) return null;
@@ -130,12 +137,16 @@ export async function generateMatchupInsight(
 
   // Check cache (unless force-regenerating)
   if (!forceRegenerate) {
+    const cacheConditions = [
+      eq(aiInsights.userId, user.id),
+      eq(aiInsights.type, "matchup"),
+      eq(aiInsights.contextKey, key),
+    ];
+    if (user.activeRiotAccountId) {
+      cacheConditions.push(eq(aiInsights.riotAccountId, user.activeRiotAccountId));
+    }
     const existing = await db.query.aiInsights.findFirst({
-      where: and(
-        eq(aiInsights.userId, user.id),
-        eq(aiInsights.type, "matchup"),
-        eq(aiInsights.contextKey, key),
-      ),
+      where: and(...cacheConditions),
     });
 
     if (existing) {
@@ -159,7 +170,7 @@ export async function generateMatchupInsight(
   }
 
   // Check daily limit
-  const used = await getDailyUsage(user.id);
+  const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
   if (used >= DAILY_LIMIT) {
     return { error: "Daily insight limit reached.", limitReached: true };
   }
@@ -171,6 +182,7 @@ export async function generateMatchupInsight(
 
   const ctx = await buildMatchupContext(
     user.id,
+    user.activeRiotAccountId ?? null,
     summonerName,
     enemyChampionName,
     yourChampionName,
@@ -192,6 +204,7 @@ export async function generateMatchupInsight(
       .insert(aiInsights)
       .values({
         userId: user.id,
+        riotAccountId: user.activeRiotAccountId,
         type: "matchup",
         contextKey: key,
         content: result.text,
@@ -204,6 +217,7 @@ export async function generateMatchupInsight(
         set: {
           content: result.text,
           model: AI_MODEL_ID,
+          riotAccountId: user.activeRiotAccountId,
           promptTokens: result.usage?.inputTokens ?? null,
           completionTokens: result.usage?.outputTokens ?? null,
           createdAt: new Date(),
@@ -240,12 +254,16 @@ export async function generatePostGameInsight(
 
   // Check cache
   if (!forceRegenerate) {
+    const cacheConditions = [
+      eq(aiInsights.userId, user.id),
+      eq(aiInsights.type, "post-game"),
+      eq(aiInsights.contextKey, key),
+    ];
+    if (user.activeRiotAccountId) {
+      cacheConditions.push(eq(aiInsights.riotAccountId, user.activeRiotAccountId));
+    }
     const existing = await db.query.aiInsights.findFirst({
-      where: and(
-        eq(aiInsights.userId, user.id),
-        eq(aiInsights.type, "post-game"),
-        eq(aiInsights.contextKey, key),
-      ),
+      where: and(...cacheConditions),
     });
 
     if (existing) {
@@ -269,7 +287,7 @@ export async function generatePostGameInsight(
   }
 
   // Check daily limit
-  const used = await getDailyUsage(user.id);
+  const used = await getDailyUsage(user.id, user.activeRiotAccountId ?? null);
   if (used >= DAILY_LIMIT) {
     return { error: "Daily insight limit reached.", limitReached: true };
   }
@@ -279,7 +297,12 @@ export async function generatePostGameInsight(
     ? `${user.riotGameName}#${user.riotTagLine}`
     : user.name || "Player";
 
-  const ctx = await buildPostGameContext(user.id, summonerName, matchId);
+  const ctx = await buildPostGameContext(
+    user.id,
+    user.activeRiotAccountId ?? null,
+    summonerName,
+    matchId,
+  );
   if (!ctx) {
     return { error: "Match not found." };
   }
@@ -299,6 +322,7 @@ export async function generatePostGameInsight(
       .insert(aiInsights)
       .values({
         userId: user.id,
+        riotAccountId: user.activeRiotAccountId,
         type: "post-game",
         contextKey: key,
         content: result.text,
@@ -311,6 +335,7 @@ export async function generatePostGameInsight(
         set: {
           content: result.text,
           model: AI_MODEL_ID,
+          riotAccountId: user.activeRiotAccountId,
           promptTokens: result.usage?.inputTokens ?? null,
           completionTokens: result.usage?.outputTokens ?? null,
           createdAt: new Date(),

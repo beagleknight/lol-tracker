@@ -178,6 +178,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.riotTagLine = dbUser.riotTagLine;
           session.user.isRiotLinked = !!dbUser.puuid;
           session.user.region = dbUser.region;
+          session.user.activeRiotAccountId = dbUser.activeRiotAccountId;
           session.user.onboardingCompleted = dbUser.onboardingCompleted;
           session.user.role = dbUser.role;
           session.user.locale = dbUser.locale;

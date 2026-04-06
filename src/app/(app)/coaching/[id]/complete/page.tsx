@@ -47,7 +47,13 @@ export default async function CompleteCoachingSessionPage({
             vodUrl: matches.vodUrl,
           })
           .from(matches)
-          .where(and(eq(matches.id, session.vodMatchId), eq(matches.userId, user.id)))
+          .where(
+            and(
+              eq(matches.id, session.vodMatchId),
+              eq(matches.userId, user.id),
+              eq(matches.riotAccountId, user.activeRiotAccountId!),
+            ),
+          )
       : Promise.resolve([]),
     getLatestVersion(),
     session.vodMatchId
@@ -55,6 +61,7 @@ export default async function CompleteCoachingSessionPage({
           where: and(
             eq(matchHighlights.matchId, session.vodMatchId),
             eq(matchHighlights.userId, user.id),
+            eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
           ),
           columns: {
             type: true,

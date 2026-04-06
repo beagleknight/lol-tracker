@@ -1,4 +1,4 @@
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, sql, type SQL } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
@@ -9,14 +9,20 @@ import { requireUser } from "@/lib/session";
 
 import { AnalyticsClient } from "./analytics-client";
 
-async function getCachedAnalyticsData(userId: string) {
+async function getCachedAnalyticsData(userId: string, riotAccountId: string | null) {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(analyticsTag(userId), goalsTag(userId));
 
+  // When riotAccountId is null (no account linked), returns sql`0` (always-false)
+  // so account-scoped queries return empty results.
+  function accountFilter(column: Parameters<typeof eq>[0]): SQL {
+    return riotAccountId ? eq(column, riotAccountId) : sql`0`;
+  }
+
   const [allMatches, sessions, ranks, ddragonVersion, activeGoal] = await Promise.all([
     db.query.matches.findMany({
-      where: eq(matches.userId, userId),
+      where: and(eq(matches.userId, userId), accountFilter(matches.riotAccountId)),
       orderBy: asc(matches.gameDate),
       columns: {
         gameDate: true,
@@ -40,12 +46,16 @@ async function getCachedAnalyticsData(userId: string) {
       },
     }),
     db.query.rankSnapshots.findMany({
-      where: eq(rankSnapshots.userId, userId),
+      where: and(eq(rankSnapshots.userId, userId), accountFilter(rankSnapshots.riotAccountId)),
       orderBy: asc(rankSnapshots.capturedAt),
     }),
     getLatestVersion(),
     db.query.goals.findFirst({
-      where: and(eq(goals.userId, userId), eq(goals.status, "active")),
+      where: and(
+        eq(goals.userId, userId),
+        accountFilter(goals.riotAccountId),
+        eq(goals.status, "active"),
+      ),
       columns: {
         targetTier: true,
         targetDivision: true,
@@ -60,6 +70,7 @@ export default async function AnalyticsPage() {
   const user = await requireUser();
   const { allMatches, sessions, ranks, ddragonVersion, activeGoal } = await getCachedAnalyticsData(
     user.id,
+    user.activeRiotAccountId,
   );
 
   return (

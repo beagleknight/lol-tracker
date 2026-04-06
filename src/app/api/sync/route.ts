@@ -62,6 +62,7 @@ export async function GET(request: Request) {
     : null;
 
   const region = user.region || "euw1";
+  const activeRiotAccountId = user.activeRiotAccountId || null;
 
   const encoder = new TextEncoder();
 
@@ -203,9 +204,14 @@ export async function GET(request: Request) {
 
         if (allNewMatchIds.length === 0) {
           // Still capture rank snapshot
-          const rankWarning = await captureRankSnapshot(user.id, user.puuid!, region);
+          const rankWarning = await captureRankSnapshot(
+            user.id,
+            user.puuid!,
+            region,
+            activeRiotAccountId,
+          );
           // Check if rank goal was achieved
-          await checkGoalAchievement(user.id);
+          await checkGoalAchievement(user.id, activeRiotAccountId);
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
@@ -221,7 +227,7 @@ export async function GET(request: Request) {
 
         // Capture rank snapshot BEFORE syncing — gives a "before" data point
         // so the LP chart shows the delta across this sync session
-        await captureRankSnapshot(user.id, user.puuid!, region);
+        await captureRankSnapshot(user.id, user.puuid!, region, activeRiotAccountId);
 
         send({
           type: "status",
@@ -279,6 +285,7 @@ export async function GET(request: Request) {
                 id: matchId,
                 odometer: nextOdometer++,
                 userId: user.id,
+                riotAccountId: activeRiotAccountId,
                 gameDate: playerData.gameDate,
                 result: playerData.result,
                 championId: playerData.championId,
@@ -369,10 +376,15 @@ export async function GET(request: Request) {
         }
 
         // Capture rank snapshot
-        const rankWarning = await captureRankSnapshot(user.id, user.puuid!, region);
+        const rankWarning = await captureRankSnapshot(
+          user.id,
+          user.puuid!,
+          region,
+          activeRiotAccountId,
+        );
 
         // Check if rank goal was achieved after syncing
-        await checkGoalAchievement(user.id);
+        await checkGoalAchievement(user.id, activeRiotAccountId);
 
         // Cache invalidation is handled client-side via a Server Action
         // after the "done" event (updateTag cannot be called from Route Handlers).
@@ -433,12 +445,14 @@ async function captureRankSnapshot(
   userId: string,
   puuid: string,
   region: string,
+  riotAccountId: string | null,
 ): Promise<string | null> {
   try {
     const entry = await getSoloQueueEntryByPuuid(puuid, region);
     if (entry) {
       await db.insert(rankSnapshots).values({
         userId,
+        riotAccountId,
         tier: entry.tier,
         division: entry.rank,
         lp: entry.leaguePoints,

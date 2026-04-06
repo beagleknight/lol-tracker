@@ -34,6 +34,8 @@ import { useSyncMatches } from "@/hooks/use-sync-matches";
 import { logout } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
+import { AccountSwitcher, type RiotAccountItem } from "./account-switcher";
+
 interface NavItem {
   label: string;
   href: string;
@@ -89,6 +91,8 @@ interface SidebarProps {
     vod: number;
   };
   latestChangelogVersion?: string | null;
+  riotAccounts?: RiotAccountItem[];
+  activeRiotAccountId?: string | null;
 }
 
 function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
@@ -136,6 +140,8 @@ function SidebarContent({
   user,
   reviewCounts,
   latestChangelogVersion,
+  riotAccounts,
+  activeRiotAccountId,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
@@ -267,10 +273,17 @@ function SidebarContent({
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{user.name}</p>
-            {user.riotGameName && (
-              <p className="truncate text-xs text-gold/70">
-                {user.riotGameName}#{user.riotTagLine}
-              </p>
+            {user.riotGameName && riotAccounts && riotAccounts.length > 1 ? (
+              <AccountSwitcher
+                accounts={riotAccounts}
+                activeAccountId={activeRiotAccountId ?? null}
+              />
+            ) : (
+              user.riotGameName && (
+                <p className="truncate text-xs text-gold/70">
+                  {user.riotGameName}#{user.riotTagLine}
+                </p>
+              )
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -291,7 +304,13 @@ function SidebarContent({
   );
 }
 
-export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: SidebarProps) {
+export function AppSidebar({
+  user,
+  reviewCounts,
+  latestChangelogVersion,
+  riotAccounts,
+  activeRiotAccountId,
+}: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -328,6 +347,8 @@ export function AppSidebar({ user, reviewCounts, latestChangelogVersion }: Sideb
           user={user}
           reviewCounts={reviewCounts}
           latestChangelogVersion={latestChangelogVersion}
+          riotAccounts={riotAccounts}
+          activeRiotAccountId={activeRiotAccountId}
           onNavClick={() => setMobileOpen(false)}
         />
       </aside>

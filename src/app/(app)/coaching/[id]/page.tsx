@@ -49,6 +49,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         and(
           eq(coachingSessionMatches.matchId, matches.id),
           eq(coachingSessionMatches.userId, matches.userId),
+          eq(matches.riotAccountId, user.activeRiotAccountId!),
         ),
       )
       .where(eq(coachingSessionMatches.sessionId, sessionId)),
@@ -70,6 +71,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         and(
           eq(coachingSessionMatches.matchId, matchHighlights.matchId),
           eq(coachingSessionMatches.userId, matchHighlights.userId),
+          eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
         ),
       )
       .where(
@@ -133,6 +135,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     // Fetch matches between this session and the next
     const conditions = [
       eq(matches.userId, user.id),
+      eq(matches.riotAccountId, user.activeRiotAccountId!),
       gt(matches.gameDate, session.date),
       lte(matches.gameDate, endDate),
     ];
@@ -160,6 +163,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
       const progressHL = await db.query.matchHighlights.findMany({
         where: and(
           eq(matchHighlights.userId, user.id),
+          eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
           inArray(matchHighlights.matchId, progressMatchIds),
         ),
         columns: {

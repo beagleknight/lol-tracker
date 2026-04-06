@@ -27,7 +27,7 @@ export default async function EditCoachingSessionPage({
 
   const [recentMatches, ddragonVersion, previousCoaches] = await Promise.all([
     db.query.matches.findMany({
-      where: eq(matches.userId, user.id),
+      where: and(eq(matches.userId, user.id), eq(matches.riotAccountId, user.activeRiotAccountId!)),
       orderBy: desc(matches.gameDate),
       limit: 50,
       columns: {
@@ -54,7 +54,11 @@ export default async function EditCoachingSessionPage({
   const allHighlights =
     matchIds.length > 0
       ? await db.query.matchHighlights.findMany({
-          where: inArray(matchHighlights.matchId, matchIds),
+          where: and(
+            eq(matchHighlights.userId, user.id),
+            eq(matchHighlights.riotAccountId, user.activeRiotAccountId!),
+            inArray(matchHighlights.matchId, matchIds),
+          ),
           columns: {
             matchId: true,
             type: true,

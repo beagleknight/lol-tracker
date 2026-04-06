@@ -125,7 +125,10 @@ export async function GET(request: Request) {
   const review = url.searchParams.get("review") ?? "all";
 
   // Build WHERE conditions
-  const conditions = [eq(matches.userId, user.id)];
+  const conditions = [
+    eq(matches.userId, user.id),
+    eq(matches.riotAccountId, user.activeRiotAccountId!),
+  ];
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));
   }

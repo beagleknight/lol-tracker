@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
@@ -11,11 +11,14 @@ export default async function GoalsPage() {
 
   const [allGoals, latestSnapshot] = await Promise.all([
     db.query.goals.findMany({
-      where: eq(goals.userId, user.id),
+      where: and(eq(goals.userId, user.id), eq(goals.riotAccountId, user.activeRiotAccountId!)),
       orderBy: desc(goals.createdAt),
     }),
     db.query.rankSnapshots.findFirst({
-      where: eq(rankSnapshots.userId, user.id),
+      where: and(
+        eq(rankSnapshots.userId, user.id),
+        eq(rankSnapshots.riotAccountId, user.activeRiotAccountId!),
+      ),
       orderBy: desc(rankSnapshots.capturedAt),
     }),
   ]);
