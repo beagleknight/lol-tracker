@@ -3,7 +3,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts, users } from "@/db/schema";
 import { checkGoalAchievement } from "@/lib/goals";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, hasRecentEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
 import {
   getMatchIds,
@@ -55,8 +55,10 @@ export async function GET(request: Request) {
   }
 
   // Optional ?limit=N — sync at most N matches per request (for batched sync)
+  // Optional ?continuation=true — skip rate limit for continuation batches
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
+  const isContinuation = url.searchParams.get("continuation") === "true";
   const batchLimit = limitParam
     ? Math.min(Math.max(parseInt(limitParam, 10) || MAX_BATCH_LIMIT, 1), MAX_BATCH_LIMIT)
     : null;
@@ -77,14 +79,28 @@ export async function GET(request: Request) {
       };
 
       // ── Rate limit check ───────────────────────────────────────────
-      const rateCheck = await checkRateLimit(user.id, "sync");
-      if (!rateCheck.allowed) {
-        send({
-          type: "error",
-          message: `You can only sync once every 5 minutes. Try again in ${rateCheck.retryAfter} seconds.`,
-        });
-        controller.close();
-        return;
+      // Continuation batches (automatic follow-ups from a batched sync)
+      // skip the normal rate limit but must prove a recent sync happened.
+      if (isContinuation) {
+        const recent = await hasRecentEvent(user.id, "sync", 5 * 60 * 1000);
+        if (!recent) {
+          send({
+            type: "error",
+            message: "Invalid continuation request.",
+          });
+          controller.close();
+          return;
+        }
+      } else {
+        const rateCheck = await checkRateLimit(user.id, "sync");
+        if (!rateCheck.allowed) {
+          send({
+            type: "error",
+            message: `You can only sync once every 5 minutes. Try again in ${rateCheck.retryAfter} seconds.`,
+          });
+          controller.close();
+          return;
+        }
       }
 
       // ── Acquire sync lock ────────────────────────────────────────────
