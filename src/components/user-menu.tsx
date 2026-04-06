@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, LogOut, Moon, Monitor, Plus, Settings, Sun } from "lucide-react";
+import { Check, ChevronDown, LogOut, Moon, Monitor, Settings, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -186,27 +186,15 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
           </>
         )}
 
-        {/* Add account (if under limit) */}
-        {accounts.length > 0 && accounts.length < 5 && (
-          <DropdownMenuItem>
-            <Link href="/settings" className="flex w-full items-center gap-2">
-              <Plus className="h-4 w-4" />
-              {t("addAccount")}
-            </Link>
-          </DropdownMenuItem>
-        )}
+        {/* Settings */}
+        <DropdownMenuItem>
+          <Link href="/settings" className="flex w-full items-center gap-2">
+            <Settings className="h-4 w-4" />
+            {t("navSettings")}
+          </Link>
+        </DropdownMenuItem>
 
-        {/* Manage accounts */}
-        {accounts.length > 0 && (
-          <DropdownMenuItem>
-            <Link href="/settings" className="flex w-full items-center gap-2">
-              <Settings className="h-4 w-4" />
-              {t("manageAccounts")}
-            </Link>
-          </DropdownMenuItem>
-        )}
-
-        {accounts.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuSeparator />
 
         {/* Theme toggle */}
         <DropdownMenuItem onClick={cycleTheme}>

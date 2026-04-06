@@ -7,7 +7,6 @@ import {
   BarChart3,
   GraduationCap,
   ClipboardCheck,
-  Settings,
   ListChecks,
   Menu,
   X,
@@ -60,7 +59,6 @@ const navDefs = {
   bottom: [
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
-    { key: "navSettings" as const, href: "/settings", icon: Settings },
   ],
 } as const;
 

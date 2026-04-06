@@ -449,7 +449,7 @@ export default function SettingsPage() {
                     {t("riotAccounts.emptyState")}
                   </p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {riotAccounts.map((account) => {
                       const isActive = account.id === user?.activeRiotAccountId;
                       const isEditingLabel = editingLabelId === account.id;
@@ -458,17 +458,17 @@ export default function SettingsPage() {
                       return (
                         <div
                           key={account.id}
-                          className={`rounded-lg border p-4 transition-colors ${
+                          className={`rounded-lg border px-3 py-2.5 transition-colors ${
                             isActive
                               ? "border-gold/30 bg-gold/5"
                               : "border-border/30 bg-surface-elevated"
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            {/* Account info */}
+                          {/* Top row: name + badges + actions */}
+                          <div className="flex items-center gap-2">
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-foreground">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-medium text-foreground">
                                   {account.riotGameName}
                                   <span className="text-muted-foreground">
                                     #{account.riotTagLine}
@@ -477,7 +477,7 @@ export default function SettingsPage() {
                                 {account.isPrimary && (
                                   <Badge
                                     variant="default"
-                                    className="h-5 shrink-0 border border-gold/30 bg-gold/20 px-1.5 text-[10px] text-gold"
+                                    className="h-4 shrink-0 border border-gold/30 bg-gold/20 px-1 text-[10px] text-gold"
                                   >
                                     {t("riotAccounts.badgePrimary")}
                                   </Badge>
@@ -485,75 +485,15 @@ export default function SettingsPage() {
                                 {isActive && (
                                   <Badge
                                     variant="default"
-                                    className="h-5 shrink-0 border border-emerald-500/30 bg-emerald-500/20 px-1.5 text-[10px] text-emerald-400"
+                                    className="h-4 shrink-0 border border-emerald-500/30 bg-emerald-500/20 px-1 text-[10px] text-emerald-400"
                                   >
                                     {t("riotAccounts.badgeActive")}
                                   </Badge>
                                 )}
+                                <span className="text-xs text-muted-foreground">
+                                  · {PLATFORM_LABELS[account.region] ?? account.region}
+                                </span>
                               </div>
-                              {/* Label display / edit */}
-                              {isEditingLabel ? (
-                                <div className="mt-1 flex items-center gap-2">
-                                  <Input
-                                    value={editingLabelValue}
-                                    onChange={(e) => setEditingLabelValue(e.target.value)}
-                                    placeholder={t("riotAccounts.labelPlaceholder")}
-                                    className="h-7 max-w-[200px] text-xs"
-                                    maxLength={30}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") handleSaveLabel(account.id);
-                                      if (e.key === "Escape") {
-                                        setEditingLabelId(null);
-                                        setEditingLabelValue("");
-                                      }
-                                    }}
-                                    ref={(el) => el?.focus()}
-                                  />
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() => handleSaveLabel(account.id)}
-                                    disabled={isPending}
-                                  >
-                                    <Check className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() => {
-                                      setEditingLabelId(null);
-                                      setEditingLabelValue("");
-                                    }}
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="mt-0.5 flex items-center gap-1.5">
-                                  {account.label ? (
-                                    <span className="text-xs text-muted-foreground">
-                                      {account.label}
-                                    </span>
-                                  ) : null}
-                                  <button
-                                    type="button"
-                                    aria-label={t("riotAccounts.editLabelButton")}
-                                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                                    onClick={() => {
-                                      setEditingLabelId(account.id);
-                                      setEditingLabelValue(account.label ?? "");
-                                    }}
-                                  >
-                                    <Pencil className="h-3 w-3" />
-                                    {!account.label && t("riotAccounts.editLabelButton")}
-                                  </button>
-                                </div>
-                              )}
-                              <span className="mt-0.5 block text-xs text-muted-foreground">
-                                {PLATFORM_LABELS[account.region] ?? account.region}
-                              </span>
                             </div>
 
                             {/* Actions */}
@@ -562,12 +502,12 @@ export default function SettingsPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 text-xs text-muted-foreground hover:text-gold"
+                                  className="h-7 px-2 text-xs text-muted-foreground hover:text-gold"
                                   onClick={() => handleSetPrimary(account.id)}
                                   disabled={isPending}
                                   title={t("riotAccounts.setPrimaryButton")}
                                 >
-                                  <Star className="mr-1 h-3.5 w-3.5" />
+                                  <Star className="mr-1 h-3 w-3" />
                                   {t("riotAccounts.setPrimaryButton")}
                                 </Button>
                               )}
@@ -577,19 +517,19 @@ export default function SettingsPage() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="h-8 text-xs"
+                                      className="h-7 px-2 text-xs"
                                       onClick={() => handleRemoveAccount(account.id)}
                                       disabled={isPending}
                                     >
                                       {isPending ? (
-                                        <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                                       ) : null}
                                       {t("riotAccounts.removeButton")}
                                     </Button>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-8 text-xs"
+                                      className="h-7 px-2 text-xs"
                                       onClick={() => setConfirmRemoveId(null)}
                                     >
                                       {t("riotAccounts.cancelButton")}
@@ -599,23 +539,75 @@ export default function SettingsPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                     onClick={() => setConfirmRemoveId(account.id)}
                                     title={t("riotAccounts.removeButton")}
                                   >
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <Trash2 className="h-3 w-3" />
                                   </Button>
                                 ))}
                             </div>
                           </div>
 
-                          {/* Per-account role preferences */}
-                          <div className="mt-3 border-t border-border/20 pt-3">
-                            <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              <Crosshair className="mr-1 inline-block h-3 w-3" />
-                              {t("riotAccounts.rolesLabel")}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
+                          {/* Bottom row: label + roles */}
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {/* Label */}
+                            {isEditingLabel ? (
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  value={editingLabelValue}
+                                  onChange={(e) => setEditingLabelValue(e.target.value)}
+                                  placeholder={t("riotAccounts.labelPlaceholder")}
+                                  className="h-6 max-w-[160px] text-xs"
+                                  maxLength={30}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSaveLabel(account.id);
+                                    if (e.key === "Escape") {
+                                      setEditingLabelId(null);
+                                      setEditingLabelValue("");
+                                    }
+                                  }}
+                                  ref={(el) => el?.focus()}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => handleSaveLabel(account.id)}
+                                  disabled={isPending}
+                                >
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    setEditingLabelId(null);
+                                    setEditingLabelValue("");
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                aria-label={t("riotAccounts.editLabelButton")}
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setEditingLabelId(account.id);
+                                  setEditingLabelValue(account.label ?? "");
+                                }}
+                              >
+                                <Pencil className="h-2.5 w-2.5" />
+                                {account.label || t("riotAccounts.editLabelButton")}
+                              </button>
+                            )}
+
+                            {/* Roles inline */}
+                            <div className="flex items-center gap-1.5">
+                              <Crosshair className="h-3 w-3 text-muted-foreground" />
                               <Select
                                 value={account.primaryRole ?? "none"}
                                 onValueChange={(v) => {
@@ -629,7 +621,7 @@ export default function SettingsPage() {
                                 }}
                               >
                                 <SelectTrigger
-                                  className="h-7 w-[120px] text-xs"
+                                  className="h-6 w-[110px] text-xs"
                                   disabled={isPending}
                                   aria-label={t("rolePreferences.primaryLabel")}
                                 >
@@ -671,7 +663,7 @@ export default function SettingsPage() {
                                 }}
                               >
                                 <SelectTrigger
-                                  className="h-7 w-[120px] text-xs"
+                                  className="h-6 w-[110px] text-xs"
                                   disabled={isPending}
                                   aria-label={t("rolePreferences.secondaryLabel")}
                                 >
@@ -715,7 +707,7 @@ export default function SettingsPage() {
             {/* Add Account Card */}
             {riotAccounts.length < 5 ? (
               <Card className="surface-glow">
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Plus className="h-4 w-4 text-gold" />
                     {t("riotAccounts.addAccountTitle")}
@@ -723,16 +715,18 @@ export default function SettingsPage() {
                   <CardDescription>{t("riotAccounts.addAccountDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="add-account-region">{t("riotAccounts.regionLabel")}</Label>
+                  <div className="flex flex-wrap items-end gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="add-account-region" className="text-xs">
+                        {t("riotAccounts.regionLabel")}
+                      </Label>
                       <Select
                         value={addAccountRegion}
                         onValueChange={(v) => v !== null && setAddAccountRegion(v)}
                       >
                         <SelectTrigger
                           id="add-account-region"
-                          className="w-full max-w-xs"
+                          className="h-9 w-[160px]"
                           disabled={isPending}
                         >
                           <SelectValue placeholder={t("riotAccounts.regionPlaceholder")} />
@@ -746,8 +740,10 @@ export default function SettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="add-account-riot-id">{t("riotAccounts.riotIdLabel")}</Label>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Label htmlFor="add-account-riot-id" className="text-xs">
+                        {t("riotAccounts.riotIdLabel")}
+                      </Label>
                       <div className="flex gap-2">
                         <Input
                           id="add-account-riot-id"
@@ -758,12 +754,18 @@ export default function SettingsPage() {
                             if (e.key === "Enter") handleAddAccount();
                           }}
                           disabled={isPending}
+                          className="h-9"
                         />
-                        <Button onClick={handleAddAccount} disabled={isPending}>
+                        <Button
+                          onClick={handleAddAccount}
+                          disabled={isPending}
+                          size="sm"
+                          className="h-9"
+                        >
                           {isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
                           )}
                           {t("riotAccounts.addButton")}
                         </Button>
