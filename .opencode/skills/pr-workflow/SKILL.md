@@ -185,17 +185,18 @@ Fixes #N
 
 Seven checks run automatically on every PR to `main`:
 
-| Check         | Command                           | What it catches                                               |
-| ------------- | --------------------------------- | ------------------------------------------------------------- |
-| **Typecheck** | `tsc --noEmit`                    | Type errors                                                   |
-| **Lint**      | `oxlint`                          | Code quality, unused vars, React rules, jsx-a11y, TypeScript  |
-| **Format**    | `oxfmt --check .`                 | Formatting consistency (import sorting, Tailwind class order) |
-| **Build**     | `next build --webpack`            | Compilation errors, broken imports                            |
-| **Smoke**     | `playwright test --project=smoke` | Axe-core a11y violations on every page                        |
-| **E2E**       | `playwright test --project=e2e`   | End-to-end user flows                                         |
-| **Changelog** | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
+| Check             | Command                           | What it catches                                               |
+| ----------------- | --------------------------------- | ------------------------------------------------------------- |
+| **Typecheck**     | `tsc --noEmit`                    | Type errors                                                   |
+| **Lint**          | `oxlint`                          | Code quality, unused vars, React rules, jsx-a11y, TypeScript  |
+| **Format**        | `oxfmt --check .`                 | Formatting consistency (import sorting, Tailwind class order) |
+| **Migration**     | `tsx scripts/test-migration.ts`   | Migrations that break pre-existing data                       |
+| **Build**         | `next build --webpack`            | Compilation errors, broken imports                            |
+| **Smoke**         | `playwright test --project=smoke` | Axe-core a11y violations on every page, data integrity        |
+| **E2E**           | `playwright test --project=e2e`   | End-to-end user flows                                         |
+| **Changelog**     | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
 
-All seven must pass before merging.
+All checks must pass before merging.
 
 ### 6. Merge
 
@@ -262,3 +263,13 @@ npm run build
 git push -u origin chore/description
 gh pr create --title "chore: description" --body "..." --label skip-changelog
 ```
+
+### PR includes migration files (`drizzle/*.sql`)
+
+**MANDATORY checklist** — complete ALL items before pushing:
+
+1. **Data migration review**: Does the migration create a new table or add an FK column? If yes, does it include `INSERT INTO ... SELECT FROM` (or `UPDATE ... SET`) to populate it from existing data? A `CREATE TABLE` without data migration is a production outage.
+2. **Validation file**: Write a `drizzle/XXXX_name.validate.sql` companion file with queries that return 0 rows when data is correct. The migration runner (`scripts/migrate.ts`) executes these automatically after applying each migration.
+3. **Migration integration test**: Run `npm run test:migration` to verify migrations handle pre-existing data correctly. This test applies migrations in two phases (before/after a split point), inserting fixture data in between.
+4. **Seed script independence**: The seed script (`scripts/seed.ts`) must NOT compensate for missing migration logic. If the seed creates data for a new table, the migration must also create that data for existing production rows.
+5. **Mental production test**: Imagine running this migration against a production database with real users. User logs in → navigates to dashboard → sees their data. If any step breaks, the migration is incomplete.
