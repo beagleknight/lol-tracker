@@ -4,6 +4,7 @@ import type { Match } from "@/db/schema";
 
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -28,6 +29,7 @@ export default async function ReviewPage({
 
   const reviewedWhere = and(
     eq(matches.userId, user.id),
+    accountScope(matches.riotAccountId, user.activeRiotAccountId),
     eq(matches.reviewed, true),
     ne(matches.result, "Remake"),
   );
@@ -77,6 +79,7 @@ export default async function ReviewPage({
       db.query.matches.findMany({
         where: and(
           eq(matches.userId, user.id),
+          accountScope(matches.riotAccountId, user.activeRiotAccountId),
           eq(matches.reviewed, false),
           ne(matches.result, "Remake"),
           unreviewedPositionFilter,
@@ -106,7 +109,11 @@ export default async function ReviewPage({
           .select()
           .from(matchHighlights)
           .where(
-            and(eq(matchHighlights.userId, user.id), inArray(matchHighlights.matchId, allMatchIds)),
+            and(
+              eq(matchHighlights.userId, user.id),
+              accountScope(matchHighlights.riotAccountId, user.activeRiotAccountId),
+              inArray(matchHighlights.matchId, allMatchIds),
+            ),
           )
       : [];
 

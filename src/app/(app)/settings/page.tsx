@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  LinkIcon,
   Unlink,
   Loader2,
   Users,
@@ -9,22 +8,33 @@ import {
   Crosshair,
   Search,
   GraduationCap,
+  Plus,
+  Trash2,
+  Star,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
 import {
-  linkRiotAccount,
-  unlinkRiotAccount,
-  updateRegion,
+  addRiotAccount,
+  removeRiotAccount,
+  setAccountAsPrimary,
+  updateAccountLabel,
+  updateAccountRolePreferences,
+  getUserRiotAccounts,
+} from "@/app/actions/riot-accounts";
+import {
   searchUsers,
   getDuoPartner,
   setDuoPartner,
   clearDuoPartner,
   updateLocale,
   updateLanguage,
-  updateRolePreferences,
   updateCoachingCadence,
 } from "@/app/actions/settings";
 import { POSITIONS, PositionIcon } from "@/components/position-icon";
@@ -54,12 +64,29 @@ const CADENCE_OPTIONS = [
   { days: 30, key: "monthly" as const },
 ];
 
+const VALID_TABS = ["account", "preferences", "duo"] as const;
+
 export default function SettingsPage() {
   const { user, updateSession } = useAuth();
   const t = useTranslations("Settings");
-  const [riotId, setRiotId] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState(user?.region ?? "euw1");
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // Tab from URL param (?tab=accounts)
+  const tabParam = searchParams.get("tab");
+  const initialTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+    ? (tabParam as (typeof VALID_TABS)[number])
+    : "account";
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  // Sync tab from URL when searchParams change
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && VALID_TABS.includes(tab as (typeof VALID_TABS)[number])) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const isLinked = !!user?.riotGameName;
   const userLocale = (user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
@@ -91,20 +118,45 @@ export default function SettingsPage() {
   const duoSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [duoLoading, setDuoLoading] = useState(false);
 
-  // ─── Role preferences state ───────────────────────────────────────────────
-  const [primaryRole, setPrimaryRole] = useState<string>(user?.primaryRole ?? "");
-  const [secondaryRole, setSecondaryRole] = useState<string>(user?.secondaryRole ?? "");
-
   // ─── Coaching cadence state ───────────────────────────────────────────────
   const [cadenceDays, setCadenceDays] = useState<number>(user?.coachingCadenceDays ?? 14);
 
+  // ─── Riot accounts state ──────────────────────────────────────────────────
+  const [riotAccounts, setRiotAccounts] = useState<
+    Array<{
+      id: string;
+      puuid: string;
+      riotGameName: string;
+      riotTagLine: string;
+      region: string;
+      isPrimary: boolean;
+      label: string | null;
+      primaryRole: string | null;
+      secondaryRole: string | null;
+    }>
+  >([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [addAccountRiotId, setAddAccountRiotId] = useState("");
+  const [addAccountRegion, setAddAccountRegion] = useState("euw1");
+  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [editingLabelValue, setEditingLabelValue] = useState("");
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+
+  // Load riot accounts on mount and when tab changes to account
+  useEffect(() => {
+    if (activeTab === "account") {
+      setAccountsLoading(true);
+      getUserRiotAccounts()
+        .then((accts) => setRiotAccounts(accts))
+        .catch(() => toast.error(t("toasts.accountAddError")))
+        .finally(() => setAccountsLoading(false));
+    }
+  }, [activeTab, t]);
+
   // Sync state when session loads (useSession is async)
   useEffect(() => {
-    if (user?.primaryRole) setPrimaryRole(user.primaryRole);
-    if (user?.secondaryRole) setSecondaryRole(user.secondaryRole);
-    if (user?.region) setSelectedRegion(user.region);
     if (user?.coachingCadenceDays) setCadenceDays(user.coachingCadenceDays);
-  }, [user?.primaryRole, user?.secondaryRole, user?.region, user?.coachingCadenceDays]);
+  }, [user?.coachingCadenceDays]);
 
   // Load duo partner data (for all users)
   useEffect(() => {
@@ -118,51 +170,6 @@ export default function SettingsPage() {
         .finally(() => setDuoLoading(false));
     }
   }, [isLinked, t]);
-
-  // ─── Riot account handlers ────────────────────────────────────────────────
-
-  function handleLink() {
-    if (!riotId.includes("#")) {
-      toast.error(t("toasts.riotIdFormatError"));
-      return;
-    }
-
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.set("riotId", riotId);
-      formData.set("region", selectedRegion);
-      const result = await linkRiotAccount(formData);
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(
-          t("toasts.linkSuccess", {
-            gameName: result.gameName ?? "",
-            tagLine: result.tagLine ?? "",
-          }),
-        );
-        setRiotId("");
-        await updateSession();
-      }
-    });
-  }
-
-  function handleUnlink() {
-    startTransition(async () => {
-      try {
-        const result = await unlinkRiotAccount();
-        if (result.success) {
-          toast.success(t("toasts.unlinkSuccess"));
-          await updateSession();
-        } else {
-          toast.error(t("toasts.unlinkError"));
-        }
-      } catch {
-        toast.error(t("toasts.unlinkError"));
-      }
-    });
-  }
 
   // ─── Duo partner handlers ────────────────────────────────────────────────
 
@@ -231,20 +238,6 @@ export default function SettingsPage() {
 
   // ─── Locale handler ─────────────────────────────────────────────────────
 
-  function handleRegionChange(region: string | null) {
-    if (!region) return;
-    setSelectedRegion(region);
-    startTransition(async () => {
-      const result = await updateRegion(region);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(t("toasts.regionUpdated"));
-        await updateSession();
-      }
-    });
-  }
-
   function handleLocaleChange(locale: string | null) {
     if (!locale) return;
     startTransition(async () => {
@@ -273,24 +266,6 @@ export default function SettingsPage() {
     });
   }
 
-  // ─── Role preferences handler ─────────────────────────────────────────────
-
-  function handleSaveRolePreferences() {
-    if (primaryRole && secondaryRole && primaryRole === secondaryRole) {
-      toast.error(t("rolePreferences.sameRoleError"));
-      return;
-    }
-    startTransition(async () => {
-      const result = await updateRolePreferences(primaryRole || null, secondaryRole || null);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(t("toasts.rolePreferencesSaved"));
-        await updateSession();
-      }
-    });
-  }
-
   // ─── Coaching cadence handler ───────────────────────────────────────────
 
   function handleCadenceChange(days: number) {
@@ -306,6 +281,117 @@ export default function SettingsPage() {
     });
   }
 
+  // ─── Riot accounts handlers ─────────────────────────────────────────────
+
+  async function refreshAccounts() {
+    try {
+      const accts = await getUserRiotAccounts();
+      setRiotAccounts(accts);
+    } catch {
+      // Silently fail — accounts will be stale until next load
+    }
+  }
+
+  function handleAddAccount() {
+    if (!addAccountRiotId.includes("#")) {
+      toast.error(t("toasts.riotIdFormatError"));
+      return;
+    }
+
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("riotId", addAccountRiotId);
+      formData.set("region", addAccountRegion);
+      const result = await addRiotAccount(formData);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(
+          t("toasts.accountAdded", {
+            gameName: result.gameName ?? "",
+            tagLine: result.tagLine ?? "",
+          }),
+        );
+        setAddAccountRiotId("");
+        await refreshAccounts();
+        await updateSession();
+      }
+    });
+  }
+
+  function handleRemoveAccount(accountId: string) {
+    startTransition(async () => {
+      const result = await removeRiotAccount(accountId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("toasts.accountRemoved"));
+        setConfirmRemoveId(null);
+        await refreshAccounts();
+        await updateSession();
+      }
+    });
+  }
+
+  function handleSetPrimary(accountId: string) {
+    startTransition(async () => {
+      const result = await setAccountAsPrimary(accountId);
+      if (result.error) {
+        toast.error(t("toasts.accountSetPrimaryError"));
+      } else {
+        toast.success(t("toasts.accountSetPrimary"));
+        await refreshAccounts();
+      }
+    });
+  }
+
+  function handleSaveLabel(accountId: string) {
+    startTransition(async () => {
+      const result = await updateAccountLabel(accountId, editingLabelValue || null);
+      if (result.error) {
+        toast.error(t("toasts.accountLabelError"));
+      } else {
+        toast.success(t("toasts.accountLabelSaved"));
+        setEditingLabelId(null);
+        setEditingLabelValue("");
+        await refreshAccounts();
+      }
+    });
+  }
+
+  function handleAccountRoleChange(
+    accountId: string,
+    newPrimary: string | null,
+    newSecondary: string | null,
+  ) {
+    startTransition(async () => {
+      const result = await updateAccountRolePreferences(accountId, newPrimary, newSecondary);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("riotAccounts.roleSaved"));
+        await refreshAccounts();
+        await updateSession();
+      }
+    });
+  }
+
+  function handleTabChange(value: string | number | null) {
+    if (typeof value === "string") {
+      setActiveTab(value);
+      // Update URL without full navigation
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === "account") {
+        params.delete("tab");
+      } else {
+        params.set("tab", value);
+      }
+      const qs = params.toString();
+      router.replace(`/settings${qs ? `?${qs}` : ""}`, { scroll: false });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -313,7 +399,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
-      <Tabs defaultValue="account">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList variant="line">
           <TabsTrigger value="account">{t("tabs.account")}</TabsTrigger>
           <TabsTrigger value="preferences">{t("tabs.preferences")}</TabsTrigger>
@@ -323,213 +409,380 @@ export default function SettingsPage() {
         {/* ─── Account Tab ──────────────────────────────────────────── */}
         <TabsContent value="account" className="mt-4">
           <div className="space-y-6">
-            {/* Riot Account Card */}
+            {/* ─── Linked Accounts ─────────────────────────────────── */}
             <Card className="surface-glow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {t("riotAccount.title")}
-                  {isLinked ? (
-                    <Badge
-                      variant="default"
-                      className="ml-2 border border-gold/30 bg-gold/20 text-gold"
-                    >
-                      {t("riotAccount.badgeLinked")}
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="ml-2">
-                      {t("riotAccount.badgeNotLinked")}
-                    </Badge>
-                  )}
+                  <Users className="h-5 w-5 text-gold" />
+                  {t("riotAccounts.title")}
                 </CardTitle>
-                <CardDescription>{t("riotAccount.description")}</CardDescription>
+                <CardDescription>
+                  {t("riotAccounts.description")}
+                  {riotAccounts.length > 0 && (
+                    <span className="ml-2 text-xs text-gold/70">
+                      {t("riotAccounts.accountCount", {
+                        count: riotAccounts.length,
+                        max: 5,
+                      })}
+                    </span>
+                  )}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {isLinked ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">
-                          {t("riotAccount.riotIdLabel")}
-                        </p>
-                        <p className="text-lg font-semibold text-gold">
-                          {user?.riotGameName}#{user?.riotTagLine}
-                        </p>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleUnlink}
-                        disabled={isPending}
+                {accountsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-4 rounded-lg border border-border/30 p-4"
                       >
-                        {isPending ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Unlink className="mr-2 h-4 w-4" />
-                        )}
-                        {t("riotAccount.unlinkButton")}
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="region-select">{t("riotAccount.regionLabel")}</Label>
-                      <Select value={selectedRegion} onValueChange={handleRegionChange}>
-                        <SelectTrigger
-                          id="region-select"
-                          className="w-full max-w-xs"
-                          disabled={isPending}
-                        >
-                          <SelectValue placeholder={t("riotAccount.regionPlaceholder")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PLATFORM_IDS.map((id) => (
-                            <SelectItem key={id} value={id}>
-                              {PLATFORM_LABELS[id]} ({id})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="border-t border-border/30 pt-4">
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
-                        <Crosshair className="h-4 w-4 text-gold" />
-                        {t("rolePreferences.title")}
-                      </h3>
-                      <p className="mb-3 text-xs text-muted-foreground">
-                        {t("rolePreferences.description")}
-                      </p>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="primary-role">{t("rolePreferences.primaryLabel")}</Label>
-                          <Select
-                            value={primaryRole}
-                            onValueChange={(v) => v !== null && setPrimaryRole(v)}
-                          >
-                            <SelectTrigger
-                              id="primary-role"
-                              className="w-full"
-                              disabled={isPending}
-                            >
-                              <SelectValue placeholder={t("rolePreferences.placeholder")}>
-                                {primaryRole && (
-                                  <span className="inline-flex items-center gap-2">
-                                    <PositionIcon position={primaryRole} size={14} />
-                                    {t(`rolePreferences.positions.${primaryRole}`)}
-                                  </span>
-                                )}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {POSITIONS.map((pos) => (
-                                <SelectItem key={pos} value={pos}>
-                                  <span className="inline-flex items-center gap-2">
-                                    <PositionIcon position={pos} size={14} />
-                                    {t(`rolePreferences.positions.${pos}`)}
-                                  </span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-20" />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="secondary-role">
-                            {t("rolePreferences.secondaryLabel")}
-                          </Label>
-                          <Select
-                            value={secondaryRole}
-                            onValueChange={(v) => v !== null && setSecondaryRole(v)}
-                          >
-                            <SelectTrigger
-                              id="secondary-role"
-                              className="w-full"
-                              disabled={isPending}
-                            >
-                              <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
-                                {secondaryRole && (
-                                  <span className="inline-flex items-center gap-2">
-                                    <PositionIcon position={secondaryRole} size={14} />
-                                    {t(`rolePreferences.positions.${secondaryRole}`)}
-                                  </span>
-                                )}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {POSITIONS.filter((pos) => pos !== primaryRole).map((pos) => (
-                                <SelectItem key={pos} value={pos}>
-                                  <span className="inline-flex items-center gap-2">
-                                    <PositionIcon position={pos} size={14} />
-                                    {t(`rolePreferences.positions.${pos}`)}
-                                  </span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Skeleton className="h-8 w-20" />
                       </div>
-                      <Button
-                        size="sm"
-                        className="mt-3"
-                        onClick={handleSaveRolePreferences}
-                        disabled={isPending}
-                      >
-                        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {t("rolePreferences.saveButton")}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("riotAccount.unlinkHelpText")}
-                    </p>
+                    ))}
                   </div>
+                ) : riotAccounts.length === 0 ? (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    {t("riotAccounts.emptyState")}
+                  </p>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="region-select">{t("riotAccount.regionLabel")}</Label>
-                      <Select
-                        value={selectedRegion}
-                        onValueChange={(v) => v !== null && setSelectedRegion(v)}
-                      >
-                        <SelectTrigger
-                          id="region-select"
-                          className="w-full max-w-xs"
-                          disabled={isPending}
+                  <div className="space-y-2">
+                    {riotAccounts.map((account) => {
+                      const isActive = account.id === user?.activeRiotAccountId;
+                      const isEditingLabel = editingLabelId === account.id;
+                      const isConfirmingRemove = confirmRemoveId === account.id;
+
+                      return (
+                        <div
+                          key={account.id}
+                          className={`rounded-lg border px-3 py-2.5 transition-colors ${
+                            isActive
+                              ? "border-gold/30 bg-gold/5"
+                              : "border-border/30 bg-surface-elevated"
+                          }`}
                         >
-                          <SelectValue placeholder={t("riotAccount.regionPlaceholder")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PLATFORM_IDS.map((id) => (
-                            <SelectItem key={id} value={id}>
-                              {PLATFORM_LABELS[id]} ({id})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="riot-id">{t("riotAccount.riotIdLabel")}</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="riot-id"
-                          placeholder={t("riotAccount.riotIdPlaceholder")}
-                          value={riotId}
-                          onChange={(e) => setRiotId(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleLink();
-                          }}
-                          disabled={isPending}
-                        />
-                        <Button onClick={handleLink} disabled={isPending}>
-                          {isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                          )}
-                          {t("riotAccount.linkButton")}
-                        </Button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{t("riotAccount.linkHelpText")}</p>
+                          {/* Top row: name + badges + actions */}
+                          <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-medium text-foreground">
+                                  {account.riotGameName}
+                                  <span className="text-muted-foreground">
+                                    #{account.riotTagLine}
+                                  </span>
+                                </span>
+                                {account.isPrimary && (
+                                  <Badge
+                                    variant="default"
+                                    className="h-4 shrink-0 border border-gold/30 bg-gold/20 px-1 text-[10px] text-gold"
+                                  >
+                                    {t("riotAccounts.badgePrimary")}
+                                  </Badge>
+                                )}
+                                {isActive && (
+                                  <Badge
+                                    variant="default"
+                                    className="h-4 shrink-0 border border-emerald-500/30 bg-emerald-500/20 px-1 text-[10px] text-emerald-400"
+                                  >
+                                    {t("riotAccounts.badgeActive")}
+                                  </Badge>
+                                )}
+                                <span className="text-xs text-muted-foreground">
+                                  · {PLATFORM_LABELS[account.region] ?? account.region}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex shrink-0 items-center gap-1">
+                              {!account.isPrimary && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs text-muted-foreground hover:text-gold"
+                                  onClick={() => handleSetPrimary(account.id)}
+                                  disabled={isPending}
+                                  title={t("riotAccounts.setPrimaryButton")}
+                                >
+                                  <Star className="mr-1 h-3 w-3" />
+                                  {t("riotAccounts.setPrimaryButton")}
+                                </Button>
+                              )}
+                              {!account.isPrimary &&
+                                (isConfirmingRemove ? (
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => handleRemoveAccount(account.id)}
+                                      disabled={isPending}
+                                    >
+                                      {isPending ? (
+                                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                      ) : null}
+                                      {t("riotAccounts.removeButton")}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => setConfirmRemoveId(null)}
+                                    >
+                                      {t("riotAccounts.cancelButton")}
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                    onClick={() => setConfirmRemoveId(account.id)}
+                                    title={t("riotAccounts.removeButton")}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                ))}
+                            </div>
+                          </div>
+
+                          {/* Bottom row: label + roles */}
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {/* Label */}
+                            {isEditingLabel ? (
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  value={editingLabelValue}
+                                  onChange={(e) => setEditingLabelValue(e.target.value)}
+                                  placeholder={t("riotAccounts.labelPlaceholder")}
+                                  className="h-6 max-w-[160px] text-xs"
+                                  maxLength={30}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSaveLabel(account.id);
+                                    if (e.key === "Escape") {
+                                      setEditingLabelId(null);
+                                      setEditingLabelValue("");
+                                    }
+                                  }}
+                                  ref={(el) => el?.focus()}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => handleSaveLabel(account.id)}
+                                  disabled={isPending}
+                                >
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    setEditingLabelId(null);
+                                    setEditingLabelValue("");
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                aria-label={t("riotAccounts.editLabelButton")}
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setEditingLabelId(account.id);
+                                  setEditingLabelValue(account.label ?? "");
+                                }}
+                              >
+                                <Pencil className="h-2.5 w-2.5" />
+                                {account.label || t("riotAccounts.editLabelButton")}
+                              </button>
+                            )}
+
+                            {/* Roles inline */}
+                            <div className="flex items-center gap-1.5">
+                              <Crosshair className="h-3 w-3 text-muted-foreground" />
+                              <Select
+                                value={account.primaryRole ?? "none"}
+                                onValueChange={(v) => {
+                                  if (v === null) return;
+                                  const newPrimary = v === "none" ? null : v;
+                                  const newSecondary =
+                                    newPrimary && newPrimary === account.secondaryRole
+                                      ? null
+                                      : account.secondaryRole;
+                                  handleAccountRoleChange(account.id, newPrimary, newSecondary);
+                                }}
+                              >
+                                <SelectTrigger
+                                  className="h-6 w-[110px] text-xs"
+                                  disabled={isPending}
+                                  aria-label={t("rolePreferences.primaryLabel")}
+                                >
+                                  <SelectValue placeholder={t("rolePreferences.placeholder")}>
+                                    {account.primaryRole ? (
+                                      <span className="inline-flex items-center gap-1">
+                                        <PositionIcon position={account.primaryRole} size={12} />
+                                        {t(`rolePreferences.positions.${account.primaryRole}`)}
+                                      </span>
+                                    ) : (
+                                      t("rolePreferences.placeholder")
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">
+                                    {t("rolePreferences.nonePlaceholder")}
+                                  </SelectItem>
+                                  {POSITIONS.map((pos) => (
+                                    <SelectItem key={pos} value={pos}>
+                                      <span className="flex items-center gap-2">
+                                        <PositionIcon position={pos} size={14} />
+                                        {t(`rolePreferences.positions.${pos}`)}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={account.secondaryRole ?? "none"}
+                                onValueChange={(v) => {
+                                  if (v === null) return;
+                                  const newSecondary = v === "none" ? null : v;
+                                  handleAccountRoleChange(
+                                    account.id,
+                                    account.primaryRole,
+                                    newSecondary,
+                                  );
+                                }}
+                              >
+                                <SelectTrigger
+                                  className="h-6 w-[110px] text-xs"
+                                  disabled={isPending}
+                                  aria-label={t("rolePreferences.secondaryLabel")}
+                                >
+                                  <SelectValue placeholder={t("rolePreferences.nonePlaceholder")}>
+                                    {account.secondaryRole ? (
+                                      <span className="inline-flex items-center gap-1">
+                                        <PositionIcon position={account.secondaryRole} size={12} />
+                                        {t(`rolePreferences.positions.${account.secondaryRole}`)}
+                                      </span>
+                                    ) : (
+                                      t("rolePreferences.nonePlaceholder")
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">
+                                    {t("rolePreferences.nonePlaceholder")}
+                                  </SelectItem>
+                                  {POSITIONS.filter((pos) => pos !== account.primaryRole).map(
+                                    (pos) => (
+                                      <SelectItem key={pos} value={pos}>
+                                        <span className="flex items-center gap-2">
+                                          <PositionIcon position={pos} size={14} />
+                                          {t(`rolePreferences.positions.${pos}`)}
+                                        </span>
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Add Account Card */}
+            {riotAccounts.length < 5 ? (
+              <Card className="surface-glow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Plus className="h-4 w-4 text-gold" />
+                    {t("riotAccounts.addAccountTitle")}
+                  </CardTitle>
+                  <CardDescription>{t("riotAccounts.addAccountDescription")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap items-end gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="add-account-region" className="text-xs">
+                        {t("riotAccounts.regionLabel")}
+                      </Label>
+                      <Select
+                        value={addAccountRegion}
+                        onValueChange={(v) => v !== null && setAddAccountRegion(v)}
+                      >
+                        <SelectTrigger
+                          id="add-account-region"
+                          className="h-9 w-[160px]"
+                          disabled={isPending}
+                        >
+                          <SelectValue placeholder={t("riotAccounts.regionPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PLATFORM_IDS.map((id) => (
+                            <SelectItem key={id} value={id}>
+                              {PLATFORM_LABELS[id]} ({id})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Label htmlFor="add-account-riot-id" className="text-xs">
+                        {t("riotAccounts.riotIdLabel")}
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="add-account-riot-id"
+                          placeholder={t("riotAccounts.riotIdPlaceholder")}
+                          value={addAccountRiotId}
+                          onChange={(e) => setAddAccountRiotId(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddAccount();
+                          }}
+                          disabled={isPending}
+                          className="h-9"
+                        />
+                        <Button
+                          onClick={handleAddAccount}
+                          disabled={isPending}
+                          size="sm"
+                          className="h-9"
+                        >
+                          {isPending ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          {t("riotAccounts.addButton")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="surface-glow">
+                <CardContent className="py-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {t("riotAccounts.accountLimitReached")}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 

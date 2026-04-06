@@ -46,7 +46,11 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const ddragonVersionPromise = getLatestVersion();
 
   const match = await db.query.matches.findFirst({
-    where: and(eq(matches.id, id), eq(matches.userId, user.id)),
+    where: and(
+      eq(matches.id, id),
+      eq(matches.userId, user.id),
+      user.activeRiotAccountId ? eq(matches.riotAccountId, user.activeRiotAccountId) : undefined,
+    ),
   });
 
   if (!match) {
@@ -112,7 +116,15 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     db
       .select()
       .from(matchHighlights)
-      .where(and(eq(matchHighlights.matchId, match.id), eq(matchHighlights.userId, user.id))),
+      .where(
+        and(
+          eq(matchHighlights.matchId, match.id),
+          eq(matchHighlights.userId, user.id),
+          user.activeRiotAccountId
+            ? eq(matchHighlights.riotAccountId, user.activeRiotAccountId)
+            : undefined,
+        ),
+      ),
     match.matchupChampionName
       ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
       : Promise.resolve([]),

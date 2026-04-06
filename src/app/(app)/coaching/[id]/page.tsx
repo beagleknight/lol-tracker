@@ -9,6 +9,7 @@ import {
   matches,
   matchHighlights,
 } from "@/db/schema";
+import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -49,6 +50,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         and(
           eq(coachingSessionMatches.matchId, matches.id),
           eq(coachingSessionMatches.userId, matches.userId),
+          accountScope(matches.riotAccountId, user.activeRiotAccountId),
         ),
       )
       .where(eq(coachingSessionMatches.sessionId, sessionId)),
@@ -70,6 +72,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         and(
           eq(coachingSessionMatches.matchId, matchHighlights.matchId),
           eq(coachingSessionMatches.userId, matchHighlights.userId),
+          accountScope(matchHighlights.riotAccountId, user.activeRiotAccountId),
         ),
       )
       .where(
@@ -133,6 +136,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     // Fetch matches between this session and the next
     const conditions = [
       eq(matches.userId, user.id),
+      accountScope(matches.riotAccountId, user.activeRiotAccountId),
       gt(matches.gameDate, session.date),
       lte(matches.gameDate, endDate),
     ];
@@ -160,6 +164,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
       const progressHL = await db.query.matchHighlights.findMany({
         where: and(
           eq(matchHighlights.userId, user.id),
+          accountScope(matchHighlights.riotAccountId, user.activeRiotAccountId),
           inArray(matchHighlights.matchId, progressMatchIds),
         ),
         columns: {

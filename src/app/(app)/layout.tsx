@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -8,10 +8,10 @@ import { Suspense } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
-import { matches } from "@/db/schema";
+import { matches, riotAccounts } from "@/db/schema";
 import { AuthProvider } from "@/lib/auth-client";
 import { getLatestChangelogVersion } from "@/lib/changelog";
-import { sidebarReviewCountsSelect } from "@/lib/match-queries";
+import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
 
 async function SidebarWithUser() {
@@ -24,13 +24,30 @@ async function SidebarWithUser() {
   }
 
   // Lightweight count for sidebar review badges (excludes remakes + off-role)
-  const [reviewCounts, latestVersion] = await Promise.all([
+  const [reviewCounts, latestVersion, userRiotAccounts] = await Promise.all([
     db
       .select(sidebarReviewCountsSelect(user.primaryRole))
       .from(matches)
-      .where(eq(matches.userId, user.id))
+      .where(
+        and(
+          eq(matches.userId, user.id),
+          accountScope(matches.riotAccountId, user.activeRiotAccountId),
+        ),
+      )
       .then((rows) => rows[0]),
     getLatestChangelogVersion(),
+    db
+      .select({
+        id: riotAccounts.id,
+        puuid: riotAccounts.puuid,
+        riotGameName: riotAccounts.riotGameName,
+        riotTagLine: riotAccounts.riotTagLine,
+        region: riotAccounts.region,
+        isPrimary: riotAccounts.isPrimary,
+        label: riotAccounts.label,
+      })
+      .from(riotAccounts)
+      .where(eq(riotAccounts.userId, user.id)),
   ]);
 
   return (
@@ -48,6 +65,8 @@ async function SidebarWithUser() {
         vod: reviewCounts?.vod ?? 0,
       }}
       latestChangelogVersion={latestVersion}
+      riotAccounts={userRiotAccounts}
+      activeRiotAccountId={user.activeRiotAccountId}
     />
   );
 }

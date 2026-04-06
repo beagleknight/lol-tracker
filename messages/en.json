@@ -18,7 +18,15 @@
     "navFeedback": "Feedback",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
-    "sectionCoaching": "Coaching"
+    "sectionCoaching": "Coaching",
+    "accountSwitcher": "Switch account",
+    "accountSwitcherLabel": "Active account",
+    "primaryBadge": "Main",
+    "addAccount": "Add account",
+    "manageAccounts": "Manage accounts",
+    "switchedTo": "Switched to {gameName}#{tagLine}",
+    "theme": "Theme: {theme}",
+    "logout": "Log out"
   },
   "MatchCard": {
     "vs": "vs",
@@ -674,6 +682,34 @@
       "monthly": "Monthly",
       "currentLabel": "Every {days, plural, one {# day} other {# days}}"
     },
+    "riotAccounts": {
+      "title": "Linked accounts",
+      "description": "Manage your linked Riot accounts. You can link up to 5 accounts.",
+      "badgeActive": "Active",
+      "badgePrimary": "Main",
+      "emptyState": "No accounts linked yet. Link your first Riot account to get started.",
+      "addAccountTitle": "Add account",
+      "addAccountDescription": "Link another Riot account to track multiple accounts.",
+      "riotIdLabel": "Riot ID",
+      "riotIdPlaceholder": "GameName#TagLine",
+      "regionLabel": "Region",
+      "regionPlaceholder": "Select region",
+      "addButton": "Add",
+      "switchButton": "Switch",
+      "setPrimaryButton": "Set as main",
+      "removeButton": "Remove",
+      "labelPlaceholder": "Label (optional)",
+      "saveLabelButton": "Save",
+      "editLabelButton": "Edit label",
+      "cancelButton": "Cancel",
+      "removeConfirm": "Remove this account? Your match data will be kept.",
+      "cannotRemovePrimary": "Cannot remove your main account.",
+      "accountLimitReached": "You've reached the maximum of 5 linked accounts.",
+      "accountCount": "{count} of {max} accounts",
+      "rolesLabel": "Roles",
+      "rolesDescription": "Primary and secondary roles for this account",
+      "roleSaved": "Roles updated for this account."
+    },
     "invites": {
       "title": "Invite friends",
       "badgeAdmin": "Admin",
@@ -707,7 +743,17 @@
       "rolePreferencesSaved": "Role preferences saved.",
       "rolePreferencesSaveError": "Failed to save role preferences.",
       "cadenceUpdated": "Coaching cadence updated.",
-      "cadenceUpdateError": "Failed to update coaching cadence."
+      "cadenceUpdateError": "Failed to update coaching cadence.",
+      "accountAdded": "Linked {gameName}#{tagLine}.",
+      "accountAddError": "Failed to add account.",
+      "accountRemoved": "Account removed.",
+      "accountRemoveError": "Failed to remove account.",
+      "accountSwitched": "Switched to {gameName}#{tagLine}.",
+      "accountSwitchError": "Failed to switch account.",
+      "accountSetPrimary": "Set as main account.",
+      "accountSetPrimaryError": "Failed to set as main account.",
+      "accountLabelSaved": "Label saved.",
+      "accountLabelError": "Failed to save label."
     }
   },
   "Errors": {

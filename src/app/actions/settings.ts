@@ -1,17 +1,19 @@
 "use server";
 
-import { eq, and, isNotNull, ne, like, or } from "drizzle-orm";
+import { eq, and, isNotNull, ne, like, or, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, riotAccounts } from "@/db/schema";
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n/request";
 import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+
+const MAX_RIOT_ACCOUNTS = 5;
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
@@ -39,14 +41,51 @@ export async function linkRiotAccount(formData: FormData) {
     return { error: "Invalid Riot ID format. Use GameName#TagLine" };
   }
 
+  // Check account limit
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(riotAccounts)
+    .where(eq(riotAccounts.userId, user.id));
+
+  if (total >= MAX_RIOT_ACCOUNTS) {
+    return { error: `You can link up to ${MAX_RIOT_ACCOUNTS} Riot accounts.` };
+  }
+
   try {
     // Look up account via Riot API (using the selected region)
     const account = await getAccountByRiotId(gameName, tagLine, region);
 
-    // Update user record
+    // Check if this PUUID is already linked to this user
+    const existing = await db.query.riotAccounts.findFirst({
+      where: and(eq(riotAccounts.userId, user.id), eq(riotAccounts.puuid, account.puuid)),
+    });
+
+    if (existing) {
+      return { error: "This Riot account is already linked." };
+    }
+
+    // First account = primary
+    const isPrimary = total === 0;
+
+    const accountId = crypto.randomUUID();
+    await db.insert(riotAccounts).values({
+      id: accountId,
+      userId: user.id,
+      puuid: account.puuid,
+      riotGameName: account.gameName,
+      riotTagLine: account.tagLine,
+      region,
+      isPrimary,
+      // Copy user-level role preferences to first account
+      primaryRole: isPrimary ? user.primaryRole : null,
+      secondaryRole: isPrimary ? user.secondaryRole : null,
+    });
+
+    // Update user record with cached active account fields
     await db
       .update(users)
       .set({
+        activeRiotAccountId: accountId,
         riotGameName: account.gameName,
         riotTagLine: account.tagLine,
         puuid: account.puuid,
@@ -55,7 +94,7 @@ export async function linkRiotAccount(formData: FormData) {
       })
       .where(eq(users.id, user.id));
 
-    revalidatePath("/dashboard");
+    revalidatePath("/");
     invalidateAllCaches(user.id);
 
     return {
@@ -74,19 +113,94 @@ export async function linkRiotAccount(formData: FormData) {
 export async function unlinkRiotAccount() {
   const user = await requireUser();
 
-  await db
-    .update(users)
-    .set({
-      riotGameName: null,
-      riotTagLine: null,
-      puuid: null,
-      summonerId: null,
-      region: null,
-      updatedAt: new Date(),
-    })
-    .where(eq(users.id, user.id));
+  if (!user.activeRiotAccountId) {
+    return { error: "No active Riot account to unlink." };
+  }
 
-  revalidatePath("/dashboard");
+  // Find the active account
+  const account = await db.query.riotAccounts.findFirst({
+    where: and(eq(riotAccounts.id, user.activeRiotAccountId), eq(riotAccounts.userId, user.id)),
+  });
+
+  if (!account) {
+    // Fallback: clear user cached fields even if account row is missing
+    await db
+      .update(users)
+      .set({
+        activeRiotAccountId: null,
+        riotGameName: null,
+        riotTagLine: null,
+        puuid: null,
+        summonerId: null,
+        region: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+
+    revalidatePath("/");
+    invalidateAllCaches(user.id);
+    return { success: true };
+  }
+
+  if (account.isPrimary) {
+    // Check if this is the only account — if so, allow unlinking (removes everything)
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(riotAccounts)
+      .where(eq(riotAccounts.userId, user.id));
+
+    if (total > 1) {
+      return { error: "Cannot unlink your primary account while other accounts are linked." };
+    }
+  }
+
+  // Delete the account row (match data FK is SET NULL so data is preserved)
+  await db
+    .delete(riotAccounts)
+    .where(and(eq(riotAccounts.id, account.id), eq(riotAccounts.userId, user.id)));
+
+  // Find next account to make active (if any)
+  const nextAccount = await db.query.riotAccounts.findFirst({
+    where: eq(riotAccounts.userId, user.id),
+  });
+
+  if (nextAccount) {
+    // If no primary remains, promote this one
+    if (!nextAccount.isPrimary) {
+      await db
+        .update(riotAccounts)
+        .set({ isPrimary: true })
+        .where(eq(riotAccounts.id, nextAccount.id));
+    }
+
+    await db
+      .update(users)
+      .set({
+        activeRiotAccountId: nextAccount.id,
+        puuid: nextAccount.puuid,
+        riotGameName: nextAccount.riotGameName,
+        riotTagLine: nextAccount.riotTagLine,
+        region: nextAccount.region,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+  } else {
+    // No accounts left
+    await db
+      .update(users)
+      .set({
+        activeRiotAccountId: null,
+        riotGameName: null,
+        riotTagLine: null,
+        puuid: null,
+        summonerId: null,
+        region: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+  }
+
+  revalidatePath("/");
   invalidateAllCaches(user.id);
 
   return { success: true };
@@ -353,6 +467,15 @@ export async function updateRolePreferences(
     return { error: "Primary and secondary roles must be different." };
   }
 
+  // Write to the active riot account (per-account roles)
+  if (user.activeRiotAccountId) {
+    await db
+      .update(riotAccounts)
+      .set({ primaryRole, secondaryRole })
+      .where(and(eq(riotAccounts.id, user.activeRiotAccountId), eq(riotAccounts.userId, user.id)));
+  }
+
+  // Sync cache on users table (server-side readers use user.primaryRole)
   await db
     .update(users)
     .set({

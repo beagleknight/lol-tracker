@@ -5,7 +5,7 @@
  * a structured object consumed by the prompt templates.
  */
 
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -90,6 +90,7 @@ export interface MatchupInsightContext {
  */
 export async function buildMatchupContext(
   userId: string,
+  riotAccountId: string | null,
   summonerName: string,
   enemyChampionName: string,
   yourChampionName: string | undefined,
@@ -124,6 +125,13 @@ export async function buildMatchupContext(
     }>;
   },
 ): Promise<MatchupInsightContext> {
+  const accountFilterGoals = riotAccountId
+    ? eq(goals.riotAccountId, riotAccountId)
+    : isNull(goals.riotAccountId);
+  const accountFilterRank = riotAccountId
+    ? eq(rankSnapshots.riotAccountId, riotAccountId)
+    : isNull(rankSnapshots.riotAccountId);
+
   // Fetch coaching context, notes, and rank in parallel
   const [actionItems, activeGoalRows, rankRow, noteRows] = await Promise.all([
     db
@@ -142,7 +150,7 @@ export async function buildMatchupContext(
     db
       .select({ title: goals.title, status: goals.status })
       .from(goals)
-      .where(and(eq(goals.userId, userId), eq(goals.status, "active"))),
+      .where(and(eq(goals.userId, userId), eq(goals.status, "active"), accountFilterGoals)),
     db
       .select({
         tier: rankSnapshots.tier,
@@ -150,7 +158,7 @@ export async function buildMatchupContext(
         lp: rankSnapshots.lp,
       })
       .from(rankSnapshots)
-      .where(eq(rankSnapshots.userId, userId))
+      .where(and(eq(rankSnapshots.userId, userId), accountFilterRank))
       .orderBy(desc(rankSnapshots.capturedAt))
       .limit(1),
     db
@@ -236,12 +244,26 @@ export interface PostGameInsightContext {
 
 export async function buildPostGameContext(
   userId: string,
+  riotAccountId: string | null,
   summonerName: string,
   matchId: string,
 ): Promise<PostGameInsightContext | null> {
+  const accountFilterMatches = riotAccountId
+    ? eq(matches.riotAccountId, riotAccountId)
+    : isNull(matches.riotAccountId);
+  const accountFilterHighlights = riotAccountId
+    ? eq(matchHighlights.riotAccountId, riotAccountId)
+    : isNull(matchHighlights.riotAccountId);
+  const accountFilterGoals = riotAccountId
+    ? eq(goals.riotAccountId, riotAccountId)
+    : isNull(goals.riotAccountId);
+  const accountFilterRank = riotAccountId
+    ? eq(rankSnapshots.riotAccountId, riotAccountId)
+    : isNull(rankSnapshots.riotAccountId);
+
   // Fetch the match
   const match = await db.query.matches.findFirst({
-    where: and(eq(matches.id, matchId), eq(matches.userId, userId)),
+    where: and(eq(matches.id, matchId), eq(matches.userId, userId), accountFilterMatches),
   });
 
   if (!match) return null;
@@ -256,7 +278,13 @@ export async function buildPostGameContext(
           topic: matchHighlights.topic,
         })
         .from(matchHighlights)
-        .where(and(eq(matchHighlights.matchId, matchId), eq(matchHighlights.userId, userId))),
+        .where(
+          and(
+            eq(matchHighlights.matchId, matchId),
+            eq(matchHighlights.userId, userId),
+            accountFilterHighlights,
+          ),
+        ),
       db
         .select({
           description: coachingActionItems.description,
@@ -273,7 +301,7 @@ export async function buildPostGameContext(
       db
         .select({ title: goals.title, status: goals.status })
         .from(goals)
-        .where(and(eq(goals.userId, userId), eq(goals.status, "active"))),
+        .where(and(eq(goals.userId, userId), eq(goals.status, "active"), accountFilterGoals)),
       db
         .select({
           tier: rankSnapshots.tier,
@@ -281,7 +309,7 @@ export async function buildPostGameContext(
           lp: rankSnapshots.lp,
         })
         .from(rankSnapshots)
-        .where(eq(rankSnapshots.userId, userId))
+        .where(and(eq(rankSnapshots.userId, userId), accountFilterRank))
         .orderBy(desc(rankSnapshots.capturedAt))
         .limit(1),
       match.matchupChampionName
@@ -308,7 +336,12 @@ export async function buildPostGameContext(
         })
         .from(matches)
         .where(
-          and(eq(matches.userId, userId), eq(matches.championName, match.championName), notRemake),
+          and(
+            eq(matches.userId, userId),
+            eq(matches.championName, match.championName),
+            accountFilterMatches,
+            notRemake,
+          ),
         ),
     ]);
 

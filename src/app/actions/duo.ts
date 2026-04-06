@@ -84,7 +84,10 @@ export async function getDuoPartnerInfo(): Promise<DuoPartnerInfo | null> {
 
 // ─── Cached Duo Stats ───────────────────────────────────────────────────────
 
-async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
+async function getCachedDuoStats(
+  userId: string,
+  riotAccountId: string | null,
+): Promise<DuoStats | null> {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(duoTag(userId));
@@ -96,19 +99,29 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
   });
   if (!user?.duoPartnerUserId) return null;
 
+  // Build base conditions scoped to riot account
+  const duoConditions = [eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid)];
+  if (riotAccountId) {
+    duoConditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
+  const soloConditions = [eq(matches.userId, userId), sql`${matches.duoPartnerPuuid} IS NULL`];
+  if (riotAccountId) {
+    soloConditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
+
   // Run duo + solo aggregations in parallel — excludes remakes from totals
   const [duoAgg, soloAgg] = await Promise.all([
     db
       .select(duoStatsSelect())
       .from(matches)
-      .where(and(eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid))),
+      .where(and(...duoConditions)),
     db
       .select({
         totalGames: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`,
         wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`,
       })
       .from(matches)
-      .where(and(eq(matches.userId, userId), sql`${matches.duoPartnerPuuid} IS NULL`)),
+      .where(and(...soloConditions)),
   ]);
 
   const duo = duoAgg[0];
@@ -155,13 +168,14 @@ async function getCachedDuoStats(userId: string): Promise<DuoStats | null> {
 /** Public wrapper — resolves userId from session, delegates to cached fn. */
 export async function getDuoStats(): Promise<DuoStats | null> {
   const user = await requireUser();
-  return getCachedDuoStats(user.id);
+  return getCachedDuoStats(user.id, user.activeRiotAccountId ?? null);
 }
 
 // ─── Cached Duo Games (paginated) ──────────────────────────────────────────
 
 async function getCachedDuoGames(
   userId: string,
+  riotAccountId: string | null,
   page: number,
 ): Promise<{ games: DuoGameRow[]; totalPages: number }> {
   "use cache: remote";
@@ -176,7 +190,11 @@ async function getCachedDuoGames(
   if (!user?.duoPartnerUserId) return { games: [], totalPages: 0 };
 
   const offset = (page - 1) * PAGE_SIZE;
-  const duoWhere = and(eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid));
+  const duoConditions = [eq(matches.userId, userId), isNotNull(matches.duoPartnerPuuid)];
+  if (riotAccountId) {
+    duoConditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
+  const duoWhere = and(...duoConditions);
 
   const [countResult, rows] = await Promise.all([
     db.select({ total: count() }).from(matches).where(duoWhere),
@@ -229,12 +247,15 @@ export async function getDuoGames(page: number = 1): Promise<{
   totalPages: number;
 }> {
   const user = await requireUser();
-  return getCachedDuoGames(user.id, page);
+  return getCachedDuoGames(user.id, user.activeRiotAccountId ?? null, page);
 }
 
 // ─── Cached Champion Synergy ────────────────────────────────────────────────
 
-async function getCachedChampionSynergy(userId: string): Promise<ChampionSynergy[]> {
+async function getCachedChampionSynergy(
+  userId: string,
+  riotAccountId: string | null,
+): Promise<ChampionSynergy[]> {
   "use cache: remote";
   cacheLife("hours");
   cacheTag(duoTag(userId));
@@ -246,6 +267,15 @@ async function getCachedChampionSynergy(userId: string): Promise<ChampionSynergy
   });
   if (!user?.duoPartnerUserId) return [];
 
+  const conditions = [
+    eq(matches.userId, userId),
+    isNotNull(matches.duoPartnerPuuid),
+    isNotNull(matches.duoPartnerChampionName),
+  ];
+  if (riotAccountId) {
+    conditions.push(eq(matches.riotAccountId, riotAccountId));
+  }
+
   const rows = await db
     .select({
       yourChampion: matches.championName,
@@ -253,13 +283,7 @@ async function getCachedChampionSynergy(userId: string): Promise<ChampionSynergy
       ...championSynergySelect,
     })
     .from(matches)
-    .where(
-      and(
-        eq(matches.userId, userId),
-        isNotNull(matches.duoPartnerPuuid),
-        isNotNull(matches.duoPartnerChampionName),
-      ),
-    )
+    .where(and(...conditions))
     .groupBy(matches.championName, matches.duoPartnerChampionName)
     .orderBy(sql`games desc`)
     .limit(15);
@@ -278,7 +302,7 @@ async function getCachedChampionSynergy(userId: string): Promise<ChampionSynergy
 /** Public wrapper — resolves userId from session, delegates to cached fn. */
 export async function getChampionSynergy(): Promise<ChampionSynergy[]> {
   const user = await requireUser();
-  return getCachedChampionSynergy(user.id);
+  return getCachedChampionSynergy(user.id, user.activeRiotAccountId ?? null);
 }
 
 // ─── Backfill Duo Partner Data ──────────────────────────────────────────────
@@ -301,19 +325,22 @@ export async function backfillDuoGames(): Promise<{
   const partnerPuuid = partner.puuid;
 
   // Get all matches with raw JSON that don't already have duo partner set
+  const backfillConditions = [
+    eq(matches.userId, user.id),
+    isNotNull(matches.rawMatchJson),
+    sql`${matches.duoPartnerPuuid} IS NULL`,
+  ];
+  if (user.activeRiotAccountId) {
+    backfillConditions.push(eq(matches.riotAccountId, user.activeRiotAccountId));
+  }
+
   const allMatches = await db
     .select({
       id: matches.id,
       rawMatchJson: matches.rawMatchJson,
     })
     .from(matches)
-    .where(
-      and(
-        eq(matches.userId, user.id),
-        isNotNull(matches.rawMatchJson),
-        sql`${matches.duoPartnerPuuid} IS NULL`,
-      ),
-    );
+    .where(and(...backfillConditions));
 
   let duoFound = 0;
 

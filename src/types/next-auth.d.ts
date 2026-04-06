@@ -11,6 +11,7 @@ declare module "next-auth" {
       riotTagLine?: string | null;
       isRiotLinked?: boolean;
       region?: string | null;
+      activeRiotAccountId?: string | null;
       onboardingCompleted?: boolean;
       role?: string | null;
       locale?: string | null;

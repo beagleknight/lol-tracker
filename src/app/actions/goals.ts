@@ -18,8 +18,12 @@ export async function createGoal(data: {
   const user = await requireUser();
 
   // Check for existing active goal
+  const activeGoalConditions = [eq(goals.userId, user.id), eq(goals.status, "active")];
+  if (user.activeRiotAccountId) {
+    activeGoalConditions.push(eq(goals.riotAccountId, user.activeRiotAccountId));
+  }
   const activeGoal = await db.query.goals.findFirst({
-    where: and(eq(goals.userId, user.id), eq(goals.status, "active")),
+    where: and(...activeGoalConditions),
   });
 
   if (activeGoal) {
@@ -27,8 +31,12 @@ export async function createGoal(data: {
   }
 
   // Get current rank from latest snapshot
+  const snapshotConditions = [eq(rankSnapshots.userId, user.id)];
+  if (user.activeRiotAccountId) {
+    snapshotConditions.push(eq(rankSnapshots.riotAccountId, user.activeRiotAccountId));
+  }
   const latestSnapshot = await db.query.rankSnapshots.findFirst({
-    where: eq(rankSnapshots.userId, user.id),
+    where: and(...snapshotConditions),
     orderBy: desc(rankSnapshots.capturedAt),
   });
 
@@ -46,6 +54,7 @@ export async function createGoal(data: {
     .insert(goals)
     .values({
       userId: user.id,
+      riotAccountId: user.activeRiotAccountId,
       title,
       targetTier: data.targetTier,
       targetDivision: data.targetDivision,
