@@ -185,16 +185,16 @@ Fixes #N
 
 Seven checks run automatically on every PR to `main`:
 
-| Check             | Command                           | What it catches                                               |
-| ----------------- | --------------------------------- | ------------------------------------------------------------- |
-| **Typecheck**     | `tsc --noEmit`                    | Type errors                                                   |
-| **Lint**          | `oxlint`                          | Code quality, unused vars, React rules, jsx-a11y, TypeScript  |
-| **Format**        | `oxfmt --check .`                 | Formatting consistency (import sorting, Tailwind class order) |
-| **Migration**     | `tsx scripts/test-migration.ts`   | Migrations that break pre-existing data                       |
-| **Build**         | `next build --webpack`            | Compilation errors, broken imports                            |
-| **Smoke**         | `playwright test --project=smoke` | Axe-core a11y violations on every page, data integrity        |
-| **E2E**           | `playwright test --project=e2e`   | End-to-end user flows                                         |
-| **Changelog**     | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
+| Check         | Command                           | What it catches                                               |
+| ------------- | --------------------------------- | ------------------------------------------------------------- |
+| **Typecheck** | `tsc --noEmit`                    | Type errors                                                   |
+| **Lint**      | `oxlint`                          | Code quality, unused vars, React rules, jsx-a11y, TypeScript  |
+| **Format**    | `oxfmt --check .`                 | Formatting consistency (import sorting, Tailwind class order) |
+| **Migration** | `tsx scripts/test-migration.ts`   | Migrations that break pre-existing data                       |
+| **Build**     | `next build --webpack`            | Compilation errors, broken imports                            |
+| **Smoke**     | `playwright test --project=smoke` | Axe-core a11y violations on every page, data integrity        |
+| **E2E**       | `playwright test --project=e2e`   | End-to-end user flows                                         |
+| **Changelog** | `git diff` on `changelog/`        | Missing changelog entry (skipped with `skip-changelog` label) |
 
 All checks must pass before merging.
 
