@@ -16,6 +16,7 @@
     "navWhatsNew": "What's new",
     "navAdmin": "Admin",
     "navFeedback": "Feedback",
+    "navLegal": "Legal",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
     "sectionCoaching": "Coaching",
@@ -70,6 +71,7 @@
     "signInWithDiscord": "Sign in with Discord",
     "haveInviteCode": "Have an invite code?",
     "alreadyHaveAccount": "Already have an account? Just sign in without a code.",
+    "legalLink": "Legal",
     "demoModeTitle": "Demo mode",
     "demoModeDescription": "Select an account to explore the app with sample data.",
     "demoLoginButton": "Log in",
@@ -977,5 +979,11 @@
     "gateTitle": "Premium feature",
     "gateDescription": "This feature is available for premium users. Upgrade your account to unlock it.",
     "gateContact": "Contact the admin to upgrade your account."
+  },
+  "Legal": {
+    "pageTitle": "Legal",
+    "riotDisclaimerHeading": "Riot Games disclaimer",
+    "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+    "backToApp": "Back to app"
   }
 }

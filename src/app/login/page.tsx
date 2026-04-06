@@ -2,6 +2,7 @@
 
 import { Ticket, User, Shield, UserPlus, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 
@@ -218,12 +219,27 @@ function LoginContent() {
   return isDemoMode ? <DemoLoginForm /> : <DiscordLoginForm />;
 }
 
+function LegalLink() {
+  const t = useTranslations("Login");
+  return (
+    <Link
+      href="/legal"
+      className="text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+    >
+      {t("legalLink")}
+    </Link>
+  );
+}
+
 export default function LoginPage() {
   return (
-    <div className="bg-mesh flex min-h-screen items-center justify-center bg-background">
+    <div className="bg-mesh relative flex min-h-screen items-center justify-center bg-background">
       <Suspense>
         <LoginContent />
       </Suspense>
+      <div className="absolute inset-x-0 bottom-0 pb-4 text-center">
+        <LegalLink />
+      </div>
     </div>
   );
 }
