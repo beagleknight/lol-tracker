@@ -26,7 +26,9 @@
     "manageAccounts": "Manage accounts",
     "switchedTo": "Switched to {gameName}#{tagLine}",
     "theme": "Theme: {theme}",
-    "logout": "Log out"
+    "logout": "Log out",
+    "premiumBadge": "Premium member",
+    "adminBadge": "Admin"
   },
   "MatchCard": {
     "vs": "vs",
@@ -73,6 +75,8 @@
     "demoLoginButton": "Log in",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "User",
+    "demoRolePremium": "Premium",
+    "demoRoleFree": "Free",
     "demoNoRiotAccount": "No Riot account linked",
     "demoNeedsSetup": "Needs setup"
   },
@@ -323,6 +327,7 @@
     "cached": "Cached",
     "generatedAt": "Generated {date}",
     "dailyLimitReached": "Daily insight limit reached.",
+    "premiumRequired": "AI insights are available for premium users.",
     "noApiKey": "AI insights are not configured. Add a Google Gemini API key to enable this feature.",
     "triggerLabel": "AI insight",
     "triggerTooltip": "Get AI-powered analysis",
@@ -330,7 +335,8 @@
     "toasts": {
       "generated": "AI insight generated.",
       "error": "Failed to generate insight.",
-      "limitReached": "Daily insight limit reached."
+      "limitReached": "Daily insight limit reached.",
+      "premiumRequired": "AI insights require a premium account."
     }
   },
   "Analytics": {
@@ -705,6 +711,7 @@
       "removeConfirm": "Remove this account? Your match data will be kept.",
       "cannotRemovePrimary": "Cannot remove your main account.",
       "accountLimitReached": "You've reached the maximum of 5 linked accounts.",
+      "addAccountPremiumRequired": "Linking additional accounts is a premium feature. Contact the admin to upgrade.",
       "accountCount": "{count} of {max} accounts",
       "rolesLabel": "Roles",
       "rolesDescription": "Primary and secondary roles for this account",
@@ -922,6 +929,11 @@
     "statusDeactivated": "Deactivated",
     "deactivateButton": "Deactivate",
     "reactivateButton": "Reactivate",
+    "roleAdmin": "Admin",
+    "rolePremium": "Premium",
+    "roleFree": "Free",
+    "grantPremiumButton": "Grant premium",
+    "revokePremiumButton": "Revoke premium",
     "youBadge": "You",
     "noRegion": "—",
     "noRiotId": "Not linked",
@@ -945,6 +957,9 @@
       "reactivateSuccess": "User reactivated.",
       "deactivateError": "Failed to deactivate user.",
       "reactivateError": "Failed to reactivate user.",
+      "grantPremiumSuccess": "Premium access granted.",
+      "revokePremiumSuccess": "Premium access revoked.",
+      "roleChangeError": "Failed to change user role.",
       "generateSuccess": "Invite code generated.",
       "generateError": "Failed to generate invite.",
       "deleteSuccess": "Invite deleted.",
@@ -957,5 +972,10 @@
     "pageTitle": "Feedback & suggestions",
     "pageSubtitle": "Share your ideas, report bugs, or vote on what we should build next.",
     "loading": "Loading feedback widget…"
+  },
+  "Premium": {
+    "gateTitle": "Premium feature",
+    "gateDescription": "This feature is available for premium users. Upgrade your account to unlock it.",
+    "gateContact": "Contact the admin to upgrade your account."
   }
 }

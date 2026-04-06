@@ -1,5 +1,9 @@
 "use server";
 
+import { inArray } from "drizzle-orm";
+
+import { db } from "@/db";
+import { users } from "@/db/schema";
 import { signIn } from "@/lib/auth";
 
 /**
@@ -8,4 +12,62 @@ import { signIn } from "@/lib/auth";
  */
 export async function demoLogin(userId: string) {
   await signIn("demo", { userId, redirectTo: "/dashboard" });
+}
+
+/** Demo user IDs (must match seed.ts) */
+const DEMO_USER_IDS = [
+  "demo-user-0001-0001-000000000001",
+  "demo-user-0002-0002-000000000002",
+  "demo-user-0003-0003-000000000003",
+];
+
+export interface DemoUserInfo {
+  id: string;
+  name: string | null;
+  role: string;
+  riotGameName: string | null;
+  riotTagLine: string | null;
+  onboardingCompleted: boolean;
+}
+
+/**
+ * Fetch demo user data from the database so the login page
+ * always reflects the current role assignments.
+ */
+export async function getDemoUsers(): Promise<DemoUserInfo[]> {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") return [];
+
+  const rows = await db.query.users.findMany({
+    where: inArray(users.id, DEMO_USER_IDS),
+    columns: {
+      id: true,
+      name: true,
+      role: true,
+      riotGameName: true,
+      riotTagLine: true,
+      onboardingCompleted: true,
+    },
+  });
+
+  // Return in a stable order matching DEMO_USER_IDS
+  return DEMO_USER_IDS.map((id) => {
+    const row = rows.find((r) => r.id === id);
+    return row
+      ? {
+          id: row.id,
+          name: row.name,
+          role: row.role,
+          riotGameName: row.riotGameName,
+          riotTagLine: row.riotTagLine,
+          onboardingCompleted: row.onboardingCompleted ?? false,
+        }
+      : {
+          id,
+          name: null,
+          role: "free",
+          riotGameName: null,
+          riotTagLine: null,
+          onboardingCompleted: false,
+        };
+  });
 }

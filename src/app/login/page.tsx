@@ -1,55 +1,36 @@
 "use client";
 
-import { Ticket, User, Shield, UserPlus } from "lucide-react";
+import { Ticket, User, Shield, UserPlus, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 
-import { demoLogin } from "@/app/actions/demo-login";
+import { demoLogin, getDemoUsers, type DemoUserInfo } from "@/app/actions/demo-login";
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { login } from "@/lib/auth-client";
-
-// ─── Demo users (must match seed.ts) ──────────────────────────────────────────
-
-const DEMO_USERS = [
-  {
-    id: "demo-user-0001-0001-000000000001",
-    name: "DemoPlayer",
-    riotId: "DemoPlayer#EUW",
-    rank: "Gold III · 62 LP",
-    role: "admin" as const,
-    hasRiot: true,
-    description: null,
-  },
-  {
-    id: "demo-user-0002-0002-000000000002",
-    name: "DuoPartner",
-    riotId: "DuoPartner#EUW",
-    rank: null,
-    role: "user" as const,
-    hasRiot: true,
-    description: null,
-  },
-  {
-    id: "demo-user-0003-0003-000000000003",
-    name: "NewPlayer",
-    riotId: null,
-    rank: null,
-    role: "user" as const,
-    hasRiot: false,
-    description: "needsSetup",
-  },
-];
+import { cn } from "@/lib/utils";
 
 // ─── Demo Login Form ──────────────────────────────────────────────────────────
 
 function DemoLoginForm() {
   const t = useTranslations("Login");
   const [loading, setLoading] = useState<string | null>(null);
+  const [demoUsers, setDemoUsers] = useState<DemoUserInfo[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  useEffect(() => {
+    getDemoUsers()
+      .then(setDemoUsers)
+      .catch(() => {
+        // Fallback: empty list
+      })
+      .finally(() => setUsersLoading(false));
+  }, []);
 
   async function handleDemoLogin(userId: string) {
     setLoading(userId);
@@ -70,43 +51,71 @@ function DemoLoginForm() {
         <CardDescription>{t("demoModeDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {DEMO_USERS.map((user) => (
-          <button
-            key={user.id}
-            onClick={() => void handleDemoLogin(user.id)}
-            disabled={loading !== null}
-            className="flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card p-3 text-left transition-all hover:border-gold/40 hover:bg-gold/5 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-              {user.role === "admin" ? (
-                <Shield className="h-5 w-5 text-gold" />
-              ) : user.description === "needsSetup" ? (
-                <UserPlus className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <User className="h-5 w-5 text-muted-foreground" />
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate font-medium text-foreground">{user.name}</span>
-                <Badge variant="outline" className="shrink-0 text-xs">
-                  {user.role === "admin" ? t("demoRoleAdmin") : t("demoRoleUser")}
-                </Badge>
+        {usersLoading
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border border-border/50 bg-card p-3"
+              >
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-8 w-16" />
               </div>
-              <div className="truncate text-sm text-muted-foreground">
-                {user.description === "needsSetup"
-                  ? t("demoNeedsSetup")
-                  : user.hasRiot
-                    ? user.riotId
-                    : t("demoNoRiotAccount")}
-                {user.rank && <span className="ml-2 text-gold">{user.rank}</span>}
-              </div>
-            </div>
-            <span className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm">
-              {loading === user.id ? "..." : t("demoLoginButton")}
-            </span>
-          </button>
-        ))}
+            ))
+          : demoUsers.map((user) => {
+              const hasRiot = !!user.riotGameName;
+              const riotId = hasRiot ? `${user.riotGameName}#${user.riotTagLine}` : null;
+              const needsSetup = !user.onboardingCompleted;
+
+              return (
+                <button
+                  key={user.id}
+                  onClick={() => void handleDemoLogin(user.id)}
+                  disabled={loading !== null}
+                  className="flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card p-3 text-left transition-all hover:border-gold/40 hover:bg-gold/5 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                    {user.role === "admin" ? (
+                      <Shield className="h-5 w-5 text-gold" />
+                    ) : user.role === "premium" ? (
+                      <Crown className="h-5 w-5 text-blue-400" />
+                    ) : needsSetup ? (
+                      <UserPlus className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <User className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-medium text-foreground">{user.name}</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "shrink-0 text-xs",
+                          user.role === "admin" && "border-gold/30 text-gold",
+                          user.role === "premium" && "border-blue-400/30 text-blue-400",
+                        )}
+                      >
+                        {user.role === "admin"
+                          ? t("demoRoleAdmin")
+                          : user.role === "premium"
+                            ? t("demoRolePremium")
+                            : t("demoRoleFree")}
+                      </Badge>
+                    </div>
+                    <div className="truncate text-sm text-muted-foreground">
+                      {needsSetup ? t("demoNeedsSetup") : hasRiot ? riotId : t("demoNoRiotAccount")}
+                    </div>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm">
+                    {loading === user.id ? "..." : t("demoLoginButton")}
+                  </span>
+                </button>
+              );
+            })}
       </CardContent>
     </Card>
   );
