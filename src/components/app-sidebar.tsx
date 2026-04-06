@@ -16,6 +16,7 @@ import {
   Target,
   Shield,
   MessageSquarePlus,
+  Scale,
   Lock,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -61,6 +62,7 @@ const navDefs = {
   bottom: [
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
+    { key: "navLegal" as const, href: "/legal", icon: Scale },
   ],
 } as const;
 

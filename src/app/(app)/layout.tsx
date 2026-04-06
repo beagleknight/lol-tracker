@@ -6,7 +6,6 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import { RiotDisclaimer } from "@/components/riot-disclaimer";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches, riotAccounts } from "@/db/schema";
@@ -100,7 +99,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Suspense>
             <main id="main-content" className="flex-1 md:ml-64">
               <div className="container mx-auto max-w-7xl p-6 md:p-8">{children}</div>
-              <RiotDisclaimer />
             </main>
           </div>
           <Toaster />
