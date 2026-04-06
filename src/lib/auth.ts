@@ -4,7 +4,7 @@ import Discord from "next-auth/providers/discord";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { users, invites } from "@/db/schema";
+import { users, invites, riotAccounts } from "@/db/schema";
 import { isDemoMode, demoCredentialsProvider } from "@/lib/fake-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -183,9 +183,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.role = dbUser.role;
           session.user.locale = dbUser.locale;
           session.user.language = dbUser.language;
-          session.user.primaryRole = dbUser.primaryRole;
-          session.user.secondaryRole = dbUser.secondaryRole;
           session.user.coachingCadenceDays = dbUser.coachingCadenceDays;
+
+          // Read role preferences from the active riot account (per-account)
+          if (dbUser.activeRiotAccountId) {
+            const activeAccount = await db.query.riotAccounts.findFirst({
+              where: eq(riotAccounts.id, dbUser.activeRiotAccountId),
+            });
+            session.user.primaryRole = activeAccount?.primaryRole ?? null;
+            session.user.secondaryRole = activeAccount?.secondaryRole ?? null;
+          } else {
+            // Fallback to user-level roles for backwards compatibility
+            session.user.primaryRole = dbUser.primaryRole;
+            session.user.secondaryRole = dbUser.secondaryRole;
+          }
         }
       }
       return session;

@@ -162,6 +162,13 @@
       "when": 1775461511084,
       "tag": "0022_odd_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1775692800000,
+      "tag": "0023_role_preferences_per_account",
+      "breakpoints": true
     }
   ]
 }

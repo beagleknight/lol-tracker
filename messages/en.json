@@ -705,7 +705,10 @@
       "removeConfirm": "Remove this account? Your match data will be kept.",
       "cannotRemovePrimary": "Cannot remove your main account.",
       "accountLimitReached": "You've reached the maximum of 5 linked accounts.",
-      "accountCount": "{count} of {max} accounts"
+      "accountCount": "{count} of {max} accounts",
+      "rolesLabel": "Roles",
+      "rolesDescription": "Primary and secondary roles for this account",
+      "roleSaved": "Roles updated for this account."
     },
     "invites": {
       "title": "Invite friends",

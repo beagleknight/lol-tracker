@@ -303,8 +303,8 @@ async function seed() {
   console.log("Creating riot accounts...");
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_RIOT_ACCOUNT_ID,
       MAIN_USER_ID,
@@ -315,14 +315,16 @@ async function seed() {
       MAIN_USER.region,
       1,
       null,
+      MAIN_USER.primaryRole,
+      MAIN_USER.secondaryRole,
       ts(now),
     ],
   });
 
   // Smurf account for main user (to show account switcher in demo)
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_SMURF_ACCOUNT_ID,
       MAIN_USER_ID,
@@ -333,13 +335,15 @@ async function seed() {
       "euw1",
       0,
       "Smurf",
+      "TOP",
+      "JUNGLE",
       ts(now),
     ],
   });
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       DUO_RIOT_ACCOUNT_ID,
       DUO_USER_ID,
@@ -350,6 +354,8 @@ async function seed() {
       DUO_USER.region,
       1,
       null,
+      DUO_USER.primaryRole,
+      DUO_USER.secondaryRole,
       ts(now),
     ],
   });

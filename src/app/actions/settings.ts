@@ -76,6 +76,9 @@ export async function linkRiotAccount(formData: FormData) {
       riotTagLine: account.tagLine,
       region,
       isPrimary,
+      // Copy user-level role preferences to first account
+      primaryRole: isPrimary ? user.primaryRole : null,
+      secondaryRole: isPrimary ? user.secondaryRole : null,
     });
 
     // Update user record with cached active account fields
@@ -464,6 +467,15 @@ export async function updateRolePreferences(
     return { error: "Primary and secondary roles must be different." };
   }
 
+  // Write to the active riot account (per-account roles)
+  if (user.activeRiotAccountId) {
+    await db
+      .update(riotAccounts)
+      .set({ primaryRole, secondaryRole })
+      .where(and(eq(riotAccounts.id, user.activeRiotAccountId), eq(riotAccounts.userId, user.id)));
+  }
+
+  // Sync cache on users table (server-side readers use user.primaryRole)
   await db
     .update(users)
     .set({

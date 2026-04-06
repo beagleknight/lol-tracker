@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -137,48 +138,50 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
         {/* Account list (only if multiple accounts) */}
         {hasMultipleAccounts && (
           <>
-            <DropdownMenuLabel>{t("accountSwitcherLabel")}</DropdownMenuLabel>
-            {accounts.map((account) => {
-              const isActive = account.id === activeAccountId;
-              return (
-                <DropdownMenuItem
-                  key={account.id}
-                  onClick={() => handleSwitch(account.id)}
-                  className={cn(isActive && "bg-gold/10")}
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    {isActive ? (
-                      <Check className="h-3.5 w-3.5 shrink-0 text-gold" />
-                    ) : (
-                      <span className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={cn("truncate text-sm", isActive && "font-medium text-gold")}
-                        >
-                          {account.riotGameName}
-                          <span className="text-muted-foreground">#{account.riotTagLine}</span>
-                        </span>
-                        {account.isPrimary && (
-                          <Badge
-                            variant="default"
-                            className="h-4 shrink-0 border border-gold/30 bg-gold/20 px-1 text-[10px] text-gold"
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{t("accountSwitcherLabel")}</DropdownMenuLabel>
+              {accounts.map((account) => {
+                const isActive = account.id === activeAccountId;
+                return (
+                  <DropdownMenuItem
+                    key={account.id}
+                    onClick={() => handleSwitch(account.id)}
+                    className={cn(isActive && "bg-gold/10")}
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      {isActive ? (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-gold" />
+                      ) : (
+                        <span className="h-3.5 w-3.5 shrink-0" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={cn("truncate text-sm", isActive && "font-medium text-gold")}
                           >
-                            {t("primaryBadge")}
-                          </Badge>
+                            {account.riotGameName}
+                            <span className="text-muted-foreground">#{account.riotTagLine}</span>
+                          </span>
+                          {account.isPrimary && (
+                            <Badge
+                              variant="default"
+                              className="h-4 shrink-0 border border-gold/30 bg-gold/20 px-1 text-[10px] text-gold"
+                            >
+                              {t("primaryBadge")}
+                            </Badge>
+                          )}
+                        </div>
+                        {account.label && (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {account.label}
+                          </span>
                         )}
                       </div>
-                      {account.label && (
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {account.label}
-                        </span>
-                      )}
                     </div>
-                  </div>
-                </DropdownMenuItem>
-              );
-            })}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
           </>
         )}

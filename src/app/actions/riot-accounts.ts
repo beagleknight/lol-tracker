@@ -81,6 +81,9 @@ export async function addRiotAccount(formData: FormData) {
       region,
       isPrimary,
       label: isPrimary ? null : null, // User can set a label later
+      // Copy user-level role preferences to first account
+      primaryRole: isPrimary ? user.primaryRole : null,
+      secondaryRole: isPrimary ? user.secondaryRole : null,
     });
 
     // Set as active account and update cached fields on user
@@ -156,6 +159,8 @@ export async function removeRiotAccount(accountId: string) {
           riotGameName: primary.riotGameName,
           riotTagLine: primary.riotTagLine,
           region: primary.region,
+          primaryRole: primary.primaryRole,
+          secondaryRole: primary.secondaryRole,
           updatedAt: new Date(),
         })
         .where(eq(users.id, user.id));
@@ -169,6 +174,8 @@ export async function removeRiotAccount(accountId: string) {
           riotGameName: null,
           riotTagLine: null,
           region: null,
+          primaryRole: null,
+          secondaryRole: null,
           updatedAt: new Date(),
         })
         .where(eq(users.id, user.id));
@@ -200,7 +207,7 @@ export async function switchActiveAccount(accountId: string) {
     return { error: "Riot account not found." };
   }
 
-  // Update user's cached active account fields
+  // Update user's cached active account fields (including per-account roles)
   await db
     .update(users)
     .set({
@@ -209,6 +216,8 @@ export async function switchActiveAccount(accountId: string) {
       riotGameName: account.riotGameName,
       riotTagLine: account.riotTagLine,
       region: account.region,
+      primaryRole: account.primaryRole,
+      secondaryRole: account.secondaryRole,
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));
@@ -288,6 +297,65 @@ export async function updateAccountLabel(accountId: string, label: string | null
   return { success: true };
 }
 
+// ─── Update Account Role Preferences ────────────────────────────────────────
+
+const VALID_POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
+
+/**
+ * Update role preferences for a specific Riot account.
+ * If the account is the currently active one, also syncs the cached roles
+ * on the users table so server-side readers stay consistent.
+ */
+export async function updateAccountRolePreferences(
+  accountId: string,
+  primaryRole: string | null,
+  secondaryRole: string | null,
+) {
+  const user = await requireUser();
+
+  // Validate positions
+  if (primaryRole && !VALID_POSITIONS.includes(primaryRole as (typeof VALID_POSITIONS)[number])) {
+    return { error: "Invalid primary role." };
+  }
+  if (
+    secondaryRole &&
+    !VALID_POSITIONS.includes(secondaryRole as (typeof VALID_POSITIONS)[number])
+  ) {
+    return { error: "Invalid secondary role." };
+  }
+  if (primaryRole && secondaryRole && primaryRole === secondaryRole) {
+    return { error: "Primary and secondary roles must be different." };
+  }
+
+  // Verify ownership
+  const account = await db.query.riotAccounts.findFirst({
+    where: and(eq(riotAccounts.id, accountId), eq(riotAccounts.userId, user.id)),
+  });
+
+  if (!account) {
+    return { error: "Riot account not found." };
+  }
+
+  // Update the riot account
+  await db
+    .update(riotAccounts)
+    .set({ primaryRole, secondaryRole })
+    .where(eq(riotAccounts.id, accountId));
+
+  // If this is the active account, sync the cache on users table
+  if (user.activeRiotAccountId === accountId) {
+    await db
+      .update(users)
+      .set({ primaryRole, secondaryRole, updatedAt: new Date() })
+      .where(eq(users.id, user.id));
+  }
+
+  revalidatePath("/");
+  invalidateAllCaches(user.id);
+
+  return { success: true };
+}
+
 // ─── Get User Riot Accounts ─────────────────────────────────────────────────
 
 /**
@@ -307,6 +375,8 @@ export async function getUserRiotAccounts() {
       region: true,
       isPrimary: true,
       label: true,
+      primaryRole: true,
+      secondaryRole: true,
     },
     orderBy: (table, { desc }) => [desc(table.isPrimary), table.createdAt],
   });

@@ -62,6 +62,8 @@ export const riotAccounts = sqliteTable(
     region: text("region").notNull(), // Riot platform region: euw1, na1, kr, eun1, etc.
     isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
     label: text("label"), // User-friendly nickname, e.g. "Main", "Smurf"
+    primaryRole: text("primary_role"), // Preferred primary position: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
+    secondaryRole: text("secondary_role"), // Preferred secondary position
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
