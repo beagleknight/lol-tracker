@@ -14,6 +14,8 @@ import {
   Pencil,
   Check,
   X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -26,6 +28,7 @@ import {
   setAccountAsPrimary,
   updateAccountLabel,
   updateAccountRolePreferences,
+  toggleAccountDiscoverable,
   getUserRiotAccounts,
 } from "@/app/actions/riot-accounts";
 import {
@@ -130,6 +133,7 @@ export default function SettingsPage() {
       riotTagLine: string;
       region: string;
       isPrimary: boolean;
+      discoverable: boolean;
       label: string | null;
       primaryRole: string | null;
       secondaryRole: string | null;
@@ -604,6 +608,56 @@ export default function SettingsPage() {
                                 {account.label || t("riotAccounts.editLabelButton")}
                               </button>
                             )}
+
+                            {/* Discoverable toggle */}
+                            <button
+                              type="button"
+                              aria-label={t("riotAccounts.discoverableToggle")}
+                              title={
+                                account.discoverable
+                                  ? t("riotAccounts.discoverableOn")
+                                  : t("riotAccounts.discoverableOff")
+                              }
+                              className={`inline-flex items-center gap-1 text-xs transition-colors ${
+                                account.discoverable
+                                  ? "text-emerald-400 hover:text-emerald-300"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                              disabled={isPending}
+                              onClick={() => {
+                                startTransition(async () => {
+                                  const result = await toggleAccountDiscoverable(
+                                    account.id,
+                                    !account.discoverable,
+                                  );
+                                  if (result.error) {
+                                    toast.error(result.error);
+                                  } else {
+                                    setRiotAccounts((prev) =>
+                                      prev.map((a) =>
+                                        a.id === account.id
+                                          ? { ...a, discoverable: !a.discoverable }
+                                          : a,
+                                      ),
+                                    );
+                                    toast.success(
+                                      !account.discoverable
+                                        ? t("riotAccounts.discoverableOn")
+                                        : t("riotAccounts.discoverableOff"),
+                                    );
+                                  }
+                                });
+                              }}
+                            >
+                              {account.discoverable ? (
+                                <Eye className="h-3 w-3" />
+                              ) : (
+                                <EyeOff className="h-3 w-3" />
+                              )}
+                              {account.discoverable
+                                ? t("riotAccounts.discoverableLabel")
+                                : t("riotAccounts.hiddenLabel")}
+                            </button>
 
                             {/* Roles inline */}
                             <div className="flex items-center gap-1.5">

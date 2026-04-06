@@ -433,18 +433,21 @@ export function findMatchupChampion(
 
 /**
  * Check if a duo partner was on the same team in a match.
+ * Accepts a single puuid or an array of puuids (for multi-account support).
  * Returns the partner's puuid if found on same team, null otherwise.
  */
 export function findDuoPartner(
   match: RiotMatch,
   playerPuuid: string,
-  duoPartnerPuuid: string,
+  duoPartnerPuuids: string | string[],
 ): string | null {
   const player = match.info.participants.find((p) => p.puuid === playerPuuid);
   if (!player) return null;
 
+  const puuids = Array.isArray(duoPartnerPuuids) ? duoPartnerPuuids : [duoPartnerPuuids];
+
   const partner = match.info.participants.find(
-    (p) => p.puuid === duoPartnerPuuid && p.teamId === player.teamId,
+    (p) => puuids.includes(p.puuid) && p.teamId === player.teamId,
   );
 
   return partner ? partner.puuid : null;

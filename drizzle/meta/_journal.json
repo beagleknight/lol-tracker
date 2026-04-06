@@ -169,6 +169,20 @@
       "when": 1775692800000,
       "tag": "0023_role_preferences_per_account",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1775779200000,
+      "tag": "0024_backfill_riot_account_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1775779200001,
+      "tag": "0025_discoverable_column",
+      "breakpoints": true
     }
   ]
 }

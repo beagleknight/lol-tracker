@@ -303,8 +303,8 @@ async function seed() {
   console.log("Creating riot accounts...");
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_RIOT_ACCOUNT_ID,
       MAIN_USER_ID,
@@ -313,6 +313,7 @@ async function seed() {
       MAIN_USER.riotTagLine,
       MAIN_USER.summonerId,
       MAIN_USER.region,
+      1,
       1,
       null,
       MAIN_USER.primaryRole,
@@ -323,8 +324,8 @@ async function seed() {
 
   // Smurf account for main user (to show account switcher in demo)
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_SMURF_ACCOUNT_ID,
       MAIN_USER_ID,
@@ -334,6 +335,7 @@ async function seed() {
       "demo-summoner-smurf",
       "euw1",
       0,
+      0,
       "Smurf",
       "TOP",
       "JUNGLE",
@@ -342,8 +344,8 @@ async function seed() {
   });
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, label, primary_role, secondary_role, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       DUO_RIOT_ACCOUNT_ID,
       DUO_USER_ID,
@@ -352,6 +354,7 @@ async function seed() {
       DUO_USER.riotTagLine,
       DUO_USER.summonerId,
       DUO_USER.region,
+      1,
       1,
       null,
       DUO_USER.primaryRole,

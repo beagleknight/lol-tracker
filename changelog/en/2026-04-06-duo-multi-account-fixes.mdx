@@ -1,0 +1,12 @@
+---
+version: "2026.04.11"
+date: "2026-04-06"
+title: "Duo partner detection across accounts and privacy toggle"
+tags: ["fix", "feature"]
+---
+
+Two improvements to duo tracking after the multi-account update:
+
+- **Duo detection across all accounts**: When your duo partner plays on a smurf or alt account, those games are now detected too. Previously only their active account was checked, so smurf games were missed.
+- **Discoverable toggle**: Each linked account now has a visibility setting for duo partner search. Primary accounts are discoverable by default; smurf accounts are hidden. Toggle it anytime in Settings > Accounts.
+- **Data backfill**: If you had match history before the multi-account update, it's now properly linked to your primary account. No action needed — this happens automatically.

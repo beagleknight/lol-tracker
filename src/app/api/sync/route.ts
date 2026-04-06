@@ -1,7 +1,7 @@
 import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
-import { matches, rankSnapshots, users } from "@/db/schema";
+import { matches, rankSnapshots, riotAccounts, users } from "@/db/schema";
 import { checkGoalAchievement } from "@/lib/goals";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
@@ -242,14 +242,15 @@ export async function GET(request: Request) {
         });
         let nextOdometer = (maxOdoResult?.odometer || 0) + 1;
 
-        // Look up duo partner puuid (if user has one configured)
-        let duoPartnerPuuid: string | null = null;
+        // Look up duo partner puuids (if user has one configured)
+        // Check all linked accounts so smurf games are detected too
+        let duoPartnerPuuids: string[] = [];
         if (user.duoPartnerUserId) {
-          const partner = await db.query.users.findFirst({
-            where: eq(users.id, user.duoPartnerUserId),
+          const partnerAccounts = await db.query.riotAccounts.findMany({
+            where: eq(riotAccounts.userId, user.duoPartnerUserId),
             columns: { puuid: true },
           });
-          duoPartnerPuuid = partner?.puuid || null;
+          duoPartnerPuuids = partnerAccounts.map((a) => a.puuid);
         }
 
         let syncedCount = 0;
@@ -270,13 +271,14 @@ export async function GET(request: Request) {
             const matchup = findMatchupChampion(matchData, user.puuid!);
 
             // Check if duo partner was on the same team
-            const detectedDuoPuuid = duoPartnerPuuid
-              ? findDuoPartner(matchData, user.puuid!, duoPartnerPuuid)
-              : null;
+            const detectedDuoPuuid =
+              duoPartnerPuuids.length > 0
+                ? findDuoPartner(matchData, user.puuid!, duoPartnerPuuids)
+                : null;
 
             // Extract duo partner stats for denormalized columns
             const duoPartnerData = detectedDuoPuuid
-              ? extractDuoPartnerData(matchData, user.puuid!, duoPartnerPuuid!)
+              ? extractDuoPartnerData(matchData, user.puuid!, detectedDuoPuuid)
               : null;
 
             await db
