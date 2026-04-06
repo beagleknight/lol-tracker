@@ -42,6 +42,7 @@ import {
   updateCoachingCadence,
 } from "@/app/actions/settings";
 import { POSITIONS, PositionIcon } from "@/components/position-icon";
+import { PremiumGate } from "@/components/premium-gate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -956,138 +957,142 @@ export default function SettingsPage() {
 
         {/* ─── Duo Tab ──────────────────────────────────────────────── */}
         <TabsContent value="duo" className="mt-4">
-          <div className="space-y-6">
-            {isLinked ? (
-              <Card className="surface-glow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-gold" />
-                    {t("duoPartner.title")}
-                    {duoPartner ? (
-                      <Badge
-                        variant="default"
-                        className="ml-2 border border-gold/30 bg-gold/20 text-gold"
-                      >
-                        {t("duoPartner.badgeSet")}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="ml-2">
-                        {t("duoPartner.badgeNotSet")}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <CardDescription>{t("duoPartner.description")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {duoLoading ? (
-                    <div className="flex items-center gap-4 rounded-lg border border-border/30 p-4">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-5 w-40" />
-                      </div>
-                    </div>
-                  ) : duoPartner ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
-                        <div className="flex-1">
-                          <p className="text-sm text-muted-foreground">
-                            {t("duoPartner.partnerLabel")}
-                          </p>
-                          <p className="text-lg font-semibold text-gold">
-                            {duoPartner.riotGameName}#{duoPartner.riotTagLine}
-                          </p>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleClearDuoPartner}
-                          disabled={isPending}
+          {!userIsPremium ? (
+            <PremiumGate />
+          ) : (
+            <div className="space-y-6">
+              {isLinked ? (
+                <Card className="surface-glow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-gold" />
+                      {t("duoPartner.title")}
+                      {duoPartner ? (
+                        <Badge
+                          variant="default"
+                          className="ml-2 border border-gold/30 bg-gold/20 text-gold"
                         >
-                          {isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Unlink className="mr-2 h-4 w-4" />
-                          )}
-                          {t("duoPartner.clearButton")}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder={t("duoPartner.searchPlaceholder")}
-                          value={duoSearchQuery}
-                          onChange={(e) => handleDuoSearch(e.target.value)}
-                          className="pl-9"
-                          aria-label={t("duoPartner.searchPlaceholder")}
-                        />
-                      </div>
-                      {duoSearchQuery.trim().length < 2 && (
-                        <p className="text-sm text-muted-foreground">
-                          {t("duoPartner.searchHint")}
-                        </p>
+                          {t("duoPartner.badgeSet")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="ml-2">
+                          {t("duoPartner.badgeNotSet")}
+                        </Badge>
                       )}
-                      {duoSearching && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          {t("duoPartner.searching")}
+                    </CardTitle>
+                    <CardDescription>{t("duoPartner.description")}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {duoLoading ? (
+                      <div className="flex items-center gap-4 rounded-lg border border-border/30 p-4">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-5 w-40" />
                         </div>
-                      )}
-                      {!duoSearching &&
-                        duoSearchQuery.trim().length >= 2 &&
-                        duoSearchResults.length === 0 && (
+                      </div>
+                    ) : duoPartner ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 rounded-lg border border-gold/20 bg-surface-elevated p-4">
+                          <div className="flex-1">
+                            <p className="text-sm text-muted-foreground">
+                              {t("duoPartner.partnerLabel")}
+                            </p>
+                            <p className="text-lg font-semibold text-gold">
+                              {duoPartner.riotGameName}#{duoPartner.riotTagLine}
+                            </p>
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleClearDuoPartner}
+                            disabled={isPending}
+                          >
+                            {isPending ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Unlink className="mr-2 h-4 w-4" />
+                            )}
+                            {t("duoPartner.clearButton")}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder={t("duoPartner.searchPlaceholder")}
+                            value={duoSearchQuery}
+                            onChange={(e) => handleDuoSearch(e.target.value)}
+                            className="pl-9"
+                            aria-label={t("duoPartner.searchPlaceholder")}
+                          />
+                        </div>
+                        {duoSearchQuery.trim().length < 2 && (
                           <p className="text-sm text-muted-foreground">
-                            {t("duoPartner.noResults", {
-                              query: duoSearchQuery.trim(),
-                            })}
+                            {t("duoPartner.searchHint")}
                           </p>
                         )}
-                      {duoSearchResults.length > 0 && (
-                        <div className="space-y-2">
-                          {duoSearchResults.map((u) => (
-                            <div
-                              key={u.id}
-                              className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gold">
-                                  {u.riotGameName}#{u.riotTagLine}
-                                </p>
-                                {u.name && (
-                                  <p className="text-xs text-muted-foreground">{u.name}</p>
-                                )}
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => handleSetDuoPartner(u.id)}
-                                disabled={isPending}
+                        {duoSearching && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t("duoPartner.searching")}
+                          </div>
+                        )}
+                        {!duoSearching &&
+                          duoSearchQuery.trim().length >= 2 &&
+                          duoSearchResults.length === 0 && (
+                            <p className="text-sm text-muted-foreground">
+                              {t("duoPartner.noResults", {
+                                query: duoSearchQuery.trim(),
+                              })}
+                            </p>
+                          )}
+                        {duoSearchResults.length > 0 && (
+                          <div className="space-y-2">
+                            {duoSearchResults.map((u) => (
+                              <div
+                                key={u.id}
+                                className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-3"
                               >
-                                {isPending ? (
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Users className="mr-2 h-4 w-4" />
-                                )}
-                                {t("duoPartner.setButton")}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="surface-glow">
-                <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gold">
+                                    {u.riotGameName}#{u.riotTagLine}
+                                  </p>
+                                  {u.name && (
+                                    <p className="text-xs text-muted-foreground">{u.name}</p>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSetDuoPartner(u.id)}
+                                  disabled={isPending}
+                                >
+                                  {isPending ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Users className="mr-2 h-4 w-4" />
+                                  )}
+                                  {t("duoPartner.setButton")}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="surface-glow">
+                  <CardContent className="py-8 text-center">
+                    <p className="text-muted-foreground">{t("duoPartner.noUsersFound")}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -26,7 +26,8 @@
     "manageAccounts": "Manage accounts",
     "switchedTo": "Switched to {gameName}#{tagLine}",
     "theme": "Theme: {theme}",
-    "logout": "Log out"
+    "logout": "Log out",
+    "premiumBadge": "Premium member"
   },
   "MatchCard": {
     "vs": "vs",
