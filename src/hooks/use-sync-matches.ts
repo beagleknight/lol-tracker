@@ -78,8 +78,12 @@ export function useSyncMatches(isLinked: boolean = false) {
       let cumulativeSynced = 0;
       let cumulativeFailed = 0;
 
-      const runBatch = async (limit?: number): Promise<void> => {
-        const url = limit ? `/api/sync?limit=${limit}` : "/api/sync";
+      const runBatch = async (limit?: number, continuation = false): Promise<void> => {
+        const params = new URLSearchParams();
+        if (limit) params.set("limit", String(limit));
+        if (continuation) params.set("continuation", "true");
+        const qs = params.toString();
+        const url = qs ? `/api/sync?${qs}` : "/api/sync";
         const res = await fetch(url);
 
         if (!res.ok || !res.body) {
@@ -226,7 +230,7 @@ export function useSyncMatches(isLinked: boolean = false) {
             id: toastIdRef.current,
           });
           await new Promise((resolve) => setTimeout(resolve, CONTINUATION_DELAY_MS));
-          await runBatch(CONTINUATION_BATCH_SIZE);
+          await runBatch(CONTINUATION_BATCH_SIZE, true);
           return;
         }
 
