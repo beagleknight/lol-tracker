@@ -148,7 +148,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name || "Unknown",
           image: user.image,
           email: user.email,
-          role: "user",
+          role: "free",
         });
 
         await db

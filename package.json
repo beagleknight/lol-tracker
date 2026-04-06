@@ -1,6 +1,6 @@
 {
   "name": "lol-tracker",
-  "version": "2026.04.10",
+  "version": "2026.04.12",
   "private": true,
   "scripts": {
     "dev": "next dev",

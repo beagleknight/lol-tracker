@@ -1,6 +1,6 @@
 "use client";
 
-import { Ticket, User, Shield, UserPlus } from "lucide-react";
+import { Ticket, User, Shield, UserPlus, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { login } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 // ─── Demo users (must match seed.ts) ──────────────────────────────────────────
 
@@ -30,7 +31,7 @@ const DEMO_USERS = [
     name: "DuoPartner",
     riotId: "DuoPartner#EUW",
     rank: null,
-    role: "user" as const,
+    role: "premium" as const,
     hasRiot: true,
     description: null,
   },
@@ -39,7 +40,7 @@ const DEMO_USERS = [
     name: "NewPlayer",
     riotId: null,
     rank: null,
-    role: "user" as const,
+    role: "free" as const,
     hasRiot: false,
     description: "needsSetup",
   },
@@ -80,6 +81,8 @@ function DemoLoginForm() {
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
               {user.role === "admin" ? (
                 <Shield className="h-5 w-5 text-gold" />
+              ) : user.role === "premium" ? (
+                <Crown className="h-5 w-5 text-blue-400" />
               ) : user.description === "needsSetup" ? (
                 <UserPlus className="h-5 w-5 text-muted-foreground" />
               ) : (
@@ -89,8 +92,19 @@ function DemoLoginForm() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="truncate font-medium text-foreground">{user.name}</span>
-                <Badge variant="outline" className="shrink-0 text-xs">
-                  {user.role === "admin" ? t("demoRoleAdmin") : t("demoRoleUser")}
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "shrink-0 text-xs",
+                    user.role === "admin" && "border-gold/30 text-gold",
+                    user.role === "premium" && "border-blue-400/30 text-blue-400",
+                  )}
+                >
+                  {user.role === "admin"
+                    ? t("demoRoleAdmin")
+                    : user.role === "premium"
+                      ? t("demoRolePremium")
+                      : t("demoRoleFree")}
                 </Badge>
               </div>
               <div className="truncate text-sm text-muted-foreground">

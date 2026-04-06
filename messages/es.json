@@ -73,6 +73,8 @@
     "demoLoginButton": "Entrar",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "Usuario",
+    "demoRolePremium": "Premium",
+    "demoRoleFree": "Gratuito",
     "demoNoRiotAccount": "Sin cuenta de Riot vinculada",
     "demoNeedsSetup": "Necesita configuración"
   },
@@ -323,6 +325,7 @@
     "cached": "En caché",
     "generatedAt": "Generado {date}",
     "dailyLimitReached": "Límite diario de análisis alcanzado.",
+    "premiumRequired": "Los análisis IA están disponibles para usuarios premium.",
     "noApiKey": "Los análisis IA no están configurados. Añade una clave API de Google Gemini para habilitar esta función.",
     "triggerLabel": "Análisis IA",
     "triggerTooltip": "Obtener análisis con IA",
@@ -330,7 +333,8 @@
     "toasts": {
       "generated": "Análisis IA generado.",
       "error": "Error al generar el análisis.",
-      "limitReached": "Límite diario de análisis alcanzado."
+      "limitReached": "Límite diario de análisis alcanzado.",
+      "premiumRequired": "Los análisis IA requieren una cuenta premium."
     }
   },
   "Analytics": {
@@ -922,6 +926,11 @@
     "statusDeactivated": "Desactivado",
     "deactivateButton": "Desactivar",
     "reactivateButton": "Reactivar",
+    "roleAdmin": "Admin",
+    "rolePremium": "Premium",
+    "roleFree": "Gratuito",
+    "grantPremiumButton": "Dar premium",
+    "revokePremiumButton": "Quitar premium",
     "youBadge": "Tú",
     "noRegion": "—",
     "noRiotId": "Sin vincular",
@@ -945,6 +954,9 @@
       "reactivateSuccess": "Usuario reactivado.",
       "deactivateError": "Error al desactivar usuario.",
       "reactivateError": "Error al reactivar usuario.",
+      "grantPremiumSuccess": "Acceso premium concedido.",
+      "revokePremiumSuccess": "Acceso premium revocado.",
+      "roleChangeError": "Error al cambiar el rol del usuario.",
       "generateSuccess": "Código de invitación generado.",
       "generateError": "Error al generar invitación.",
       "deleteSuccess": "Invitación eliminada.",
@@ -957,5 +969,10 @@
     "pageTitle": "Sugerencias y comentarios",
     "pageSubtitle": "Comparte tus ideas, reporta errores o vota por lo que deberíamos construir.",
     "loading": "Cargando widget de sugerencias…"
+  },
+  "Premium": {
+    "gateTitle": "Función premium",
+    "gateDescription": "Esta función está disponible para usuarios premium. Mejora tu cuenta para desbloquearla.",
+    "gateContact": "Contacta al administrador para mejorar tu cuenta."
   }
 }

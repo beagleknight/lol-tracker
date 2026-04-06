@@ -31,9 +31,9 @@ export const users = sqliteTable("users", {
   coachingCadenceDays: integer("coaching_cadence_days").notNull().default(14), // How often to schedule coaching (days)
   locale: text("locale").default("en-GB"),
   language: text("language").default("en"),
-  role: text("role", { enum: ["admin", "user"] })
+  role: text("role", { enum: ["admin", "premium", "free"] })
     .notNull()
-    .default("user"),
+    .default("free"),
   deactivatedAt: integer("deactivated_at", { mode: "timestamp" }), // null = active
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()

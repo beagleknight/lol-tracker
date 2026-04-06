@@ -16,6 +16,7 @@ import {
   Target,
   Shield,
   MessageSquarePlus,
+  Lock,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -37,6 +38,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   badge?: number; // optional counter badge
   dot?: boolean; // small unseen indicator dot
+  locked?: boolean; // premium-locked indicator for free users
 }
 
 /** Nav definitions without labels — labels are resolved via useTranslations */
@@ -120,6 +122,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
     >
       <Icon className="h-4 w-4 shrink-0" />
       <span className="flex-1">{item.label}</span>
+      {item.locked && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />}
       {item.badge != null && item.badge > 0 && (
         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-gold/20 px-1.5 text-xs font-semibold text-gold">
           {item.badge}
@@ -165,11 +168,19 @@ function SidebarContent({
   const coachingNav = resolve(navDefs.coaching);
   const bottomNav = resolve(navDefs.bottom);
 
-  // Inject review badge counts into the tracker nav
+  // Inject review badge counts and premium lock into the tracker nav
   const totalReview = (reviewCounts?.postGame ?? 0) + (reviewCounts?.vod ?? 0);
-  const trackerNavWithBadges = trackerNav.map((item) =>
-    item.href === "/review" && totalReview > 0 ? { ...item, badge: totalReview } : item,
-  );
+  const isFreeUser = user.role === "free";
+  const trackerNavWithBadges = trackerNav.map((item) => {
+    let updated = item;
+    if (item.href === "/review" && totalReview > 0) {
+      updated = { ...updated, badge: totalReview };
+    }
+    if (item.href === "/duo" && isFreeUser) {
+      updated = { ...updated, locked: true };
+    }
+    return updated;
+  });
 
   // Inject unseen dot into the changelog nav link
   const bottomNavWithDot = bottomNav.map((item) =>

@@ -165,7 +165,7 @@ const DUO_USER = {
   onboardingCompleted: true,
   locale: "en-GB",
   language: "en",
-  role: "user" as const,
+  role: "premium" as const,
   primaryRole: null,
   secondaryRole: null,
   activeRiotAccountId: DUO_RIOT_ACCOUNT_ID,
@@ -186,7 +186,7 @@ const NEW_PLAYER = {
   onboardingCompleted: false,
   locale: "en-GB",
   language: "en",
-  role: "user" as const,
+  role: "free" as const,
   primaryRole: null,
   secondaryRole: null,
   activeRiotAccountId: null,
@@ -858,8 +858,8 @@ async function seed() {
   console.log(`  Invites:          1`);
   console.log(`\nDemo user logins:`);
   console.log(`  ${MAIN_USER.name} (admin, Riot linked, onboarding done)`);
-  console.log(`  ${DUO_USER.name} (user, Riot linked, onboarding done)`);
-  console.log(`  ${NEW_PLAYER.name} (user, no Riot account, needs onboarding)`);
+  console.log(`  ${DUO_USER.name} (premium, Riot linked, onboarding done)`);
+  console.log(`  ${NEW_PLAYER.name} (free, no Riot account, needs onboarding)`);
 }
 
 seed().catch((err) => {

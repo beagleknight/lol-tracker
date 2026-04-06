@@ -13,7 +13,7 @@ declare module "next-auth" {
       region?: string | null;
       activeRiotAccountId?: string | null;
       onboardingCompleted?: boolean;
-      role?: string | null;
+      role?: "admin" | "premium" | "free" | null;
       locale?: string | null;
       language?: string | null;
       primaryRole?: string | null;
