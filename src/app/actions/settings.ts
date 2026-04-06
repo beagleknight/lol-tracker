@@ -237,7 +237,8 @@ export async function updateRegion(region: string) {
 
 /**
  * Search registered users by Riot ID (gameName or tagLine).
- * Returns max 5 results. Does NOT return puuid (privacy).
+ * Returns max 5 results. Only returns accounts marked as discoverable.
+ * Does NOT return puuid (privacy).
  */
 export async function searchUsers(query: string) {
   const user = await requireUser();
@@ -249,19 +250,24 @@ export async function searchUsers(query: string) {
 
   const pattern = `%${trimmed}%`;
 
+  // Search discoverable riot accounts instead of the users table cache.
+  // This respects the per-account discoverable flag and shows all
+  // discoverable accounts (not just the user's active one).
   const result = await db
     .select({
       id: users.id,
       name: users.name,
-      riotGameName: users.riotGameName,
-      riotTagLine: users.riotTagLine,
+      riotGameName: riotAccounts.riotGameName,
+      riotTagLine: riotAccounts.riotTagLine,
     })
-    .from(users)
+    .from(riotAccounts)
+    .innerJoin(users, eq(users.id, riotAccounts.userId))
     .where(
       and(
-        ne(users.id, user.id),
+        ne(riotAccounts.userId, user.id),
+        eq(riotAccounts.discoverable, true),
         isNotNull(users.puuid),
-        or(like(users.riotGameName, pattern), like(users.riotTagLine, pattern)),
+        or(like(riotAccounts.riotGameName, pattern), like(riotAccounts.riotTagLine, pattern)),
       ),
     )
     .limit(5);

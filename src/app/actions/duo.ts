@@ -7,7 +7,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { RiotMatch } from "@/lib/riot-api";
 
 import { db } from "@/db";
-import { matches, users, type MatchResult } from "@/db/schema";
+import { matches, riotAccounts, users, type MatchResult } from "@/db/schema";
 import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
 import { duoStatsSelect, championSynergySelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
@@ -316,13 +316,13 @@ export async function backfillDuoGames(): Promise<{
     return { processed: 0, duoFound: 0 };
   }
 
-  const partner = await db.query.users.findFirst({
-    where: eq(users.id, user.duoPartnerUserId),
+  // Look up all partner puuids (all linked accounts) for smurf detection
+  const partnerAccounts = await db.query.riotAccounts.findMany({
+    where: eq(riotAccounts.userId, user.duoPartnerUserId),
     columns: { puuid: true },
   });
-  if (!partner?.puuid) return { processed: 0, duoFound: 0 };
-
-  const partnerPuuid = partner.puuid;
+  const partnerPuuids = partnerAccounts.map((a) => a.puuid);
+  if (partnerPuuids.length === 0) return { processed: 0, duoFound: 0 };
 
   // Get all matches with raw JSON that don't already have duo partner set
   const backfillConditions = [
@@ -354,14 +354,14 @@ export async function backfillDuoGames(): Promise<{
       if (!player) continue;
 
       const partnerOnTeam = participants.find(
-        (p) => p.puuid === partnerPuuid && p.teamId === player.teamId,
+        (p) => partnerPuuids.includes(p.puuid) && p.teamId === player.teamId,
       );
 
       if (partnerOnTeam) {
         await db
           .update(matches)
           .set({
-            duoPartnerPuuid: partnerPuuid,
+            duoPartnerPuuid: partnerOnTeam.puuid,
             duoPartnerChampionName: partnerOnTeam.championName,
             duoPartnerKills: partnerOnTeam.kills,
             duoPartnerDeaths: partnerOnTeam.deaths,

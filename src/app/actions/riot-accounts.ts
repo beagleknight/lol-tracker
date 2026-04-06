@@ -80,6 +80,7 @@ export async function addRiotAccount(formData: FormData) {
       riotTagLine: account.tagLine,
       region,
       isPrimary,
+      discoverable: isPrimary, // Primary accounts are discoverable by default, smurfs are hidden
       label: isPrimary ? null : null, // User can set a label later
       // Copy user-level role preferences to first account
       primaryRole: isPrimary ? user.primaryRole : null,
@@ -374,6 +375,7 @@ export async function getUserRiotAccounts() {
       riotTagLine: true,
       region: true,
       isPrimary: true,
+      discoverable: true,
       label: true,
       primaryRole: true,
       secondaryRole: true,
@@ -382,4 +384,29 @@ export async function getUserRiotAccounts() {
   });
 
   return accounts;
+}
+
+// ─── Toggle Account Discoverability ─────────────────────────────────────────
+
+/**
+ * Toggle whether a Riot account appears in duo partner search results.
+ * Primary accounts default to discoverable; non-primary default to hidden.
+ */
+export async function toggleAccountDiscoverable(accountId: string, discoverable: boolean) {
+  const user = await requireUser();
+
+  // Verify ownership
+  const account = await db.query.riotAccounts.findFirst({
+    where: and(eq(riotAccounts.id, accountId), eq(riotAccounts.userId, user.id)),
+  });
+
+  if (!account) {
+    return { error: "Riot account not found." };
+  }
+
+  await db.update(riotAccounts).set({ discoverable }).where(eq(riotAccounts.id, accountId));
+
+  revalidatePath("/settings");
+
+  return { success: true };
 }

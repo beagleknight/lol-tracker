@@ -61,6 +61,7 @@ export const riotAccounts = sqliteTable(
     summonerId: text("summoner_id"),
     region: text("region").notNull(), // Riot platform region: euw1, na1, kr, eun1, etc.
     isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
+    discoverable: integer("discoverable", { mode: "boolean" }).notNull().default(true), // Whether this account appears in duo partner search results
     label: text("label"), // User-friendly nickname, e.g. "Main", "Smurf"
     primaryRole: text("primary_role"), // Preferred primary position: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY
     secondaryRole: text("secondary_role"), // Preferred secondary position

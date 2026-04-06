@@ -708,7 +708,12 @@
       "accountCount": "{count} de {max} cuentas",
       "rolesLabel": "Roles",
       "rolesDescription": "Roles principal y secundario para esta cuenta",
-      "roleSaved": "Roles actualizados para esta cuenta."
+      "roleSaved": "Roles actualizados para esta cuenta.",
+      "discoverableToggle": "Alternar visibilidad en búsqueda de dúo",
+      "discoverableLabel": "Visible",
+      "hiddenLabel": "Oculta",
+      "discoverableOn": "Esta cuenta ahora es visible en la búsqueda de compañero de dúo.",
+      "discoverableOff": "Esta cuenta ahora está oculta en la búsqueda de compañero de dúo."
     },
     "invites": {
       "title": "Invitar amigos",
