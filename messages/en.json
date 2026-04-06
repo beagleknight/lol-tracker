@@ -709,6 +709,7 @@
       "removeConfirm": "Remove this account? Your match data will be kept.",
       "cannotRemovePrimary": "Cannot remove your main account.",
       "accountLimitReached": "You've reached the maximum of 5 linked accounts.",
+      "addAccountPremiumRequired": "Linking additional accounts is a premium feature. Contact the admin to upgrade.",
       "accountCount": "{count} of {max} accounts",
       "rolesLabel": "Roles",
       "rolesDescription": "Primary and secondary roles for this account",

@@ -709,6 +709,7 @@
       "removeConfirm": "¿Eliminar esta cuenta? Tus datos de partidas se conservarán.",
       "cannotRemovePrimary": "No se puede eliminar la cuenta principal.",
       "accountLimitReached": "Has alcanzado el máximo de 5 cuentas vinculadas.",
+      "addAccountPremiumRequired": "Vincular cuentas adicionales es una función premium. Contacta al administrador para mejorar tu cuenta.",
       "accountCount": "{count} de {max} cuentas",
       "rolesLabel": "Roles",
       "rolesDescription": "Roles principal y secundario para esta cuenta",

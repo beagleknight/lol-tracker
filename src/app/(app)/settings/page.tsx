@@ -16,6 +16,7 @@ import {
   X,
   Eye,
   EyeOff,
+  Crown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -94,6 +95,8 @@ export default function SettingsPage() {
   const isLinked = !!user?.riotGameName;
   const userLocale = (user?.locale as SupportedLocale) ?? DEFAULT_LOCALE;
   const userLanguage = (user?.language as SupportedLanguage) ?? DEFAULT_LANGUAGE;
+  const userIsPremium = user?.role === "admin" || user?.role === "premium";
+  const maxAccounts = userIsPremium ? 5 : 1;
 
   // Stable date for the locale preview (avoid Next.js prerender `new Date()` error)
   const [previewDate, setPreviewDate] = useState<Date | null>(null);
@@ -426,7 +429,7 @@ export default function SettingsPage() {
                     <span className="ml-2 text-xs text-gold/70">
                       {t("riotAccounts.accountCount", {
                         count: riotAccounts.length,
-                        max: 5,
+                        max: maxAccounts,
                       })}
                     </span>
                   )}
@@ -631,7 +634,11 @@ export default function SettingsPage() {
                                     !account.discoverable,
                                   );
                                   if (result.error) {
-                                    toast.error(result.error);
+                                    if (result.error === "premiumRequired") {
+                                      toast.error(t("riotAccounts.addAccountPremiumRequired"));
+                                    } else {
+                                      toast.error(result.error);
+                                    }
                                   } else {
                                     setRiotAccounts((prev) =>
                                       prev.map((a) =>
@@ -759,7 +766,18 @@ export default function SettingsPage() {
             </Card>
 
             {/* Add Account Card */}
-            {riotAccounts.length < 5 ? (
+            {!userIsPremium && riotAccounts.length >= 1 ? (
+              <Card className="surface-glow">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3 text-center">
+                    <Crown className="h-5 w-5 shrink-0 text-gold" />
+                    <p className="text-sm text-muted-foreground">
+                      {t("riotAccounts.addAccountPremiumRequired")}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : riotAccounts.length < maxAccounts ? (
               <Card className="surface-glow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
