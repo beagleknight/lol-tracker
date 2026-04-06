@@ -173,6 +173,33 @@ async function migrate() {
       args: [hash, Date.now()],
     });
 
+    // ── Run post-migration validation if a .validate.sql file exists ────
+    const validatePath = path.resolve(__dirname, `../drizzle/${hash}.validate.sql`);
+    if (fs.existsSync(validatePath)) {
+      console.log(`[migrate]   Running validation for ${hash}...`);
+      const validateSql = fs.readFileSync(validatePath, "utf-8");
+      const validateStatements = validateSql
+        .split("--> statement-breakpoint")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      for (const stmt of validateStatements) {
+        const result = await client.execute(stmt);
+        // Each validation query should return 0 rows if data is correct.
+        // Any rows returned indicate a data integrity issue.
+        if (result.rows.length > 0) {
+          console.error(`[migrate] ✗ Validation failed for ${hash}:`);
+          console.error(`[migrate]   Query: ${stmt.slice(0, 200)}`);
+          console.error(
+            `[migrate]   Found ${result.rows.length} row(s) that violate the assertion.`,
+          );
+          console.error(`[migrate]   First row: ${JSON.stringify(result.rows[0])}`);
+          process.exit(1);
+        }
+      }
+      console.log(`[migrate]   ✓ All validations passed for ${hash}`);
+    }
+
     appliedCount++;
     console.log(`[migrate] ✓ Applied ${hash}`);
   }
