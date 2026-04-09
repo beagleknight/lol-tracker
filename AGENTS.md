@@ -186,6 +186,20 @@ Full workflow details are in the `ui-screenshots` OpenCode skill.
 
 **MANDATORY: NEVER include login screen screenshots in changelogs or PR descriptions.** The login screen is only visible in demo mode (DemoPlayer/DuoPartner/AdminUser buttons). Real users authenticate via Discord OAuth and never see this screen. Screenshots of it leak internal demo infrastructure to players. This applies to any demo-only UI — if a real user would never see it, it must not appear in the changelog.
 
+**MANDATORY: Screenshot consistency rules.** Before pushing any changelog with images, verify ALL of the following:
+
+1. **Every screenshot must be a full 1280x720 viewport capture** — never crop or screenshot individual UI elements (e.g., just the sidebar). Always capture the full page at the standard viewport size.
+2. **Related images must use `changelog-image-grid`** — never place two loose standalone `![](...)` images in sequence. Wrap them in `<div className="changelog-image-grid">` so they render side-by-side at consistent dimensions.
+3. **Both images in a grid must be 1280x720** — mixing dimensions (e.g., a 253x682 crop next to a 1280x720 page) breaks the visual layout.
+4. **"After" images must be annotated** — use red arrows/labels following the annotation spec in the `ui-screenshots` skill, and use the `-annotated` filename suffix.
+5. **Grids can serve three purposes** — pick the right one for the context:
+   - **Before/after comparison**: left = `before-*.png`, right = `after-*-annotated.png` (e.g., duo-partner-search, coaching-ux)
+   - **Two views of a new feature** (no "before" exists): both images are `after-*-annotated.png` showing different aspects of the same feature (e.g., canny-feedback-widget: sidebar link + feature page)
+   - **Sequential steps**: both images are `after-*-annotated.png` showing step 1 and step 2 (e.g., onboarding-wizard)
+6. **A single standalone image is valid** when there is only one screenshot to show (e.g., a new page with no related second view). Do NOT force a grid with one real image and one filler.
+
+**Incident reference**: PR #176 (riot-disclaimer) shipped a 253x682 cropped sidebar screenshot alongside a 1280x720 page screenshot, with no grid wrapper. The cropped image rendered at a completely different aspect ratio, breaking the visual consistency of the changelog page. The fix was to re-capture the sidebar as a full 1280x720 viewport screenshot and wrap both images in a `changelog-image-grid`.
+
 <!-- END:ui-screenshots-rules -->
 
 <!-- BEGIN:security-rules -->
