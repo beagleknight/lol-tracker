@@ -171,11 +171,21 @@ Image styling is handled by `changelog-prose img` in `globals.css` (max-width, b
 
 #### PR description
 
-Use GitHub raw image URLs pointing to the branch:
+Use GitHub raw image URLs pointing to the **commit SHA** (NOT the branch name):
 
 ```markdown
-![Before](https://github.com/beagleknight/lol-tracker/blob/<branch>/public/changelog/<slug>/before-review.png?raw=true)
+![Before](https://github.com/beagleknight/lol-tracker/blob/<commit-sha>/public/changelog/<slug>/before-review.png?raw=true)
 ```
+
+**How to get the commit SHA**: After committing the screenshot files, run:
+
+```bash
+git rev-parse HEAD
+```
+
+Use the full 40-character SHA in the URL. This ensures the image URL is permanent — it survives branch deletion after the PR is merged.
+
+**WARNING: Do NOT use branch names in image URLs.** Branch-based URLs (e.g., `.../blob/feat/my-feature/...`) break as soon as the branch is deleted after merge. Since all PRs are squash-merged and branches are deleted, every branch-based image URL will eventually return 404. Commit SHAs are immutable and permanent.
 
 Do NOT use `raw.githubusercontent.com` URLs — they don't render reliably in PR descriptions.
 
@@ -297,7 +307,7 @@ npm run test:e2e
 3. [ ] All images stored in `public/changelog/<slug>/`
 4. [ ] **No demo-only UI in changelogs** — login screen, demo user buttons, seed data labels must NEVER appear
 5. [ ] Changelog MDX (both `en/` and `es/`) includes embedded screenshots
-6. [ ] PR description includes before/after images with correct GitHub blob URLs
+6. [ ] PR description includes before/after images with commit SHA-based GitHub blob URLs (NOT branch names)
 7. [ ] `npx oxfmt --write <file>` run on EVERY file created or edited
 8. [ ] `npx oxfmt --check src/ messages/ changelog/ .opencode/` passes
 9. [ ] `npm run test:smoke` passes locally before pushing
