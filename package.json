@@ -2,6 +2,7 @@
   "name": "lol-tracker",
   "version": "2026.04.12",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",

@@ -28,8 +28,8 @@ Required variables in `.env.local`:
 
 ```
 AUTH_SECRET=           # Generate with: npx auth secret
-DISCORD_CLIENT_ID=     # From Discord Developer Portal
-DISCORD_CLIENT_SECRET= # From Discord Developer Portal
+AUTH_DISCORD_ID=       # From Discord Developer Portal
+AUTH_DISCORD_SECRET=   # From Discord Developer Portal
 RIOT_API_KEY=          # From developer.riotgames.com
 ```
 
@@ -79,3 +79,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Auth:** NextAuth v5 with Discord provider
 - **UI:** shadcn/ui v4, Tailwind CSS v4
 - **API:** Riot Games API for match data
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-or-later).
+
+You are free to use, modify, and distribute this software under the terms of the AGPL. If you run a modified version as a network service, you must make the source code available to its users. See the [LICENSE](LICENSE) file for details.
