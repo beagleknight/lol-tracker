@@ -1,10 +1,22 @@
 # LoL Tracker
 
+[![CI](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+
 A personal League of Legends match tracker built with Next.js 16, featuring automatic match syncing via the Riot Games API, coaching session logging, and performance analytics.
+
+## Features
+
+- **Automatic match syncing** — links your Riot account and keeps your match history up to date
+- **Multi-account support** — track multiple Riot accounts (smurfs) under one login
+- **Performance analytics** — win rates, champion stats, role breakdowns, and trends over time
+- **AI-powered coaching** — get personalized feedback and action items from match reviews
+- **Duo partner tracking** — find and analyze your performance with duo partners
+- **Bilingual** — full English and Spanish support
 
 ## Prerequisites
 
-- Node.js 24+ (recommended: use [fnm](https://github.com/Schniz/fnm))
+- Node.js 24+ (recommended: use [fnm](https://github.com/Schniz/fnm) with the included `.tool-versions`)
 - A [Discord application](https://discord.com/developers/applications) for OAuth login
 - A [Riot Games API key](https://developer.riotgames.com)
 
@@ -58,7 +70,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Important Notes
+## Self-hosting
+
+LoL Tracker is designed to run on [Vercel](https://vercel.com) with [Turso](https://turso.tech) as the production database, but you can adapt it to other platforms.
+
+**Each instance requires its own credentials:**
+
+- **Riot Games API key** — register at [developer.riotgames.com](https://developer.riotgames.com). Development keys expire every 24 hours; for a persistent deployment, apply for a production key and register your product on the Riot Developer Portal.
+- **Discord OAuth app** — create one at [discord.com/developers](https://discord.com/developers/applications). Set the redirect URI to `https://your-domain.com/api/auth/callback/discord`.
+- **Turso database** — create a database at [turso.tech](https://turso.tech) and set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in your hosting environment.
+
+See `.env.example` for the full list of environment variables.
+
+Migrations are applied automatically on deploy via `scripts/migrate.ts`. No manual migration step is needed.
+
+## Important notes
 
 - The production build uses the `--webpack` flag because Turbopack has issues bundling `@libsql/client`.
 
@@ -69,16 +95,34 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run dev`            | Start dev server (webpack)                 |
 | `npm run build`          | Production build (webpack)                 |
 | `npm run start`          | Start production server                    |
+| `npm run test:smoke`     | Run Playwright smoke tests (a11y + pages)  |
+| `npm run test:e2e`       | Run Playwright end-to-end tests            |
 | `npx drizzle-kit push`   | Push schema changes to the database        |
 | `npx drizzle-kit studio` | Open Drizzle Studio to browse the database |
 
-## Tech Stack
+## Tech stack
 
 - **Framework:** Next.js 16 (React 19)
 - **Database:** SQLite/Turso via @libsql/client + Drizzle ORM
 - **Auth:** NextAuth v5 with Discord provider
 - **UI:** shadcn/ui v4, Tailwind CSS v4
+- **AI:** Google Gemini via Vercel AI SDK
+- **i18n:** next-intl (English + Spanish)
+- **Testing:** Playwright, axe-core
+- **Linting:** oxlint, oxfmt
 - **API:** Riot Games API for match data
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding guidelines, and the pull request workflow.
+
+## Security
+
+To report a security vulnerability, please email david.morcillo@gmail.com. Do **not** open a public issue. See [SECURITY.md](SECURITY.md) for details.
+
+## Legal
+
+LoL Tracker is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 
 ## License
 
