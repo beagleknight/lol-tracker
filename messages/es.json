@@ -923,6 +923,7 @@
     "columnRiotId": "Riot ID",
     "columnRegion": "Región",
     "columnMatches": "Partidas",
+    "matchCountMismatchTooltip": "El usuario ve {scoped} partidas pero existen {total} en la base de datos — posible problema de backfill de riot_account_id",
     "columnLastSync": "Última sync",
     "columnJoined": "Registro",
     "columnStatus": "Estado",
