@@ -178,10 +178,16 @@ async function migrate() {
     if (fs.existsSync(validatePath)) {
       console.log(`[migrate]   Running validation for ${hash}...`);
       const validateSql = fs.readFileSync(validatePath, "utf-8");
+      // Validation files are hand-written SQL, so split on semicolons
+      // (not Drizzle's --> statement-breakpoint markers).
       const validateStatements = validateSql
-        .split("--> statement-breakpoint")
+        .split(";")
         .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+        .filter((s) => {
+          // Keep only chunks that contain actual SQL (not just comments/whitespace)
+          const withoutComments = s.replace(/--[^\n]*/g, "").trim();
+          return withoutComments.length > 0;
+        });
 
       for (const stmt of validateStatements) {
         const result = await client.execute(stmt);
