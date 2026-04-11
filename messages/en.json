@@ -923,6 +923,7 @@
     "columnRiotId": "Riot ID",
     "columnRegion": "Region",
     "columnMatches": "Matches",
+    "matchCountMismatchTooltip": "User sees {scoped} matches but {total} exist in database — possible riot_account_id backfill issue",
     "columnLastSync": "Last sync",
     "columnJoined": "Joined",
     "columnStatus": "Status",

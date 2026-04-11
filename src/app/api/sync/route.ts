@@ -334,6 +334,7 @@ export async function GET(request: Request) {
               .onConflictDoUpdate({
                 target: [matches.id, matches.userId],
                 set: {
+                  riotAccountId: activeRiotAccountId,
                   gameDate: playerData.gameDate,
                   result: playerData.result,
                   championId: playerData.championId,
