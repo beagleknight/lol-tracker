@@ -31,6 +31,10 @@ export interface AuthUser {
   primaryRole?: string | null;
   secondaryRole?: string | null;
   coachingCadenceDays?: number | null;
+  /** True when an admin is impersonating this user */
+  isImpersonating?: boolean;
+  /** The real admin's display name during impersonation */
+  realAdminName?: string | null;
 }
 
 export interface UseAuthReturn {
