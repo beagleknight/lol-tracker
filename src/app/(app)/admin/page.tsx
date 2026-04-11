@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -117,6 +118,9 @@ function UsersSection() {
       try {
         await startImpersonation(userId);
       } catch (err) {
+        // redirect() throws a NEXT_REDIRECT error — let it propagate so the
+        // redirect actually happens instead of showing a false error toast.
+        if (isRedirectError(err)) throw err;
         toast.error(err instanceof Error ? err.message : t("toasts.impersonateError"));
       }
     });

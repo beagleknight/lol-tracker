@@ -977,6 +977,7 @@
   "Impersonation": {
     "banner": "Viendo como {name} — sesión de {admin} (solo lectura)",
     "stopButton": "Detener",
+    "stopError": "Error al detener la suplantación",
     "unknownUser": "Usuario desconocido"
   },
   "Feedback": {

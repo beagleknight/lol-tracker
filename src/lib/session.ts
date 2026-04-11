@@ -4,11 +4,39 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { type User, users } from "@/db/schema";
+import { type User, users, riotAccounts } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // ─── Impersonation cookie name ──────────────────────────────────────────────
 export const IMPERSONATE_COOKIE = "admin-impersonate";
+
+// ─── Resolve role preferences from the active Riot account ─────────────────
+// The users table has a cached `primaryRole`/`secondaryRole`, but the
+// authoritative source is the per-account value on `riotAccounts`.
+// This helper reads from the active account when available, falling back
+// to the users table cache. Both the session callback (client path) and
+// getCurrentUser (server path) must use the same resolution logic.
+async function resolveRolePreferences(
+  user: User,
+): Promise<{ primaryRole: string | null; secondaryRole: string | null }> {
+  if (user.activeRiotAccountId) {
+    const activeAccount = await db.query.riotAccounts.findFirst({
+      where: eq(riotAccounts.id, user.activeRiotAccountId),
+      columns: { primaryRole: true, secondaryRole: true },
+    });
+    if (activeAccount) {
+      return {
+        primaryRole: activeAccount.primaryRole ?? null,
+        secondaryRole: activeAccount.secondaryRole ?? null,
+      };
+    }
+  }
+  // Fallback to user-level roles for backwards compatibility
+  return {
+    primaryRole: user.primaryRole,
+    secondaryRole: user.secondaryRole,
+  };
+}
 
 // ─── Real user (ignores impersonation) ──────────────────────────────────────
 // Always returns the JWT session user. Used by admin routes and
@@ -33,6 +61,9 @@ export const getRealUser = cache(async () => {
 // ─── Current user (impersonation-aware) ─────────────────────────────────────
 // cache() deduplicates this call within a single request,
 // so layout + page calling requireUser() only hits the DB once.
+// Role preferences (primaryRole/secondaryRole) are resolved from the active
+// Riot account to stay consistent with what the session callback sends to
+// client components via useAuth().
 export const getCurrentUser = cache(async () => {
   const realUser = await getRealUser();
   if (!realUser) return null;
@@ -41,21 +72,30 @@ export const getCurrentUser = cache(async () => {
   const cookieStore = await cookies();
   const targetUserId = cookieStore.get(IMPERSONATE_COOKIE)?.value;
 
+  let effectiveUser = realUser;
+
   if (targetUserId) {
     // Only admins may impersonate
-    if (realUser.role !== "admin") return realUser;
+    if (realUser.role === "admin") {
+      const targetUser = await db.query.users.findFirst({
+        where: eq(users.id, targetUserId),
+      });
 
-    const targetUser = await db.query.users.findFirst({
-      where: eq(users.id, targetUserId),
-    });
-
-    // Fall back to real user if target doesn't exist or is deactivated
-    if (!targetUser || targetUser.deactivatedAt) return realUser;
-
-    return targetUser;
+      // Use target if valid and not deactivated, otherwise fall back to real user
+      if (targetUser && !targetUser.deactivatedAt) {
+        effectiveUser = targetUser;
+      }
+    }
   }
 
-  return realUser;
+  // Resolve role preferences from the active Riot account (authoritative source)
+  const roles = await resolveRolePreferences(effectiveUser);
+
+  return {
+    ...effectiveUser,
+    primaryRole: roles.primaryRole,
+    secondaryRole: roles.secondaryRole,
+  };
 });
 
 // ─── Impersonation helpers ──────────────────────────────────────────────────

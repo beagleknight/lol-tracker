@@ -977,6 +977,7 @@
   "Impersonation": {
     "banner": "Viewing as {name} — logged in as {admin} (read-only)",
     "stopButton": "Stop",
+    "stopError": "Failed to stop impersonation",
     "unknownUser": "Unknown user"
   },
   "Feedback": {
