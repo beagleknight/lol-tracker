@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { requireUser } from "@/lib/session";
+import { blockIfImpersonating, requireUser } from "@/lib/session";
 
 /**
  * Complete the onboarding flow.
@@ -18,6 +18,7 @@ import { requireUser } from "@/lib/session";
  */
 export async function completeOnboarding() {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   if (user.onboardingCompleted) {
     return { error: "Onboarding already completed." };

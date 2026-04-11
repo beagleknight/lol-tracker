@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 
-import { requireUser } from "@/lib/session";
+import { getRealUser } from "@/lib/session";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser();
+  // Always use the REAL user (ignoring impersonation) so admins
+  // can access the admin panel while impersonating another user.
+  const user = await getRealUser();
 
-  if (user.role !== "admin") {
+  if (!user || user.role !== "admin") {
     redirect("/dashboard");
   }
 

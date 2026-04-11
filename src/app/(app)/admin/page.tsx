@@ -3,6 +3,7 @@
 import {
   Copy,
   Crown,
+  Eye,
   Loader2,
   Plus,
   Shield,
@@ -13,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +23,7 @@ import {
   deactivateUser,
   reactivateUser,
   updateUserRole,
+  startImpersonation,
   type AdminUser,
 } from "@/app/actions/admin";
 import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
@@ -49,7 +52,8 @@ interface InviteItem {
 
 function UsersSection() {
   const t = useTranslations("Admin");
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateSession } = useAuth();
+  const router = useRouter();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -106,6 +110,20 @@ function UsersSection() {
         await loadUsers();
       } catch {
         toast.error(t("toasts.roleChangeError"));
+      }
+    });
+  }
+
+  function handleImpersonate(userId: string) {
+    startTransition(async () => {
+      try {
+        await startImpersonation(userId);
+        // Refresh the client session BEFORE navigating so the target page
+        // renders with the impersonated user's data (no stale-session flicker).
+        await updateSession();
+        router.push("/dashboard");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("toasts.impersonateError"));
       }
     });
   }
@@ -227,6 +245,23 @@ function UsersSection() {
                   {/* Actions */}
                   {!isYou && (
                     <div className="flex shrink-0 gap-1.5">
+                      {u.role !== "admin" && !isDeactivated && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleImpersonate(u.id)}
+                          disabled={isPending}
+                          className="gap-1.5 text-amber-400 hover:bg-amber-400/10"
+                          aria-label={t("impersonateButton", { name: u.name || "Unknown" })}
+                        >
+                          {isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                          )}
+                          {t("viewAsButton")}
+                        </Button>
+                      )}
                       {u.role !== "admin" && (
                         <Button
                           variant="outline"
