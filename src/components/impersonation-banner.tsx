@@ -2,7 +2,7 @@
 
 import { Eye, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-client";
 
 export function ImpersonationBanner() {
-  const { user } = useAuth();
+  const { user, updateSession } = useAuth();
   const t = useTranslations("Impersonation");
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   if (!user?.isImpersonating) return null;
@@ -21,10 +22,12 @@ export function ImpersonationBanner() {
     startTransition(async () => {
       try {
         await stopImpersonation();
+        // Refresh the client session BEFORE navigating so the admin page
+        // renders with the real admin identity (no stale-session flicker).
+        await updateSession();
+        router.push("/admin");
       } catch (err) {
-        // redirect() throws a NEXT_REDIRECT error — let it propagate
-        if (isRedirectError(err)) throw err;
-        toast.error(t("stopError"));
+        toast.error(err instanceof Error ? err.message : t("stopError"));
       }
     });
   }

@@ -14,7 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useRouter } from "next/navigation";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -52,7 +52,8 @@ interface InviteItem {
 
 function UsersSection() {
   const t = useTranslations("Admin");
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateSession } = useAuth();
+  const router = useRouter();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -117,10 +118,11 @@ function UsersSection() {
     startTransition(async () => {
       try {
         await startImpersonation(userId);
+        // Refresh the client session BEFORE navigating so the target page
+        // renders with the impersonated user's data (no stale-session flicker).
+        await updateSession();
+        router.push("/dashboard");
       } catch (err) {
-        // redirect() throws a NEXT_REDIRECT error — let it propagate so the
-        // redirect actually happens instead of showing a false error toast.
-        if (isRedirectError(err)) throw err;
         toast.error(err instanceof Error ? err.message : t("toasts.impersonateError"));
       }
     });

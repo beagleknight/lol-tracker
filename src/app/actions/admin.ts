@@ -2,7 +2,6 @@
 
 import { eq, count, max, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { users, matches } from "@/db/schema";
@@ -159,12 +158,15 @@ export async function startImpersonation(targetUserId: string) {
     maxAge: 60 * 60, // 1 hour — auto-expires as a safety net
   });
 
-  redirect("/dashboard");
+  // Don't redirect here — let the client update the session first
+  // to avoid a flash of stale (admin) session data on the target page.
+  return { success: true };
 }
 
 export async function stopImpersonation() {
   const cookieStore = await cookies();
   cookieStore.delete(IMPERSONATE_COOKIE);
 
-  redirect("/admin");
+  // Same as above — client handles navigation after session refresh.
+  return { success: true };
 }
