@@ -18,6 +18,7 @@ export interface AdminUser {
   deactivatedAt: Date | null;
   createdAt: Date;
   matchCount: number;
+  scopedMatchCount: number;
   lastSync: Date | null;
 }
 
@@ -38,6 +39,7 @@ export async function getUsers(): Promise<AdminUser[]> {
       deactivatedAt: users.deactivatedAt,
       createdAt: users.createdAt,
       matchCount: count(matches.id),
+      scopedMatchCount: sql<number>`SUM(CASE WHEN ${matches.riotAccountId} = ${users.activeRiotAccountId} THEN 1 ELSE 0 END)`,
       lastSync: max(matches.syncedAt),
     })
     .from(users)
@@ -57,6 +59,7 @@ export async function getUsers(): Promise<AdminUser[]> {
     deactivatedAt: r.deactivatedAt,
     createdAt: r.createdAt,
     matchCount: r.matchCount,
+    scopedMatchCount: r.scopedMatchCount ?? 0,
     lastSync: r.lastSync ? new Date(r.lastSync) : null,
   }));
 }
