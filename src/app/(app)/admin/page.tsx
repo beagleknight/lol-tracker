@@ -202,7 +202,21 @@ function UsersSection() {
                         {u.region ? PLATFORM_LABELS[u.region] || u.region : t("noRegion")}
                       </span>
                       <span>
-                        {u.matchCount} {t("columnMatches").toLowerCase()}
+                        {u.scopedMatchCount !== u.matchCount ? (
+                          <span
+                            className="text-amber-400"
+                            title={t("matchCountMismatchTooltip", {
+                              scoped: u.scopedMatchCount,
+                              total: u.matchCount,
+                            })}
+                          >
+                            {u.scopedMatchCount}/{u.matchCount} {t("columnMatches").toLowerCase()}
+                          </span>
+                        ) : (
+                          <>
+                            {u.matchCount} {t("columnMatches").toLowerCase()}
+                          </>
+                        )}
                       </span>
                       <span>
                         {t("columnJoined")}: {formatDate(u.createdAt, locale)}
