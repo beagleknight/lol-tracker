@@ -1,7 +1,7 @@
 import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
-import { matches, rankSnapshots, riotAccounts, users } from "@/db/schema";
+import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
 import { checkGoalAchievement } from "@/lib/goals";
 import { checkRateLimit, hasRecentEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
@@ -17,7 +17,7 @@ import {
   getLastRateLimitInfo,
   RiotApiError,
 } from "@/lib/riot-api";
-import { getCurrentUser } from "@/lib/session";
+import { blockIfImpersonating, getCurrentUser } from "@/lib/session";
 import {
   acquireSyncLock,
   releaseSyncLock,
@@ -45,6 +45,16 @@ export async function GET(request: Request) {
 
   if (!user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Block sync during admin impersonation (read-only mode)
+  try {
+    await blockIfImpersonating();
+  } catch {
+    return Response.json(
+      { error: "Sync is disabled while viewing as another user." },
+      { status: 403 },
+    );
   }
 
   if (!user.puuid) {

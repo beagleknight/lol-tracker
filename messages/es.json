@@ -955,6 +955,8 @@
     "copyCode": "Copiar código de invitación",
     "deleteInvite": "Eliminar invitación",
     "noInvites": "No hay invitaciones aún. Genera una para invitar a un nuevo usuario.",
+    "viewAsButton": "Ver como",
+    "impersonateButton": "Ver como {name}",
     "toasts": {
       "deactivateSuccess": "Usuario desactivado.",
       "reactivateSuccess": "Usuario reactivado.",
@@ -968,8 +970,14 @@
       "deleteSuccess": "Invitación eliminada.",
       "deleteError": "Error al eliminar invitación.",
       "codeCopied": "Código de invitación copiado al portapapeles.",
-      "linkCopied": "Enlace de invitación copiado al portapapeles."
+      "linkCopied": "Enlace de invitación copiado al portapapeles.",
+      "impersonateError": "Error al iniciar la suplantación."
     }
+  },
+  "Impersonation": {
+    "banner": "Viendo como {name} — sesión de {admin} (solo lectura)",
+    "stopButton": "Detener",
+    "unknownUser": "Usuario desconocido"
   },
   "Feedback": {
     "pageTitle": "Sugerencias y comentarios",

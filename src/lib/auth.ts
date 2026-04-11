@@ -7,6 +7,9 @@ import { db } from "@/db";
 import { users, invites, riotAccounts } from "@/db/schema";
 import { isDemoMode, demoCredentialsProvider } from "@/lib/fake-auth";
 
+// Duplicated from session.ts to avoid circular import (session.ts imports auth.ts)
+const IMPERSONATE_COOKIE = "admin-impersonate";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     // Auth.js auto-reads AUTH_DISCORD_ID and AUTH_DISCORD_SECRET from
@@ -168,35 +171,57 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (token.sub) {
-        // Look up our internal user by discord ID
+        // Look up our internal user by discord ID (the real JWT user)
         const dbUser = await db.query.users.findFirst({
           where: eq(users.discordId, token.discordId as string),
         });
-        if (dbUser) {
-          session.user.id = dbUser.id;
-          session.user.riotGameName = dbUser.riotGameName;
-          session.user.riotTagLine = dbUser.riotTagLine;
-          session.user.isRiotLinked = !!dbUser.puuid;
-          session.user.region = dbUser.region;
-          session.user.activeRiotAccountId = dbUser.activeRiotAccountId;
-          session.user.onboardingCompleted = dbUser.onboardingCompleted;
-          session.user.role = dbUser.role;
-          session.user.locale = dbUser.locale;
-          session.user.language = dbUser.language;
-          session.user.coachingCadenceDays = dbUser.coachingCadenceDays;
+        if (!dbUser) return session;
 
-          // Read role preferences from the active riot account (per-account)
-          if (dbUser.activeRiotAccountId) {
-            const activeAccount = await db.query.riotAccounts.findFirst({
-              where: eq(riotAccounts.id, dbUser.activeRiotAccountId),
-            });
-            session.user.primaryRole = activeAccount?.primaryRole ?? null;
-            session.user.secondaryRole = activeAccount?.secondaryRole ?? null;
-          } else {
-            // Fallback to user-level roles for backwards compatibility
-            session.user.primaryRole = dbUser.primaryRole;
-            session.user.secondaryRole = dbUser.secondaryRole;
+        // Check for impersonation — only admins may impersonate
+        let effectiveUser = dbUser;
+        let impersonating = false;
+        const cookieStore = await cookies();
+        const targetUserId = cookieStore.get(IMPERSONATE_COOKIE)?.value;
+
+        if (targetUserId && dbUser.role === "admin" && dbUser.id !== targetUserId) {
+          const targetUser = await db.query.users.findFirst({
+            where: eq(users.id, targetUserId),
+          });
+          if (targetUser && !targetUser.deactivatedAt) {
+            effectiveUser = targetUser;
+            impersonating = true;
           }
+        }
+
+        session.user.id = effectiveUser.id;
+        session.user.riotGameName = effectiveUser.riotGameName;
+        session.user.riotTagLine = effectiveUser.riotTagLine;
+        session.user.isRiotLinked = !!effectiveUser.puuid;
+        session.user.region = effectiveUser.region;
+        session.user.activeRiotAccountId = effectiveUser.activeRiotAccountId;
+        session.user.onboardingCompleted = effectiveUser.onboardingCompleted;
+        session.user.role = impersonating ? effectiveUser.role : dbUser.role;
+        session.user.locale = effectiveUser.locale;
+        session.user.language = effectiveUser.language;
+        session.user.coachingCadenceDays = effectiveUser.coachingCadenceDays;
+
+        // Read role preferences from the active riot account (per-account)
+        if (effectiveUser.activeRiotAccountId) {
+          const activeAccount = await db.query.riotAccounts.findFirst({
+            where: eq(riotAccounts.id, effectiveUser.activeRiotAccountId),
+          });
+          session.user.primaryRole = activeAccount?.primaryRole ?? null;
+          session.user.secondaryRole = activeAccount?.secondaryRole ?? null;
+        } else {
+          // Fallback to user-level roles for backwards compatibility
+          session.user.primaryRole = effectiveUser.primaryRole;
+          session.user.secondaryRole = effectiveUser.secondaryRole;
+        }
+
+        // Signal impersonation state to the client
+        if (impersonating) {
+          session.user.isImpersonating = true;
+          session.user.realAdminName = dbUser.name;
         }
       }
       return session;

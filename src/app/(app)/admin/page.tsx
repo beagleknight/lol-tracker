@@ -3,6 +3,7 @@
 import {
   Copy,
   Crown,
+  Eye,
   Loader2,
   Plus,
   Shield,
@@ -21,6 +22,7 @@ import {
   deactivateUser,
   reactivateUser,
   updateUserRole,
+  startImpersonation,
   type AdminUser,
 } from "@/app/actions/admin";
 import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
@@ -106,6 +108,16 @@ function UsersSection() {
         await loadUsers();
       } catch {
         toast.error(t("toasts.roleChangeError"));
+      }
+    });
+  }
+
+  function handleImpersonate(userId: string) {
+    startTransition(async () => {
+      try {
+        await startImpersonation(userId);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("toasts.impersonateError"));
       }
     });
   }
@@ -227,6 +239,23 @@ function UsersSection() {
                   {/* Actions */}
                   {!isYou && (
                     <div className="flex shrink-0 gap-1.5">
+                      {u.role !== "admin" && !isDeactivated && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleImpersonate(u.id)}
+                          disabled={isPending}
+                          className="gap-1.5 text-amber-400 hover:bg-amber-400/10"
+                          aria-label={t("impersonateButton", { name: u.name || "Unknown" })}
+                        >
+                          {isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                          )}
+                          {t("viewAsButton")}
+                        </Button>
+                      )}
                       {u.role !== "admin" && (
                         <Button
                           variant="outline"

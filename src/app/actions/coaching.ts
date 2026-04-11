@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { coachingSessions, coachingSessionMatches, coachingActionItems } from "@/db/schema";
 import { invalidateCoachingCaches } from "@/lib/cache";
-import { requireUser } from "@/lib/session";
+import { blockIfImpersonating, requireUser } from "@/lib/session";
 
 // ─── Phase 1: Schedule a coaching session ────────────────────────────────────
 
@@ -17,6 +17,7 @@ export async function scheduleCoachingSession(data: {
   focusAreas?: string[]; // optional pre-session focus topics
 }) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   const focusAreasJson = data.focusAreas?.length ? JSON.stringify(data.focusAreas) : null;
 
@@ -64,6 +65,7 @@ export async function completeCoachingSession(
   },
 ) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   const session = await db.query.coachingSessions.findFirst({
     where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
@@ -132,6 +134,7 @@ export async function updateCoachingSession(
   },
 ) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   const session = await db.query.coachingSessions.findFirst({
     where: and(eq(coachingSessions.id, sessionId), eq(coachingSessions.userId, user.id)),
@@ -187,6 +190,7 @@ export async function updateCoachingSession(
 
 export async function deleteCoachingSession(sessionId: number) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   await db
     .delete(coachingSessions)
@@ -206,6 +210,7 @@ export async function updateActionItemStatus(
   status: "pending" | "in_progress" | "completed",
 ) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   await db
     .update(coachingActionItems)
@@ -227,6 +232,7 @@ export async function updateActionItemStatus(
 
 export async function deleteActionItem(itemId: number) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   await db
     .delete(coachingActionItems)
@@ -246,6 +252,7 @@ export async function deleteActionItem(itemId: number) {
 
 export async function createActionItem(data: { description: string; topic?: string }) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   if (!data.description.trim()) {
     return { error: "Description is required." };

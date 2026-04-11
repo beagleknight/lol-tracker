@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { matches, matchHighlights } from "@/db/schema";
 import { invalidateReviewCaches } from "@/lib/cache";
-import { requireUser } from "@/lib/session";
+import { blockIfImpersonating, requireUser } from "@/lib/session";
 import { validateVodUrl } from "@/lib/url";
 
 /**
@@ -29,6 +29,7 @@ export async function savePostGameReview(
   },
 ) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   // Save highlights/lowlights
   await db
@@ -76,6 +77,7 @@ export async function savePostGameReview(
 
 export async function bulkMarkReviewed(skipReason: string) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   const conditions = [eq(matches.userId, user.id), eq(matches.reviewed, false)];
   if (user.activeRiotAccountId) {

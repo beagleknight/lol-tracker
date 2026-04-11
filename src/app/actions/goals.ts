@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
 import { invalidateGoalsCaches } from "@/lib/cache";
-import { requireUser } from "@/lib/session";
+import { blockIfImpersonating, requireUser } from "@/lib/session";
 
 // ─── Create a new goal ──────────────────────────────────────────────────────
 
@@ -16,6 +16,7 @@ export async function createGoal(data: {
   deadline: string | null; // ISO string or null
 }) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   // Check for existing active goal
   const activeGoalConditions = [eq(goals.userId, user.id), eq(goals.status, "active")];
@@ -76,6 +77,7 @@ export async function createGoal(data: {
 
 export async function retireGoal(goalId: number) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   const goal = await db.query.goals.findFirst({
     where: and(eq(goals.id, goalId), eq(goals.userId, user.id), eq(goals.status, "active")),
@@ -104,6 +106,7 @@ export async function retireGoal(goalId: number) {
 
 export async function deleteGoal(goalId: number) {
   const user = await requireUser();
+  await blockIfImpersonating();
 
   await db.delete(goals).where(and(eq(goals.id, goalId), eq(goals.userId, user.id)));
 
