@@ -955,6 +955,8 @@
     "copyCode": "Copy invite code",
     "deleteInvite": "Delete invite",
     "noInvites": "No invites yet. Generate one to invite a new user.",
+    "viewAsButton": "View as",
+    "impersonateButton": "View as {name}",
     "toasts": {
       "deactivateSuccess": "User deactivated.",
       "reactivateSuccess": "User reactivated.",
@@ -968,8 +970,15 @@
       "deleteSuccess": "Invite deleted.",
       "deleteError": "Failed to delete invite.",
       "codeCopied": "Invite code copied to clipboard.",
-      "linkCopied": "Invite link copied to clipboard."
+      "linkCopied": "Invite link copied to clipboard.",
+      "impersonateError": "Failed to start impersonation."
     }
+  },
+  "Impersonation": {
+    "banner": "Viewing as {name} — logged in as {admin} (read-only)",
+    "stopButton": "Stop",
+    "stopError": "Failed to stop impersonation",
+    "unknownUser": "Unknown user"
   },
   "Feedback": {
     "pageTitle": "Feedback & suggestions",

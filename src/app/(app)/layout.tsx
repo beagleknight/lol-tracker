@@ -6,6 +6,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches, riotAccounts } from "@/db/schema";
@@ -94,6 +95,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               Skip to main content
             </a>
+            <ImpersonationBanner />
             <Suspense>
               <SidebarWithUser />
             </Suspense>

@@ -10,7 +10,7 @@ import { db } from "@/db";
 import { matches, riotAccounts, users, type MatchResult } from "@/db/schema";
 import { duoTag, invalidateDuoBackfillCaches } from "@/lib/cache";
 import { duoStatsSelect, championSynergySelect } from "@/lib/match-queries";
-import { requireUser } from "@/lib/session";
+import { blockIfImpersonating, requireUser } from "@/lib/session";
 
 const PAGE_SIZE = 10;
 
@@ -312,6 +312,7 @@ export async function backfillDuoGames(): Promise<{
   duoFound: number;
 }> {
   const user = await requireUser();
+  await blockIfImpersonating();
   if (!user.duoPartnerUserId || !user.puuid) {
     return { processed: 0, duoFound: 0 };
   }
