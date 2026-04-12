@@ -49,25 +49,20 @@ export async function getDemoUsers(): Promise<DemoUserInfo[]> {
     },
   });
 
-  // Return in a stable order matching DEMO_USER_IDS
-  return DEMO_USER_IDS.map((id) => {
+  // Return in a stable order matching DEMO_USER_IDS, excluding deleted users
+  return DEMO_USER_IDS.flatMap((id) => {
     const row = rows.find((r) => r.id === id);
     return row
-      ? {
-          id: row.id,
-          name: row.name,
-          role: row.role,
-          riotGameName: row.riotGameName,
-          riotTagLine: row.riotTagLine,
-          onboardingCompleted: row.onboardingCompleted ?? false,
-        }
-      : {
-          id,
-          name: null,
-          role: "free",
-          riotGameName: null,
-          riotTagLine: null,
-          onboardingCompleted: false,
-        };
+      ? [
+          {
+            id: row.id,
+            name: row.name,
+            role: row.role,
+            riotGameName: row.riotGameName,
+            riotTagLine: row.riotTagLine,
+            onboardingCompleted: row.onboardingCompleted ?? false,
+          },
+        ]
+      : [];
   });
 }
