@@ -17,6 +17,7 @@
     "navAdmin": "Admin",
     "navFeedback": "Sugerencias",
     "navLegal": "Legal",
+    "navSourceCode": "Código fuente",
     "sectionTracker": "Seguimiento",
     "sectionInsights": "Análisis",
     "sectionCoaching": "Coaching",
@@ -634,7 +635,7 @@
       "badgeNotLinked": "No vinculada",
       "description": "Vincula tu cuenta de Riot Games para sincronizar tus partidas ranked automáticamente.",
       "riotIdLabel": "Riot ID",
-      "riotIdPlaceholder": "beagleknight#euw",
+      "riotIdPlaceholder": "Summoner#EUW",
       "regionLabel": "Región del servidor",
       "regionPlaceholder": "Seleccionar región",
       "linkButton": "Vincular",
@@ -752,7 +753,7 @@
     "toasts": {
       "loadInvitesError": "No se pudieron cargar los códigos de invitación.",
       "loadDuoPartnerError": "No se pudieron cargar los detalles del compañero de dúo.",
-      "riotIdFormatError": "Introduce tu Riot ID como NombreDeJuego#Tagline (ej. beagleknight#euw)",
+      "riotIdFormatError": "Introduce tu Riot ID como NombreDeJuego#Tagline (ej. Summoner#EUW)",
       "linkSuccess": "Vinculado a {gameName}#{tagLine}",
       "unlinkSuccess": "Cuenta de Riot desvinculada.",
       "unlinkError": "Error al desvincular la cuenta de Riot.",
@@ -1007,6 +1008,9 @@
     "pageTitle": "Legal",
     "riotDisclaimerHeading": "Aviso de Riot Games",
     "riotDisclaimer": "LoL Tracker no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.",
+    "openSourceHeading": "Código abierto",
+    "openSourceText": "LoL Tracker es software de código abierto licenciado bajo la GNU Affero General Public License v3.0 (AGPL-3.0). Puedes ver, modificar y redistribuir el código fuente bajo los términos de esta licencia.",
+    "openSourceLink": "Ver código fuente en GitHub",
     "backToApp": "Volver a la aplicación"
   },
   "Landing": {
@@ -1074,6 +1078,7 @@
     },
     "footer": {
       "legal": "Legal",
+      "sourceCode": "Código fuente",
       "riotDisclaimer": "LoL Tracker no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc."
     }
   }

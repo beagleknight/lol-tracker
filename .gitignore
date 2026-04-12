@@ -33,11 +33,15 @@ tests/smoke/setup/.auth/
 *.pem
 nul
 
-# debug
+# debug / logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+
+# temporary PR body files (generated during PR description updates)
+pr*_body*.txt
 
 # env files (can opt-in for committing if needed)
 .env*

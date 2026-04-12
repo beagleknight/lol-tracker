@@ -18,6 +18,7 @@ import {
   MessageSquarePlus,
   Scale,
   Lock,
+  Code,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -40,6 +41,7 @@ interface NavItem {
   badge?: number; // optional counter badge
   dot?: boolean; // small unseen indicator dot
   locked?: boolean; // premium-locked indicator for free users
+  external?: boolean; // external link — renders <a> instead of Next.js <Link>
 }
 
 /** Nav definitions without labels — labels are resolved via useTranslations */
@@ -63,6 +65,12 @@ const navDefs = {
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
     { key: "navLegal" as const, href: "/legal", icon: Scale },
+    {
+      key: "navSourceCode" as const,
+      href: "https://github.com/beagleknight/lol-tracker",
+      icon: Code,
+      external: true,
+    },
   ],
 } as const;
 
@@ -98,8 +106,8 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
 
   // Active state: exact match always wins. For startsWith, only activate if no
   // other nav item has a more specific (longer) href that also matches.
-  const isExactMatch = pathname === item.href;
-  const isPrefixMatch = pathname.startsWith(item.href + "/");
+  const isExactMatch = !item.external && pathname === item.href;
+  const isPrefixMatch = !item.external && pathname.startsWith(item.href + "/");
   const hasMoreSpecificSibling =
     isPrefixMatch &&
     allNavHrefs.some(
@@ -111,17 +119,15 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   const isActive = isExactMatch || (isPrefixMatch && !hasMoreSpecificSibling);
   const Icon = item.icon;
 
-  return (
-    <Link
-      href={item.href}
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-        isActive
-          ? "glow-gold-sm border-l-2 border-gold bg-gold/10 font-medium text-gold"
-          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-      )}
-    >
+  const className = cn(
+    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+    isActive
+      ? "glow-gold-sm border-l-2 border-gold bg-gold/10 font-medium text-gold"
+      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+  );
+
+  const content = (
+    <>
       <Icon className="h-4 w-4 shrink-0" />
       <span className="flex-1">{item.label}</span>
       {item.locked && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />}
@@ -131,6 +137,26 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
         </span>
       )}
       {item.dot && <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-gold" />}
+    </>
+  );
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        className={className}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={item.href} onClick={onClick} className={className}>
+      {content}
     </Link>
   );
 }
@@ -161,8 +187,15 @@ function SidebarContent({
       key: string;
       href: string;
       icon: React.ComponentType<{ className?: string }>;
+      external?: boolean;
     }[],
-  ): NavItem[] => defs.map((d) => ({ label: t(d.key), href: d.href, icon: d.icon }));
+  ): NavItem[] =>
+    defs.map((d) => ({
+      label: t(d.key),
+      href: d.href,
+      icon: d.icon,
+      ...(d.external && { external: true }),
+    }));
 
   const dashboardNav = resolve(navDefs.dashboard);
   const trackerNav = resolve(navDefs.tracker);

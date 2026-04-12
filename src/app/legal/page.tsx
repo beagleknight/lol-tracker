@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -25,6 +25,21 @@ export default function LegalPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">{t("riotDisclaimerHeading")}</h2>
           <p className="leading-relaxed text-muted-foreground">{t("riotDisclaimer")}</p>
+        </section>
+
+        {/* Open source */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">{t("openSourceHeading")}</h2>
+          <p className="leading-relaxed text-muted-foreground">{t("openSourceText")}</p>
+          <a
+            href="https://github.com/beagleknight/lol-tracker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-gold/80"
+          >
+            {t("openSourceLink")}
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
         </section>
 
         {/* Back link */}

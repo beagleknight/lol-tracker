@@ -17,6 +17,7 @@
     "navAdmin": "Admin",
     "navFeedback": "Feedback",
     "navLegal": "Legal",
+    "navSourceCode": "Source code",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
     "sectionCoaching": "Coaching",
@@ -634,7 +635,7 @@
       "badgeNotLinked": "Not linked",
       "description": "Link your Riot Games account to sync your ranked games automatically.",
       "riotIdLabel": "Riot ID",
-      "riotIdPlaceholder": "beagleknight#euw",
+      "riotIdPlaceholder": "Summoner#EUW",
       "regionLabel": "Server region",
       "regionPlaceholder": "Select region",
       "linkButton": "Link",
@@ -752,7 +753,7 @@
     "toasts": {
       "loadInvitesError": "Couldn't load invite codes.",
       "loadDuoPartnerError": "Couldn't load duo partner details.",
-      "riotIdFormatError": "Please enter your Riot ID as GameName#TagLine (e.g. beagleknight#euw)",
+      "riotIdFormatError": "Please enter your Riot ID as GameName#TagLine (e.g. Summoner#EUW)",
       "linkSuccess": "Linked to {gameName}#{tagLine}",
       "unlinkSuccess": "Riot account unlinked.",
       "unlinkError": "Failed to unlink Riot account.",
@@ -1007,6 +1008,9 @@
     "pageTitle": "Legal",
     "riotDisclaimerHeading": "Riot Games disclaimer",
     "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+    "openSourceHeading": "Open source",
+    "openSourceText": "LoL Tracker is open-source software licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). You can view, modify, and redistribute the source code under the terms of this license.",
+    "openSourceLink": "View source code on GitHub",
     "backToApp": "Back to app"
   },
   "Landing": {
@@ -1074,6 +1078,7 @@
     },
     "footer": {
       "legal": "Legal",
+      "sourceCode": "Source code",
       "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
     }
   }
