@@ -12,10 +12,63 @@
 
 1. Fork and clone the repository
 2. Install dependencies: `npm install`
-3. Copy `.env.example` to `.env.local` and fill in your values
-4. Set up Discord OAuth redirect: `http://localhost:3000/api/auth/callback/discord`
+3. Copy `.env.example` to `.env.local` and fill in your values (see [environment variables](#environment-variables) below)
+4. Set up Discord OAuth redirect (see [Discord OAuth setup](#discord-oauth-setup) below)
 5. Create the data directory and push the schema: `mkdir data && npx drizzle-kit push`
 6. Run the dev server: `npm run dev`
+7. Open [http://localhost:3000](http://localhost:3000)
+
+### Environment variables
+
+Copy `.env.example` to `.env.local` and fill in the required values:
+
+| Variable                       | Required | Where to get it                                                                   |
+| ------------------------------ | -------- | --------------------------------------------------------------------------------- |
+| `AUTH_SECRET`                  | Yes      | Generate with `npx auth secret`                                                   |
+| `AUTH_DISCORD_ID`              | Yes      | [Discord Developer Portal](https://discord.com/developers/applications)           |
+| `AUTH_DISCORD_SECRET`          | Yes      | Discord Developer Portal                                                          |
+| `RIOT_API_KEY`                 | Yes      | [developer.riotgames.com](https://developer.riotgames.com)                        |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | No       | [Google AI Studio](https://aistudio.google.com/apikey) (for AI coaching features) |
+| `TURSO_DATABASE_URL`           | No       | Defaults to local SQLite file (`file:./data/lol-tracker.db`)                      |
+| `TURSO_AUTH_TOKEN`             | No       | Only needed for remote Turso databases                                            |
+
+See `.env.example` for the full list with documentation.
+
+### Discord OAuth setup
+
+1. Create a new application at [discord.com/developers](https://discord.com/developers/applications)
+2. Go to **OAuth2 > Redirects** and add: `http://localhost:3000/api/auth/callback/discord`
+3. Copy the **Client ID** and **Client Secret** into your `.env.local` as `AUTH_DISCORD_ID` and `AUTH_DISCORD_SECRET`
+
+### Demo mode (no credentials needed)
+
+If you want to skip Discord and Riot API setup entirely, you can run in demo mode:
+
+1. Set `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local`
+2. Seed the database: `npm run db:seed`
+3. Start the dev server: `npm run dev`
+
+Demo mode uses fake auth (no Discord OAuth) and mocked Riot API data. The login page shows a user picker instead of Discord sign-in.
+
+## Available scripts
+
+| Command                    | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| `npm run dev`              | Start dev server                               |
+| `npm run build`            | Production build                               |
+| `npm run start`            | Start production server                        |
+| `npm run fmt`              | Fix formatting issues                          |
+| `npm run test:smoke`       | Run Playwright smoke tests (a11y + pages)      |
+| `npm run test:e2e`         | Run Playwright end-to-end tests                |
+| `npm run test:migration`   | Test database migrations against existing data |
+| `npm run db:seed`          | Seed the database with demo data               |
+| `npx drizzle-kit push`     | Push schema changes to the database            |
+| `npx drizzle-kit generate` | Generate migration SQL from schema changes     |
+| `npx drizzle-kit studio`   | Open Drizzle Studio to browse the database     |
+
+### Build notes
+
+- The production build uses the `--webpack` flag (`next build --webpack`) because Turbopack has issues bundling `@libsql/client`.
 
 ## Development workflow
 
