@@ -2,9 +2,10 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
+import { LandingPage } from "@/components/landing/landing-page";
 import { auth } from "@/lib/auth";
 
-async function HomeRedirect(): Promise<React.ReactNode> {
+async function HomeContent(): Promise<React.ReactNode> {
   await connection();
   const session = await auth();
 
@@ -12,13 +13,13 @@ async function HomeRedirect(): Promise<React.ReactNode> {
     redirect("/dashboard");
   }
 
-  redirect("/login");
+  return <LandingPage />;
 }
 
 export default function Home() {
   return (
     <Suspense>
-      <HomeRedirect />
+      <HomeContent />
     </Suspense>
   );
 }

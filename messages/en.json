@@ -995,5 +995,73 @@
     "riotDisclaimerHeading": "Riot Games disclaimer",
     "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
     "backToApp": "Back to app"
+  },
+  "Landing": {
+    "nav": {
+      "signIn": "Sign in",
+      "languageToggleLabel": "Switch language"
+    },
+    "hero": {
+      "tagline": "Track your climb. Master your game.",
+      "subtitle": "The all-in-one companion for League of Legends players who take ranked seriously. Track matches, review gameplay, and turn coaching into measurable progress.",
+      "cta": "Get started"
+    },
+    "features": {
+      "heading": "Everything you need to improve",
+      "matchTracking": {
+        "title": "Match tracking",
+        "description": "Automatically sync your ranked games from Riot. Filter by champion, result, or review status. Export your data anytime."
+      },
+      "gameReview": {
+        "title": "Game review",
+        "description": "Build a review habit with a two-phase workflow: quick post-game notes right after playing, then deeper VOD analysis when you're ready."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Visualize your rank journey, win rate trends, matchup stats, and rune performance. See how coaching sessions correlate with your progress."
+      },
+      "coaching": {
+        "title": "Coaching hub",
+        "description": "Schedule sessions, track action items, and measure your progress between coaching sessions. Never lose track of what your coach told you."
+      }
+    },
+    "screenshots": {
+      "heading": "See it in action",
+      "dashboard": "Your dashboard gives you a complete overview: current rank, recent games, upcoming coaching, and active action items.",
+      "analytics": "Track your rank journey over time, win rates by matchup, and rune performance across all your games.",
+      "coaching": "Manage coaching sessions, track action items, and measure your progress between sessions."
+    },
+    "secondary": {
+      "heading": "And there's more",
+      "matchupScout": {
+        "title": "Matchup scout",
+        "description": "AI-powered scouting reports for your matchups, with your personal stats and notes."
+      },
+      "goalTracking": {
+        "title": "Goal tracking",
+        "description": "Set rank targets and track your progress with visual milestones."
+      },
+      "duoPartner": {
+        "title": "Duo partner stats",
+        "description": "See how you perform with your duo: win rates, champion synergy, and more."
+      },
+      "multiAccount": {
+        "title": "Multi-account",
+        "description": "Link up to 5 Riot accounts and switch between them seamlessly."
+      },
+      "bilingual": {
+        "title": "English & Spanish",
+        "description": "Full support for both languages, including all app content and the changelog."
+      }
+    },
+    "cta": {
+      "heading": "Ready to take your ranked games seriously?",
+      "subtitle": "Start tracking your improvement today.",
+      "button": "Get started"
+    },
+    "footer": {
+      "legal": "Legal",
+      "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
+    }
   }
 }
