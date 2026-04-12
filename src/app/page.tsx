@@ -1,3 +1,5 @@
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -13,7 +15,12 @@ async function HomeContent(): Promise<React.ReactNode> {
     redirect("/dashboard");
   }
 
-  return <LandingPage />;
+  const messages = await getMessages();
+  return (
+    <NextIntlClientProvider messages={messages}>
+      <LandingPage />
+    </NextIntlClientProvider>
+  );
 }
 
 export default function Home() {
