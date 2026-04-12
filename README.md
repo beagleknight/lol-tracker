@@ -2,12 +2,12 @@
 
 [![CI](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-lol--tracker.vercel.app-brightgreen)](https://lol-tracker.vercel.app)
+[![Try it](https://img.shields.io/badge/Try_it-lol--tracker.vercel.app-brightgreen)](https://lol-tracker.vercel.app)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support_this_project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/beagleknight)
 
 An open-source League of Legends companion app that syncs your match history, tracks your performance over time, and gives you AI-powered coaching to help you improve. Built for players who want to take their game seriously.
 
-**[Try the live demo →](https://lol-tracker.vercel.app)**
+**[Try it at lol-tracker.vercel.app →](https://lol-tracker.vercel.app)**
 
 ![LoL Tracker Dashboard](public/landing/dashboard.png)
 
