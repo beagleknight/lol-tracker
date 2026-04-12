@@ -481,6 +481,9 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding-block: 0.05em;
   }
 
   .text-gradient-electric {
