@@ -736,6 +736,19 @@
       "copyCode": "Copiar código de invitación",
       "deleteInvite": "Eliminar invitación"
     },
+    "deleteAccount": {
+      "title": "Eliminar cuenta",
+      "description": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+      "deleteButton": "Eliminar mi cuenta",
+      "dialogTitle": "¿Estás seguro?",
+      "dialogDescription": "Esto eliminará permanentemente tu cuenta, todas las cuentas de Riot vinculadas, historial de partidas, sesiones de coaching, objetivos y todos los demás datos. Esta acción no se puede deshacer.",
+      "confirmationLabel": "Escribe DELETE para confirmar",
+      "confirmationPlaceholder": "DELETE",
+      "cancelButton": "Cancelar",
+      "confirmButton": "Eliminar mi cuenta permanentemente",
+      "lastAdminError": "Eres el único administrador. Promueve a otro usuario a administrador antes de eliminar tu cuenta.",
+      "genericError": "Error al eliminar la cuenta. Inténtalo de nuevo."
+    },
     "toasts": {
       "loadInvitesError": "No se pudieron cargar los códigos de invitación.",
       "loadDuoPartnerError": "No se pudieron cargar los detalles del compañero de dúo.",

@@ -736,6 +736,19 @@
       "copyCode": "Copy invite code",
       "deleteInvite": "Delete invite"
     },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "deleteButton": "Delete my account",
+      "dialogTitle": "Are you sure?",
+      "dialogDescription": "This will permanently delete your account, all linked Riot accounts, match history, coaching sessions, goals, and every other piece of data. This action cannot be undone.",
+      "confirmationLabel": "Type DELETE to confirm",
+      "confirmationPlaceholder": "DELETE",
+      "cancelButton": "Cancel",
+      "confirmButton": "Delete my account permanently",
+      "lastAdminError": "You are the only admin. Promote another user to admin before deleting your account.",
+      "genericError": "Failed to delete account. Please try again."
+    },
     "toasts": {
       "loadInvitesError": "Couldn't load invite codes.",
       "loadDuoPartnerError": "Couldn't load duo partner details.",

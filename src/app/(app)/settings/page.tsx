@@ -17,12 +17,14 @@ import {
   Eye,
   EyeOff,
   Crown,
+  AlertTriangle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
+import { deleteAccount } from "@/app/actions/account";
 import {
   addRiotAccount,
   removeRiotAccount,
@@ -43,6 +45,16 @@ import {
 } from "@/app/actions/settings";
 import { POSITIONS, PositionIcon } from "@/components/position-icon";
 import { PremiumGate } from "@/components/premium-gate";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +70,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
-import { useAuth } from "@/lib/auth-client";
+import { logout, useAuth } from "@/lib/auth-client";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
 import { PLATFORM_IDS, PLATFORM_LABELS } from "@/lib/riot-api";
 
@@ -149,6 +161,10 @@ export default function SettingsPage() {
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+
+  // ─── Delete account state ─────────────────────────────────────────────────
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Load riot accounts on mount and when tab changes to account
   useEffect(() => {
@@ -382,6 +398,24 @@ export default function SettingsPage() {
         await refreshAccounts();
         await updateSession();
       }
+    });
+  }
+
+  // ─── Delete account handler ───────────────────────────────────────────────
+
+  function handleDeleteAccount() {
+    startTransition(async () => {
+      const result = await deleteAccount(deleteConfirmation);
+      if ("error" in result) {
+        if (result.error === "LAST_ADMIN") {
+          toast.error(t("deleteAccount.lastAdminError"));
+        } else {
+          toast.error(t("deleteAccount.genericError"));
+        }
+        return;
+      }
+      // Success — clear cookie and redirect to home
+      await logout({ callbackUrl: "/" });
     });
   }
 
@@ -856,10 +890,72 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* ─── Danger Zone ───────────────────────────────────────────── */}
+            <Card className="surface-glow border-destructive/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-5 w-5" />
+                  {t("deleteAccount.title")}
+                </CardTitle>
+                <CardDescription>{t("deleteAccount.description")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AlertDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={(open) => {
+                    setDeleteDialogOpen(open);
+                    if (!open) setDeleteConfirmation("");
+                  }}
+                >
+                  <AlertDialogTrigger
+                    render={
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                        {t("deleteAccount.deleteButton")}
+                      </Button>
+                    }
+                  />
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("deleteAccount.dialogTitle")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("deleteAccount.dialogDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="delete-confirmation">
+                        {t("deleteAccount.confirmationLabel")}
+                      </Label>
+                      <Input
+                        id="delete-confirmation"
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder={t("deleteAccount.confirmationPlaceholder")}
+                        autoComplete="off"
+                      />
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("deleteAccount.cancelButton")}</AlertDialogCancel>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={deleteConfirmation !== "DELETE" || isPending}
+                      >
+                        {isPending ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        {t("deleteAccount.confirmButton")}
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
-
-        {/* ─── Preferences Tab ──────────────────────────────────────── */}
         <TabsContent value="preferences" className="mt-4">
           <div className="space-y-6">
             {/* Language & Region Card */}
