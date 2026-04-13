@@ -5,21 +5,20 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   fix-lockfile:
     name: Regenerate lockfile
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
-    outputs:
-      changed: ${{ steps.diff.outputs.changed }}
     steps:
+      # Use REPO_PAT so the push creates a real commit that re-triggers
+      # pull_request workflows (GITHUB_TOKEN pushes are ignored by design).
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_PAT }}
 
       - uses: actions/setup-node@v6
         with:
@@ -48,89 +47,7 @@ jobs:
           git commit -m "chore: regenerate lockfile with Node $(node -v) / npm $(npm -v)"
           git push
 
-  # GITHUB_TOKEN pushes don't re-trigger pull_request workflows (anti-recursion),
-  # so we run a minimal CI check here: typecheck + build only.
-  # Smoke tests, E2E, and audit are skipped for dependency-only PRs — they don't
-  # change application code. This saves ~20 CI minutes per Dependabot PR.
-  ci-typecheck:
-    name: Typecheck (post-fix)
-    needs: fix-lockfile
-    if: needs.fix-lockfile.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: ".tool-versions"
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-
-  ci-build:
-    name: Build (post-fix)
-    needs: fix-lockfile
-    if: needs.fix-lockfile.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    env:
-      AUTH_SECRET: ci-placeholder-secret-not-real
-      NEXT_PUBLIC_CANNY_BOARD_TOKEN: test-board-token
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: ".tool-versions"
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-
-  auto-merge:
-    name: Auto-merge Dependabot PR
-    needs:
-      - fix-lockfile
-      - ci-typecheck
-      - ci-build
-    if: needs.fix-lockfile.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check update type
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          LABELS=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" \
-            --json labels --jq '.labels[].name')
-
-          echo "Labels: $LABELS"
-
-          if echo "$LABELS" | grep -q "semver-major"; then
-            echo "type=major" >> "$GITHUB_OUTPUT"
-            echo "Major version bump detected — skipping auto-merge"
-          else
-            echo "type=minor-or-patch" >> "$GITHUB_OUTPUT"
-            echo "Patch/minor update — will auto-merge"
-          fi
-
-      - name: Approve and merge
-        if: steps.check.outputs.type == 'minor-or-patch'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          gh pr review "$PR_NUMBER" --repo "${{ github.repository }}" --approve \
-            --body "Auto-approved: Dependabot patch/minor update. CI passed (post lockfile fix)."
-          gh pr merge "$PR_NUMBER" --repo "${{ github.repository }}" --squash \
-            --body "Auto-merged by Dependabot pipeline after lockfile fix and CI passed."
-
-      - name: Comment on major bump
-        if: steps.check.outputs.type == 'major'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
-            --body "This is a **major version bump** — skipping auto-merge. Please review manually."
+  # No additional CI jobs needed here. Because the push uses REPO_PAT (not
+  # GITHUB_TOKEN), it triggers a new pull_request event which runs the full
+  # CI workflow. The dependabot-auto-merge workflow handles merging after
+  # CI passes.
