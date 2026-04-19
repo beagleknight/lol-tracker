@@ -178,7 +178,6 @@ export const coachingSessions = sqliteTable(
       .default("scheduled"),
     vodMatchId: text("vod_match_id"), // The specific match/VOD to review
     durationMinutes: integer("duration_minutes"),
-    topics: text("topics"), // JSON array string e.g. '["laning","wave management"]'
     focusAreas: text("focus_areas"), // JSON array — original pre-session focus areas (preserved after completion)
     notes: text("notes"),
     createdAt: integer("created_at", { mode: "timestamp" })
@@ -226,7 +225,7 @@ export const coachingActionItems = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     description: text("description").notNull(),
-    topic: text("topic"),
+    topicId: integer("topic_id").references(() => topics.id, { onDelete: "set null" }),
     status: text("status", {
       enum: ["pending", "in_progress", "completed"],
     })
@@ -240,6 +239,7 @@ export const coachingActionItems = sqliteTable(
   (table) => [
     index("action_items_user_status_idx").on(table.userId, table.status),
     index("action_items_session_idx").on(table.sessionId),
+    index("action_items_topic_idx").on(table.topicId),
   ],
 );
 
@@ -259,6 +259,43 @@ export const invites = sqliteTable("invites", {
     .$defaultFn(() => new Date()),
 });
 
+// ─── Topics ─────────────────────────────────────────────────────────────────
+// Normalized topic entity. Default topics are shared across all users.
+// Future: users can create custom topics (isDefault=false, userId set).
+
+export const topics = sqliteTable(
+  "topics",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull().unique(),
+    name: text("name").notNull(),
+    isDefault: integer("is_default", { mode: "boolean" }).notNull().default(true),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // null for default topics
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [index("topics_user_idx").on(table.userId)],
+);
+
+// ─── Coaching Session <-> Topics (many-to-many) ─────────────────────────────
+
+export const coachingSessionTopics = sqliteTable(
+  "coaching_session_topics",
+  {
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => coachingSessions.id, { onDelete: "cascade" }),
+    topicId: integer("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.sessionId, table.topicId] }),
+    index("coaching_session_topics_topic_idx").on(table.topicId),
+  ],
+);
+
 // ─── Match Highlights / Lowlights ────────────────────────────────────────────
 
 export const matchHighlights = sqliteTable(
@@ -274,7 +311,7 @@ export const matchHighlights = sqliteTable(
     }),
     type: text("type", { enum: ["highlight", "lowlight"] }).notNull(),
     text: text("text").notNull(),
-    topic: text("topic"), // Predefined topic from PREDEFINED_TOPICS, nullable
+    topicId: integer("topic_id").references(() => topics.id, { onDelete: "set null" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -282,6 +319,7 @@ export const matchHighlights = sqliteTable(
   (table) => [
     index("match_highlights_match_user_idx").on(table.matchId, table.userId),
     index("match_highlights_user_idx").on(table.userId),
+    index("match_highlights_topic_idx").on(table.topicId),
   ],
 );
 
@@ -423,7 +461,9 @@ export type MatchResult = Match["result"];
 export type RankSnapshot = typeof rankSnapshots.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
+export type Topic = typeof topics.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
+export type MatchHighlight = typeof matchHighlights.$inferSelect;
 export type MatchupNote = typeof matchupNotes.$inferSelect;
 export type AiInsight = typeof aiInsights.$inferSelect;
 export type Invite = typeof invites.$inferSelect;

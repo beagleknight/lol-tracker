@@ -2,12 +2,20 @@ import { eq, desc, and, gt, lte, inArray } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
-import { coachingSessions, coachingActionItems, matches, matchHighlights } from "@/db/schema";
+import {
+  coachingSessions,
+  coachingActionItems,
+  coachingSessionTopics,
+  matches,
+  matchHighlights,
+  topics,
+} from "@/db/schema";
 import { coachingTag } from "@/lib/cache";
 import { accountScope } from "@/lib/match-queries";
 import { isMeaningful } from "@/lib/match-result";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { CoachingHubClient } from "./coaching-hub-client";
 
@@ -85,13 +93,13 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string | 
   const intervals: Map<number, SessionInterval> = new Map();
 
   if (sortedCompleted.length > 0) {
-    // Collect all action item topics per session for matching
-    const topicsBySession = new Map<number, Set<string>>();
+    // Collect all action item topicIds per session for matching
+    const topicIdsBySession = new Map<number, Set<number>>();
     for (const item of allActionItems) {
-      if (item.topic && item.sessionId != null) {
-        const set = topicsBySession.get(item.sessionId) || new Set();
-        set.add(item.topic);
-        topicsBySession.set(item.sessionId, set);
+      if (item.topicId && item.sessionId != null) {
+        const set = topicIdsBySession.get(item.sessionId) || new Set();
+        set.add(item.topicId);
+        topicIdsBySession.set(item.sessionId, set);
       }
     }
 
@@ -120,7 +128,7 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string | 
 
       // Count relevant highlights in these matches
       let relevantNoteCount = 0;
-      const sessionTopics = topicsBySession.get(current.id);
+      const sessionTopics = topicIdsBySession.get(current.id);
       if (sessionTopics && sessionTopics.size > 0 && intervalMatches.length > 0) {
         const intervalMatchIds = intervalMatches.map((m) => m.id);
         const intervalHighlights = await db.query.matchHighlights.findMany({
@@ -129,10 +137,10 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string | 
             accountScope(matchHighlights.riotAccountId, riotAccountId),
             inArray(matchHighlights.matchId, intervalMatchIds),
           ),
-          columns: { topic: true },
+          columns: { topicId: true },
         });
         relevantNoteCount = intervalHighlights.filter(
-          (h) => h.topic && sessionTopics.has(h.topic),
+          (h) => h.topicId && sessionTopics.has(h.topicId),
         ).length;
       }
 
@@ -160,6 +168,26 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string | 
     };
   }
 
+  // Fetch all topics and session topic mappings
+  const allTopics = await getDefaultTopics();
+  const allSessionIds = allSessions.map((s) => s.id);
+  const sessionTopicRows =
+    allSessionIds.length > 0
+      ? await db
+          .select({
+            sessionId: coachingSessionTopics.sessionId,
+            topicName: topics.name,
+          })
+          .from(coachingSessionTopics)
+          .innerJoin(topics, eq(coachingSessionTopics.topicId, topics.id))
+          .where(inArray(coachingSessionTopics.sessionId, allSessionIds))
+      : [];
+  const sessionTopics: Record<number, string[]> = {};
+  for (const row of sessionTopicRows) {
+    if (!sessionTopics[row.sessionId]) sessionTopics[row.sessionId] = [];
+    sessionTopics[row.sessionId].push(row.topicName);
+  }
+
   return {
     scheduledSessions,
     completedSessions,
@@ -168,6 +196,8 @@ async function getCachedCoachingHubData(userId: string, riotAccountId: string | 
     vodMatchMap,
     intervalsData,
     ddragonVersion,
+    sessionTopics,
+    topicNames: allTopics,
   };
 }
 
@@ -184,6 +214,8 @@ export default async function CoachingHubPage() {
       vodMatchMap={data.vodMatchMap}
       intervalsData={data.intervalsData}
       ddragonVersion={data.ddragonVersion}
+      sessionTopics={data.sessionTopics}
+      topicNames={data.topicNames}
     />
   );
 }

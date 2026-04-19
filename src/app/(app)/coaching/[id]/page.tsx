@@ -5,13 +5,16 @@ import { db } from "@/db";
 import {
   coachingSessions,
   coachingSessionMatches,
+  coachingSessionTopics,
   coachingActionItems,
   matches,
   matchHighlights,
+  topics,
 } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { CoachingDetailClient } from "./coaching-detail-client";
 
@@ -64,7 +67,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         matchId: matchHighlights.matchId,
         type: matchHighlights.type,
         text: matchHighlights.text,
-        topic: matchHighlights.topic,
+        topicId: matchHighlights.topicId,
       })
       .from(coachingSessionMatches)
       .innerJoin(
@@ -83,13 +86,16 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
       ),
   ]);
 
+  const allTopics = await getDefaultTopics();
+  const topicMap = new Map(allTopics.map((t) => [t.id, t.name]));
+
   // Group highlights by matchId
   const highlightsByMatch: Record<
     string,
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicName: string | undefined;
     }>
   > = {};
   for (const h of allHighlights) {
@@ -97,7 +103,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     highlightsByMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicName: h.topicId ? (topicMap.get(h.topicId) ?? undefined) : undefined,
     });
   }
 
@@ -119,7 +125,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicName?: string | undefined;
     }>
   > = {};
 
@@ -171,7 +177,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
           matchId: true,
           type: true,
           text: true,
-          topic: true,
+          topicId: true,
         },
       });
 
@@ -180,11 +186,19 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         progressHighlightsByMatch[h.matchId].push({
           type: h.type,
           text: h.text,
-          topic: h.topic,
+          topicName: h.topicId ? (topicMap.get(h.topicId) ?? undefined) : undefined,
         });
       }
     }
   }
+
+  // Fetch session topic names from join table
+  const sessionTopicRows = await db
+    .select({ topicName: topics.name })
+    .from(coachingSessionTopics)
+    .innerJoin(topics, eq(coachingSessionTopics.topicId, topics.id))
+    .where(eq(coachingSessionTopics.sessionId, sessionId));
+  const sessionTopicNames = sessionTopicRows.map((r) => r.topicName);
 
   return (
     <CoachingDetailClient
@@ -195,6 +209,8 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
       highlightsByMatch={highlightsByMatch}
       progressMatches={progressMatches}
       progressHighlightsByMatch={progressHighlightsByMatch}
+      topicNames={allTopics}
+      sessionTopicNames={sessionTopicNames}
     />
   );
 }

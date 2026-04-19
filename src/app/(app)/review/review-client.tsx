@@ -36,6 +36,7 @@ import {
   HighlightsEditor,
   HighlightsDisplay,
   type HighlightItem,
+  type TopicOption,
 } from "@/components/highlights-editor";
 import { Pagination, paginate } from "@/components/pagination";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
@@ -81,7 +82,8 @@ interface ReviewClientProps {
       id: number;
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId?: number;
+      topicName?: string;
     }>
   >;
   ddragonVersion: string;
@@ -89,6 +91,7 @@ interface ReviewClientProps {
   completedTotalPages: number;
   completedTotal: number;
   initialTab: "post-game" | "vod" | "completed";
+  topics: TopicOption[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -231,6 +234,7 @@ function PostGameCard({
   isExpanded,
   onToggleExpand,
   priorityScore,
+  topics,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
@@ -240,6 +244,7 @@ function PostGameCard({
   isExpanded: boolean;
   onToggleExpand: () => void;
   priorityScore: number;
+  topics: TopicOption[];
 }) {
   const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
   const [comment, setComment] = useState(match.comment || "");
@@ -308,9 +313,7 @@ function PostGameCard({
       {isExpanded && (
         <CardContent className="space-y-4">
           {/* Highlights / Lowlights (primary) */}
-          <HighlightsEditor highlights={highlights} onChange={setHighlights} />
-
-          {/* Game Notes (secondary, collapsible) */}
+          <HighlightsEditor highlights={highlights} onChange={setHighlights} topics={topics} />
           <div className="space-y-2">
             <button
               type="button"
@@ -623,12 +626,14 @@ function CompletedCard({
   ddragonVersion,
   onSaved,
   locale,
+  topics,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
   onSaved: () => void;
   locale: string;
+  topics: TopicOption[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
@@ -678,7 +683,7 @@ function CompletedCard({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Highlights / Lowlights */}
-          <HighlightsEditor highlights={highlights} onChange={setHighlights} />
+          <HighlightsEditor highlights={highlights} onChange={setHighlights} topics={topics} />
 
           {/* Game Notes */}
           <div className="space-y-2">
@@ -888,6 +893,7 @@ export function ReviewClient({
   completedTotalPages,
   completedTotal,
   initialTab,
+  topics,
 }: ReviewClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1089,7 +1095,8 @@ export function ReviewClient({
     return (highlightsByMatch[matchId] || []).map((h) => ({
       type: h.type,
       text: h.text,
-      topic: h.topic || undefined,
+      topicId: h.topicId,
+      topicName: h.topicName,
     }));
   }
 
@@ -1282,6 +1289,7 @@ export function ReviewClient({
                       setExpandedPostGameId((prev) => (prev === match.id ? null : match.id))
                     }
                     priorityScore={priorityScores[match.id] ?? 0}
+                    topics={topics}
                   />
                 ))}
                 <Pagination
@@ -1358,6 +1366,7 @@ export function ReviewClient({
                       ddragonVersion={ddragonVersion}
                       onSaved={handleCompletedSaved}
                       locale={locale}
+                      topics={topics}
                     />
                   ))}
                 </div>

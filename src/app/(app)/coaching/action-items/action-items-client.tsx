@@ -26,7 +26,7 @@ interface ActionItemWithSession {
   id: number;
   sessionId: number | null;
   description: string;
-  topic: string | null;
+  topicId: number | null;
   status: string;
   completedAt: Date | null;
   createdAt: Date;
@@ -36,9 +36,18 @@ interface ActionItemWithSession {
 
 interface ActionItemsClientProps {
   items: ActionItemWithSession[];
+  topicNames: { id: number; name: string }[];
 }
 
-function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: string }) {
+function ActionItemRow({
+  item,
+  locale,
+  topicNames,
+}: {
+  item: ActionItemWithSession;
+  locale: string;
+  topicNames: { id: number; name: string }[];
+}) {
   const t = useTranslations("ActionItems");
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDelete] = useTransition();
@@ -99,9 +108,9 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
           {item.description}
         </p>
         <div className="mt-1 flex items-center gap-2">
-          {item.topic && (
+          {item.topicId && (
             <Badge variant="secondary" className="text-xs">
-              {item.topic}
+              {topicNames.find((t) => t.id === item.topicId)?.name ?? `Topic #${item.topicId}`}
             </Badge>
           )}
           {item.sessionId ? (
@@ -148,7 +157,7 @@ function ActionItemRow({ item, locale }: { item: ActionItemWithSession; locale: 
   );
 }
 
-export function ActionItemsClient({ items }: ActionItemsClientProps) {
+export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps) {
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("ActionItems");
@@ -160,11 +169,11 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
   const [newTopic, setNewTopic] = useState("");
   const [isAdding, startAdding] = useTransition();
 
-  const topics = [...new Set(items.map((i) => i.topic).filter(Boolean))] as string[];
+  const topics = [...new Set(items.map((i) => i.topicId).filter(Boolean))] as number[];
 
   const filtered = items.filter((item) => {
     if (statusFilter !== "all" && item.status !== statusFilter) return false;
-    if (topicFilter !== "all" && item.topic !== topicFilter) return false;
+    if (topicFilter !== "all" && item.topicId !== Number(topicFilter)) return false;
     return true;
   });
 
@@ -183,7 +192,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
       try {
         await createActionItem({
           description: newDescription.trim(),
-          topic: newTopic.trim() || undefined,
+          topicId: newTopic.trim() ? Number(newTopic.trim()) : undefined,
         });
         toast.success(t("toasts.itemCreated"));
         setNewDescription("");
@@ -227,17 +236,18 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
             />
           </div>
           <div className="w-36">
-            <Input
-              placeholder={t("addTopicPlaceholder")}
-              value={newTopic}
-              onChange={(e) => setNewTopic(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddItem();
-                }
-              }}
-            />
+            <Select value={newTopic} onValueChange={(v) => setNewTopic(v ?? "")}>
+              <SelectTrigger aria-label={t("addTopicPlaceholder")}>
+                <SelectValue placeholder={t("addTopicPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {topicNames.map((tn) => (
+                  <SelectItem key={tn.id} value={String(tn.id)}>
+                    {tn.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Button size="sm" onClick={handleAddItem} disabled={isAdding || !newDescription.trim()}>
             {isAdding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("addSubmit")}
@@ -277,11 +287,15 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allTopics")}</SelectItem>
-              {topics.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
+              {topics.map((topicId) => {
+                const name =
+                  topicNames.find((tn) => tn.id === topicId)?.name ?? `Topic #${topicId}`;
+                return (
+                  <SelectItem key={topicId} value={String(topicId)}>
+                    {name}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         )}
@@ -300,7 +314,7 @@ export function ActionItemsClient({ items }: ActionItemsClientProps) {
         <>
           <div className="space-y-2">
             {paginatedItems.map((item) => (
-              <ActionItemRow key={item.id} item={item} locale={locale} />
+              <ActionItemRow key={item.id} item={item} locale={locale} topicNames={topicNames} />
             ))}
           </div>
           <Pagination currentPage={safePage} totalItems={filtered.length} onPageChange={setPage} />

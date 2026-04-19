@@ -79,7 +79,7 @@ export function buildMatchupPrompt(ctx: MatchupInsightContext, language: string)
   // Active coaching focus
   if (ctx.activeActionItems.length > 0) {
     const items = ctx.activeActionItems
-      .map((a) => `- [${a.status}] ${a.description}${a.topic ? ` (${a.topic})` : ""}`)
+      .map((a) => `- [${a.status}] ${a.description}${a.topicName ? ` (${a.topicName})` : ""}`)
       .join("\n");
     sections.push(`## Active Coaching Action Items\n${items}`);
   }
@@ -152,7 +152,7 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
   // Highlights and lowlights
   if (ctx.highlights.length > 0) {
     const hl = ctx.highlights
-      .map((h) => `- [${h.type}]${h.topic ? ` (${h.topic})` : ""} ${h.text}`)
+      .map((h) => `- [${h.type}]${h.topicName ? ` (${h.topicName})` : ""} ${h.text}`)
       .join("\n");
     sections.push(`## Player's Highlights/Lowlights\n${hl}`);
   }
@@ -167,7 +167,7 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
   // Active coaching focus
   if (ctx.activeActionItems.length > 0) {
     const items = ctx.activeActionItems
-      .map((a) => `- [${a.status}] ${a.description}${a.topic ? ` (${a.topic})` : ""}`)
+      .map((a) => `- [${a.status}] ${a.description}${a.topicName ? ` (${a.topicName})` : ""}`)
       .join("\n");
     sections.push(`## Active Coaching Action Items\n${items}`);
   }

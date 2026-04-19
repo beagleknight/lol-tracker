@@ -44,13 +44,6 @@ test.describe("Coaching flow", () => {
     await main.getByText("Wave management", { exact: true }).click();
     await main.getByText("Vision control", { exact: true }).click();
 
-    // Add a custom topic
-    await main.getByPlaceholder("Custom topic...").fill("Custom E2E Topic");
-    await main.getByRole("button", { name: "Add" }).click();
-
-    // Verify the custom topic badge appeared
-    await expect(main.getByText("Custom E2E Topic")).toBeVisible();
-
     // Select the first match from the list (if available)
     const matchButtons = main.locator("button:has(div.rounded-full)");
     const matchCount = await matchButtons.count();
@@ -83,8 +76,6 @@ test.describe("Coaching flow", () => {
     await expect(page.locator('[data-slot="badge"]:has-text("Scheduled")')).toBeVisible();
     await expect(page.getByText("Wave management").first()).toBeVisible();
     await expect(page.getByText("Vision control").first()).toBeVisible();
-    await expect(page.getByText("Custom E2E Topic").first()).toBeVisible();
-
     // Should show "Complete Session" CTA
     await expect(page.getByRole("link", { name: "Complete Session" })).toBeVisible();
   });
@@ -115,7 +106,7 @@ test.describe("Coaching flow", () => {
     await main.locator("#notes").fill("Great session on wave management fundamentals.");
 
     // Add first action item (Enter key on description input triggers add)
-    await main.getByPlaceholder("Topic (optional)").fill("Wave management");
+    await main.locator("select").selectOption({ label: "Wave management" });
     await main
       .getByPlaceholder("Action item description...")
       .fill("Practice freezing near tower for 5 games");
@@ -125,7 +116,7 @@ test.describe("Coaching flow", () => {
     await expect(main.getByText("Practice freezing near tower for 5 games")).toBeVisible();
 
     // Add second action item
-    await main.getByPlaceholder("Topic (optional)").fill("Vision control");
+    await main.locator("select").selectOption({ label: "Vision control" });
     await main
       .getByPlaceholder("Action item description...")
       .fill("Watch 2 VODs focusing on ward placement");

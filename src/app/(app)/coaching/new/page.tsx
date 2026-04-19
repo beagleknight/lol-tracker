@@ -5,6 +5,7 @@ import { matches, matchHighlights, coachingSessions } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { ScheduleSessionClient } from "./schedule-session-client";
 
@@ -53,10 +54,13 @@ export default async function ScheduleCoachingSessionPage() {
             matchId: true,
             type: true,
             text: true,
-            topic: true,
+            topicId: true,
           },
         })
       : [];
+
+  const allTopics = await getDefaultTopics();
+  const topicMap = new Map(allTopics.map((t) => [t.id, t.name]));
 
   // Group highlights by matchId
   const highlightsByMatch: Record<
@@ -64,7 +68,8 @@ export default async function ScheduleCoachingSessionPage() {
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId: number | null;
+      topicName: string | null;
     }>
   > = {};
   for (const h of allHighlights) {
@@ -72,7 +77,8 @@ export default async function ScheduleCoachingSessionPage() {
     highlightsByMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicId: h.topicId,
+      topicName: h.topicId ? (topicMap.get(h.topicId) ?? null) : null,
     });
   }
 
@@ -82,6 +88,7 @@ export default async function ScheduleCoachingSessionPage() {
       ddragonVersion={ddragonVersion}
       highlightsByMatch={highlightsByMatch}
       previousCoaches={previousCoaches.map((c) => c.coachName)}
+      topics={allTopics}
     />
   );
 }

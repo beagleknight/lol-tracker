@@ -106,18 +106,28 @@ const SUPPORT_CHAMPIONS = [
   { id: 267, name: "Nami" },
 ] as const;
 
-const _TOPICS = [
-  "Laning",
-  "Wave management",
-  "Roaming",
-  "Team fighting",
-  "Vision control",
-  "CS improvement",
-  "Trading patterns",
-  "Back timing",
-  "Objective control",
-  "Matchup knowledge",
-] as const;
+// Map old seed topic names → topic slugs (from migration 0029)
+const TOPIC_SLUG_MAP: Record<string, string> = {
+  Laning: "laning-phase",
+  "Wave management": "wave-management",
+  Roaming: "roaming-map-awareness",
+  "Team fighting": "teamfighting",
+  "Vision control": "vision-control",
+  "CS improvement": "laning-phase",
+  "Trading patterns": "trading-patterns",
+  "Back timing": "laning-phase",
+  "Objective control": "macro-objectives",
+  "Matchup knowledge": "champion-specific-mechanics",
+  Mentality: "mental-tilt-management",
+  "Build paths": "build-paths",
+  // Direct name matches
+  "Laning phase": "laning-phase",
+  Teamfighting: "teamfighting",
+  "Roaming/map awareness": "roaming-map-awareness",
+  "Macro/objectives": "macro-objectives",
+  "Mental/tilt management": "mental-tilt-management",
+  "Champion-specific mechanics": "champion-specific-mechanics",
+};
 
 // ─── Fixed IDs ───────────────────────────────────────────────────────────────
 
@@ -244,6 +254,7 @@ async function seed() {
     DELETE FROM goals;
     DELETE FROM match_highlights;
     DELETE FROM coaching_action_items;
+    DELETE FROM coaching_session_topics;
     DELETE FROM coaching_session_matches;
     DELETE FROM coaching_sessions;
     DELETE FROM rank_snapshots;
@@ -252,6 +263,22 @@ async function seed() {
     DELETE FROM riot_accounts;
     DELETE FROM users;
   `);
+
+  // ─── Load topic IDs (populated by migration 0029) ─────────────────────
+  console.log("Loading topics...");
+  const topicRows = await client.execute("SELECT id, slug FROM topics");
+  const topicIdBySlug = new Map<string, number>();
+  for (const row of topicRows.rows) {
+    topicIdBySlug.set(row.slug as string, row.id as number);
+  }
+
+  function topicId(oldName: string): number {
+    const slug = TOPIC_SLUG_MAP[oldName];
+    if (!slug) throw new Error(`No slug mapping for topic "${oldName}"`);
+    const id = topicIdBySlug.get(slug);
+    if (id == null) throw new Error(`Topic slug "${slug}" not found in DB — run migrations first`);
+    return id;
+  }
 
   // ─── Users ───────────────────────────────────────────────────────────────
   console.log("Creating users...");
@@ -845,7 +872,7 @@ async function seed() {
       date: "2026-02-10T14:00:00Z",
       status: "completed",
       durationMinutes: 60,
-      topics: JSON.stringify(["Laning", "Wave management", "Trading patterns"]),
+      topicNames: ["Laning", "Wave management", "Trading patterns"],
       notes: "Focused on early lane control. Key takeaway: slow push into roam timing.",
       matchIds: ["EUW1_7000000010", "EUW1_7000000012"],
     },
@@ -854,7 +881,7 @@ async function seed() {
       date: "2026-03-05T15:00:00Z",
       status: "completed",
       durationMinutes: 45,
-      topics: JSON.stringify(["Team fighting", "Vision control"]),
+      topicNames: ["Team fighting", "Vision control"],
       notes:
         "Reviewed team fight positioning. Need to stay further back and use abilities from max range.",
       matchIds: ["EUW1_7000000030", "EUW1_7000000032", "EUW1_7000000035"],
@@ -864,7 +891,7 @@ async function seed() {
       date: "2026-03-28T16:00:00Z",
       status: "scheduled",
       durationMinutes: null,
-      topics: JSON.stringify(["Roaming", "Objective control"]),
+      topicNames: ["Roaming", "Objective control"],
       notes: null,
       matchIds: [],
     },
@@ -875,8 +902,8 @@ async function seed() {
     const sessionId = i + 1;
 
     await client.execute({
-      sql: `INSERT INTO coaching_sessions (id, user_id, coach_name, date, status, duration_minutes, topics, notes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO coaching_sessions (id, user_id, coach_name, date, status, duration_minutes, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         sessionId,
         MAIN_USER_ID,
@@ -884,12 +911,19 @@ async function seed() {
         ts(new Date(s.date)),
         s.status,
         s.durationMinutes,
-        s.topics,
         s.notes,
         ts(new Date(s.date)),
         ts(new Date(s.date)),
       ],
     });
+
+    // Insert session topics into join table
+    for (const tName of s.topicNames) {
+      await client.execute({
+        sql: `INSERT INTO coaching_session_topics (session_id, topic_id) VALUES (?, ?)`,
+        args: [sessionId, topicId(tName)],
+      });
+    }
 
     for (const matchId of s.matchIds) {
       await client.execute({
@@ -907,21 +941,21 @@ async function seed() {
     {
       sessionId: 1,
       desc: "Practice slow push -> crash -> roam pattern in 5 games",
-      topic: "Wave management",
+      topicName: "Wave management",
       status: "completed",
       completedAt: "2026-02-20T10:00:00Z",
     },
     {
       sessionId: 1,
       desc: "Track opponent cooldowns before trading",
-      topic: "Trading patterns",
+      topicName: "Trading patterns",
       status: "completed",
       completedAt: "2026-02-25T10:00:00Z",
     },
     {
       sessionId: 1,
       desc: "Review 3 VODs focusing on first 5 minutes",
-      topic: "Laning",
+      topicName: "Laning",
       status: "completed",
       completedAt: "2026-02-18T10:00:00Z",
     },
@@ -929,21 +963,21 @@ async function seed() {
     {
       sessionId: 2,
       desc: "Play 3 games focusing on max-range ability usage in team fights",
-      topic: "Team fighting",
+      topicName: "Team fighting",
       status: "in_progress",
       completedAt: null,
     },
     {
       sessionId: 2,
       desc: "Place 2+ control wards per game before dragon spawns",
-      topic: "Vision control",
+      topicName: "Vision control",
       status: "in_progress",
       completedAt: null,
     },
     {
       sessionId: 2,
       desc: "Watch LCK mid lane team fight positioning VODs",
-      topic: "Team fighting",
+      topicName: "Team fighting",
       status: "pending",
       completedAt: null,
     },
@@ -951,13 +985,13 @@ async function seed() {
 
   for (const item of actionItems) {
     await client.execute({
-      sql: `INSERT INTO coaching_action_items (session_id, user_id, description, topic, status, completed_at, created_at)
+      sql: `INSERT INTO coaching_action_items (session_id, user_id, description, topic_id, status, completed_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
       args: [
         item.sessionId,
         MAIN_USER_ID,
         item.desc,
-        item.topic,
+        topicId(item.topicName),
         item.status,
         item.completedAt ? ts(new Date(item.completedAt)) : null,
         ts(new Date("2026-02-10T14:00:00Z")),
@@ -973,81 +1007,89 @@ async function seed() {
       matchId: "EUW1_7000000005",
       type: "highlight",
       text: "Perfect wave freeze denied enemy 2 waves",
-      topic: "Wave management",
+      topicName: "Wave management",
     },
     {
       matchId: "EUW1_7000000005",
       type: "lowlight",
       text: "Greeded for cannon and got chunked to 30%",
-      topic: "Laning",
+      topicName: "Laning",
     },
     {
       matchId: "EUW1_7000000010",
       type: "highlight",
       text: "3-man roam bot got us dragon + double kill",
-      topic: "Roaming",
+      topicName: "Roaming",
     },
     {
       matchId: "EUW1_7000000015",
       type: "lowlight",
       text: "Died to gank with no vision — need to ward before pushing",
-      topic: "Vision control",
+      topicName: "Vision control",
     },
     {
       matchId: "EUW1_7000000015",
       type: "highlight",
       text: "Solo killed matchup at level 6 with full combo",
-      topic: "Laning",
+      topicName: "Laning",
     },
     {
       matchId: "EUW1_7000000020",
       type: "highlight",
       text: "Team fight positioning was great — stayed max range entire fight",
-      topic: "Team fighting",
+      topicName: "Team fighting",
     },
     {
       matchId: "EUW1_7000000020",
       type: "lowlight",
       text: "Used flash aggressively when it wasn't needed",
-      topic: "Team fighting",
+      topicName: "Team fighting",
     },
     {
       matchId: "EUW1_7000000025",
       type: "highlight",
       text: "Won lane with good trades and back timing",
-      topic: "Laning",
+      topicName: "Laning",
     },
     {
       matchId: "EUW1_7000000030",
       type: "lowlight",
       text: "Walked into unwarded jungle and got collapsed on",
-      topic: "Vision control",
+      topicName: "Vision control",
     },
     {
       matchId: "EUW1_7000000035",
       type: "highlight",
       text: "Set up slow push before dragon and got priority",
-      topic: "Wave management",
+      topicName: "Wave management",
     },
     {
       matchId: "EUW1_7000000040",
       type: "lowlight",
       text: "Missed every skillshot in the baron fight",
-      topic: "Team fighting",
+      topicName: "Team fighting",
     },
     {
       matchId: "EUW1_7000000045",
       type: "highlight",
       text: "Clean 1v1 outplay under tower for first blood",
-      topic: "Laning",
+      topicName: "Laning",
     },
   ];
 
   for (const h of highlights) {
     await client.execute({
-      sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic, created_at)
+      sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [h.matchId, MAIN_USER_ID, MAIN_RIOT_ACCOUNT_ID, h.type, h.text, h.topic, ts(now)],
+      args: [
+        h.matchId,
+        MAIN_USER_ID,
+        MAIN_RIOT_ACCOUNT_ID,
+        h.type,
+        h.text,
+        topicId(h.topicName),
+        ts(now),
+      ],
     });
   }
 

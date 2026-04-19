@@ -2,10 +2,11 @@ import { eq, and, desc, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
 import { db } from "@/db";
-import { coachingSessions, matches, matchHighlights } from "@/db/schema";
+import { coachingSessions, coachingSessionTopics, matches, matchHighlights } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { EditSessionClient } from "./edit-session-client";
 
@@ -67,17 +68,21 @@ export default async function EditCoachingSessionPage({
             matchId: true,
             type: true,
             text: true,
-            topic: true,
+            topicId: true,
           },
         })
       : [];
+
+  const allTopics = await getDefaultTopics();
+  const topicMap = new Map(allTopics.map((t) => [t.id, t.name]));
 
   const highlightsByMatch: Record<
     string,
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId: number | null;
+      topicName: string | null;
     }>
   > = {};
   for (const h of allHighlights) {
@@ -85,9 +90,17 @@ export default async function EditCoachingSessionPage({
     highlightsByMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicId: h.topicId,
+      topicName: h.topicId ? (topicMap.get(h.topicId) ?? null) : null,
     });
   }
+
+  // Fetch session topic IDs from join table
+  const sessionTopicRows = await db
+    .select({ topicId: coachingSessionTopics.topicId })
+    .from(coachingSessionTopics)
+    .where(eq(coachingSessionTopics.sessionId, sessionId));
+  const initialTopicIds = sessionTopicRows.map((r) => r.topicId);
 
   return (
     <EditSessionClient
@@ -96,6 +109,8 @@ export default async function EditCoachingSessionPage({
       ddragonVersion={ddragonVersion}
       highlightsByMatch={highlightsByMatch}
       previousCoaches={previousCoaches.map((c) => c.coachName)}
+      topics={allTopics}
+      initialTopicIds={initialTopicIds}
     />
   );
 }

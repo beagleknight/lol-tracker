@@ -28,7 +28,7 @@ import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
 export interface MatchHighlightData {
   type: "highlight" | "lowlight";
   text: string;
-  topic: string | null;
+  topicName?: string | null;
 }
 
 /** The minimal match shape that MatchCard needs */
@@ -225,7 +225,7 @@ export function MatchCard({
               {isCompact &&
                 hasHighlights &&
                 visibleHighlights.map((item, i) => {
-                  const hasText = !!(item.text && item.topic);
+                  const hasText = !!(item.text && item.topicName);
                   return (
                     <Tooltip key={`h-${i}`}>
                       <TooltipTrigger
@@ -234,7 +234,7 @@ export function MatchCard({
                         }`}
                       >
                         <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topic || item.text}
+                        {item.topicName || item.text}
                       </TooltipTrigger>
                       {hasText && (
                         <TooltipContent side="bottom" className="max-w-sm">
@@ -276,7 +276,7 @@ export function MatchCard({
                 </span>
                 {hasHighlights &&
                   visibleLowlights.map((item, i) => {
-                    const hasText = !!(item.text && item.topic);
+                    const hasText = !!(item.text && item.topicName);
                     return (
                       <Tooltip key={`l-${i}`}>
                         <TooltipTrigger
@@ -285,7 +285,7 @@ export function MatchCard({
                           }`}
                         >
                           <ThumbsDown className="h-2.5 w-2.5" />
-                          {item.topic || item.text}
+                          {item.topicName || item.text}
                         </TooltipTrigger>
                         {hasText && (
                           <TooltipContent side="bottom" className="max-w-sm">
@@ -305,7 +305,7 @@ export function MatchCard({
             {!isCompact && hasHighlights && (
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {highlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topic);
+                  const hasText = !!(item.text && item.topicName);
                   return (
                     <Tooltip key={`h-${i}`}>
                       <TooltipTrigger
@@ -314,7 +314,7 @@ export function MatchCard({
                         }`}
                       >
                         <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topic || item.text}
+                        {item.topicName || item.text}
                       </TooltipTrigger>
                       {hasText && (
                         <TooltipContent side="bottom" className="max-w-sm">
@@ -325,7 +325,7 @@ export function MatchCard({
                   );
                 })}
                 {lowlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topic);
+                  const hasText = !!(item.text && item.topicName);
                   return (
                     <Tooltip key={`l-${i}`}>
                       <TooltipTrigger
@@ -334,7 +334,7 @@ export function MatchCard({
                         }`}
                       >
                         <ThumbsDown className="h-2.5 w-2.5" />
-                        {item.topic || item.text}
+                        {item.topicName || item.text}
                       </TooltipTrigger>
                       {hasText && (
                         <TooltipContent side="bottom" className="max-w-sm">

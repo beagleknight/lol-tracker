@@ -365,7 +365,7 @@ function ScoutingReport({
               matchHighlights={game.highlights.map((h) => ({
                 type: h.type,
                 text: h.text,
-                topic: h.topic,
+                topicName: h.topicName,
               }))}
               locale={locale}
               userPrimaryRole={user?.primaryRole}

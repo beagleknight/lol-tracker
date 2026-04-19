@@ -204,6 +204,13 @@
       "when": 1776038400000,
       "tag": "0028_repair_riot_account_id",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1776124800000,
+      "tag": "0029_normalize_topics",
+      "breakpoints": true
     }
   ]
 }
