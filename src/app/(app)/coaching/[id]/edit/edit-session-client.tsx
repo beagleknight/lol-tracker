@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Video, Check, Calendar, Clock, X } from "lucide-react";
+import { Loader2, Video, Check, Calendar, Clock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 
+import type { TopicOption } from "@/components/highlights-editor";
 import type { CoachingSession } from "@/db/schema";
 
 import { updateCoachingSession } from "@/app/actions/coaching";
@@ -23,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
-import { PREDEFINED_TOPICS } from "@/lib/topics";
 import { safeExternalUrl } from "@/lib/url";
 
 interface MatchSummary {
@@ -42,9 +42,16 @@ interface EditSessionClientProps {
   session: CoachingSession;
   recentMatches: MatchSummary[];
   ddragonVersion: string;
+  topics: TopicOption[];
+  initialTopicIds: number[];
   highlightsByMatch: Record<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{
+      type: "highlight" | "lowlight";
+      text: string;
+      topicId: number | null;
+      topicName: string | null;
+    }>
   >;
   previousCoaches: string[];
 }
@@ -61,6 +68,8 @@ export function EditSessionClient({
   ddragonVersion,
   highlightsByMatch,
   previousCoaches,
+  topics: availableTopics,
+  initialTopicIds,
 }: EditSessionClientProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -76,9 +85,7 @@ export function EditSessionClient({
   const [date, setDate] = useState(() => toDatetimeLocalValue(session.date));
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(session.vodMatchId ?? null);
 
-  const initialTopics: string[] = session.topics ? JSON.parse(session.topics) : [];
-  const [topics, setTopics] = useState<string[]>(initialTopics);
-  const [customTopic, setCustomTopic] = useState("");
+  const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>(initialTopicIds);
   const [showCoachSuggestions, setShowCoachSuggestions] = useState(false);
   const MATCHES_PAGE_SIZE = 10;
   const [matchesVisible, setMatchesVisible] = useState(MATCHES_PAGE_SIZE);
@@ -99,17 +106,10 @@ export function EditSessionClient({
     setSelectedMatchId((prev) => (prev === id ? null : id));
   }
 
-  function toggleTopic(topic: string) {
-    setTopics((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic],
+  function toggleTopic(id: number) {
+    setSelectedTopicIds((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
     );
-  }
-
-  function addCustomTopic() {
-    if (customTopic && !topics.includes(customTopic)) {
-      setTopics((prev) => [...prev, customTopic]);
-      setCustomTopic("");
-    }
   }
 
   // Selected match details for preview
@@ -120,7 +120,7 @@ export function EditSessionClient({
     ? (highlightsByMatch[selectedMatchId] || []).map((h) => ({
         type: h.type,
         text: h.text,
-        topic: h.topic || undefined,
+        topic: h.topicName || undefined,
       }))
     : [];
 
@@ -136,7 +136,7 @@ export function EditSessionClient({
           coachName: coachName.trim(),
           date: new Date(date).toISOString(),
           vodMatchId: selectedMatchId,
-          topics: topics.length > 0 ? topics : undefined,
+          topicIds: selectedTopicIds.length > 0 ? selectedTopicIds : undefined,
           ...(isCompleted && {
             durationMinutes: duration ? parseInt(duration) : null,
             notes: notes || null,
@@ -365,48 +365,17 @@ export function EditSessionClient({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            {PREDEFINED_TOPICS.map((topic) => (
+            {availableTopics.map((topic) => (
               <Badge
-                key={topic}
-                variant={topics.includes(topic) ? "default" : "secondary"}
+                key={topic.id}
+                variant={selectedTopicIds.includes(topic.id) ? "default" : "secondary"}
                 className="cursor-pointer"
                 render={<button type="button" />}
-                onClick={() => toggleTopic(topic)}
+                onClick={() => toggleTopic(topic.id)}
               >
-                {topic}
+                {topic.name}
               </Badge>
             ))}
-            {topics
-              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
-              .map((topic) => (
-                <Badge
-                  key={topic}
-                  variant="default"
-                  className="cursor-pointer"
-                  render={<button type="button" />}
-                  onClick={() => toggleTopic(topic)}
-                >
-                  {topic}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder={t("customTopicPlaceholder")}
-              value={customTopic}
-              onChange={(e) => setCustomTopic(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addCustomTopic();
-                }
-              }}
-              className="max-w-xs"
-            />
-            <Button variant="outline" size="sm" onClick={addCustomTopic}>
-              {t("addButton")}
-            </Button>
           </div>
         </CardContent>
       </Card>

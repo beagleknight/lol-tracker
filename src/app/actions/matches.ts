@@ -19,7 +19,7 @@ export async function savePostGameReview(
     highlights: Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic?: string;
+      topicId?: number;
     }>;
     comment?: string;
     vodUrl?: string;
@@ -44,7 +44,7 @@ export async function savePostGameReview(
         riotAccountId: user.activeRiotAccountId,
         type: item.type,
         text: item.text,
-        topic: item.topic || null,
+        topicId: item.topicId ?? null,
       })),
     );
   }

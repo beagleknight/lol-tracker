@@ -7,6 +7,7 @@ import { matches, matchHighlights } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { ReviewClient } from "./review-client";
 
@@ -124,7 +125,8 @@ export default async function ReviewPage({
       id: number;
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId?: number;
+      topicName?: string;
     }>
   > = {};
   for (const h of allHighlights) {
@@ -135,7 +137,8 @@ export default async function ReviewPage({
       id: h.id,
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicId: h.topicId ?? undefined,
+      topicName: undefined,
     });
   }
 
@@ -149,6 +152,7 @@ export default async function ReviewPage({
       completedTotalPages={completedTotalPages}
       completedTotal={completedTotal}
       initialTab={initialTab}
+      topics={(await getDefaultTopics()).map((t) => ({ id: t.id, name: t.name }))}
     />
   );
 }

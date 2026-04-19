@@ -2,10 +2,11 @@ import { eq, and } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { coachingSessions, matches, matchHighlights } from "@/db/schema";
+import { coachingSessions, coachingSessionTopics, matches, matchHighlights } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { CompleteSessionClient } from "./complete-session-client";
 
@@ -67,18 +68,30 @@ export default async function CompleteCoachingSessionPage({
           columns: {
             type: true,
             text: true,
-            topic: true,
+            topicId: true,
           },
         })
       : Promise.resolve([]),
   ]);
 
   const vodMatch = vodMatchRows[0] || null;
+
+  const allTopics = await getDefaultTopics();
+  const topicMap = new Map(allTopics.map((t) => [t.id, t.name]));
+
   const highlights = vodHighlights.map((h) => ({
     type: h.type,
     text: h.text,
-    topic: h.topic,
+    topicId: h.topicId,
+    topicName: h.topicId ? (topicMap.get(h.topicId) ?? null) : null,
   }));
+
+  // Fetch session topic IDs from join table
+  const sessionTopicRows = await db
+    .select({ topicId: coachingSessionTopics.topicId })
+    .from(coachingSessionTopics)
+    .where(eq(coachingSessionTopics.sessionId, sessionId));
+  const initialTopicIds = sessionTopicRows.map((r) => r.topicId);
 
   return (
     <CompleteSessionClient
@@ -86,6 +99,8 @@ export default async function CompleteCoachingSessionPage({
       vodMatch={vodMatch}
       vodHighlights={highlights}
       ddragonVersion={ddragonVersion}
+      topics={allTopics}
+      initialTopicIds={initialTopicIds}
     />
   );
 }

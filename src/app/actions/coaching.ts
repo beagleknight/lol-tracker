@@ -4,7 +4,13 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { coachingSessions, coachingSessionMatches, coachingActionItems } from "@/db/schema";
+import {
+  coachingSessions,
+  coachingSessionMatches,
+  coachingSessionTopics,
+  coachingActionItems,
+  topics,
+} from "@/db/schema";
 import { invalidateCoachingCaches } from "@/lib/cache";
 import { blockIfImpersonating, requireUser } from "@/lib/session";
 
@@ -14,7 +20,7 @@ export async function scheduleCoachingSession(data: {
   coachName: string;
   date: string; // ISO string
   vodMatchId?: string; // optional — user may not have picked a VOD yet
-  focusAreas?: string[]; // optional pre-session focus topics
+  focusAreas?: string[]; // optional pre-session focus topics (stored as JSON for now)
 }) {
   const user = await requireUser();
   await blockIfImpersonating();
@@ -29,12 +35,29 @@ export async function scheduleCoachingSession(data: {
       date: new Date(data.date),
       status: "scheduled",
       vodMatchId: data.vodMatchId ?? null,
-      topics: focusAreasJson, // Pre-fill topics with focus areas (will be overwritten on completion)
       focusAreas: focusAreasJson, // Preserved separately — never overwritten
     })
     .returning({ id: coachingSessions.id });
 
   const sessionId = session[0].id;
+
+  // Link focus areas as session topics (pre-fill)
+  if (data.focusAreas && data.focusAreas.length > 0) {
+    const topicRows = await db
+      .select({ id: topics.id, name: topics.name })
+      .from(topics)
+      .where(eq(topics.isDefault, true));
+    const topicMap = new Map(topicRows.map((t) => [t.name, t.id]));
+
+    const topicLinks = data.focusAreas
+      .map((name) => topicMap.get(name))
+      .filter((id): id is number => id !== undefined)
+      .map((topicId) => ({ sessionId, topicId }));
+
+    if (topicLinks.length > 0) {
+      await db.insert(coachingSessionTopics).values(topicLinks);
+    }
+  }
 
   // Link the VOD match if one was selected
   if (data.vodMatchId) {
@@ -58,9 +81,9 @@ export async function completeCoachingSession(
   sessionId: number,
   data: {
     durationMinutes?: number;
-    topics: string[];
+    topicIds: number[];
     notes?: string;
-    actionItems: Array<{ description: string; topic?: string }>;
+    actionItems: Array<{ description: string; topicId?: number }>;
     additionalMatchIds?: string[];
   },
 ) {
@@ -81,11 +104,21 @@ export async function completeCoachingSession(
     .set({
       status: "completed",
       durationMinutes: data.durationMinutes || null,
-      topics: JSON.stringify(data.topics),
       notes: data.notes || null,
       updatedAt: new Date(),
     })
     .where(eq(coachingSessions.id, sessionId));
+
+  // Replace session topics
+  await db.delete(coachingSessionTopics).where(eq(coachingSessionTopics.sessionId, sessionId));
+  if (data.topicIds.length > 0) {
+    await db.insert(coachingSessionTopics).values(
+      data.topicIds.map((topicId) => ({
+        sessionId,
+        topicId,
+      })),
+    );
+  }
 
   // Link additional matches discussed (beyond the VOD)
   if (data.additionalMatchIds && data.additionalMatchIds.length > 0) {
@@ -105,7 +138,7 @@ export async function completeCoachingSession(
         sessionId,
         userId: user.id,
         description: item.description,
-        topic: item.topic || null,
+        topicId: item.topicId ?? null,
       })),
     );
   }
@@ -127,7 +160,7 @@ export async function updateCoachingSession(
     coachName: string;
     date: string; // ISO string
     vodMatchId?: string | null;
-    topics?: string[];
+    topicIds?: number[];
     // Only for completed sessions:
     durationMinutes?: number | null;
     notes?: string | null;
@@ -151,7 +184,6 @@ export async function updateCoachingSession(
       coachName: data.coachName,
       date: new Date(data.date),
       vodMatchId: data.vodMatchId ?? null,
-      topics: data.topics?.length ? JSON.stringify(data.topics) : null,
       ...(session.status === "completed" && {
         durationMinutes: data.durationMinutes ?? null,
         notes: data.notes ?? null,
@@ -159,6 +191,19 @@ export async function updateCoachingSession(
       updatedAt: new Date(),
     })
     .where(eq(coachingSessions.id, sessionId));
+
+  // Replace session topics if provided
+  if (data.topicIds !== undefined) {
+    await db.delete(coachingSessionTopics).where(eq(coachingSessionTopics.sessionId, sessionId));
+    if (data.topicIds.length > 0) {
+      await db.insert(coachingSessionTopics).values(
+        data.topicIds.map((topicId) => ({
+          sessionId,
+          topicId,
+        })),
+      );
+    }
+  }
 
   // Update VOD match link: delete old link, insert new if provided
   await db
@@ -250,7 +295,7 @@ export async function deleteActionItem(itemId: number) {
 
 // ─── Create standalone action item (not tied to a session) ───────────────────
 
-export async function createActionItem(data: { description: string; topic?: string }) {
+export async function createActionItem(data: { description: string; topicId?: number }) {
   const user = await requireUser();
   await blockIfImpersonating();
 
@@ -262,7 +307,7 @@ export async function createActionItem(data: { description: string; topic?: stri
     userId: user.id,
     sessionId: null,
     description: data.description.trim(),
-    topic: data.topic?.trim() || null,
+    topicId: data.topicId ?? null,
   });
 
   revalidatePath("/coaching", "page");

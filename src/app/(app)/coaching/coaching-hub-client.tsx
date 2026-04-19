@@ -55,9 +55,17 @@ interface CoachingHubClientProps {
   vodMatchMap: Record<string, VodMatchInfo>;
   intervalsData: Record<number, IntervalData>;
   ddragonVersion: string;
+  sessionTopics: Record<number, string[]>;
+  topicNames: { id: number; name: string }[];
 }
 
-function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
+function ActionItemMiniRow({
+  item,
+  topicNames,
+}: {
+  item: CoachingActionItem;
+  topicNames: { id: number; name: string }[];
+}) {
   const t = useTranslations("Coaching");
   const [isPending, startTransition] = useTransition();
 
@@ -94,9 +102,9 @@ function ActionItemMiniRow({ item }: { item: CoachingActionItem }) {
         {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : icons[item.status]}
       </button>
       <span className="flex-1 truncate text-sm">{item.description}</span>
-      {item.topic && (
+      {item.topicId && (
         <Badge variant="secondary" className="shrink-0 px-1.5 py-0 text-[10px]">
-          {item.topic}
+          {topicNames.find((t) => t.id === item.topicId)?.name ?? `Topic #${item.topicId}`}
         </Badge>
       )}
     </div>
@@ -111,6 +119,8 @@ export function CoachingHubClient({
   vodMatchMap,
   intervalsData,
   ddragonVersion,
+  sessionTopics,
+  topicNames,
 }: CoachingHubClientProps) {
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
@@ -165,7 +175,7 @@ export function CoachingHubClient({
             {scheduledSessions.map((session) => {
               const dateStr = formatDate(session.date, locale, "datetime-short");
               const vodMatch = session.vodMatchId ? vodMatchMap[session.vodMatchId] : null;
-              const topics: string[] = session.topics ? JSON.parse(session.topics) : [];
+              const topics: string[] = sessionTopics[session.id] ?? [];
               const now = new Date();
               const isPastDue = session.date < now;
               const daysPastDue = isPastDue
@@ -308,7 +318,7 @@ export function CoachingHubClient({
           <Card className="surface-glow">
             <CardContent className="divide-y divide-border/50 pt-4">
               {activeActionItems.slice(0, 8).map((item) => (
-                <ActionItemMiniRow key={item.id} item={item} />
+                <ActionItemMiniRow key={item.id} item={item} topicNames={topicNames} />
               ))}
               {activeActionItems.length > 8 && (
                 <p className="pt-2 text-xs text-muted-foreground">
@@ -330,7 +340,7 @@ export function CoachingHubClient({
           </div>
           <div className="space-y-2">
             {completedSessions.map((session) => {
-              const topics: string[] = session.topics ? JSON.parse(session.topics) : [];
+              const topics: string[] = sessionTopics[session.id] ?? [];
               const items = actionItemsBySession[session.id];
               const interval = intervalsData[session.id];
               const dateStr = formatDate(session.date, locale, "short");

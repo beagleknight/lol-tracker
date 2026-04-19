@@ -135,7 +135,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const highlightItems = highlights.map((h) => ({
     type: h.type,
     text: h.text,
-    topic: h.topic || undefined,
+    topicId: h.topicId ?? undefined,
+    topicName: undefined as string | undefined, // TODO: resolve from topics table
   }));
 
   return (

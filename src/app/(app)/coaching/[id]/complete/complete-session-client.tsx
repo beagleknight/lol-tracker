@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import type { TopicOption } from "@/components/highlights-editor";
 import type { CoachingSession } from "@/db/schema";
 
 import { completeCoachingSession } from "@/app/actions/coaching";
@@ -24,7 +25,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
-import { PREDEFINED_TOPICS } from "@/lib/topics";
 import { safeExternalUrl } from "@/lib/url";
 
 interface VodMatch {
@@ -46,9 +46,12 @@ interface CompleteSessionClientProps {
   vodHighlights: Array<{
     type: "highlight" | "lowlight";
     text: string;
-    topic: string | null;
+    topicId: number | null;
+    topicName: string | null;
   }>;
   ddragonVersion: string;
+  topics: TopicOption[];
+  initialTopicIds: number[];
 }
 
 export function CompleteSessionClient({
@@ -56,6 +59,8 @@ export function CompleteSessionClient({
   vodMatch,
   vodHighlights,
   ddragonVersion,
+  topics: availableTopics,
+  initialTopicIds,
 }: CompleteSessionClientProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -63,46 +68,39 @@ export function CompleteSessionClient({
   const t = useTranslations("CompleteSession");
   const [isPending, startTransition] = useTransition();
 
-  // Pre-fill topics from focus areas if they were set during scheduling
-  const initialTopics: string[] = session.topics ? JSON.parse(session.topics) : [];
+  const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>(initialTopicIds);
 
-  const [selectedTopics, setSelectedTopics] = useState<string[]>(initialTopics);
-  const [customTopic, setCustomTopic] = useState("");
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
-  const [actionItems, setActionItems] = useState<Array<{ description: string; topic: string }>>([]);
+  const [actionItems, setActionItems] = useState<Array<{ description: string; topicId?: number }>>(
+    [],
+  );
   const [newActionDesc, setNewActionDesc] = useState("");
-  const [newActionTopic, setNewActionTopic] = useState("");
+  const [newActionTopicId, setNewActionTopicId] = useState<number | undefined>(undefined);
 
   const dateStr = formatDate(session.date, locale, "datetime");
 
   const highlights: HighlightItem[] = vodHighlights.map((h) => ({
     type: h.type,
     text: h.text,
-    topic: h.topic || undefined,
+    topicId: h.topicId ?? undefined,
+    topicName: h.topicName ?? undefined,
   }));
 
-  function toggleTopic(topic: string) {
-    setSelectedTopics((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic],
+  function toggleTopic(id: number) {
+    setSelectedTopicIds((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
     );
-  }
-
-  function addCustomTopic() {
-    if (customTopic && !selectedTopics.includes(customTopic)) {
-      setSelectedTopics((prev) => [...prev, customTopic]);
-      setCustomTopic("");
-    }
   }
 
   function addActionItem() {
     if (!newActionDesc.trim()) return;
     setActionItems((prev) => [
       ...prev,
-      { description: newActionDesc.trim(), topic: newActionTopic },
+      { description: newActionDesc.trim(), topicId: newActionTopicId },
     ]);
     setNewActionDesc("");
-    setNewActionTopic("");
+    setNewActionTopicId(undefined);
   }
 
   function removeActionItem(index: number) {
@@ -110,7 +108,7 @@ export function CompleteSessionClient({
   }
 
   function handleSubmit() {
-    if (selectedTopics.length === 0) {
+    if (selectedTopicIds.length === 0) {
       toast.error(t("toasts.topicRequired"));
       return;
     }
@@ -119,7 +117,7 @@ export function CompleteSessionClient({
       try {
         const result = await completeCoachingSession(session.id, {
           durationMinutes: duration ? parseInt(duration) : undefined,
-          topics: selectedTopics,
+          topicIds: selectedTopicIds,
           notes: notes || undefined,
           actionItems,
         });
@@ -211,48 +209,17 @@ export function CompleteSessionClient({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            {PREDEFINED_TOPICS.map((topic) => (
+            {availableTopics.map((topic) => (
               <Badge
-                key={topic}
-                variant={selectedTopics.includes(topic) ? "default" : "secondary"}
+                key={topic.id}
+                variant={selectedTopicIds.includes(topic.id) ? "default" : "secondary"}
                 className="cursor-pointer"
                 render={<button type="button" />}
-                onClick={() => toggleTopic(topic)}
+                onClick={() => toggleTopic(topic.id)}
               >
-                {topic}
+                {topic.name}
               </Badge>
             ))}
-            {selectedTopics
-              .filter((t) => !(PREDEFINED_TOPICS as readonly string[]).includes(t))
-              .map((topic) => (
-                <Badge
-                  key={topic}
-                  variant="default"
-                  className="cursor-pointer"
-                  render={<button type="button" />}
-                  onClick={() => toggleTopic(topic)}
-                >
-                  {topic}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder={t("customTopicPlaceholder")}
-              value={customTopic}
-              onChange={(e) => setCustomTopic(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addCustomTopic();
-                }
-              }}
-              className="max-w-xs"
-            />
-            <Button variant="outline" size="sm" onClick={addCustomTopic}>
-              {t("addButton")}
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -307,9 +274,9 @@ export function CompleteSessionClient({
                   <CheckCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm">{item.description}</p>
-                    {item.topic && (
+                    {item.topicId && (
                       <Badge variant="secondary" className="mt-1 text-xs">
-                        {item.topic}
+                        {availableTopics.find((t) => t.id === item.topicId)?.name ?? ""}
                       </Badge>
                     )}
                   </div>
@@ -340,12 +307,20 @@ export function CompleteSessionClient({
               className="flex-1"
             />
             <div className="flex gap-2">
-              <Input
-                placeholder={t("topicPlaceholder")}
-                value={newActionTopic}
-                onChange={(e) => setNewActionTopic(e.target.value)}
-                className="flex-1 sm:w-40"
-              />
+              <select
+                value={newActionTopicId ?? ""}
+                onChange={(e) =>
+                  setNewActionTopicId(e.target.value ? parseInt(e.target.value) : undefined)
+                }
+                className="flex-1 rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm sm:w-40"
+              >
+                <option value="">{t("topicPlaceholder")}</option>
+                {availableTopics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </option>
+                ))}
+              </select>
               <Button
                 variant="outline"
                 size="icon"

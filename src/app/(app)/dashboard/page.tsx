@@ -13,6 +13,7 @@ import { accountScope } from "@/lib/match-queries";
 import { toCumulativeLP } from "@/lib/rank";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
+import { getDefaultTopics } from "@/lib/topics";
 
 import { DashboardClient } from "./dashboard-client";
 
@@ -181,14 +182,14 @@ export default async function DashboardPage() {
             matchId: true,
             type: true,
             text: true,
-            topic: true,
+            topicId: true,
           },
         })
       : [];
 
   const highlightsPerMatch: Record<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{ type: "highlight" | "lowlight"; text: string; topicName: string | null }>
   > = {};
   for (const h of recentHighlights) {
     if (!highlightsPerMatch[h.matchId]) {
@@ -197,7 +198,7 @@ export default async function DashboardPage() {
     highlightsPerMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicName: null, // Topic name resolution not needed for dashboard highlights display
     });
   }
 
@@ -281,6 +282,7 @@ export default async function DashboardPage() {
           : null
       }
       ddragonVersion={ddragonVersion}
+      topicNames={(await getDefaultTopics()).map((t) => ({ id: t.id, name: t.name }))}
     />
   );
 }

@@ -15,6 +15,7 @@ import {
   coachingActionItems,
   goals,
   rankSnapshots,
+  topics,
 } from "@/db/schema";
 import { notRemake } from "@/lib/match-queries";
 
@@ -22,7 +23,7 @@ import { notRemake } from "@/lib/match-queries";
 
 interface ActionItemSummary {
   description: string;
-  topic: string | null;
+  topicName: string | null;
   status: string;
 }
 
@@ -121,7 +122,7 @@ export async function buildMatchupContext(
       csPerMin: number;
       gameDurationSeconds: number;
       comment: string | null;
-      highlights: Array<{ type: string; text: string; topic: string | null }>;
+      highlights: Array<{ type: string; text: string; topicName: string | null }>;
     }>;
   },
 ): Promise<MatchupInsightContext> {
@@ -137,10 +138,11 @@ export async function buildMatchupContext(
     db
       .select({
         description: coachingActionItems.description,
-        topic: coachingActionItems.topic,
+        topicName: topics.name,
         status: coachingActionItems.status,
       })
       .from(coachingActionItems)
+      .leftJoin(topics, eq(coachingActionItems.topicId, topics.id))
       .where(
         and(
           eq(coachingActionItems.userId, userId),
@@ -197,7 +199,9 @@ export async function buildMatchupContext(
     csPerMin: g.csPerMin,
     gameDurationMin: Math.round(g.gameDurationSeconds / 60),
     comment: g.comment,
-    highlights: g.highlights.map((h) => `[${h.type}]${h.topic ? ` (${h.topic})` : ""} ${h.text}`),
+    highlights: g.highlights.map(
+      (h) => `[${h.type}]${h.topicName ? ` (${h.topicName})` : ""} ${h.text}`,
+    ),
   }));
 
   return {
@@ -235,7 +239,7 @@ export interface PostGameInsightContext {
   runeKeystoneName: string | null;
   comment: string | null;
   reviewNotes: string | null;
-  highlights: Array<{ type: string; text: string; topic: string | null }>;
+  highlights: Array<{ type: string; text: string; topicName: string | null }>;
   championAvgStats: AvgStats | null;
   matchupNotes: string | null;
   activeActionItems: ActionItemSummary[];
@@ -275,9 +279,10 @@ export async function buildPostGameContext(
         .select({
           type: matchHighlights.type,
           text: matchHighlights.text,
-          topic: matchHighlights.topic,
+          topicName: topics.name,
         })
         .from(matchHighlights)
+        .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
         .where(
           and(
             eq(matchHighlights.matchId, matchId),
@@ -288,10 +293,11 @@ export async function buildPostGameContext(
       db
         .select({
           description: coachingActionItems.description,
-          topic: coachingActionItems.topic,
+          topicName: topics.name,
           status: coachingActionItems.status,
         })
         .from(coachingActionItems)
+        .leftJoin(topics, eq(coachingActionItems.topicId, topics.id))
         .where(
           and(
             eq(coachingActionItems.userId, userId),

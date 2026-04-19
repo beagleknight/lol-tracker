@@ -136,7 +136,7 @@ export default async function MatchesPage({
             matchId: true,
             type: true,
             text: true,
-            topic: true,
+            topicId: true,
           },
         })
       : [];
@@ -144,7 +144,7 @@ export default async function MatchesPage({
   // Build highlight data per match
   const highlightsPerMatch: Record<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{ type: "highlight" | "lowlight"; text: string; topicName: string | null }>
   > = {};
   for (const h of pageHighlights) {
     if (!highlightsPerMatch[h.matchId]) {
@@ -153,7 +153,7 @@ export default async function MatchesPage({
     highlightsPerMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicName: null,
     });
   }
 

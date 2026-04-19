@@ -8,47 +8,69 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { PREDEFINED_TOPICS } from "@/lib/topics";
+
+export interface TopicOption {
+  id: number;
+  name: string;
+}
 
 export interface HighlightItem {
   type: "highlight" | "lowlight";
   text: string;
-  topic?: string;
+  topicId?: number;
+  topicName?: string; // For display — resolved from topicId
 }
 
 interface HighlightsEditorProps {
   highlights: HighlightItem[];
   onChange: (highlights: HighlightItem[]) => void;
+  topics: TopicOption[];
   maxPerType?: number;
 }
 
-export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: HighlightsEditorProps) {
+export function HighlightsEditor({
+  highlights,
+  onChange,
+  topics,
+  maxPerType = 3,
+}: HighlightsEditorProps) {
   const t = useTranslations("HighlightsEditor");
   const [newHighlightText, setNewHighlightText] = useState("");
-  const [newHighlightTopic, setNewHighlightTopic] = useState("");
+  const [newHighlightTopicId, setNewHighlightTopicId] = useState("");
   const [newLowlightText, setNewLowlightText] = useState("");
-  const [newLowlightTopic, setNewLowlightTopic] = useState("");
+  const [newLowlightTopicId, setNewLowlightTopicId] = useState("");
 
   const highlightItems = highlights.filter((h) => h.type === "highlight");
   const lowlightItems = highlights.filter((h) => h.type === "lowlight");
 
+  const getTopicName = useCallback(
+    (topicId: number | undefined) => {
+      if (!topicId) return undefined;
+      return topics.find((t) => t.id === topicId)?.name;
+    },
+    [topics],
+  );
+
   const addItem = useCallback(
     (type: "highlight" | "lowlight") => {
       const text = type === "highlight" ? newHighlightText : newLowlightText;
-      const topic = type === "highlight" ? newHighlightTopic : newLowlightTopic;
-      if (!text.trim() && !topic) return;
+      const topicIdStr = type === "highlight" ? newHighlightTopicId : newLowlightTopicId;
+      if (!text.trim() && !topicIdStr) return;
 
       const items = type === "highlight" ? highlightItems : lowlightItems;
       if (items.length >= maxPerType) return;
 
-      onChange([...highlights, { type, text: text.trim(), topic: topic || undefined }]);
+      const topicId = topicIdStr ? Number(topicIdStr) : undefined;
+      const topicName = getTopicName(topicId);
+
+      onChange([...highlights, { type, text: text.trim(), topicId, topicName }]);
 
       if (type === "highlight") {
         setNewHighlightText("");
-        setNewHighlightTopic("");
+        setNewHighlightTopicId("");
       } else {
         setNewLowlightText("");
-        setNewLowlightTopic("");
+        setNewLowlightTopicId("");
       }
     },
     [
@@ -57,10 +79,11 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
       lowlightItems,
       maxPerType,
       newHighlightText,
-      newHighlightTopic,
+      newHighlightTopicId,
       newLowlightText,
-      newLowlightTopic,
+      newLowlightTopicId,
       onChange,
+      getTopicName,
     ],
   );
 
@@ -83,14 +106,15 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
         {/* Existing highlights */}
         {highlightItems.map((item, idx) => {
           const globalIdx = highlights.indexOf(item);
+          const displayTopic = item.topicName || getTopicName(item.topicId);
           return (
             <div
               key={idx}
               className="flex items-center gap-2 rounded-md border border-win/20 bg-win/5 px-3 py-1.5 text-sm"
             >
-              {item.topic && (
+              {displayTopic && (
                 <Badge variant="secondary" className="shrink-0 text-[10px]">
-                  {item.topic}
+                  {displayTopic}
                 </Badge>
               )}
               {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
@@ -111,15 +135,15 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
         {highlightItems.length < maxPerType && (
           <div className="flex gap-2">
             <select
-              value={newHighlightTopic}
-              onChange={(e) => setNewHighlightTopic(e.target.value)}
+              value={newHighlightTopicId}
+              onChange={(e) => setNewHighlightTopicId(e.target.value)}
               aria-label={t("highlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>
-              {PREDEFINED_TOPICS.map((topic) => (
-                <option key={topic} value={topic}>
-                  {topic}
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
                 </option>
               ))}
             </select>
@@ -141,7 +165,7 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
               size="sm"
               className="h-8 shrink-0 px-2"
               onClick={() => addItem("highlight")}
-              disabled={!newHighlightText.trim() && !newHighlightTopic}
+              disabled={!newHighlightText.trim() && !newHighlightTopicId}
               aria-label="Add highlight"
             >
               <Plus className="h-3 w-3" />
@@ -160,14 +184,15 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
         {/* Existing lowlights */}
         {lowlightItems.map((item, idx) => {
           const globalIdx = highlights.indexOf(item);
+          const displayTopic = item.topicName || getTopicName(item.topicId);
           return (
             <div
               key={idx}
               className="flex items-center gap-2 rounded-md border border-loss/20 bg-loss/5 px-3 py-1.5 text-sm"
             >
-              {item.topic && (
+              {displayTopic && (
                 <Badge variant="secondary" className="shrink-0 text-[10px]">
-                  {item.topic}
+                  {displayTopic}
                 </Badge>
               )}
               {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
@@ -188,15 +213,15 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
         {lowlightItems.length < maxPerType && (
           <div className="flex gap-2">
             <select
-              value={newLowlightTopic}
-              onChange={(e) => setNewLowlightTopic(e.target.value)}
+              value={newLowlightTopicId}
+              onChange={(e) => setNewLowlightTopicId(e.target.value)}
               aria-label={t("lowlightTopicLabel")}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
             >
               <option value="">{t("topicPlaceholder")}</option>
-              {PREDEFINED_TOPICS.map((topic) => (
-                <option key={topic} value={topic}>
-                  {topic}
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
                 </option>
               ))}
             </select>
@@ -218,7 +243,7 @@ export function HighlightsEditor({ highlights, onChange, maxPerType = 3 }: Highl
               size="sm"
               className="h-8 shrink-0 px-2"
               onClick={() => addItem("lowlight")}
-              disabled={!newLowlightText.trim() && !newLowlightTopic}
+              disabled={!newLowlightText.trim() && !newLowlightTopicId}
               aria-label="Add lowlight"
             >
               <Plus className="h-3 w-3" />
@@ -251,7 +276,8 @@ export function HighlightsDisplay({
       <TooltipProvider>
         <div className="flex flex-wrap gap-1.5">
           {highlightItems.map((item, i) => {
-            const hasText = !!(item.text && item.topic);
+            const displayTopic = item.topicName;
+            const hasText = !!(item.text && displayTopic);
             return (
               <Tooltip key={`h-${i}`}>
                 <TooltipTrigger
@@ -260,7 +286,7 @@ export function HighlightsDisplay({
                   }`}
                 >
                   <ThumbsUp className="h-2.5 w-2.5" />
-                  {item.topic || item.text}
+                  {displayTopic || item.text}
                 </TooltipTrigger>
                 {hasText && (
                   <TooltipContent side="bottom" className="max-w-sm">
@@ -271,7 +297,8 @@ export function HighlightsDisplay({
             );
           })}
           {lowlightItems.map((item, i) => {
-            const hasText = !!(item.text && item.topic);
+            const displayTopic = item.topicName;
+            const hasText = !!(item.text && displayTopic);
             return (
               <Tooltip key={`l-${i}`}>
                 <TooltipTrigger
@@ -280,7 +307,7 @@ export function HighlightsDisplay({
                   }`}
                 >
                   <ThumbsDown className="h-2.5 w-2.5" />
-                  {item.topic || item.text}
+                  {displayTopic || item.text}
                 </TooltipTrigger>
                 {hasText && (
                   <TooltipContent side="bottom" className="max-w-sm">
@@ -303,22 +330,25 @@ export function HighlightsDisplay({
             <ThumbsUp className="h-3 w-3 text-win" />
             {t("highlightsHeading")}
           </p>
-          {highlightItems.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 rounded-md border border-l-2 border-win/20 border-l-win/50 bg-win/5 px-3 py-2 text-sm"
-            >
-              {item.topic && (
-                <Badge
-                  variant="secondary"
-                  className="mt-0.5 shrink-0 border-win/20 bg-win/10 text-[10px] text-win-muted"
-                >
-                  {item.topic}
-                </Badge>
-              )}
-              <span className="flex-1 text-foreground/80">{item.text || item.topic}</span>
-            </div>
-          ))}
+          {highlightItems.map((item, i) => {
+            const displayTopic = item.topicName;
+            return (
+              <div
+                key={i}
+                className="flex items-start gap-2 rounded-md border border-l-2 border-win/20 border-l-win/50 bg-win/5 px-3 py-2 text-sm"
+              >
+                {displayTopic && (
+                  <Badge
+                    variant="secondary"
+                    className="mt-0.5 shrink-0 border-win/20 bg-win/10 text-[10px] text-win-muted"
+                  >
+                    {displayTopic}
+                  </Badge>
+                )}
+                <span className="flex-1 text-foreground/80">{item.text || displayTopic}</span>
+              </div>
+            );
+          })}
         </div>
       )}
       {lowlightItems.length > 0 && (
@@ -327,22 +357,25 @@ export function HighlightsDisplay({
             <ThumbsDown className="h-3 w-3 text-loss" />
             {t("lowlightsHeading")}
           </p>
-          {lowlightItems.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 rounded-md border border-l-2 border-loss/20 border-l-loss/50 bg-loss/5 px-3 py-2 text-sm"
-            >
-              {item.topic && (
-                <Badge
-                  variant="secondary"
-                  className="mt-0.5 shrink-0 border-loss/20 bg-loss/10 text-[10px] text-loss-muted"
-                >
-                  {item.topic}
-                </Badge>
-              )}
-              <span className="flex-1 text-foreground/80">{item.text || item.topic}</span>
-            </div>
-          ))}
+          {lowlightItems.map((item, i) => {
+            const displayTopic = item.topicName;
+            return (
+              <div
+                key={i}
+                className="flex items-start gap-2 rounded-md border border-l-2 border-loss/20 border-l-loss/50 bg-loss/5 px-3 py-2 text-sm"
+              >
+                {displayTopic && (
+                  <Badge
+                    variant="secondary"
+                    className="mt-0.5 shrink-0 border-loss/20 bg-loss/10 text-[10px] text-loss-muted"
+                  >
+                    {displayTopic}
+                  </Badge>
+                )}
+                <span className="flex-1 text-foreground/80">{item.text || displayTopic}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -68,12 +68,15 @@ interface CoachingDetailClientProps {
   linkedMatches: LinkedMatch[];
   actionItems: CoachingActionItem[];
   ddragonVersion: string;
+  topicNames: { id: number; name: string }[];
+  sessionTopicNames: string[];
   highlightsByMatch: Record<
     string,
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId?: number;
+      topicName?: string;
     }>
   >;
   progressMatches: ProgressMatch[];
@@ -82,12 +85,19 @@ interface CoachingDetailClientProps {
     Array<{
       type: "highlight" | "lowlight";
       text: string;
-      topic: string | null;
+      topicId?: number;
+      topicName?: string;
     }>
   >;
 }
 
-function ActionItemRow({ item }: { item: CoachingActionItem }) {
+function ActionItemRow({
+  item,
+  topicNames,
+}: {
+  item: CoachingActionItem;
+  topicNames: { id: number; name: string }[];
+}) {
   const t = useTranslations("CoachingDetail");
   const [isPending, startTransition] = useTransition();
 
@@ -154,9 +164,9 @@ function ActionItemRow({ item }: { item: CoachingActionItem }) {
         >
           {item.description}
         </p>
-        {item.topic && (
+        {item.topicId != null && (
           <Badge variant="secondary" className="mt-1 text-xs">
-            {item.topic}
+            {topicNames.find((t) => t.id === item.topicId)?.name ?? item.topicId}
           </Badge>
         )}
       </div>
@@ -187,6 +197,8 @@ export function CoachingDetailClient({
   linkedMatches,
   actionItems,
   ddragonVersion,
+  topicNames,
+  sessionTopicNames,
   highlightsByMatch,
   progressMatches,
   progressHighlightsByMatch,
@@ -197,7 +209,7 @@ export function CoachingDetailClient({
   const t = useTranslations("CoachingDetail");
   const [isDeleting, startDelete] = useTransition();
 
-  const topics: string[] = session.topics ? JSON.parse(session.topics) : [];
+  const topics: string[] = sessionTopicNames;
   const focusAreas: string[] = session.focusAreas ? JSON.parse(session.focusAreas) : [];
 
   const isScheduled = session.status === "scheduled";
@@ -208,8 +220,13 @@ export function CoachingDetailClient({
 
   // Collect action item topics for highlighting in progress matches
   const actionItemTopics = useMemo(
-    () => new Set(actionItems.map((i) => i.topic).filter(Boolean) as string[]),
-    [actionItems],
+    () =>
+      new Set(
+        actionItems
+          .map((i) => topicNames.find((tn) => tn.id === i.topicId)?.name)
+          .filter(Boolean) as string[],
+      ),
+    [actionItems, topicNames],
   );
 
   // Compute progress stats
@@ -227,7 +244,7 @@ export function CoachingDetailClient({
     for (const match of progressMatches) {
       const hl = progressHighlightsByMatch[match.id] || [];
       for (const h of hl) {
-        if (h.topic && actionItemTopics.has(h.topic)) {
+        if (h.topicName && actionItemTopics.has(h.topicName)) {
           if (h.type === "highlight") relevantHighlights++;
           else relevantLowlights++;
         }
@@ -395,7 +412,8 @@ export function CoachingDetailClient({
                 const matchHL: HighlightItem[] = (highlightsByMatch[match.id] || []).map((h) => ({
                   type: h.type,
                   text: h.text,
-                  topic: h.topic || undefined,
+                  topicId: h.topicId,
+                  topicName: h.topicName,
                 }));
 
                 return (
@@ -495,7 +513,7 @@ export function CoachingDetailClient({
               ) : (
                 <div className="space-y-2">
                   {actionItems.map((item) => (
-                    <ActionItemRow key={item.id} item={item} />
+                    <ActionItemRow key={item.id} item={item} topicNames={topicNames} />
                   ))}
                 </div>
               )}
@@ -561,12 +579,13 @@ export function CoachingDetailClient({
                   const highlights: HighlightItem[] = matchHL.map((h) => ({
                     type: h.type,
                     text: h.text,
-                    topic: h.topic || undefined,
+                    topicId: h.topicId,
+                    topicName: h.topicName,
                   }));
 
                   // Check which highlights relate to action items
                   const hasRelevantNotes = matchHL.some(
-                    (h) => h.topic && actionItemTopics.has(h.topic),
+                    (h) => h.topicName && actionItemTopics.has(h.topicName),
                   );
 
                   const matchDateStr = formatDate(match.gameDate, locale, "short-compact");
@@ -627,7 +646,7 @@ export function CoachingDetailClient({
                         <div className="ml-4">
                           <div className="space-y-1">
                             {highlights.map((h, i) => {
-                              const isRelevant = h.topic && actionItemTopics.has(h.topic);
+                              const isRelevant = h.topicName && actionItemTopics.has(h.topicName);
                               return (
                                 <div
                                   key={i}
@@ -641,12 +660,12 @@ export function CoachingDetailClient({
                                     }`}
                                   />
                                   <span className={isRelevant ? "text-gold" : ""}>{h.text}</span>
-                                  {h.topic && (
+                                  {h.topicName && (
                                     <Badge
                                       variant={isRelevant ? "default" : "secondary"}
                                       className="shrink-0 px-1.5 py-0 text-[10px]"
                                     >
-                                      {h.topic}
+                                      {h.topicName}
                                       {isRelevant && " *"}
                                     </Badge>
                                   )}

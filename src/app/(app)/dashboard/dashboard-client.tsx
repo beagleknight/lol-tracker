@@ -99,6 +99,7 @@ interface DashboardClientProps {
   coachingCadenceDays: number;
   currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
+  topicNames: { id: number; name: string }[];
 }
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
@@ -142,6 +143,7 @@ export function DashboardClient({
   coachingCadenceDays,
   currentRank,
   ddragonVersion,
+  topicNames,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
   const { user: authUser } = useAuth();
@@ -700,9 +702,10 @@ export function DashboardClient({
                               ? t("actionItemInProgress")
                               : t("actionItemPending")}
                           </Badge>
-                          {item.topic && (
+                          {item.topicId && (
                             <Badge variant="secondary" className="text-xs">
-                              {item.topic}
+                              {topicNames.find((t) => t.id === item.topicId)?.name ??
+                                `Topic #${item.topicId}`}
                             </Badge>
                           )}
                         </div>

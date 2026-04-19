@@ -4,7 +4,7 @@ import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
-import { matches, matchHighlights, type MatchResult } from "@/db/schema";
+import { matches, matchHighlights, topics, type MatchResult } from "@/db/schema";
 import { scoutTag } from "@/lib/cache";
 import { notRemake } from "@/lib/match-queries";
 import { getChampionIdMap, type RiotMatch } from "@/lib/riot-api";
@@ -38,7 +38,7 @@ interface MatchupGameDetail {
   highlights: Array<{
     type: "highlight" | "lowlight";
     text: string;
-    topic: string | null;
+    topicName: string | null;
   }>;
 }
 
@@ -191,22 +191,28 @@ async function getCachedMatchupReport(
   const allHighlights =
     matchIds.length > 0
       ? await db
-          .select()
+          .select({
+            matchId: matchHighlights.matchId,
+            type: matchHighlights.type,
+            text: matchHighlights.text,
+            topicName: topics.name,
+          })
           .from(matchHighlights)
+          .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
           .where(and(...highlightConditions))
       : [];
 
   // Group highlights by matchId
   const highlightsByMatch = new Map<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topic: string | null }>
+    Array<{ type: "highlight" | "lowlight"; text: string; topicName: string | null }>
   >();
   for (const h of allHighlights) {
     const list = highlightsByMatch.get(h.matchId) || [];
     list.push({
       type: h.type,
       text: h.text,
-      topic: h.topic,
+      topicName: h.topicName,
     });
     highlightsByMatch.set(h.matchId, list);
   }
