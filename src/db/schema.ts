@@ -323,7 +323,83 @@ export const matchHighlights = sqliteTable(
   ],
 );
 
-// ─── Goals ───────────────────────────────────────────────────────────────────
+// ─── Challenges ──────────────────────────────────────────────────────────────
+// Replaces the old "goals" system. Supports multiple concurrent challenges
+// of different types: reach a rank by a date, or track a metric over N games.
+
+export const challenges = sqliteTable(
+  "challenges",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
+      onDelete: "set null",
+    }),
+    title: text("title").notNull(), // e.g. "Reach Platinum IV" or "Keep CSPM above 7 for 10 games"
+
+    // Challenge type: by-date (rank target) or by-games (metric condition over N games)
+    type: text("type", { enum: ["by-date", "by-games"] }).notNull(),
+
+    // ── by-date fields (rank target) ──
+    targetTier: text("target_tier"), // e.g. "PLATINUM" (null for by-games)
+    targetDivision: text("target_division"), // e.g. "IV" (null for Master+ or by-games)
+    startTier: text("start_tier"), // captured at creation (null for by-games)
+    startDivision: text("start_division"),
+    startLp: integer("start_lp").default(0),
+    deadline: integer("deadline", { mode: "timestamp" }), // soft deadline
+
+    // ── by-games fields (metric condition over N games) ──
+    metric: text("metric"), // e.g. "cspm", "deaths", "vision_score"
+    metricCondition: text("metric_condition", {
+      enum: ["above", "below", "at_least", "at_most"],
+    }), // comparison operator
+    metricThreshold: real("metric_threshold"), // e.g. 7.0 for "CSPM above 7"
+    targetGames: integer("target_games"), // e.g. 10 for "over 10 games"
+    currentGames: integer("current_games").default(0), // games evaluated so far
+    successfulGames: integer("successful_games").default(0), // games meeting condition
+
+    // Status lifecycle: active → completed | failed | retired
+    status: text("status", {
+      enum: ["active", "completed", "failed", "retired"],
+    })
+      .notNull()
+      .default("active"),
+
+    // Timestamps
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+    failedAt: integer("failed_at", { mode: "timestamp" }),
+    retiredAt: integer("retired_at", { mode: "timestamp" }),
+  },
+  (table) => [
+    index("challenges_user_status_idx").on(table.userId, table.status),
+    index("challenges_user_type_idx").on(table.userId, table.type),
+  ],
+);
+
+// ─── Challenge <-> Topics (many-to-many) ────────────────────────────────────
+
+export const challengeTopics = sqliteTable(
+  "challenge_topics",
+  {
+    challengeId: integer("challenge_id")
+      .notNull()
+      .references(() => challenges.id, { onDelete: "cascade" }),
+    topicId: integer("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.challengeId, table.topicId] }),
+    index("challenge_topics_topic_idx").on(table.topicId),
+  ],
+);
+
+// ─── Legacy Goals (kept for migration reference, will be dropped later) ─────
 
 export const goals = sqliteTable(
   "goals",
@@ -335,21 +411,16 @@ export const goals = sqliteTable(
     riotAccountId: text("riot_account_id").references(() => riotAccounts.id, {
       onDelete: "set null",
     }),
-    title: text("title").notNull(), // e.g. "Reach Platinum IV"
-    // Target rank
-    targetTier: text("target_tier").notNull(), // e.g. "PLATINUM"
-    targetDivision: text("target_division"), // e.g. "IV" (null for Master+)
-    // Starting rank (captured at goal creation for progress calculation)
+    title: text("title").notNull(),
+    targetTier: text("target_tier").notNull(),
+    targetDivision: text("target_division"),
     startTier: text("start_tier").notNull(),
     startDivision: text("start_division"),
     startLp: integer("start_lp").notNull().default(0),
-    // Status lifecycle: active → achieved | retired
     status: text("status", { enum: ["active", "achieved", "retired"] })
       .notNull()
       .default("active"),
-    // Optional soft deadline
     deadline: integer("deadline", { mode: "timestamp" }),
-    // Timestamps
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -463,6 +534,8 @@ export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type CoachingActionItem = typeof coachingActionItems.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
+export type Challenge = typeof challenges.$inferSelect;
+export type ChallengeTopicRow = typeof challengeTopics.$inferSelect;
 export type MatchHighlight = typeof matchHighlights.$inferSelect;
 export type MatchupNote = typeof matchupNotes.$inferSelect;
 export type AiInsight = typeof aiInsights.$inferSelect;

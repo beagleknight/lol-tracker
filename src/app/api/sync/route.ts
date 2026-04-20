@@ -2,6 +2,7 @@ import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
+import { checkByDateChallenges } from "@/lib/challenges";
 import { checkGoalAchievement } from "@/lib/goals";
 import { checkRateLimit, hasRecentEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
@@ -236,8 +237,9 @@ export async function GET(request: Request) {
             region,
             activeRiotAccountId,
           );
-          // Check if rank goal was achieved
+          // Check if rank goal/challenge was achieved
           await checkGoalAchievement(user.id, activeRiotAccountId);
+          await checkByDateChallenges(user.id, activeRiotAccountId);
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
@@ -412,8 +414,9 @@ export async function GET(request: Request) {
           activeRiotAccountId,
         );
 
-        // Check if rank goal was achieved after syncing
+        // Check if rank goal/challenge was achieved after syncing
         await checkGoalAchievement(user.id, activeRiotAccountId);
+        await checkByDateChallenges(user.id, activeRiotAccountId);
 
         // Cache invalidation is handled client-side via a Server Action
         // after the "done" event (updateTag cannot be called from Route Handlers).

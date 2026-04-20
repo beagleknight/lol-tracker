@@ -252,6 +252,8 @@ async function seed() {
     DELETE FROM ai_insights;
     DELETE FROM matchup_notes;
     DELETE FROM goals;
+    DELETE FROM challenge_topics;
+    DELETE FROM challenges;
     DELETE FROM match_highlights;
     DELETE FROM coaching_action_items;
     DELETE FROM coaching_session_topics;
@@ -1093,46 +1095,96 @@ async function seed() {
     });
   }
 
-  // ─── Goals ────────────────────────────────────────────────────────────────
-  console.log("Creating goals...");
+  // ─── Challenges ────────────────────────────────────────────────────────────
+  console.log("Creating challenges...");
 
-  // Goal 1: Achieved — "Reach Gold IV" (started in Silver I, achieved ~Feb 7)
+  // Challenge 1: Completed by-date — "Reach Gold IV" (started in Silver I, completed ~Feb 7)
   await client.execute({
-    sql: `INSERT INTO goals (user_id, riot_account_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
       MAIN_RIOT_ACCOUNT_ID,
       "Reach Gold IV",
+      "by-date",
       "GOLD",
       "IV",
       "SILVER",
       "I",
       50,
-      "achieved",
+      "completed",
       null,
-      ts(new Date("2026-01-10T18:00:00Z")), // created when season started
-      ts(new Date("2026-02-07T14:30:00Z")), // achieved when hit Gold IV
+      ts(new Date("2026-01-10T18:00:00Z")),
+      ts(new Date("2026-02-07T14:30:00Z")),
+      null,
       null,
     ],
   });
 
-  // Goal 2: Active — "Reach Platinum IV" (started in Gold III)
+  // Challenge 2: Active by-date — "Reach Platinum IV" (started in Gold III)
   await client.execute({
-    sql: `INSERT INTO goals (user_id, riot_account_id, title, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, achieved_at, retired_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
       MAIN_RIOT_ACCOUNT_ID,
       "Reach Platinum IV",
+      "by-date",
       "PLATINUM",
       "IV",
       "GOLD",
       "III",
       5,
       "active",
-      ts(new Date("2026-06-30T23:59:59Z")), // end of Split 2 deadline
-      ts(new Date("2026-03-10T10:00:00Z")), // created mid-March
+      ts(new Date("2026-06-30T23:59:59Z")),
+      ts(new Date("2026-03-10T10:00:00Z")),
+      null,
+      null,
+      null,
+    ],
+  });
+
+  // Challenge 3: Active by-games — "Keep CS/min above 7 for 10 games"
+  await client.execute({
+    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_USER_ID,
+      MAIN_RIOT_ACCOUNT_ID,
+      "Keep CS/min above 7 for 10 games",
+      "by-games",
+      "cspm",
+      "above",
+      7.0,
+      10,
+      4,
+      3,
+      "active",
+      ts(new Date("2026-04-15T10:00:00Z")),
+      null,
+      null,
+      null,
+    ],
+  });
+
+  // Challenge 4: Active by-games — "Less than 5 deaths for 15 games"
+  await client.execute({
+    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      MAIN_USER_ID,
+      MAIN_RIOT_ACCOUNT_ID,
+      "Less than 5 deaths for 15 games",
+      "by-games",
+      "deaths",
+      "below",
+      5,
+      15,
+      7,
+      5,
+      "active",
+      ts(new Date("2026-04-12T14:00:00Z")),
+      null,
       null,
       null,
     ],
@@ -1148,7 +1200,7 @@ async function seed() {
   console.log(`  Coaching sessions: ${sessions.length}`);
   console.log(`  Action items:     ${actionItems.length}`);
   console.log(`  Highlights:       ${highlights.length}`);
-  console.log(`  Goals:            2`);
+  console.log(`  Challenges:       4`);
   console.log(`  Invites:          1`);
   console.log(`\nDemo user logins:`);
   console.log(`  ${MAIN_USER.name} (admin, Riot linked, onboarding done)`);

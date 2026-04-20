@@ -17,7 +17,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 
-import type { RankSnapshot, CoachingActionItem, Goal, MatchResult } from "@/db/schema";
+import type { RankSnapshot, CoachingActionItem, Challenge, MatchResult } from "@/db/schema";
 
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +93,7 @@ interface DashboardClientProps {
   lpTrendDays: number | null;
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
-  activeGoal: Goal | null;
+  activeGoal: Challenge | null;
   lastCompletedSession: LastCompletedSession | null;
   daysSinceLastCoaching: number | null;
   coachingCadenceDays: number;
@@ -581,12 +581,12 @@ export function DashboardClient({
           })()}
 
           {/* Goal Widget */}
-          {activeGoal && currentRank ? (
+          {activeGoal && activeGoal.targetTier && currentRank ? (
             (() => {
               const progress = calculateProgress(
-                activeGoal.startTier,
+                activeGoal.startTier ?? "",
                 activeGoal.startDivision,
-                activeGoal.startLp,
+                activeGoal.startLp ?? 0,
                 currentRank.tier,
                 currentRank.division,
                 currentRank.lp,
@@ -594,9 +594,9 @@ export function DashboardClient({
                 activeGoal.targetDivision,
               );
               const milestones = getRankMilestones(
-                activeGoal.startTier,
+                activeGoal.startTier ?? "",
                 activeGoal.startDivision,
-                activeGoal.startLp,
+                activeGoal.startLp ?? 0,
                 activeGoal.targetTier,
                 activeGoal.targetDivision,
               );
@@ -607,7 +607,7 @@ export function DashboardClient({
                       <Target className="h-4 w-4 text-gold" />
                       {activeGoal.title}
                     </CardTitle>
-                    <Link href="/goals">
+                    <Link href="/challenges">
                       <Button variant="ghost" size="sm">
                         {t("view")}
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -620,8 +620,8 @@ export function DashboardClient({
                         {formatTierDivision(currentRank.tier, currentRank.division)}
                       </span>
                       <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                        {formatTierDivision(activeGoal.targetTier, activeGoal.targetDivision)} ·{" "}
-                        {progress}%
+                        {formatTierDivision(activeGoal.targetTier ?? "", activeGoal.targetDivision)}{" "}
+                        · {progress}%
                       </span>
                     </Progress>
                     {milestones.length > 0 && (
@@ -655,7 +655,7 @@ export function DashboardClient({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noActiveGoal")}</p>
-                <Link href="/goals/new" className="mt-2 inline-block">
+                <Link href="/challenges/new" className="mt-2 inline-block">
                   <Button variant="outline" size="sm">
                     {t("setGoal")}
                   </Button>

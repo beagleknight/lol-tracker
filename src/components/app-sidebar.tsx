@@ -51,7 +51,7 @@ const navDefs = {
     { key: "navMatches" as const, href: "/matches", icon: Swords },
     { key: "navReview" as const, href: "/review", icon: ClipboardCheck },
     { key: "navDuo" as const, href: "/duo", icon: Users },
-    { key: "navGoals" as const, href: "/goals", icon: Target },
+    { key: "navChallenges" as const, href: "/challenges", icon: Target },
   ],
   insights: [
     { key: "navAnalytics" as const, href: "/analytics", icon: BarChart3 },

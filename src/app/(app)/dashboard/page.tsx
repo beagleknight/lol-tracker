@@ -7,7 +7,7 @@ import {
   rankSnapshots,
   coachingActionItems,
   coachingSessions,
-  goals,
+  challenges,
 } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { toCumulativeLP } from "@/lib/rank";
@@ -131,12 +131,13 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Active goal (for dashboard widget)
-    db.query.goals.findFirst({
+    // Active challenge (for dashboard widget — first active by-date challenge)
+    db.query.challenges.findFirst({
       where: and(
-        eq(goals.userId, user.id),
-        accountScope(goals.riotAccountId, accountId),
-        eq(goals.status, "active"),
+        eq(challenges.userId, user.id),
+        accountScope(challenges.riotAccountId, accountId),
+        eq(challenges.status, "active"),
+        eq(challenges.type, "by-date"),
       ),
     }),
 
