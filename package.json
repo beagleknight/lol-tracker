@@ -1,6 +1,6 @@
 {
   "name": "lol-tracker",
-  "version": "2026.04.15",
+  "version": "2026.04.20",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
@@ -34,7 +34,7 @@
     "drizzle-orm": "^0.45.1",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.7.0",
-    "next": "16.2.2",
+    "next": "^16.2.4",
     "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.9.0",
     "next-mdx-remote": "^6.0.0",

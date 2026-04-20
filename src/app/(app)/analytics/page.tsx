@@ -1,9 +1,9 @@
-import { eq, asc, and, sql } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
-import { matches, coachingSessions, rankSnapshots, goals } from "@/db/schema";
-import { analyticsTag, goalsTag } from "@/lib/cache";
+import { matches, coachingSessions, rankSnapshots, challenges } from "@/db/schema";
+import { analyticsTag, challengesTag } from "@/lib/cache";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
@@ -13,7 +13,7 @@ import { AnalyticsClient } from "./analytics-client";
 async function getCachedAnalyticsData(userId: string, riotAccountId: string | null) {
   "use cache: remote";
   cacheLife("hours");
-  cacheTag(analyticsTag(userId), goalsTag(userId));
+  cacheTag(analyticsTag(userId), challengesTag(userId));
 
   const [allMatches, sessions, ranks, ddragonVersion, activeGoal] = await Promise.all([
     db.query.matches.findMany({
@@ -48,11 +48,12 @@ async function getCachedAnalyticsData(userId: string, riotAccountId: string | nu
       orderBy: asc(rankSnapshots.capturedAt),
     }),
     getLatestVersion(),
-    db.query.goals.findFirst({
+    db.query.challenges.findFirst({
       where: and(
-        eq(goals.userId, userId),
-        accountScope(goals.riotAccountId, riotAccountId),
-        eq(goals.status, "active"),
+        eq(challenges.userId, userId),
+        accountScope(challenges.riotAccountId, riotAccountId),
+        eq(challenges.status, "active"),
+        eq(challenges.type, "by-date"),
       ),
       columns: {
         targetTier: true,
@@ -61,7 +62,15 @@ async function getCachedAnalyticsData(userId: string, riotAccountId: string | nu
     }),
   ]);
 
-  return { allMatches, sessions, ranks, ddragonVersion, activeGoal: activeGoal ?? null };
+  return {
+    allMatches,
+    sessions,
+    ranks,
+    ddragonVersion,
+    activeGoal: activeGoal
+      ? { targetTier: activeGoal.targetTier!, targetDivision: activeGoal.targetDivision }
+      : null,
+  };
 }
 
 export default async function AnalyticsPage() {

@@ -7,7 +7,7 @@ import {
   rankSnapshots,
   coachingActionItems,
   coachingSessions,
-  goals,
+  challenges,
 } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { toCumulativeLP } from "@/lib/rank";
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     inProgressActionItems,
     matchStats,
     upcomingSession,
-    activeGoal,
+    activeChallenges,
     lastCompletedSession,
   ] = await Promise.all([
     getLatestVersion(),
@@ -131,13 +131,15 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Active goal (for dashboard widget)
-    db.query.goals.findFirst({
+    // Active challenges (up to 3, mix of types, most recent first)
+    db.query.challenges.findMany({
       where: and(
-        eq(goals.userId, user.id),
-        accountScope(goals.riotAccountId, accountId),
-        eq(goals.status, "active"),
+        eq(challenges.userId, user.id),
+        accountScope(challenges.riotAccountId, accountId),
+        eq(challenges.status, "active"),
       ),
+      orderBy: desc(challenges.createdAt),
+      limit: 3,
     }),
 
     // Last completed coaching session (for "days since" widget)
@@ -264,7 +266,7 @@ export default async function DashboardPage() {
       lpTrendDays={lpTrendDays}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
-      activeGoal={activeGoal ?? null}
+      activeChallenges={activeChallenges}
       lastCompletedSession={lastCompletedSession ?? null}
       daysSinceLastCoaching={
         lastCompletedSession

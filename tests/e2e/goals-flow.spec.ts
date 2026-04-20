@@ -3,87 +3,94 @@ import { test, expect } from "@playwright/test";
 import { reseedDatabase } from "./helpers/reseed";
 
 /**
- * E2E: Goal setting lifecycle
+ * E2E: Challenge lifecycle
  *
- * Covers: viewing seeded goals, retiring the active goal, creating a new goal,
- * verifying dashboard widget, and deleting a past goal.
+ * Covers: viewing seeded challenges (tabbed layout), retiring an active challenge,
+ * creating a new by-date challenge via wizard, verifying dashboard widget,
+ * and deleting a past challenge.
  * Tests run serially and share state — order matters.
  *
- * Seed data: 1 achieved goal ("Reach Gold IV") + 1 active goal ("Reach Platinum IV").
- * Demo user is Gold III 62 LP.
+ * Seed data: 1 completed by-date ("Reach Gold IV"), 1 active by-date ("Reach Platinum IV"),
+ * 2 active by-games. Demo user is Gold III 62 LP.
  */
 
 test.beforeAll(async () => {
   await reseedDatabase();
 });
 
-test.describe("Goals flow", () => {
-  test("goals page shows seeded goals", async ({ page }) => {
-    await page.goto("/goals");
+test.describe("Challenges flow", () => {
+  test("challenges page shows seeded challenges in tabs", async ({ page }) => {
+    await page.goto("/challenges");
     const main = page.getByRole("main");
 
-    // Active goal: "Reach Platinum IV" with Active badge
-    await expect(main.getByText("Reach Platinum IV")).toBeVisible();
-    await expect(main.locator('[data-slot="badge"]:has-text("Active")')).toBeVisible();
+    // Active tab should be visible by default with count
+    await expect(main.getByRole("tab", { name: /Active challenges/ })).toBeVisible();
 
-    // Progress bar should be visible (use .first() since "progress" appears in subtitle too)
+    // Active challenge: "Reach Platinum IV" with Active badge
+    await expect(main.getByText("Reach Platinum IV")).toBeVisible();
+    await expect(main.locator('[data-slot="badge"]:has-text("Active")').first()).toBeVisible();
+
+    // Progress bar should be visible
     await expect(main.getByText("Progress").first()).toBeVisible();
 
-    // Past goals section should show the achieved goal
-    await expect(main.getByText("Past Goals")).toBeVisible();
-    await expect(main.getByText("Reach Gold IV")).toBeVisible();
-    await expect(main.locator('[data-slot="badge"]:has-text("Achieved")')).toBeVisible();
+    // Switch to Past tab
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
 
-    // Should NOT show "New Goal" button since there's an active goal
-    await expect(main.getByRole("link", { name: "New Goal" })).not.toBeVisible();
+    // Past challenges should show the completed challenge
+    await expect(main.getByText("Reach Gold IV")).toBeVisible();
+    await expect(main.locator('[data-slot="badge"]:has-text("Completed")')).toBeVisible();
   });
 
-  test("dashboard shows active goal widget", async ({ page }) => {
+  test("dashboard shows challenges widget", async ({ page }) => {
     await page.goto("/dashboard");
     const main = page.getByRole("main");
 
-    // The goal widget should show the active goal title
+    // The challenges widget should show active challenges
+    await expect(main.getByText("Challenges").first()).toBeVisible();
     await expect(main.getByText("Reach Platinum IV").first()).toBeVisible();
   });
 
-  test("retire the active goal", async ({ page }) => {
-    await page.goto("/goals");
+  test("retire an active by-date challenge", async ({ page }) => {
+    await page.goto("/challenges");
     const main = page.getByRole("main");
 
     // Set up dialog handler to accept the confirm prompt
     page.on("dialog", (dialog) => dialog.accept());
 
-    // Click the "Retire" button
-    await main.getByRole("button", { name: "Retire" }).click();
+    // Find the card containing "Reach Platinum IV" and click its Retire button
+    const platCard = main.locator('[data-slot="card"]', { hasText: "Reach Platinum IV" });
+    await platCard.getByRole("button", { name: "Retire" }).click();
 
-    // Verify the goal moved to past goals with "Retired" badge
+    // After retiring, the challenge should no longer be in the Active tab.
+    // Switch to Past tab to verify it moved there.
+    await expect(main.getByText("Reach Platinum IV")).not.toBeVisible({ timeout: 10_000 });
+
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
     await expect(main.locator('[data-slot="badge"]:has-text("Retired")').first()).toBeVisible({
       timeout: 10_000,
     });
-
-    // "New Goal" button should appear now
-    await expect(page.getByRole("main").getByRole("link", { name: "New Goal" })).toBeVisible();
-
-    // Active badge should be gone
-    await expect(
-      page.getByRole("main").locator('[data-slot="badge"]:has-text("Active")'),
-    ).not.toBeVisible();
   });
 
-  test("dashboard shows 'no active goal' after retiring", async ({ page }) => {
+  test("dashboard still shows by-games challenges after retiring by-date", async ({ page }) => {
     await page.goto("/dashboard");
     const main = page.getByRole("main");
 
-    // Should show "No active goal set." and a "Set a goal" link
-    await expect(main.getByText("No active goal set.").first()).toBeVisible();
-    await expect(main.getByRole("link", { name: "Set a goal" }).first()).toBeVisible();
+    // After retiring the only by-date challenge, the dashboard widget should
+    // still show by-games challenges (2 active by-games from seed).
+    await expect(main.getByText("Challenges").first()).toBeVisible({ timeout: 15_000 });
+    // At least one by-games challenge should be visible
+    await expect(main.getByText(/at least|at most/i).first()).toBeVisible();
   });
 
-  test("create a new goal", async ({ page }) => {
-    await page.goto("/goals/new");
+  test("create a new by-date challenge via wizard", async ({ page }) => {
+    await page.goto("/challenges/new");
     const main = page.getByRole("main");
 
-    // Current rank context should be shown
+    // Step 1: Choose type — select "Rank target"
+    await main.getByText("Rank target").first().click();
+    await main.getByRole("button", { name: "Next" }).click();
+
+    // Step 2: Configure — select tier and division
     await expect(main.getByText("Current rank").first()).toBeVisible();
 
     // Select tier: Platinum
@@ -91,53 +98,60 @@ test.describe("Goals flow", () => {
     await page.locator('[data-slot="select-item"]').filter({ hasText: "Platinum" }).click();
 
     // Select division: III
-    // After selecting tier, a second combobox for division appears
     const divisionCombobox = main.getByRole("combobox").nth(1);
     await divisionCombobox.click();
     await page.locator('[data-slot="select-item"]').filter({ hasText: /^III$/ }).click();
 
-    // Goal preview should show
+    // Challenge preview should show
+    await expect(main.getByText("Reach Platinum III").first()).toBeVisible();
+
+    // Go to Step 3: Topics
+    await main.getByRole("button", { name: "Next" }).click();
+
+    // Step 3: Topics + Submit — should show summary
+    await expect(main.getByText("Challenge summary").first()).toBeVisible();
     await expect(main.getByText("Reach Platinum III").first()).toBeVisible();
 
     // Submit the form
-    await main.getByRole("button", { name: "Create Goal" }).click();
+    await main.getByRole("button", { name: "Create challenge" }).click();
 
-    // Should get success toast and redirect to /goals
-    await expect(page.getByText("Goal created!")).toBeVisible({ timeout: 15_000 });
+    // Should get success toast and redirect to /challenges
+    await expect(page.getByText("Challenge created!")).toBeVisible({ timeout: 15_000 });
 
     try {
-      await page.waitForURL("/goals", { timeout: 10_000 });
+      await page.waitForURL("/challenges", { timeout: 10_000 });
     } catch {
-      await page.goto("/goals");
+      await page.goto("/challenges");
     }
 
-    // Verify the new goal is active on the goals page
-    const goalsMain = page.getByRole("main");
-    await expect(goalsMain.getByText("Reach Platinum III").first()).toBeVisible();
-    await expect(goalsMain.locator('[data-slot="badge"]:has-text("Active")')).toBeVisible();
+    // Verify the new challenge is active on the challenges page
+    const challengesMain = page.getByRole("main");
+    await expect(challengesMain.getByText("Reach Platinum III").first()).toBeVisible();
+    await expect(
+      challengesMain.locator('[data-slot="badge"]:has-text("Active")').first(),
+    ).toBeVisible();
   });
 
-  test("delete a past goal", async ({ page }) => {
-    await page.goto("/goals");
+  test("delete a past challenge", async ({ page }) => {
+    await page.goto("/challenges");
     const main = page.getByRole("main");
+
+    // Switch to Past tab
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
 
     // Set up dialog handler to accept the confirm prompt
     page.on("dialog", (dialog) => dialog.accept());
 
-    // The past goals section should have "Reach Gold IV" (achieved) and
-    // "Reach Platinum IV" (retired from earlier test).
-    // Delete buttons are trash icons on past goal cards.
-    // Find the "Reach Gold IV" row and its delete button.
-    const achievedGoalRow = main.getByText("Reach Gold IV").locator("../..");
-    const deleteButton = achievedGoalRow.locator("button").last();
-    await deleteButton.click();
+    // Find the "Reach Gold IV" past challenge card and its delete button
+    const completedCard = main.locator('[data-slot="card"]', { hasText: "Reach Gold IV" });
+    await completedCard.getByRole("button", { name: "Delete challenge" }).click();
 
     // Verify "Reach Gold IV" is gone after deletion
     await expect(main.getByText("Reach Gold IV")).not.toBeVisible({
       timeout: 10_000,
     });
 
-    // "Reach Platinum IV" (retired) should still be there
-    await expect(page.getByRole("main").getByText("Reach Platinum IV")).toBeVisible();
+    // "Reach Platinum IV" (retired from earlier test) should still be there
+    await expect(main.getByText("Reach Platinum IV")).toBeVisible();
   });
 });

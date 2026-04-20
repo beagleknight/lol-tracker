@@ -10,6 +10,7 @@ export const analyticsTag = (userId: string) => `analytics-${userId}`;
 export const coachingTag = (userId: string) => `coaching-${userId}`;
 export const scoutTag = (userId: string) => `scout-${userId}`;
 export const goalsTag = (userId: string) => `goals-${userId}`;
+export const challengesTag = (userId: string) => `challenges-${userId}`;
 
 // ─── Invalidation Helpers ───────────────────────────────────────────────────
 // Call these from Server Actions after writing to the DB.
@@ -22,6 +23,7 @@ export function invalidateAllCaches(userId: string) {
   updateTag(coachingTag(userId));
   updateTag(scoutTag(userId));
   updateTag(goalsTag(userId));
+  updateTag(challengesTag(userId));
 }
 
 /** Invalidate caches affected by match review changes. */
@@ -51,4 +53,9 @@ export function invalidateDuoBackfillCaches(userId: string) {
 /** Invalidate caches affected by goal mutations. */
 export function invalidateGoalsCaches(userId: string) {
   updateTag(goalsTag(userId));
+}
+
+/** Invalidate caches affected by challenge mutations. */
+export function invalidateChallengesCaches(userId: string) {
+  updateTag(challengesTag(userId));
 }
