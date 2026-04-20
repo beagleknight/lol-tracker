@@ -41,11 +41,9 @@ function getMetricDescription(
   threshold: number | null,
 ): string {
   if (!metric || !condition || threshold === null) return "";
-  const key =
-    `metricDescription.${metric}${condition.charAt(0).toUpperCase() + condition.slice(1).replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())}` as Parameters<
-      typeof t
-    >[0];
-  return t(key, { threshold });
+  const key = `metricDescription.${metric}${condition.charAt(0).toUpperCase() + condition.slice(1).replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic i18n key
+  return t(key as any, { threshold });
 }
 
 export function ChallengesClient({
