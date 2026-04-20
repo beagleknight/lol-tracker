@@ -347,7 +347,9 @@ export function NewChallengeClient({
                   }}
                 >
                   <SelectTrigger aria-label={t("selectTier")}>
-                    <SelectValue placeholder={t("selectTier")} />
+                    <SelectValue placeholder={t("selectTier")}>
+                      {selectedTier ? formatTierLabel(selectedTier) : t("selectTier")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {TIER_ORDER.map((tier) => (
@@ -367,7 +369,9 @@ export function NewChallengeClient({
                     onValueChange={(v) => v && setSelectedDivision(v)}
                   >
                     <SelectTrigger aria-label={t("selectDivision")}>
-                      <SelectValue placeholder={t("selectDivision")} />
+                      <SelectValue placeholder={t("selectDivision")}>
+                        {selectedDivision || t("selectDivision")}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {DIVISION_ORDER.map((div) => (
@@ -449,7 +453,9 @@ export function NewChallengeClient({
                 <Label>{t("metric")}</Label>
                 <Select value={metric} onValueChange={(v) => v && setMetric(v)}>
                   <SelectTrigger aria-label={t("selectMetric")}>
-                    <SelectValue placeholder={t("selectMetric")} />
+                    <SelectValue placeholder={t("selectMetric")}>
+                      {metric ? (METRIC_LABELS[metric] ?? metric) : t("selectMetric")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cspm">{t("metricOptions.cspm")}</SelectItem>
@@ -463,7 +469,13 @@ export function NewChallengeClient({
                 <Label>{t("condition")}</Label>
                 <Select value={condition} onValueChange={(v) => v && setCondition(v)}>
                   <SelectTrigger aria-label={t("selectCondition")}>
-                    <SelectValue placeholder={t("selectCondition")} />
+                    <SelectValue placeholder={t("selectCondition")}>
+                      {condition === "at_least"
+                        ? t("conditionOptions.atLeast")
+                        : condition === "at_most"
+                          ? t("conditionOptions.atMost")
+                          : t("selectCondition")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="at_least">{t("conditionOptions.atLeast")}</SelectItem>
