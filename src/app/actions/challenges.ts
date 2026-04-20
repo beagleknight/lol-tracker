@@ -11,7 +11,7 @@ import { blockIfImpersonating, requireUser } from "@/lib/session";
 // ─── Supported metrics for by-games challenges ─────────────────────────────
 
 export type ChallengeMetric = "cspm" | "deaths" | "vision_score";
-export type MetricCondition = "above" | "below" | "at_least" | "at_most";
+export type MetricCondition = "at_least" | "at_most";
 
 // ─── Create a by-date challenge (rank target) ──────────────────────────────
 

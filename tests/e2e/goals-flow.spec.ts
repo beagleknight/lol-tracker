@@ -5,8 +5,9 @@ import { reseedDatabase } from "./helpers/reseed";
 /**
  * E2E: Challenge lifecycle
  *
- * Covers: viewing seeded challenges, retiring an active challenge, creating a new
- * by-date challenge, verifying dashboard widget, and deleting a past challenge.
+ * Covers: viewing seeded challenges (tabbed layout), retiring an active challenge,
+ * creating a new by-date challenge via wizard, verifying dashboard widget,
+ * and deleting a past challenge.
  * Tests run serially and share state — order matters.
  *
  * Seed data: 1 completed by-date ("Reach Gold IV"), 1 active by-date ("Reach Platinum IV"),
@@ -18,9 +19,12 @@ test.beforeAll(async () => {
 });
 
 test.describe("Challenges flow", () => {
-  test("challenges page shows seeded challenges", async ({ page }) => {
+  test("challenges page shows seeded challenges in tabs", async ({ page }) => {
     await page.goto("/challenges");
     const main = page.getByRole("main");
+
+    // Active tab should be visible by default with count
+    await expect(main.getByRole("tab", { name: /Active challenges/ })).toBeVisible();
 
     // Active challenge: "Reach Platinum IV" with Active badge
     await expect(main.getByText("Reach Platinum IV")).toBeVisible();
@@ -29,17 +33,20 @@ test.describe("Challenges flow", () => {
     // Progress bar should be visible
     await expect(main.getByText("Progress").first()).toBeVisible();
 
-    // Past challenges section should show the completed challenge
-    await expect(main.getByText("Past challenges")).toBeVisible();
+    // Switch to Past tab
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
+
+    // Past challenges should show the completed challenge
     await expect(main.getByText("Reach Gold IV")).toBeVisible();
     await expect(main.locator('[data-slot="badge"]:has-text("Completed")')).toBeVisible();
   });
 
-  test("dashboard shows active challenge widget", async ({ page }) => {
+  test("dashboard shows challenges widget", async ({ page }) => {
     await page.goto("/dashboard");
     const main = page.getByRole("main");
 
-    // The challenge widget should show the active challenge title
+    // The challenges widget should show active challenges
+    await expect(main.getByText("Challenges").first()).toBeVisible();
     await expect(main.getByText("Reach Platinum IV").first()).toBeVisible();
   });
 
@@ -50,33 +57,40 @@ test.describe("Challenges flow", () => {
     // Set up dialog handler to accept the confirm prompt
     page.on("dialog", (dialog) => dialog.accept());
 
-    // Find the card containing "Reach Platinum IV" and click its Retire button.
-    // The card structure is: <div data-slot="card"> > <div data-slot="card-header"> > ... title
-    // Use a card-scoped locator to find the right Retire button.
+    // Find the card containing "Reach Platinum IV" and click its Retire button
     const platCard = main.locator('[data-slot="card"]', { hasText: "Reach Platinum IV" });
     await platCard.getByRole("button", { name: "Retire" }).click();
 
-    // Verify the challenge moved to past challenges with "Retired" badge
+    // After retiring, the challenge should no longer be in the Active tab.
+    // Switch to Past tab to verify it moved there.
+    await expect(main.getByText("Reach Platinum IV")).not.toBeVisible({ timeout: 10_000 });
+
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
     await expect(main.locator('[data-slot="badge"]:has-text("Retired")').first()).toBeVisible({
       timeout: 10_000,
     });
   });
 
-  test("dashboard shows 'no active goal' after retiring by-date challenge", async ({ page }) => {
+  test("dashboard still shows by-games challenges after retiring by-date", async ({ page }) => {
     await page.goto("/dashboard");
     const main = page.getByRole("main");
 
-    // After retiring the only by-date challenge, the dashboard widget shows the empty state.
-    // Dashboard still uses old "goal" terminology for the widget.
-    await expect(main.getByText("No active goal set.").first()).toBeVisible({ timeout: 15_000 });
-    await expect(main.getByRole("link", { name: "Set a goal" }).first()).toBeVisible();
+    // After retiring the only by-date challenge, the dashboard widget should
+    // still show by-games challenges (2 active by-games from seed).
+    await expect(main.getByText("Challenges").first()).toBeVisible({ timeout: 15_000 });
+    // At least one by-games challenge should be visible
+    await expect(main.getByText(/at least|at most/i).first()).toBeVisible();
   });
 
-  test("create a new by-date challenge", async ({ page }) => {
+  test("create a new by-date challenge via wizard", async ({ page }) => {
     await page.goto("/challenges/new");
     const main = page.getByRole("main");
 
-    // Should be on the "Rank target" tab by default
+    // Step 1: Choose type — select "Rank target"
+    await main.getByText("Rank target").first().click();
+    await main.getByRole("button", { name: "Next" }).click();
+
+    // Step 2: Configure — select tier and division
     await expect(main.getByText("Current rank").first()).toBeVisible();
 
     // Select tier: Platinum
@@ -89,6 +103,13 @@ test.describe("Challenges flow", () => {
     await page.locator('[data-slot="select-item"]').filter({ hasText: /^III$/ }).click();
 
     // Challenge preview should show
+    await expect(main.getByText("Reach Platinum III").first()).toBeVisible();
+
+    // Go to Step 3: Topics
+    await main.getByRole("button", { name: "Next" }).click();
+
+    // Step 3: Topics + Submit — should show summary
+    await expect(main.getByText("Challenge summary").first()).toBeVisible();
     await expect(main.getByText("Reach Platinum III").first()).toBeVisible();
 
     // Submit the form
@@ -115,6 +136,9 @@ test.describe("Challenges flow", () => {
     await page.goto("/challenges");
     const main = page.getByRole("main");
 
+    // Switch to Past tab
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
+
     // Set up dialog handler to accept the confirm prompt
     page.on("dialog", (dialog) => dialog.accept());
 
@@ -128,6 +152,6 @@ test.describe("Challenges flow", () => {
     });
 
     // "Reach Platinum IV" (retired from earlier test) should still be there
-    await expect(page.getByRole("main").getByText("Reach Platinum IV")).toBeVisible();
+    await expect(main.getByText("Reach Platinum IV")).toBeVisible();
   });
 });

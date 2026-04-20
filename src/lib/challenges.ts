@@ -91,13 +91,9 @@ function getMatchMetric(
   }
 }
 
-/** Check if a metric value meets the condition. */
+/** Check if a metric value meets the condition (inclusive). */
 function meetsCondition(value: number, condition: string, threshold: number): boolean {
   switch (condition) {
-    case "above":
-      return value > threshold;
-    case "below":
-      return value < threshold;
     case "at_least":
       return value >= threshold;
     case "at_most":
@@ -157,8 +153,7 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
 
     if (newCurrent >= challenge.targetGames) {
       // Challenge complete — determine if succeeded or failed
-      // For "above/at_least" conditions: success if all games met condition
-      // For "below/at_most" conditions: success if all games met condition
+      // Success requires ALL games to have met the condition
       const allSucceeded = newSuccessful >= challenge.targetGames;
       await db
         .update(challenges)

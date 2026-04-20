@@ -13,17 +13,19 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { Challenge } from "@/db/schema";
 
 import { retireChallenge, deleteChallenge } from "@/app/actions/challenges";
 import { EmptyState } from "@/components/empty-state";
+import { Pagination, paginate } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
@@ -58,6 +60,12 @@ export function ChallengesClient({
   const activeChallenges = challenges.filter((c) => c.status === "active");
   const pastChallenges = challenges.filter((c) => c.status !== "active");
 
+  const [activePage, setActivePage] = useState(1);
+  const [pastPage, setPastPage] = useState(1);
+
+  const paginatedActive = paginate(activeChallenges, activePage);
+  const paginatedPast = paginate(pastChallenges, pastPage);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -74,54 +82,80 @@ export function ChallengesClient({
         </Link>
       </div>
 
-      {/* Active Challenges */}
-      {activeChallenges.length > 0 ? (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">{t("activeChallenges")}</h2>
-          <div className="space-y-3">
-            {activeChallenges.map((challenge) => (
-              <ActiveChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                topics={topicsByChallenge[challenge.id] ?? []}
-                currentRank={currentRank}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <EmptyState
-          icon={Target}
-          title={t("noChallenges")}
-          description={t("noChallengesDescription")}
-          action={
-            <Link href="/challenges/new">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                {t("newChallenge")}
-              </Button>
-            </Link>
-          }
-        />
-      )}
+      {/* Tabbed layout */}
+      <Tabs defaultValue="active">
+        <TabsList>
+          <TabsTrigger value="active">
+            {t("activeChallenges")} ({activeChallenges.length})
+          </TabsTrigger>
+          <TabsTrigger value="past">
+            {t("pastChallenges")} ({pastChallenges.length})
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Past Challenges */}
-      {pastChallenges.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">{t("pastChallenges")}</h2>
-          <div className="space-y-3">
-            {pastChallenges.map((challenge) => (
-              <PastChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                topics={topicsByChallenge[challenge.id] ?? []}
-                locale={locale}
+        {/* Active tab */}
+        <TabsContent value="active">
+          {activeChallenges.length > 0 ? (
+            <div className="space-y-3">
+              {paginatedActive.map((challenge) => (
+                <ActiveChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  topics={topicsByChallenge[challenge.id] ?? []}
+                  currentRank={currentRank}
+                  locale={locale}
+                />
+              ))}
+              <Pagination
+                currentPage={activePage}
+                totalItems={activeChallenges.length}
+                onPageChange={setActivePage}
               />
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Target}
+              title={t("noChallenges")}
+              description={t("noChallengesDescription")}
+              action={
+                <Link href="/challenges/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("newChallenge")}
+                  </Button>
+                </Link>
+              }
+            />
+          )}
+        </TabsContent>
+
+        {/* Past tab */}
+        <TabsContent value="past">
+          {pastChallenges.length > 0 ? (
+            <div className="space-y-3">
+              {paginatedPast.map((challenge) => (
+                <PastChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  topics={topicsByChallenge[challenge.id] ?? []}
+                  locale={locale}
+                />
+              ))}
+              <Pagination
+                currentPage={pastPage}
+                totalItems={pastChallenges.length}
+                onPageChange={setPastPage}
+              />
+            </div>
+          ) : (
+            <EmptyState
+              icon={Archive}
+              title={t("noPastChallenges")}
+              description={t("noPastChallengesDescription")}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -370,7 +404,7 @@ function PastChallengeCard({
           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
           onClick={handleDelete}
           disabled={isDeleting}
-          aria-label="Delete challenge"
+          aria-label={t("deleteChallenge")}
         >
           {isDeleting ? (
             <Loader2 className="h-3 w-3 animate-spin" />

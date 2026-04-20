@@ -353,8 +353,8 @@ export const challenges = sqliteTable(
     // ── by-games fields (metric condition over N games) ──
     metric: text("metric"), // e.g. "cspm", "deaths", "vision_score"
     metricCondition: text("metric_condition", {
-      enum: ["above", "below", "at_least", "at_most"],
-    }), // comparison operator
+      enum: ["at_least", "at_most"],
+    }), // inclusive comparison: >= or <=
     metricThreshold: real("metric_threshold"), // e.g. 7.0 for "CSPM above 7"
     targetGames: integer("target_games"), // e.g. 10 for "over 10 games"
     currentGames: integer("current_games").default(0), // games evaluated so far

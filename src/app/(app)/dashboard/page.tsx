@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     inProgressActionItems,
     matchStats,
     upcomingSession,
-    activeGoal,
+    activeChallenges,
     lastCompletedSession,
   ] = await Promise.all([
     getLatestVersion(),
@@ -131,14 +131,15 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Active challenge (for dashboard widget — first active by-date challenge)
-    db.query.challenges.findFirst({
+    // Active challenges (up to 3, mix of types, most recent first)
+    db.query.challenges.findMany({
       where: and(
         eq(challenges.userId, user.id),
         accountScope(challenges.riotAccountId, accountId),
         eq(challenges.status, "active"),
-        eq(challenges.type, "by-date"),
       ),
+      orderBy: desc(challenges.createdAt),
+      limit: 3,
     }),
 
     // Last completed coaching session (for "days since" widget)
@@ -265,7 +266,7 @@ export default async function DashboardPage() {
       lpTrendDays={lpTrendDays}
       actionItems={[...inProgressActionItems, ...activeActionItems]}
       upcomingSession={upcomingSession ?? null}
-      activeGoal={activeGoal ?? null}
+      activeChallenges={activeChallenges}
       lastCompletedSession={lastCompletedSession ?? null}
       daysSinceLastCoaching={
         lastCompletedSession

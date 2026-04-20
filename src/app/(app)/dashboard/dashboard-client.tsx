@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Crosshair,
   Globe,
+  Gamepad2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -26,7 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { formatTierDivision, calculateProgress, getRankMilestones } from "@/lib/rank";
+import { formatTierDivision, calculateProgress } from "@/lib/rank";
 import { getRankEmblemUrl } from "@/lib/rank-utils";
 
 interface DashboardMatch {
@@ -93,7 +94,7 @@ interface DashboardClientProps {
   lpTrendDays: number | null;
   actionItems: CoachingActionItem[];
   upcomingSession: UpcomingSession | null;
-  activeGoal: Challenge | null;
+  activeChallenges: Challenge[];
   lastCompletedSession: LastCompletedSession | null;
   daysSinceLastCoaching: number | null;
   coachingCadenceDays: number;
@@ -137,7 +138,7 @@ export function DashboardClient({
   lpTrendDays,
   actionItems,
   upcomingSession,
-  activeGoal,
+  activeChallenges,
   lastCompletedSession,
   daysSinceLastCoaching,
   coachingCadenceDays,
@@ -580,84 +581,83 @@ export function DashboardClient({
             );
           })()}
 
-          {/* Goal Widget */}
-          {activeGoal && activeGoal.targetTier && currentRank ? (
-            (() => {
-              const progress = calculateProgress(
-                activeGoal.startTier ?? "",
-                activeGoal.startDivision,
-                activeGoal.startLp ?? 0,
-                currentRank.tier,
-                currentRank.division,
-                currentRank.lp,
-                activeGoal.targetTier,
-                activeGoal.targetDivision,
-              );
-              const milestones = getRankMilestones(
-                activeGoal.startTier ?? "",
-                activeGoal.startDivision,
-                activeGoal.startLp ?? 0,
-                activeGoal.targetTier,
-                activeGoal.targetDivision,
-              );
-              return (
-                <Card className="surface-glow border-gold/20">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Target className="h-4 w-4 text-gold" />
-                      {activeGoal.title}
-                    </CardTitle>
-                    <Link href="/challenges">
-                      <Button variant="ghost" size="sm">
-                        {t("view")}
-                        <ChevronRight className="ml-1 h-3 w-3" />
-                      </Button>
-                    </Link>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Progress value={progress} aria-label={`Goal progress: ${progress}%`}>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTierDivision(currentRank.tier, currentRank.division)}
-                      </span>
-                      <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                        {formatTierDivision(activeGoal.targetTier ?? "", activeGoal.targetDivision)}{" "}
-                        · {progress}%
-                      </span>
-                    </Progress>
-                    {milestones.length > 0 && (
-                      <div className="relative h-2">
-                        {milestones.map((m) => (
-                          <div
-                            key={m.label}
-                            className="absolute top-0 flex flex-col items-center"
-                            style={{ left: `${m.percent}%` }}
-                            title={m.label}
-                          >
-                            <div className="h-2 w-px bg-muted-foreground/40" />
-                            <span className="mt-0.5 text-[10px] leading-none text-muted-foreground/60">
-                              {m.label}
-                            </span>
-                          </div>
-                        ))}
+          {/* Challenges Widget */}
+          {activeChallenges.length > 0 ? (
+            <Card className="surface-glow border-gold/20">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Target className="h-4 w-4 text-gold" />
+                  {t("challengesWidget")}
+                </CardTitle>
+                <Link href="/challenges">
+                  <Button variant="ghost" size="sm">
+                    {t("viewAll")}
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {activeChallenges.map((challenge) => {
+                  const isByDate = challenge.type === "by-date";
+                  const progress = isByDate
+                    ? currentRank && challenge.targetTier
+                      ? calculateProgress(
+                          challenge.startTier ?? "",
+                          challenge.startDivision,
+                          challenge.startLp ?? 0,
+                          currentRank.tier,
+                          currentRank.division,
+                          currentRank.lp,
+                          challenge.targetTier,
+                          challenge.targetDivision,
+                        )
+                      : 0
+                    : challenge.targetGames
+                      ? Math.round(((challenge.currentGames ?? 0) / challenge.targetGames) * 100)
+                      : 0;
+
+                  return (
+                    <div key={challenge.id} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {isByDate ? (
+                          <Target className="h-3.5 w-3.5 text-gold" />
+                        ) : (
+                          <Gamepad2 className="h-3.5 w-3.5 text-gold" />
+                        )}
+                        <span className="text-sm font-medium">{challenge.title}</span>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })()
+                      <Progress value={progress} aria-label={`Challenge progress: ${progress}%`}>
+                        <span className="text-xs text-muted-foreground">
+                          {isByDate
+                            ? currentRank
+                              ? formatTierDivision(currentRank.tier, currentRank.division)
+                              : ""
+                            : `${challenge.currentGames ?? 0}/${challenge.targetGames ?? 0}`}
+                        </span>
+                        <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                          {isByDate
+                            ? `${formatTierDivision(challenge.targetTier ?? "", challenge.targetDivision)} · ${progress}%`
+                            : `${progress}%`}
+                        </span>
+                      </Progress>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
           ) : (
             <Card className="surface-glow border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Target className="h-4 w-4 text-muted-foreground" />
-                  {t("goalWidget")}
+                  {t("challengesWidget")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">{t("noActiveGoal")}</p>
+                <p className="text-sm text-muted-foreground">{t("noActiveChallenges")}</p>
                 <Link href="/challenges/new" className="mt-2 inline-block">
                   <Button variant="outline" size="sm">
-                    {t("setGoal")}
+                    {t("newChallenge")}
                   </Button>
                 </Link>
               </CardContent>
