@@ -206,11 +206,6 @@ function ActiveChallengeCard({
 
   const isOverdue = isByDate && challenge.deadline && new Date(challenge.deadline) < new Date();
 
-  const successRate =
-    !isByDate && (challenge.currentGames ?? 0) > 0
-      ? Math.round(((challenge.successfulGames ?? 0) / (challenge.currentGames ?? 1)) * 100)
-      : null;
-
   function handleRetire() {
     if (!confirm(t("retireConfirm"))) return;
     startRetire(async () => {
@@ -269,11 +264,6 @@ function ActiveChallengeCard({
                 rank: formatTierDivision(currentRank.tier, currentRank.division),
                 lp: currentRank.lp,
               })}
-            </p>
-          )}
-          {!isByDate && successRate !== null && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("successRate", { rate: successRate })}
             </p>
           )}
         </div>
