@@ -175,6 +175,19 @@ export function NewChallengeClient({
     );
   }
 
+  function resetWizard() {
+    setStep("type");
+    setChallengeType(null);
+    setSelectedTopicIds([]);
+    setSelectedTier("");
+    setSelectedDivision("");
+    setDeadline("");
+    setMetric("");
+    setCondition("");
+    setThreshold("");
+    setTargetGames("10");
+  }
+
   function handleSubmit() {
     if (challengeType === "by-date") {
       if (!canSubmitByDate) return;
@@ -190,6 +203,7 @@ export function NewChallengeClient({
             toast.error(result.error);
           } else {
             toast.success(t("toasts.challengeCreated"));
+            resetWizard();
             router.push("/challenges");
           }
         } catch {
@@ -212,6 +226,7 @@ export function NewChallengeClient({
             toast.error(String(result.error));
           } else {
             toast.success(t("toasts.challengeCreated"));
+            resetWizard();
             router.push("/challenges");
           }
         } catch {
