@@ -292,6 +292,9 @@ export async function GET(request: Request) {
             const playerData = extractPlayerData(matchData, user.puuid!);
 
             if (!playerData) {
+              console.warn(
+                `[sync] extractPlayerData returned null for match ${matchId} (puuid: ${user.puuid}, queueId: ${matchData.info?.queueId}, participants: ${matchData.info?.participants?.length})`,
+              );
               failedCount++;
               continue;
             }
@@ -382,7 +385,11 @@ export async function GET(request: Request) {
             // Evaluate by-games challenges against this match
             await evaluateByGamesChallenges(user.id, matchId);
           } catch (matchError) {
-            console.error(`Failed to sync match ${matchId}:`, matchError);
+            const errMsg = matchError instanceof Error ? matchError.message : String(matchError);
+            console.error(
+              `[sync] Failed to sync match ${matchId} for user ${user.id}: ${errMsg}`,
+              matchError,
+            );
             failedCount++;
           }
 

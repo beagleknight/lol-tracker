@@ -7,7 +7,6 @@ import { eq, and, desc, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import { goals, rankSnapshots } from "@/db/schema";
-import { invalidateGoalsCaches } from "@/lib/cache";
 import { hasReachedTarget } from "@/lib/rank";
 
 /**
@@ -57,7 +56,6 @@ export async function checkGoalAchievement(
       })
       .where(eq(goals.id, activeGoal.id));
 
-    invalidateGoalsCaches(userId);
     return true;
   }
 
