@@ -589,7 +589,7 @@ export function DashboardClient({
                   <Target className="h-4 w-4 text-gold" />
                   {t("challengesWidget")}
                 </CardTitle>
-                <Link href="/challenges">
+                <Link href="/challenges?tab=active">
                   <Button variant="ghost" size="sm">
                     {t("viewAll")}
                     <ChevronRight className="ml-1 h-3 w-3" />

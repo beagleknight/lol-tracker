@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -57,6 +58,11 @@ export function ChallengesClient({
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const currentTab = tabParam === "past" ? "past" : "active";
+
   const activeChallenges = challenges.filter((c) => c.status === "active");
   const pastChallenges = challenges.filter((c) => c.status !== "active");
 
@@ -83,7 +89,10 @@ export function ChallengesClient({
       </div>
 
       {/* Tabbed layout */}
-      <Tabs defaultValue="active">
+      <Tabs
+        value={currentTab}
+        onValueChange={(v) => router.replace(`/challenges?tab=${v}`, { scroll: false })}
+      >
         <TabsList>
           <TabsTrigger value="active">
             {t("activeChallenges")} ({activeChallenges.length})
