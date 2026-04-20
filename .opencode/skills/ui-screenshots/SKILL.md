@@ -41,7 +41,7 @@ Use an HTML overlay technique — load the screenshot as a background image and 
 - **Rectangles**: Rounded, semi-transparent border — `rgba(255, 60, 60, 0.55)` stroke, 2-3px width, no fill (or very light fill like `rgba(255, 60, 60, 0.05)`)
 - **Labels**: White text on `rgba(255, 60, 60, 0.7)` background, 14px bold, with 4-8px padding and border-radius
 - **Small elements**: If a highlight box/circle would be too small to see, skip it and use only an arrow with a label
-- **Breathing room**: Place labels farther from the annotated element — not directly touching it
+- **Breathing room**: Arrows and labels must have significant distance from their target element — at least 40-60px of clear space between the arrowhead and the highlighted area. Annotations that are too close to their targets look cramped and are hard to read. Think of the arrow as "pointing from afar" rather than touching the element. A good reference: if the arrow barely needs to travel, it's too close.
 
 #### Annotation technique
 

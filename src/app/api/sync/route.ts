@@ -2,7 +2,7 @@ import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
-import { checkByDateChallenges } from "@/lib/challenges";
+import { checkByDateChallenges, evaluateByGamesChallenges } from "@/lib/challenges";
 import { checkGoalAchievement } from "@/lib/goals";
 import { checkRateLimit, hasRecentEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
@@ -378,6 +378,9 @@ export async function GET(request: Request) {
               });
 
             syncedCount++;
+
+            // Evaluate by-games challenges against this match
+            await evaluateByGamesChallenges(user.id, matchId);
           } catch (matchError) {
             console.error(`Failed to sync match ${matchId}:`, matchError);
             failedCount++;
