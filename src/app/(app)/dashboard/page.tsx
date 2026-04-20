@@ -8,6 +8,7 @@ import {
   coachingActionItems,
   coachingSessions,
   challenges,
+  topics,
 } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { toCumulativeLP } from "@/lib/rank";
@@ -174,19 +175,22 @@ export default async function DashboardPage() {
   const recentMatchIds = recentMatches.map((m) => m.id);
   const recentHighlights =
     recentMatchIds.length > 0
-      ? await db.query.matchHighlights.findMany({
-          where: and(
-            eq(matchHighlights.userId, user.id),
-            accountScope(matchHighlights.riotAccountId, accountId),
-            inArray(matchHighlights.matchId, recentMatchIds),
-          ),
-          columns: {
-            matchId: true,
-            type: true,
-            text: true,
-            topicId: true,
-          },
-        })
+      ? await db
+          .select({
+            matchId: matchHighlights.matchId,
+            type: matchHighlights.type,
+            text: matchHighlights.text,
+            topicName: topics.name,
+          })
+          .from(matchHighlights)
+          .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
+          .where(
+            and(
+              eq(matchHighlights.userId, user.id),
+              accountScope(matchHighlights.riotAccountId, accountId),
+              inArray(matchHighlights.matchId, recentMatchIds),
+            ),
+          )
       : [];
 
   const highlightsPerMatch: Record<
@@ -200,7 +204,7 @@ export default async function DashboardPage() {
     highlightsPerMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topicName: null, // Topic name resolution not needed for dashboard highlights display
+      topicName: h.topicName,
     });
   }
 

@@ -6,7 +6,13 @@ import type { RiotMatch } from "@/lib/riot-api";
 import { checkAiConfigured, getCachedInsight } from "@/app/actions/ai-insights";
 import { getMatchupNotesForMatch } from "@/app/actions/matchup-notes";
 import { db } from "@/db";
-import { matches, matchHighlights, coachingSessionMatches, coachingSessions } from "@/db/schema";
+import {
+  matches,
+  matchHighlights,
+  coachingSessionMatches,
+  coachingSessions,
+  topics,
+} from "@/db/schema";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
 
@@ -114,8 +120,14 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
         ),
       ),
     db
-      .select()
+      .select({
+        type: matchHighlights.type,
+        text: matchHighlights.text,
+        topicId: matchHighlights.topicId,
+        topicName: topics.name,
+      })
       .from(matchHighlights)
+      .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
       .where(
         and(
           eq(matchHighlights.matchId, match.id),
@@ -136,7 +148,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     type: h.type,
     text: h.text,
     topicId: h.topicId ?? undefined,
-    topicName: undefined as string | undefined, // TODO: resolve from topics table
+    topicName: h.topicName ?? undefined,
   }));
 
   return (

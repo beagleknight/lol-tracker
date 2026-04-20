@@ -3,7 +3,7 @@ import { eq, ne, and, asc, desc, inArray, count, or, isNull } from "drizzle-orm"
 import type { Match } from "@/db/schema";
 
 import { db } from "@/db";
-import { matches, matchHighlights } from "@/db/schema";
+import { matches, matchHighlights, topics } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
@@ -107,8 +107,16 @@ export default async function ReviewPage({
   const allHighlights =
     allMatchIds.length > 0
       ? await db
-          .select()
+          .select({
+            id: matchHighlights.id,
+            matchId: matchHighlights.matchId,
+            type: matchHighlights.type,
+            text: matchHighlights.text,
+            topicId: matchHighlights.topicId,
+            topicName: topics.name,
+          })
           .from(matchHighlights)
+          .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
           .where(
             and(
               eq(matchHighlights.userId, user.id),
@@ -138,7 +146,7 @@ export default async function ReviewPage({
       type: h.type,
       text: h.text,
       topicId: h.topicId ?? undefined,
-      topicName: undefined,
+      topicName: h.topicName ?? undefined,
     });
   }
 
