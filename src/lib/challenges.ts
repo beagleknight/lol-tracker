@@ -166,11 +166,17 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
         .where(eq(challenges.id, challenge.id));
       invalidate = true;
     } else {
+      // Early failure: if we've already failed more games than allowed,
+      // the challenge is mathematically impossible (ALL games must pass)
+      const failedGames = newCurrent - newSuccessful;
+      const isImpossible = failedGames > 0;
+
       await db
         .update(challenges)
         .set({
           currentGames: newCurrent,
           successfulGames: newSuccessful,
+          ...(isImpossible ? { status: "failed" as const, failedAt: new Date() } : {}),
         })
         .where(eq(challenges.id, challenge.id));
       invalidate = true;

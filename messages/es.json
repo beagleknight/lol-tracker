@@ -889,7 +889,7 @@
     "startedFrom": "Empezó desde {rank}",
     "progress": "Progreso",
     "gamesProgress": "Partidas",
-    "successRate": "{rate}% de éxito",
+
     "currentRank": "Actualmente en {rank}, {lp} LP",
     "overdue": "La fecha límite pasó el {date}. El desafío sigue activo.",
     "deadline": "Fecha objetivo: {date}",
