@@ -7,7 +7,6 @@ import { eq, and, desc, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import { challenges, rankSnapshots, matches } from "@/db/schema";
-import { invalidateChallengesCaches } from "@/lib/cache";
 import { hasReachedTarget } from "@/lib/rank";
 
 /**
@@ -65,10 +64,6 @@ export async function checkByDateChallenges(
         .where(eq(challenges.id, challenge.id));
       completedCount++;
     }
-  }
-
-  if (completedCount > 0) {
-    invalidateChallengesCaches(userId);
   }
 
   return completedCount;
@@ -129,8 +124,6 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
 
   if (!match) return;
 
-  let invalidate = false;
-
   for (const challenge of activeChallenges) {
     if (
       !challenge.metric ||
@@ -164,7 +157,6 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
           ...(allSucceeded ? { completedAt: new Date() } : { failedAt: new Date() }),
         })
         .where(eq(challenges.id, challenge.id));
-      invalidate = true;
     } else {
       // Early failure: if we've already failed more games than allowed,
       // the challenge is mathematically impossible (ALL games must pass)
@@ -179,11 +171,6 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
           ...(isImpossible ? { status: "failed" as const, failedAt: new Date() } : {}),
         })
         .where(eq(challenges.id, challenge.id));
-      invalidate = true;
     }
-  }
-
-  if (invalidate) {
-    invalidateChallengesCaches(userId);
   }
 }
