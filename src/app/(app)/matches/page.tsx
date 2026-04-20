@@ -1,7 +1,7 @@
 import { eq, and, desc, sql, inArray, count } from "drizzle-orm";
 
 import { db } from "@/db";
-import { matches, matchHighlights, type Match } from "@/db/schema";
+import { matches, matchHighlights, topics, type Match } from "@/db/schema";
 import { winLossRemakeSelect } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { requireUser } from "@/lib/session";
@@ -124,21 +124,24 @@ export default async function MatchesPage({
   const matchIds = pageMatches.map((m) => m.id);
   const pageHighlights =
     matchIds.length > 0
-      ? await db.query.matchHighlights.findMany({
-          where: and(
-            eq(matchHighlights.userId, user.id),
-            user.activeRiotAccountId
-              ? eq(matchHighlights.riotAccountId, user.activeRiotAccountId)
-              : sql`0`,
-            inArray(matchHighlights.matchId, matchIds),
-          ),
-          columns: {
-            matchId: true,
-            type: true,
-            text: true,
-            topicId: true,
-          },
-        })
+      ? await db
+          .select({
+            matchId: matchHighlights.matchId,
+            type: matchHighlights.type,
+            text: matchHighlights.text,
+            topicName: topics.name,
+          })
+          .from(matchHighlights)
+          .leftJoin(topics, eq(matchHighlights.topicId, topics.id))
+          .where(
+            and(
+              eq(matchHighlights.userId, user.id),
+              user.activeRiotAccountId
+                ? eq(matchHighlights.riotAccountId, user.activeRiotAccountId)
+                : sql`0`,
+              inArray(matchHighlights.matchId, matchIds),
+            ),
+          )
       : [];
 
   // Build highlight data per match
@@ -153,7 +156,7 @@ export default async function MatchesPage({
     highlightsPerMatch[h.matchId].push({
       type: h.type,
       text: h.text,
-      topicName: null,
+      topicName: h.topicName,
     });
   }
 
