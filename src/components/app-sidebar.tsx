@@ -18,7 +18,6 @@ import {
   MessageSquarePlus,
   Scale,
   Lock,
-  Code,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -65,12 +64,6 @@ const navDefs = {
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
     { key: "navLegal" as const, href: "/legal", icon: Scale },
-    {
-      key: "navSourceCode" as const,
-      href: "https://github.com/beagleknight/lol-tracker",
-      icon: Code,
-      external: true,
-    },
   ],
 } as const;
 
