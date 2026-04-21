@@ -83,11 +83,12 @@ Always add indexes when:
 1. Modify `src/db/schema.ts`
 2. Generate migration: `npx drizzle-kit generate`
 3. Review the generated SQL in `drizzle/XXXX_*.sql`
-4. **Review for data migration completeness** — see the "Data migration safety" section below
-5. Apply locally: restart dev server (local SQLite picks up schema changes automatically)
-6. **Apply to production Turso**: Write a standalone `scripts/apply-migration-XXXX.ts` script that uses `@libsql/client` directly with `cleanEnv()` banner stripping, then run via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`. See `vercel-turso-deploy` skill for the script template.
-7. Verify migration succeeded before pushing code
-8. **Push code only after production DB has the new schema** — Vercel does NOT run migrations on deploy
+4. **Ensure `--> statement-breakpoint` separators exist between every SQL statement.** The migration runner (`scripts/migrate.ts`) splits on this marker and sends each statement individually — Turso/libSQL rejects multiple statements in a single `execute()` call. Hand-written migrations are especially prone to missing these separators. Drizzle-generated migrations include them automatically.
+5. **Review for data migration completeness** — see the "Data migration safety" section below
+6. Apply locally: restart dev server (local SQLite picks up schema changes automatically)
+7. **Apply to production Turso**: Write a standalone `scripts/apply-migration-XXXX.ts` script that uses `@libsql/client` directly with `cleanEnv()` banner stripping, then run via `npx @dotenvx/dotenvx run --env-file=.env.local -- npx tsx scripts/apply-migration-XXXX.ts`. See `vercel-turso-deploy` skill for the script template.
+8. Verify migration succeeded before pushing code
+9. **Push code only after production DB has the new schema** — Vercel does NOT run migrations on deploy
 
 ### Data migration safety — MANDATORY
 
@@ -213,6 +214,26 @@ const [stats] = await db
   .from(matches)
   .where(whereClause);
 ```
+
+### Scalar subqueries — use literal table names, NOT Drizzle column refs
+
+**Incident reference**: The admin `getUsers` query used `${users.id}` inside a correlated scalar subquery. Drizzle's `sql` template renders column references **unqualified** (just `"id"`), so inside a subquery against `matches`, SQLite resolved `"id"` to `matches.id` instead of `users.id`. Result: `matches.user_id = matches.id` → always false → 0 matches for every user.
+
+**Rule**: In correlated scalar subqueries, **always use literal quoted table.column** — never Drizzle column references like `${users.id}`.
+
+```ts
+// BAD — ${users.id} renders as unqualified "id", resolves to matches.id inside subquery
+matchCount: sql<number>`(
+  SELECT count(*) FROM matches WHERE matches.user_id = ${users.id}
+)`.as("match_count"),
+
+// GOOD — literal "users"."id" always refers to the outer table
+matchCount: sql<number>`(
+  SELECT count(*) FROM matches WHERE matches.user_id = "users"."id"
+)`.as("match_count"),
+```
+
+This only affects correlated subqueries where the outer table column is referenced inside an inner SELECT. Normal WHERE clauses (e.g., `sql\`${matches.result} = 'Victory'\``) are fine because there's no ambiguity.
 
 ### Dynamic WHERE with and() + sql
 
