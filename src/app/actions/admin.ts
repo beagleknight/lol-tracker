@@ -41,16 +41,16 @@ export async function getUsers(): Promise<AdminUser[]> {
       deactivatedAt: users.deactivatedAt,
       createdAt: users.createdAt,
       matchCount:
-        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = ${users.id})`.as(
+        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = "users"."id")`.as(
           "match_count",
         ),
       scopedMatchCount:
-        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = ${users.id} AND matches.riot_account_id = ${users.activeRiotAccountId})`.as(
+        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = "users"."id" AND matches.riot_account_id = "users"."active_riot_account_id")`.as(
           "scoped_match_count",
         ),
       lastSync: sql<
         string | null
-      >`(SELECT max(matches.synced_at) FROM matches WHERE matches.user_id = ${users.id})`.as(
+      >`(SELECT max(matches.synced_at) FROM matches WHERE matches.user_id = "users"."id")`.as(
         "last_sync",
       ),
     })
