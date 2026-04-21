@@ -1,4 +1,4 @@
-import { and, eq, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 import type { ChallengeTransition } from "@/lib/challenges";
 
