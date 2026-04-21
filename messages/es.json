@@ -954,6 +954,7 @@
     "noPastChallenges": "Sin desafíos pasados",
     "noPastChallengesDescription": "Los desafíos completados, fallidos y retirados aparecerán aquí.",
     "deleteChallenge": "Eliminar desafío",
+    "tryAgain": "Intentar de nuevo",
     "metricDescription": {
       "cspmAtLeast": "Mantener CS/min al menos en {threshold}",
       "cspmAtMost": "Mantener CS/min como máximo en {threshold}",
