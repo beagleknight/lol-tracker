@@ -16,6 +16,7 @@ export async function demoLogin(userId: string) {
 
 /** Demo user IDs (must match seed.ts) */
 const DEMO_USER_IDS = [
+  "demo-user-0004-0004-000000000004",
   "demo-user-0001-0001-000000000001",
   "demo-user-0002-0002-000000000002",
   "demo-user-0003-0003-000000000003",
