@@ -17,7 +17,7 @@ const cspDirectives = [
   "connect-src 'self' https://*.canny.io",
   "object-src 'none'",
   "frame-src https://*.canny.io",
-  "worker-src 'self'",
+  "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

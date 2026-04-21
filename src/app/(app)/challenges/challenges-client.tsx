@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Gamepad2,
   XCircle,
+  RotateCcw,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -23,13 +24,14 @@ import { retireChallenge, deleteChallenge } from "@/app/actions/challenges";
 import { EmptyState } from "@/components/empty-state";
 import { Pagination, paginate } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
+import { cn } from "@/lib/utils";
 
 interface ChallengesClientProps {
   challenges: Challenge[];
@@ -397,6 +399,18 @@ function PastChallengeCard({
         >
           {t(challenge.status as "completed" | "failed" | "retired")}
         </Badge>
+        {challenge.status === "failed" && (
+          <Link
+            href="/challenges/new"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-7 gap-1.5 text-xs",
+            )}
+          >
+            <RotateCcw className="h-3 w-3" />
+            {t("tryAgain")}
+          </Link>
+        )}
         <Button
           variant="ghost"
           size="icon"

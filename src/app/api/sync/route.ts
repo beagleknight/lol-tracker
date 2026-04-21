@@ -1,5 +1,7 @@
 import { eq, desc } from "drizzle-orm";
 
+import type { ChallengeTransition } from "@/lib/challenges";
+
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
 import { checkByDateChallenges, evaluateByGamesChallenges } from "@/lib/challenges";
@@ -239,11 +241,17 @@ export async function GET(request: Request) {
           );
           // Check if rank goal/challenge was achieved
           await checkGoalAchievement(user.id, activeRiotAccountId);
-          await checkByDateChallenges(user.id, activeRiotAccountId);
+          const dateTransitions = await checkByDateChallenges(user.id, activeRiotAccountId);
           const msg = rankWarning
             ? `No new matches found. ${rankWarning}`
             : "No new matches found. Rank snapshot captured.";
-          send({ type: "done", synced: 0, remaining: 0, message: msg });
+          send({
+            type: "done",
+            synced: 0,
+            remaining: 0,
+            message: msg,
+            challengeTransitions: dateTransitions,
+          });
           controller.close();
           return;
         }
@@ -283,6 +291,7 @@ export async function GET(request: Request) {
 
         let syncedCount = 0;
         let failedCount = 0;
+        const allChallengeTransitions: ChallengeTransition[] = [];
 
         for (let i = 0; i < newMatchIds.length; i++) {
           const matchId = newMatchIds[i];
@@ -383,7 +392,8 @@ export async function GET(request: Request) {
             syncedCount++;
 
             // Evaluate by-games challenges against this match
-            await evaluateByGamesChallenges(user.id, matchId);
+            const matchTransitions = await evaluateByGamesChallenges(user.id, matchId);
+            allChallengeTransitions.push(...matchTransitions);
           } catch (matchError) {
             const errMsg = matchError instanceof Error ? matchError.message : String(matchError);
             console.error(
@@ -426,7 +436,8 @@ export async function GET(request: Request) {
 
         // Check if rank goal/challenge was achieved after syncing
         await checkGoalAchievement(user.id, activeRiotAccountId);
-        await checkByDateChallenges(user.id, activeRiotAccountId);
+        const dateTransitions = await checkByDateChallenges(user.id, activeRiotAccountId);
+        allChallengeTransitions.push(...dateTransitions);
 
         // Cache invalidation is handled client-side via a Server Action
         // after the "done" event (updateTag cannot be called from Route Handlers).
@@ -448,6 +459,7 @@ export async function GET(request: Request) {
           failed: failedCount,
           remaining,
           message: parts.join(" ") + ".",
+          challengeTransitions: allChallengeTransitions,
         });
       } catch (error) {
         console.error("Sync error:", error);

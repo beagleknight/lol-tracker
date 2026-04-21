@@ -1167,6 +1167,7 @@ async function seed() {
   });
 
   // Challenge 3: Active by-games — "Keep CS/min above 7 for 10 games"
+  // At 9/10 games with 9 successful — next match with cspm ≥ 7 completes it!
   await client.execute({
     sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1179,8 +1180,8 @@ async function seed() {
       "at_least",
       7.0,
       10,
-      4,
-      3,
+      9,
+      9,
       "active",
       ts(new Date("2026-04-15T10:00:00Z")),
       null,
@@ -1190,6 +1191,7 @@ async function seed() {
   });
 
   // Challenge 4: Active by-games — "Less than 5 deaths for 15 games"
+  // At 14/15 games with 14 successful — next match with deaths > 5 fails it!
   await client.execute({
     sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1202,8 +1204,8 @@ async function seed() {
       "at_most",
       5,
       15,
-      7,
-      5,
+      14,
+      14,
       "active",
       ts(new Date("2026-04-12T14:00:00Z")),
       null,

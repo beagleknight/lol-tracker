@@ -954,6 +954,7 @@
     "noPastChallenges": "No past challenges",
     "noPastChallengesDescription": "Completed, failed, and retired challenges will appear here.",
     "deleteChallenge": "Delete challenge",
+    "tryAgain": "Try again",
     "metricDescription": {
       "cspmAtLeast": "Maintain CS/min at least {threshold}",
       "cspmAtMost": "Keep CS/min at most {threshold}",
@@ -1180,5 +1181,18 @@
       "sourceCode": "Source code",
       "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
     }
+  },
+  "ChallengeResult": {
+    "successTitle": "Challenge complete!",
+    "failureTitle": "Challenge failed",
+    "successMessage": "You crushed it! Time to set an even bigger goal.",
+    "failureMessage": "Every loss is a lesson. You've got this — try again!",
+    "gamesPassedLabel": "games passed",
+    "reachTarget": "Target: {target}",
+    "tryAgain": "Try again",
+    "dismissSuccess": "Awesome!",
+    "dismissFailure": "Got it",
+    "previous": "Previous result",
+    "next": "Next result"
   }
 }

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
+import type { ChallengeTransition } from "@/lib/challenges";
+
 import { invalidateSyncCaches } from "@/app/actions/sync";
 
 export interface SyncProgress {
@@ -51,6 +53,7 @@ function deleteCookie(name: string): void {
 export function useSyncMatches(isLinked: boolean = false) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [progress, setProgress] = useState<SyncProgress | null>(null);
+  const [challengeTransitions, setChallengeTransitions] = useState<ChallengeTransition[]>([]);
   const router = useRouter();
   const toastIdRef = useRef<string | number | undefined>(undefined);
   const lastSyncAtRef = useRef<number>(0);
@@ -77,6 +80,7 @@ export function useSyncMatches(isLinked: boolean = false) {
       // Tracks cumulative synced/failed across continuation batches
       let cumulativeSynced = 0;
       let cumulativeFailed = 0;
+      let cumulativeTransitions: ChallengeTransition[] = [];
 
       const runBatch = async (limit?: number, continuation = false): Promise<void> => {
         const params = new URLSearchParams();
@@ -163,6 +167,9 @@ export function useSyncMatches(isLinked: boolean = false) {
                 cumulativeSynced += data.synced ?? 0;
                 cumulativeFailed += data.failed ?? 0;
                 batchRemaining = data.remaining ?? 0;
+                if (Array.isArray(data.challengeTransitions)) {
+                  cumulativeTransitions = [...cumulativeTransitions, ...data.challengeTransitions];
+                }
                 setProgress((prev) =>
                   prev
                     ? {
@@ -251,6 +258,11 @@ export function useSyncMatches(isLinked: boolean = false) {
           });
           router.refresh();
         }
+
+        // Trigger challenge result modal if any transitions occurred
+        if (cumulativeTransitions.length > 0) {
+          setChallengeTransitions(cumulativeTransitions);
+        }
       };
 
       // Start the first batch. If caller set a limit, use it.
@@ -325,5 +337,9 @@ export function useSyncMatches(isLinked: boolean = false) {
     return () => clearTimeout(timer);
   }, [isLinked, handleSync]);
 
-  return { isSyncing, progress, handleSync };
+  const dismissChallengeTransitions = useCallback(() => {
+    setChallengeTransitions([]);
+  }, []);
+
+  return { isSyncing, progress, handleSync, challengeTransitions, dismissChallengeTransitions };
 }

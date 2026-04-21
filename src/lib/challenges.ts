@@ -10,14 +10,39 @@ import { challenges, rankSnapshots, matches } from "@/db/schema";
 import { hasReachedTarget } from "@/lib/rank";
 
 /**
+ * Represents a challenge that just changed status during sync.
+ * Sent to the client so we can show a celebration/failure modal.
+ */
+export interface ChallengeTransition {
+  id: number;
+  title: string;
+  status: "completed" | "failed";
+  type: "by-games" | "by-date";
+  /** For by-games: the metric that was tracked */
+  metric?: string | null;
+  /** For by-games: the threshold value */
+  metricThreshold?: number | null;
+  /** For by-games: "at_least" or "at_most" */
+  metricCondition?: string | null;
+  /** For by-games: total games required */
+  targetGames?: number | null;
+  /** For by-games: how many games the user actually passed */
+  successfulGames?: number | null;
+  /** For by-date: the target rank tier */
+  targetTier?: string | null;
+  /** For by-date: the target rank division */
+  targetDivision?: string | null;
+}
+
+/**
  * Check whether a user's active by-date challenges have been completed
  * based on their latest rank snapshot. Called after each rank snapshot capture.
- * Returns the number of challenges that were just completed.
+ * Returns an array of challenge transitions (completed challenges).
  */
 export async function checkByDateChallenges(
   userId: string,
   riotAccountId: string | null,
-): Promise<number> {
+): Promise<ChallengeTransition[]> {
   const accountFilter = riotAccountId
     ? eq(challenges.riotAccountId, riotAccountId)
     : isNull(challenges.riotAccountId);
@@ -31,7 +56,7 @@ export async function checkByDateChallenges(
     ),
   });
 
-  if (activeChallenges.length === 0) return 0;
+  if (activeChallenges.length === 0) return [];
 
   const snapshotAccountFilter = riotAccountId
     ? eq(rankSnapshots.riotAccountId, riotAccountId)
@@ -42,9 +67,9 @@ export async function checkByDateChallenges(
     orderBy: desc(rankSnapshots.capturedAt),
   });
 
-  if (!latestSnapshot?.tier) return 0;
+  if (!latestSnapshot?.tier) return [];
 
-  let completedCount = 0;
+  const transitions: ChallengeTransition[] = [];
 
   for (const challenge of activeChallenges) {
     if (!challenge.targetTier) continue;
@@ -62,11 +87,18 @@ export async function checkByDateChallenges(
         .update(challenges)
         .set({ status: "completed", completedAt: new Date() })
         .where(eq(challenges.id, challenge.id));
-      completedCount++;
+      transitions.push({
+        id: challenge.id,
+        title: challenge.title,
+        status: "completed",
+        type: "by-date",
+        targetTier: challenge.targetTier,
+        targetDivision: challenge.targetDivision,
+      });
     }
   }
 
-  return completedCount;
+  return transitions;
 }
 
 /** Metric accessor for a match row. */
@@ -101,8 +133,12 @@ function meetsCondition(value: number, condition: string, threshold: number): bo
 /**
  * Evaluate a single match against active by-games challenges.
  * Called after each new match is synced.
+ * Returns an array of challenge transitions (completed or failed).
  */
-export async function evaluateByGamesChallenges(userId: string, matchId: string): Promise<void> {
+export async function evaluateByGamesChallenges(
+  userId: string,
+  matchId: string,
+): Promise<ChallengeTransition[]> {
   const activeChallenges = await db.query.challenges.findMany({
     where: and(
       eq(challenges.userId, userId),
@@ -111,7 +147,7 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
     ),
   });
 
-  if (activeChallenges.length === 0) return;
+  if (activeChallenges.length === 0) return [];
 
   const match = await db.query.matches.findFirst({
     where: and(eq(matches.id, matchId), eq(matches.userId, userId)),
@@ -122,7 +158,9 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
     },
   });
 
-  if (!match) return;
+  if (!match) return [];
+
+  const transitions: ChallengeTransition[] = [];
 
   for (const challenge of activeChallenges) {
     if (
@@ -148,15 +186,27 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
       // Challenge complete — determine if succeeded or failed
       // Success requires ALL games to have met the condition
       const allSucceeded = newSuccessful >= challenge.targetGames;
+      const newStatus = allSucceeded ? "completed" : "failed";
       await db
         .update(challenges)
         .set({
           currentGames: newCurrent,
           successfulGames: newSuccessful,
-          status: allSucceeded ? "completed" : "failed",
+          status: newStatus,
           ...(allSucceeded ? { completedAt: new Date() } : { failedAt: new Date() }),
         })
         .where(eq(challenges.id, challenge.id));
+      transitions.push({
+        id: challenge.id,
+        title: challenge.title,
+        status: newStatus,
+        type: "by-games",
+        metric: challenge.metric,
+        metricThreshold: challenge.metricThreshold,
+        metricCondition: challenge.metricCondition,
+        targetGames: challenge.targetGames,
+        successfulGames: allSucceeded ? newSuccessful : newSuccessful,
+      });
     } else {
       // Early failure: if we've already failed more games than allowed,
       // the challenge is mathematically impossible (ALL games must pass)
@@ -171,6 +221,22 @@ export async function evaluateByGamesChallenges(userId: string, matchId: string)
           ...(isImpossible ? { status: "failed" as const, failedAt: new Date() } : {}),
         })
         .where(eq(challenges.id, challenge.id));
+
+      if (isImpossible) {
+        transitions.push({
+          id: challenge.id,
+          title: challenge.title,
+          status: "failed",
+          type: "by-games",
+          metric: challenge.metric,
+          metricThreshold: challenge.metricThreshold,
+          metricCondition: challenge.metricCondition,
+          targetGames: challenge.targetGames,
+          successfulGames: newSuccessful,
+        });
+      }
     }
   }
+
+  return transitions;
 }
