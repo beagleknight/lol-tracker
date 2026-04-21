@@ -52,11 +52,32 @@ export interface RateLimitResult {
  * Check whether a user is allowed to perform an action, and record the event
  * if allowed.
  *
- * This is the only function consumers need — it checks + records atomically.
+ * This is the simplest API — it checks + records atomically. Use this for
+ * actions where recording should happen immediately (e.g., export, ai_insight).
+ *
+ * For actions where recording should be deferred (e.g., sync — where a lock
+ * must be acquired first), use `peekRateLimit` + `recordRateLimitEvent` instead.
  *
  * @throws if `action` has no configured tier (programming error).
  */
 export async function checkRateLimit(userId: string, action: string): Promise<RateLimitResult> {
+  const result = await peekRateLimit(userId, action);
+  if (result.allowed) {
+    await recordRateLimitEvent(userId, action);
+  }
+  return result;
+}
+
+/**
+ * Check whether a user is allowed to perform an action WITHOUT recording it.
+ *
+ * Use this when you need to verify rate limits before acquiring other resources
+ * (e.g., sync locks). Call `recordRateLimitEvent` separately after the resource
+ * is successfully acquired.
+ *
+ * @throws if `action` has no configured tier (programming error).
+ */
+export async function peekRateLimit(userId: string, action: string): Promise<RateLimitResult> {
   const tier = RATE_LIMIT_TIERS[action];
   if (!tier) {
     throw new Error(`No rate limit tier configured for action "${action}"`);
@@ -103,14 +124,19 @@ export async function checkRateLimit(userId: string, action: string): Promise<Ra
     return { allowed: false, retryAfter };
   }
 
-  // Record the event
+  return { allowed: true };
+}
+
+/**
+ * Record a rate limit event for a user+action. Call this AFTER you've confirmed
+ * the action will actually proceed (e.g., after acquiring a sync lock).
+ */
+export async function recordRateLimitEvent(userId: string, action: string): Promise<void> {
   await db.insert(rateLimitEvents).values({
     userId,
     action,
-    createdAt: now,
+    createdAt: new Date(),
   });
-
-  return { allowed: true };
 }
 
 /**

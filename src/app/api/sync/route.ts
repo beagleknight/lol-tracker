@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
 import { checkByDateChallenges, evaluateByGamesChallenges } from "@/lib/challenges";
 import { checkGoalAchievement } from "@/lib/goals";
-import { checkRateLimit, hasRecentEvent } from "@/lib/rate-limit";
+import { hasRecentEvent, peekRateLimit, recordRateLimitEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
 import {
   getMatchIds,
@@ -105,8 +105,9 @@ export async function GET(request: Request) {
           return;
         }
       } else {
-        const rateCheck = await checkRateLimit(user.id, "sync");
+        const rateCheck = await peekRateLimit(user.id, "sync");
         if (!rateCheck.allowed) {
+          console.warn(`[sync] Rate-limited user ${user.id} — retryAfter=${rateCheck.retryAfter}s`);
           send({
             type: "error",
             message: `You can only sync once every 5 minutes. Try again in ${rateCheck.retryAfter} seconds.`,
@@ -123,6 +124,7 @@ export async function GET(request: Request) {
         const lockResult = await acquireSyncLock(user.id);
 
         if (lockResult.status === "already_locked") {
+          console.warn(`[sync] Lock already held for user ${user.id} — skipping`);
           send({
             type: "locked",
             message: "A sync is already in progress. Please wait for it to finish.",
@@ -166,6 +168,9 @@ export async function GET(request: Request) {
           }
 
           if (!acquired) {
+            console.warn(
+              `[sync] Queue timeout for user ${user.id} — waited ${MAX_QUEUE_WAIT_MS}ms, no slot`,
+            );
             send({
               type: "error",
               message: "Timed out waiting for a sync slot. Please try again in a minute.",
@@ -176,6 +181,13 @@ export async function GET(request: Request) {
         }
 
         lockAcquired = true;
+
+        // Record the rate limit event NOW — after the lock is acquired.
+        // This ensures failed lock acquisitions (queue timeout, already locked)
+        // don't consume the user's rate limit allowance.
+        if (!isContinuation) {
+          await recordRateLimitEvent(user.id, "sync");
+        }
 
         // ── Sync logic (same as before, with adaptive delays) ────────────
         send({ type: "status", message: "Checking existing matches..." });
