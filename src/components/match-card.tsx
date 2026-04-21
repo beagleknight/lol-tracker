@@ -272,7 +272,10 @@ export function MatchCard({
                   <span className="font-mono">
                     {match.kills}/{match.deaths}/{match.assists}
                   </span>{" "}
-                  &middot; {t("csLabel", { cs: match.cs })}
+                  &middot;{" "}
+                  {match.csPerMin
+                    ? t("csWithPerMin", { cs: match.cs, csPerMin: match.csPerMin.toFixed(1) })
+                    : t("csLabel", { cs: match.cs })}
                 </span>
                 {hasHighlights &&
                   visibleLowlights.map((item, i) => {
@@ -367,7 +370,9 @@ export function MatchCard({
                   <span className="ml-1 text-xs text-muted-foreground">({kda})</span>
                 </span>
                 <span className="font-mono text-muted-foreground">
-                  {t("csLabel", { cs: match.cs })}
+                  {match.csPerMin
+                    ? t("csWithPerMin", { cs: match.cs, csPerMin: match.csPerMin.toFixed(1) })
+                    : t("csLabel", { cs: match.cs })}
                 </span>
                 <span className="text-muted-foreground">
                   {formatDuration(match.gameDurationSeconds)}
