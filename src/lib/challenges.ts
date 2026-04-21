@@ -155,6 +155,7 @@ export async function evaluateByGamesChallenges(
       csPerMin: true,
       deaths: true,
       visionScore: true,
+      gameDate: true,
     },
   });
 
@@ -163,6 +164,13 @@ export async function evaluateByGamesChallenges(
   const transitions: ChallengeTransition[] = [];
 
   for (const challenge of activeChallenges) {
+    // Only count matches played AFTER the challenge was created.
+    // Without this check, a batch sync of older matches would count
+    // pre-challenge games against the challenge counters.
+    if (match.gameDate && challenge.createdAt && match.gameDate < challenge.createdAt) {
+      continue;
+    }
+
     if (
       !challenge.metric ||
       !challenge.metricCondition ||
