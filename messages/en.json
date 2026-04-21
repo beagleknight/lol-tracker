@@ -973,7 +973,9 @@
       "retireError": "Failed to retire challenge.",
       "challengeDeleted": "Challenge deleted.",
       "deleteError": "Failed to delete challenge.",
-      "challengeCompleted": "Challenge completed! Congratulations!"
+      "challengeCompleted": "Challenge completed! Congratulations!",
+      "challengeRetried": "Challenge re-created! Good luck!",
+      "retryError": "Failed to retry challenge."
     }
   },
   "Onboarding": {

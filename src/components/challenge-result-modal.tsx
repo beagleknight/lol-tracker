@@ -1,13 +1,15 @@
 "use client";
 
 import confetti from "canvas-confetti";
-import { Trophy, XCircle, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { Trophy, XCircle, ChevronLeft, ChevronRight, RotateCcw, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useTransition } from "react";
+import { toast } from "sonner";
 
 import type { ChallengeTransition } from "@/lib/challenges";
 
+import { retryChallenge } from "@/app/actions/challenges";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -107,10 +109,25 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
     }
   }, [currentIndex]);
 
+  const tChallenges = useTranslations("Challenges");
+  const [isRetrying, startRetry] = useTransition();
+
   const handleTryAgain = useCallback(() => {
-    onDismiss();
-    router.push("/challenges/new");
-  }, [onDismiss, router]);
+    startRetry(async () => {
+      try {
+        const result = await retryChallenge(current.id);
+        if ("error" in result) {
+          toast.error(result.error);
+        } else {
+          toast.success(tChallenges("toasts.challengeRetried"));
+          onDismiss();
+          router.push("/challenges");
+        }
+      } catch {
+        toast.error(tChallenges("toasts.retryError"));
+      }
+    });
+  }, [current, onDismiss, router, tChallenges]);
 
   if (!current) return null;
 
@@ -215,8 +232,17 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
 
         <DialogFooter className="sm:justify-center">
           {!isSuccess && (
-            <Button variant="outline" onClick={handleTryAgain} className="gap-2">
-              <RotateCcw className="h-4 w-4" />
+            <Button
+              variant="outline"
+              onClick={handleTryAgain}
+              disabled={isRetrying}
+              className="gap-2"
+            >
+              {isRetrying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="h-4 w-4" />
+              )}
               {t("tryAgain")}
             </Button>
           )}
