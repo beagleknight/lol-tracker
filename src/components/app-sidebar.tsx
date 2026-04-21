@@ -137,6 +137,14 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
     </>
   );
 
+  if (item.locked) {
+    return (
+      <div className={cn(className, "cursor-not-allowed opacity-50")} aria-disabled="true">
+        {content}
+      </div>
+    );
+  }
+
   if (item.external) {
     return (
       <a
@@ -159,7 +167,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
 }
 
 /** Locked nav items in demo mode — shown grayed out with lock icon */
-const demoLockedHrefs = new Set(["/duo", "/feedback"]);
+const demoLockedHrefs = new Set(["/duo", "/feedback", "/coaching/action-items"]);
 
 /** Remap a regular app href to its /demo equivalent */
 function demoHref(href: string): string {
