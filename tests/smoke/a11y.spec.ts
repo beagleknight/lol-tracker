@@ -22,7 +22,6 @@ const authenticatedPages = [
   { name: "Goals", path: "/goals" },
   { name: "Feedback", path: "/feedback" },
   { name: "Settings", path: "/settings" },
-  { name: "Admin", path: "/admin" },
 ];
 
 const publicPages = [{ name: "Login", path: "/login" }];
@@ -60,6 +59,28 @@ test.describe("Accessibility — public pages", () => {
       expect(results.violations, formatViolations(results.violations)).toEqual([]);
     });
   }
+});
+
+test.describe("Accessibility — admin pages", () => {
+  // Admin pages require admin role — log in as AdminUser (no shared auth state)
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("Admin (/admin) has no WCAG 2.1 AA violations", async ({ page }) => {
+    // Log in as AdminUser
+    await page.goto("/login");
+    await page.getByText("AdminUser").first().click();
+    await page.waitForURL("**/dashboard", { timeout: 15_000 });
+
+    await page.goto("/admin");
+    await page.getByRole("main").waitFor({ state: "visible" });
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .exclude("[data-sonner-toaster]")
+      .analyze();
+
+    expect(results.violations, formatViolations(results.violations)).toEqual([]);
+  });
 });
 
 /**
