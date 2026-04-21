@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { DashboardClient } from "@/app/(app)/dashboard/dashboard-client";
@@ -8,7 +8,7 @@ import { getDashboardData } from "@/lib/queries/dashboard";
 export default async function DemoDashboardPage() {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const data = await getDashboardData(user.id, user.activeRiotAccountId);
 

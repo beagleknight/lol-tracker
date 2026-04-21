@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { ScoutClient } from "@/app/(app)/scout/scout-client";
@@ -12,7 +12,7 @@ export default async function DemoScoutPage({
 }) {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const params = await searchParams;
   const data = await getScoutData(!!user.puuid, params, {

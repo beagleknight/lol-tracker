@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { MatchDetailClient } from "@/app/(app)/matches/[id]/match-detail-client";
@@ -9,7 +9,7 @@ export default async function DemoMatchDetailPage({ params }: { params: Promise<
   await connection();
   const { id } = await params;
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const data = await getMatchDetailData(id, user.id, user.activeRiotAccountId, user.puuid, {
     skipAuthDependentQueries: true,
