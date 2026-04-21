@@ -131,6 +131,7 @@ const TOPIC_SLUG_MAP: Record<string, string> = {
 
 // ─── Fixed IDs ───────────────────────────────────────────────────────────────
 
+const ADMIN_USER_ID = "demo-user-0004-0004-000000000004";
 const MAIN_USER_ID = "demo-user-0001-0001-000000000001";
 const DUO_USER_ID = "demo-user-0002-0002-000000000002";
 const NEW_PLAYER_ID = "demo-user-0003-0003-000000000003";
@@ -154,7 +155,7 @@ const MAIN_USER = {
   onboardingCompleted: true,
   locale: "en-GB",
   language: "en",
-  role: "admin" as const,
+  role: "premium" as const,
   primaryRole: "MIDDLE",
   secondaryRole: "BOTTOM",
   activeRiotAccountId: MAIN_RIOT_ACCOUNT_ID,
@@ -197,6 +198,27 @@ const NEW_PLAYER = {
   locale: "en-GB",
   language: "en",
   role: "free" as const,
+  primaryRole: null,
+  secondaryRole: null,
+  activeRiotAccountId: null,
+};
+
+const ADMIN_USER = {
+  id: ADMIN_USER_ID,
+  discordId: "demo_discord_004",
+  name: "AdminUser",
+  image: null,
+  email: "admin@example.com",
+  riotGameName: null,
+  riotTagLine: null,
+  puuid: null,
+  summonerId: null,
+  duoPartnerUserId: null,
+  region: null,
+  onboardingCompleted: true,
+  locale: "en-GB",
+  language: "en",
+  role: "admin" as const,
   primaryRole: null,
   secondaryRole: null,
   activeRiotAccountId: null,
@@ -286,7 +308,7 @@ async function seed() {
   console.log("Creating users...");
   const now = new Date("2026-03-25T10:00:00Z");
 
-  for (const u of [MAIN_USER, DUO_USER, NEW_PLAYER]) {
+  for (const u of [ADMIN_USER, MAIN_USER, DUO_USER, NEW_PLAYER]) {
     await client.execute({
       sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, active_riot_account_id, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1192,7 +1214,7 @@ async function seed() {
 
   // ─── Summary ─────────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
-  console.log(`  Users:            3`);
+  console.log(`  Users:            4`);
   console.log(
     `  Matches:          ${totalMatches + totalDuoMatches} (${totalMatches} main + ${totalDuoMatches} duo)`,
   );
@@ -1203,7 +1225,8 @@ async function seed() {
   console.log(`  Challenges:       4`);
   console.log(`  Invites:          1`);
   console.log(`\nDemo user logins:`);
-  console.log(`  ${MAIN_USER.name} (admin, Riot linked, onboarding done)`);
+  console.log(`  ${ADMIN_USER.name} (admin, no Riot account, onboarding done)`);
+  console.log(`  ${MAIN_USER.name} (premium, Riot linked, onboarding done)`);
   console.log(`  ${DUO_USER.name} (premium, Riot linked, onboarding done)`);
   console.log(`  ${NEW_PLAYER.name} (free, no Riot account, needs onboarding)`);
 }

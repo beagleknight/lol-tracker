@@ -37,7 +37,6 @@ const AUTHENTICATED_ROUTES = [
   { path: "/review", name: "Post-game review" },
   { path: "/changelog", name: "Changelog" },
   { path: "/settings", name: "Settings" },
-  { path: "/admin", name: "Admin panel" },
 ];
 
 for (const route of AUTHENTICATED_ROUTES) {
@@ -52,3 +51,19 @@ for (const route of AUTHENTICATED_ROUTES) {
     await expect(page.getByRole("heading", { name: /something went wrong/i })).not.toBeVisible();
   });
 }
+
+// Admin page requires admin role — log in as AdminUser separately
+test.describe("Admin routes", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("/admin — Admin panel loads", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByText("AdminUser").first().click();
+    await page.waitForURL("**/dashboard", { timeout: 15_000 });
+
+    const response = await page.goto("/admin");
+    expect(response?.status()).toBe(200);
+    expect(page.url()).not.toContain("/login");
+    await expect(page.getByRole("heading", { name: /something went wrong/i })).not.toBeVisible();
+  });
+});

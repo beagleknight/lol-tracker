@@ -182,15 +182,15 @@ Without this, `redirect()` is caught and the user sees a false error toast. This
 
 After `npm run db:seed`, the database contains:
 
-| Entity            | Count | Key details                                                  |
-| ----------------- | ----- | ------------------------------------------------------------ |
-| Users             | 2     | DemoPlayer (admin, Riot-linked, has duo partner), DuoPartner |
-| Matches           | 50    | ~60% unreviewed, ~30% reviewed, ~10% skipped                 |
-| Rank snapshots    | 14    | Various ranks over time                                      |
-| Coaching sessions | 3     | 2 completed + 1 scheduled, all with "CoachKim"               |
-| Action items      | 6     | Linked to completed sessions                                 |
-| Match highlights  | 12    | On specific match IDs                                        |
-| Invites           | 1     | For DemoPlayer                                               |
+| Entity            | Count | Key details                                                                                                                                       |
+| ----------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Users             | 4     | AdminUser (admin, no Riot), DemoPlayer (premium, Riot-linked, has duo partner), DuoPartner (premium), NewPlayer (free, no Riot, needs onboarding) |
+| Matches           | 50    | ~60% unreviewed, ~30% reviewed, ~10% skipped                                                                                                      |
+| Rank snapshots    | 14    | Various ranks over time                                                                                                                           |
+| Coaching sessions | 3     | 2 completed + 1 scheduled, all with "CoachKim"                                                                                                    |
+| Action items      | 6     | Linked to completed sessions                                                                                                                      |
+| Match highlights  | 12    | On specific match IDs                                                                                                                             |
+| Invites           | 1     | For DemoPlayer                                                                                                                                    |
 
 - The logged-in user is always **DemoPlayer** (demo mode auto-login).
 - Coach name in seed data is **"CoachKim"**.
