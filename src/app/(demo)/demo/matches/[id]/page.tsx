@@ -1,15 +1,19 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 
+import { MatchDetailClient } from "@/app/(app)/matches/[id]/match-detail-client";
+import { getDemoUser } from "@/lib/demo-user";
 import { getMatchDetailData } from "@/lib/queries/match-detail";
-import { requireUser } from "@/lib/session";
 
-import { MatchDetailClient } from "./match-detail-client";
-
-export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DemoMatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  await connection();
   const { id } = await params;
-  const user = await requireUser();
+  const user = await getDemoUser();
+  if (!user) redirect("/login");
 
-  const data = await getMatchDetailData(id, user.id, user.activeRiotAccountId, user.puuid);
+  const data = await getMatchDetailData(id, user.id, user.activeRiotAccountId, user.puuid, {
+    skipAuthDependentQueries: true,
+  });
 
   if (!data) {
     notFound();
@@ -27,6 +31,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
       userPrimaryRole={user.primaryRole}
       isAiConfigured={data.aiConfigured}
       cachedAiInsight={data.cachedAiInsight}
+      readOnly
     />
   );
 }

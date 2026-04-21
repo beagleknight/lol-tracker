@@ -101,6 +101,9 @@ interface DashboardClientProps {
   currentRank: { tier: string; division: string | null; lp: number } | null;
   ddragonVersion: string;
   topicNames: { id: number; name: string }[];
+  /** When true, all write actions are hidden (demo mode) */
+  readOnly?: boolean;
+  matchBasePath?: string;
 }
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
@@ -145,6 +148,8 @@ export function DashboardClient({
   currentRank,
   ddragonVersion,
   topicNames,
+  readOnly,
+  matchBasePath,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
   const { user: authUser } = useAuth();
@@ -210,7 +215,7 @@ export function DashboardClient({
         </div>
       </div>
 
-      {!isLinked && (
+      {!readOnly && !isLinked && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
@@ -225,7 +230,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {isLinked && !authUser?.primaryRole && (
+      {!readOnly && isLinked && !authUser?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -240,7 +245,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {isLinked && !authUser?.region && (
+      {!readOnly && isLinked && !authUser?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -410,6 +415,7 @@ export function DashboardClient({
                     variant="compact"
                     showScoutLink
                     userPrimaryRole={authUser?.primaryRole}
+                    matchBasePath={matchBasePath}
                   />
                 ))}
               </div>
@@ -550,11 +556,13 @@ export function DashboardClient({
                         {t("nextDueIn", { days: daysUntilDue })}
                       </p>
                     )}
-                    <Link href="/coaching/new" className="mt-3 block">
-                      <Button variant="outline" size="sm" className="w-full">
-                        {t("scheduleNext")}
-                      </Button>
-                    </Link>
+                    {!readOnly && (
+                      <Link href="/coaching/new" className="mt-3 block">
+                        <Button variant="outline" size="sm" className="w-full">
+                          {t("scheduleNext")}
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -571,11 +579,13 @@ export function DashboardClient({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
-                  <Link href="/coaching/new" className="mt-2 inline-block">
-                    <Button variant="outline" size="sm">
-                      {t("scheduleFirst")}
-                    </Button>
-                  </Link>
+                  {!readOnly && (
+                    <Link href="/coaching/new" className="mt-2 inline-block">
+                      <Button variant="outline" size="sm">
+                        {t("scheduleFirst")}
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -655,11 +665,13 @@ export function DashboardClient({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noActiveChallenges")}</p>
-                <Link href="/challenges/new" className="mt-2 inline-block">
-                  <Button variant="outline" size="sm">
-                    {t("newChallenge")}
-                  </Button>
-                </Link>
+                {!readOnly && (
+                  <Link href="/challenges/new" className="mt-2 inline-block">
+                    <Button variant="outline" size="sm">
+                      {t("newChallenge")}
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           )}

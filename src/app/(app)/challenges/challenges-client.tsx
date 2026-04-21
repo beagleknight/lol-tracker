@@ -37,6 +37,7 @@ interface ChallengesClientProps {
   challenges: Challenge[];
   topicsByChallenge: Record<number, { id: number; name: string; slug: string }[]>;
   currentRank: { tier: string; division: string | null; lp: number } | null;
+  readOnly?: boolean;
 }
 
 function getMetricDescription(
@@ -55,6 +56,7 @@ export function ChallengesClient({
   challenges,
   topicsByChallenge,
   currentRank,
+  readOnly,
 }: ChallengesClientProps) {
   const t = useTranslations("Challenges");
   const { user } = useAuth();
@@ -82,12 +84,14 @@ export function ChallengesClient({
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Link href="/challenges/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("newChallenge")}
-          </Button>
-        </Link>
+        {!readOnly && (
+          <Link href="/challenges/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("newChallenge")}
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Tabbed layout */}
@@ -115,6 +119,7 @@ export function ChallengesClient({
                   topics={topicsByChallenge[challenge.id] ?? []}
                   currentRank={currentRank}
                   locale={locale}
+                  readOnly={readOnly}
                 />
               ))}
               <Pagination
@@ -129,12 +134,14 @@ export function ChallengesClient({
               title={t("noChallenges")}
               description={t("noChallengesDescription")}
               action={
-                <Link href="/challenges/new">
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("newChallenge")}
-                  </Button>
-                </Link>
+                !readOnly ? (
+                  <Link href="/challenges/new">
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("newChallenge")}
+                    </Button>
+                  </Link>
+                ) : undefined
               }
             />
           )}
@@ -150,6 +157,7 @@ export function ChallengesClient({
                   challenge={challenge}
                   topics={topicsByChallenge[challenge.id] ?? []}
                   locale={locale}
+                  readOnly={readOnly}
                 />
               ))}
               <Pagination
@@ -178,11 +186,13 @@ function ActiveChallengeCard({
   topics,
   currentRank,
   locale,
+  readOnly,
 }: {
   challenge: Challenge;
   topics: { id: number; name: string; slug: string }[];
   currentRank: ChallengesClientProps["currentRank"];
   locale: string;
+  readOnly?: boolean;
 }) {
   const t = useTranslations("Challenges");
   const [isRetiring, startRetire] = useTransition();
@@ -302,16 +312,18 @@ function ActiveChallengeCard({
         )}
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleRetire} disabled={isRetiring}>
-            {isRetiring ? (
-              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-            ) : (
-              <Archive className="mr-2 h-3 w-3" />
-            )}
-            {t("retire")}
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleRetire} disabled={isRetiring}>
+              {isRetiring ? (
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <Archive className="mr-2 h-3 w-3" />
+              )}
+              {t("retire")}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -323,10 +335,12 @@ function PastChallengeCard({
   challenge,
   topics,
   locale,
+  readOnly,
 }: {
   challenge: Challenge;
   topics: { id: number; name: string; slug: string }[];
   locale: string;
+  readOnly?: boolean;
 }) {
   const t = useTranslations("Challenges");
   const [isDeleting, startDelete] = useTransition();
@@ -399,7 +413,7 @@ function PastChallengeCard({
         >
           {t(challenge.status as "completed" | "failed" | "retired")}
         </Badge>
-        {challenge.status === "failed" && (
+        {!readOnly && challenge.status === "failed" && (
           <Link
             href="/challenges/new"
             className={cn(
@@ -411,20 +425,22 @@ function PastChallengeCard({
             {t("tryAgain")}
           </Link>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          aria-label={t("deleteChallenge")}
-        >
-          {isDeleting ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Trash2 className="h-3 w-3" />
-          )}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            aria-label={t("deleteChallenge")}
+          >
+            {isDeleting ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

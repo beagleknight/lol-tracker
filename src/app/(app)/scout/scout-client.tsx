@@ -68,6 +68,8 @@ interface ScoutClientProps {
   initialEnemyChampion?: string;
   mostPlayed?: ChampionPickCount[];
   mostFaced?: ChampionPickCount[];
+  readOnly?: boolean;
+  matchBasePath?: string;
 }
 
 // ─── Scouting Report ────────────────────────────────────────────────────────
@@ -80,6 +82,7 @@ function ScoutingReport({
   yourChampionName,
   isAiConfigured,
   onNotesChanged,
+  readOnly,
 }: {
   report: MatchupReport;
   ddragonVersion: string;
@@ -88,6 +91,7 @@ function ScoutingReport({
   yourChampionName?: string;
   isAiConfigured: boolean;
   onNotesChanged?: () => void;
+  readOnly?: boolean;
 }) {
   const { record, runeBreakdown, avgStats, overallAvgStats, duoPairs, games } = report;
   const t = useTranslations("Scout");
@@ -139,24 +143,28 @@ function ScoutingReport({
                   ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
                   : `${t("vs")} ${report.matchupChampionName}`}
               </h2>
-              <MatchupNotesTrigger
-                hasNote={hasNote}
-                isOpen={notesOpen}
-                onToggle={() => setNotesOpen(!notesOpen)}
-              />
-              <AiInsightDrawer
-                title={tAi("matchupTitle")}
-                isConfigured={isAiConfigured}
-                locale={locale}
-                onGenerate={(forceRegenerate) =>
-                  generateMatchupInsight(
-                    report.matchupChampionName,
-                    yourChampionName,
-                    report,
-                    forceRegenerate,
-                  )
-                }
-              />
+              {!readOnly && (
+                <MatchupNotesTrigger
+                  hasNote={hasNote}
+                  isOpen={notesOpen}
+                  onToggle={() => setNotesOpen(!notesOpen)}
+                />
+              )}
+              {!readOnly && (
+                <AiInsightDrawer
+                  title={tAi("matchupTitle")}
+                  isConfigured={isAiConfigured}
+                  locale={locale}
+                  onGenerate={(forceRegenerate) =>
+                    generateMatchupInsight(
+                      report.matchupChampionName,
+                      yourChampionName,
+                      report,
+                      forceRegenerate,
+                    )
+                  }
+                />
+              )}
             </div>
             <div className="mt-1 flex items-center gap-3">
               <span className="font-mono text-lg">
@@ -179,7 +187,7 @@ function ScoutingReport({
         </div>
 
         {/* Notes panel — renders below the header row */}
-        {notesOpen && (
+        {!readOnly && notesOpen && (
           <div className="mt-3">
             <MatchupNotesPanel
               note={activeNote}
@@ -474,6 +482,8 @@ export function ScoutClient({
   initialEnemyChampion = "",
   mostPlayed = [],
   mostFaced = [],
+  readOnly,
+  matchBasePath: _matchBasePath,
 }: ScoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -655,6 +665,7 @@ export function ScoutClient({
           yourChampionName={yourChampion || undefined}
           isAiConfigured={isAiConfigured}
           onNotesChanged={refreshNotes}
+          readOnly={readOnly}
         />
       )}
 
@@ -673,13 +684,15 @@ export function ScoutClient({
           />
 
           {/* Still allow adding notes even without match history */}
-          <NoDataNotesBubble
-            notes={matchupNotesList}
-            matchupChampionName={enemyChampion}
-            yourChampionName={yourChampion || undefined}
-            locale={locale}
-            onNotesChanged={refreshNotes}
-          />
+          {!readOnly && (
+            <NoDataNotesBubble
+              notes={matchupNotesList}
+              matchupChampionName={enemyChampion}
+              yourChampionName={yourChampion || undefined}
+              locale={locale}
+              onNotesChanged={refreshNotes}
+            />
+          )}
         </div>
       )}
 

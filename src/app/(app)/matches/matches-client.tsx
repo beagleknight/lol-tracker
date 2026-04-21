@@ -51,6 +51,8 @@ interface MatchesClientProps {
     champion: string;
     review: string;
   };
+  readOnly?: boolean;
+  matchBasePath?: string;
 }
 
 // ─── URL helper ─────────────────────────────────────────────────────────────
@@ -172,6 +174,8 @@ export function MatchesClient({
   losses,
   champions,
   filters,
+  readOnly,
+  matchBasePath,
 }: MatchesClientProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -229,7 +233,7 @@ export function MatchesClient({
             {t("summary", { totalMatches, wins, losses, winRate })}
           </p>
         </div>
-        {totalMatches > 0 && (
+        {!readOnly && totalMatches > 0 && (
           <a
             href={buildExportUrl(filters)}
             download
@@ -241,7 +245,7 @@ export function MatchesClient({
         )}
       </div>
 
-      {!isRiotLinked && (
+      {!readOnly && !isRiotLinked && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
@@ -256,7 +260,7 @@ export function MatchesClient({
         </div>
       )}
 
-      {isRiotLinked && !user?.primaryRole && (
+      {!readOnly && isRiotLinked && !user?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -271,7 +275,7 @@ export function MatchesClient({
         </div>
       )}
 
-      {isRiotLinked && !user?.region && (
+      {!readOnly && isRiotLinked && !user?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -388,6 +392,7 @@ export function MatchesClient({
                   matchHighlights={highlightsPerMatch[match.id] || []}
                   locale={locale}
                   userPrimaryRole={user?.primaryRole}
+                  matchBasePath={matchBasePath}
                 />
               ))}
             </div>

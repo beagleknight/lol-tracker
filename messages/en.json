@@ -30,7 +30,9 @@
     "theme": "Theme: {theme}",
     "logout": "Log out",
     "premiumBadge": "Premium member",
-    "adminBadge": "Admin"
+    "adminBadge": "Admin",
+    "demoAccount": "Demo account",
+    "demoSignUp": "Sign up for free"
   },
   "MatchCard": {
     "vs": "vs",
@@ -1122,7 +1124,8 @@
     "hero": {
       "tagline": "Track your climb. Master your game.",
       "subtitle": "The all-in-one companion for League of Legends players who take ranked seriously. Track matches, review gameplay, and turn coaching into measurable progress.",
-      "cta": "Get started"
+      "cta": "Get started",
+      "demoButton": "Try the demo"
     },
     "features": {
       "heading": "Everything you need to improve",
@@ -1195,5 +1198,9 @@
     "dismissFailure": "Got it",
     "previous": "Previous result",
     "next": "Next result"
+  },
+  "Demo": {
+    "bannerText": "You're viewing the demo with sample data.",
+    "bannerSignUp": "Sign up for free"
   }
 }

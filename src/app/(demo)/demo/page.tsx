@@ -1,10 +1,15 @@
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+
+import { DashboardClient } from "@/app/(app)/dashboard/dashboard-client";
+import { getDemoUser } from "@/lib/demo-user";
 import { getDashboardData } from "@/lib/queries/dashboard";
-import { requireUser } from "@/lib/session";
 
-import { DashboardClient } from "./dashboard-client";
+export default async function DemoDashboardPage() {
+  await connection();
+  const user = await getDemoUser();
+  if (!user) redirect("/login");
 
-export default async function DashboardPage() {
-  const user = await requireUser();
   const data = await getDashboardData(user.id, user.activeRiotAccountId);
 
   return (
@@ -30,6 +35,8 @@ export default async function DashboardPage() {
       currentRank={data.currentRank}
       ddragonVersion={data.ddragonVersion}
       topicNames={data.topicNames}
+      readOnly
+      matchBasePath="/demo/matches"
     />
   );
 }

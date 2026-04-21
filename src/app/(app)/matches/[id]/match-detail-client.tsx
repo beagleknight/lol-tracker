@@ -83,6 +83,7 @@ interface MatchDetailClientProps {
   userPrimaryRole?: string | null;
   isAiConfigured: boolean;
   cachedAiInsight: InsightResult | null;
+  readOnly?: boolean;
 }
 
 function ParticipantRow({
@@ -192,6 +193,7 @@ export function MatchDetailClient({
   userPrimaryRole,
   isAiConfigured,
   cachedAiInsight,
+  readOnly,
 }: MatchDetailClientProps) {
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
@@ -253,15 +255,17 @@ export function MatchDetailClient({
                     {t("pendingReview")}
                   </Badge>
                 )}
-                <AiInsightDrawer
-                  title={tAi("postGameTitle")}
-                  cachedInsight={cachedAiInsight}
-                  isConfigured={isAiConfigured}
-                  locale={locale}
-                  onGenerate={(forceRegenerate) =>
-                    generatePostGameInsight(match.id, forceRegenerate)
-                  }
-                />
+                {!readOnly && (
+                  <AiInsightDrawer
+                    title={tAi("postGameTitle")}
+                    cachedInsight={cachedAiInsight}
+                    isConfigured={isAiConfigured}
+                    locale={locale}
+                    onGenerate={(forceRegenerate) =>
+                      generatePostGameInsight(match.id, forceRegenerate)
+                    }
+                  />
+                )}
               </div>
               <p className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
                 {match.position && (
@@ -343,8 +347,8 @@ export function MatchDetailClient({
         </div>
       )}
 
-      {/* Review this game CTA — hidden for off-role matches */}
-      {!match.reviewed && !isOffRole && (
+      {/* Review this game CTA — hidden for off-role matches and readOnly */}
+      {!readOnly && !match.reviewed && !isOffRole && (
         <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
           <ClipboardEdit className="h-5 w-5 shrink-0 text-gold" />
           <div className="flex-1">
