@@ -1,16 +1,20 @@
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+
+import { ScoutClient } from "@/app/(app)/scout/scout-client";
+import { getDemoUser } from "@/lib/demo-user";
 import { getScoutData } from "@/lib/queries/scout";
-import { requireUser } from "@/lib/session";
 
-import { ScoutClient } from "./scout-client";
-
-export default async function ScoutPage({
+export default async function DemoScoutPage({
   searchParams,
 }: {
   searchParams: Promise<{ your?: string; enemy?: string }>;
 }) {
-  const user = await requireUser();
-  const params = await searchParams;
+  await connection();
+  const user = await getDemoUser();
+  if (!user) redirect("/login");
 
+  const params = await searchParams;
   const data = await getScoutData(!!user.puuid, params);
 
   return (
@@ -23,6 +27,7 @@ export default async function ScoutPage({
       mostPlayed={data.mostPlayed}
       mostFaced={data.mostFaced}
       isAiConfigured={data.isAiConfigured}
+      readOnly
     />
   );
 }

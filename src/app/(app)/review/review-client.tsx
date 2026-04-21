@@ -92,6 +92,7 @@ interface ReviewClientProps {
   completedTotal: number;
   initialTab: "post-game" | "vod" | "completed";
   topics: TopicOption[];
+  readOnly?: boolean;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -627,6 +628,7 @@ function CompletedCard({
   onSaved,
   locale,
   topics,
+  readOnly,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
@@ -634,6 +636,7 @@ function CompletedCard({
   onSaved: () => void;
   locale: string;
   topics: TopicOption[];
+  readOnly?: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
@@ -755,15 +758,17 @@ function CompletedCard({
           <div className="flex-1">
             <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => setIsEditing(true)}
-            aria-label="Edit review"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
+          {!readOnly && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setIsEditing(true)}
+              aria-label="Edit review"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -894,6 +899,7 @@ export function ReviewClient({
   completedTotal,
   initialTab,
   topics,
+  readOnly,
 }: ReviewClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -920,7 +926,7 @@ export function ReviewClient({
   const [isCompletedNavigating, startCompletedTransition] = useTransition();
 
   // Tab state — controlled to avoid Base UI uncontrolled defaultValue warning
-  const tabValue = initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
+  const tabValue = readOnly ? 2 : initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
 
   // Tab change handler — sync tab to URL
   const handleTabChange = useCallback(
@@ -1125,7 +1131,7 @@ export function ReviewClient({
         </div>
 
         {/* F1.3 — Overflow menu with Mark All Reviewed */}
-        {totalUnreviewed > 0 && (
+        {!readOnly && totalUnreviewed > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -1202,7 +1208,7 @@ export function ReviewClient({
         )}
       </div>
 
-      {!user?.primaryRole && (
+      {!readOnly && !user?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -1217,7 +1223,7 @@ export function ReviewClient({
         </div>
       )}
 
-      {user?.isRiotLinked && !user?.region && (
+      {!readOnly && user?.isRiotLinked && !user?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -1235,24 +1241,28 @@ export function ReviewClient({
       {/* Tabs */}
       <Tabs value={tabValue} onValueChange={handleTabChange}>
         <TabsList>
-          <TabsTrigger value={0}>
-            <ClipboardEdit className="h-3.5 w-3.5" />
-            {t("tabs.postGame")}
-            {postGameMatches.length > 0 && (
-              <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
-                {postGameMatches.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value={1}>
-            <Video className="h-3.5 w-3.5" />
-            {t("tabs.vodReview")}
-            {vodReviewMatches.length > 0 && (
-              <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
-                {vodReviewMatches.length}
-              </Badge>
-            )}
-          </TabsTrigger>
+          {!readOnly && (
+            <TabsTrigger value={0}>
+              <ClipboardEdit className="h-3.5 w-3.5" />
+              {t("tabs.postGame")}
+              {postGameMatches.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
+                  {postGameMatches.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          )}
+          {!readOnly && (
+            <TabsTrigger value={1}>
+              <Video className="h-3.5 w-3.5" />
+              {t("tabs.vodReview")}
+              {vodReviewMatches.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
+                  {vodReviewMatches.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          )}
           <TabsTrigger value={2}>
             <CheckCircle2 className="h-3.5 w-3.5" />
             {t("tabs.completed")}
@@ -1367,6 +1377,7 @@ export function ReviewClient({
                       onSaved={handleCompletedSaved}
                       locale={locale}
                       topics={topics}
+                      readOnly={readOnly}
                     />
                   ))}
                 </div>

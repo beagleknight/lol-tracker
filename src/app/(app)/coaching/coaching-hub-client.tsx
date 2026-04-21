@@ -57,14 +57,17 @@ interface CoachingHubClientProps {
   ddragonVersion: string;
   sessionTopics: Record<number, string[]>;
   topicNames: { id: number; name: string }[];
+  readOnly?: boolean;
 }
 
 function ActionItemMiniRow({
   item,
   topicNames,
+  readOnly,
 }: {
   item: CoachingActionItem;
   topicNames: { id: number; name: string }[];
+  readOnly?: boolean;
 }) {
   const t = useTranslations("Coaching");
   const [isPending, startTransition] = useTransition();
@@ -95,8 +98,8 @@ function ActionItemMiniRow({
     <div className="flex items-center gap-2 py-1.5">
       <button
         onClick={cycleStatus}
-        disabled={isPending}
-        className="shrink-0 cursor-pointer"
+        disabled={isPending || readOnly}
+        className={`shrink-0 ${readOnly ? "cursor-default" : "cursor-pointer"}`}
         aria-label="Toggle action item status"
       >
         {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : icons[item.status]}
@@ -121,6 +124,7 @@ export function CoachingHubClient({
   ddragonVersion,
   sessionTopics,
   topicNames,
+  readOnly,
 }: CoachingHubClientProps) {
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
@@ -139,12 +143,14 @@ export function CoachingHubClient({
               : t("subtitleSummary", { totalSessions, activeCount: activeActionItems.length })}
           </p>
         </div>
-        <Link href="/coaching/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("scheduleSessionButton")}
-          </Button>
-        </Link>
+        {!readOnly && (
+          <Link href="/coaching/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("scheduleSessionButton")}
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Empty state */}
@@ -154,12 +160,14 @@ export function CoachingHubClient({
           title={t("emptyStateTitle")}
           description={t("emptyStateDescription")}
           action={
-            <Link href="/coaching/new">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                {t("scheduleSessionButton")}
-              </Button>
-            </Link>
+            !readOnly ? (
+              <Link href="/coaching/new">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("scheduleSessionButton")}
+                </Button>
+              </Link>
+            ) : undefined
           }
         />
       )}
@@ -269,7 +277,7 @@ export function CoachingHubClient({
                       </CardContent>
                     </Card>
                   </Link>
-                  {isPastDue && (
+                  {!readOnly && isPastDue && (
                     <div className="flex items-center justify-end gap-2 px-1">
                       <span
                         className={`text-xs ${isOverdue ? "text-loss" : "text-muted-foreground"}`}
@@ -318,7 +326,12 @@ export function CoachingHubClient({
           <Card className="surface-glow">
             <CardContent className="divide-y divide-border/50 pt-4">
               {activeActionItems.slice(0, 8).map((item) => (
-                <ActionItemMiniRow key={item.id} item={item} topicNames={topicNames} />
+                <ActionItemMiniRow
+                  key={item.id}
+                  item={item}
+                  topicNames={topicNames}
+                  readOnly={readOnly}
+                />
               ))}
               {activeActionItems.length > 8 && (
                 <p className="pt-2 text-xs text-muted-foreground">

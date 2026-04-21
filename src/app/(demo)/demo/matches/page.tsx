@@ -1,16 +1,20 @@
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+
+import { MatchesClient } from "@/app/(app)/matches/matches-client";
+import { getDemoUser } from "@/lib/demo-user";
 import { getMatchesData } from "@/lib/queries/matches";
-import { requireUser } from "@/lib/session";
 
-import { MatchesClient } from "./matches-client";
-
-export default async function MatchesPage({
+export default async function DemoMatchesPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const user = await requireUser();
-  const params = await searchParams;
+  await connection();
+  const user = await getDemoUser();
+  if (!user) redirect("/login");
 
+  const params = await searchParams;
   const page = Math.max(1, parseInt(String(params.page ?? "1"), 10) || 1);
   const search = typeof params.search === "string" ? params.search : "";
   const result = typeof params.result === "string" ? params.result : "all";
@@ -37,6 +41,7 @@ export default async function MatchesPage({
       losses={data.losses}
       champions={data.champions}
       filters={data.filters}
+      readOnly
     />
   );
 }

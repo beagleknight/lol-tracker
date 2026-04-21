@@ -30,7 +30,9 @@
     "theme": "Tema: {theme}",
     "logout": "Cerrar sesión",
     "premiumBadge": "Miembro premium",
-    "adminBadge": "Admin"
+    "adminBadge": "Admin",
+    "demoAccount": "Cuenta de demostración",
+    "demoSignUp": "Regístrate gratis"
   },
   "MatchCard": {
     "vs": "vs",
@@ -1122,7 +1124,8 @@
     "hero": {
       "tagline": "Sigue tu escalada. Domina tu juego.",
       "subtitle": "El compañero todo-en-uno para jugadores de League of Legends que se toman en serio las ranked. Registra partidas, revisa tu gameplay y convierte el coaching en progreso medible.",
-      "cta": "Empezar"
+      "cta": "Empezar",
+      "demoButton": "Probar la demo"
     },
     "features": {
       "heading": "Todo lo que necesitas para mejorar",
@@ -1195,5 +1198,9 @@
     "dismissFailure": "Entendido",
     "previous": "Resultado anterior",
     "next": "Siguiente resultado"
+  },
+  "Demo": {
+    "bannerText": "Estás viendo la demo con datos de ejemplo.",
+    "bannerSignUp": "Regístrate gratis"
   }
 }

@@ -104,6 +104,7 @@ interface AnalyticsClientProps {
   rankSnapshots: RankSnapshot[];
   ddragonVersion: string;
   activeGoal: { targetTier: string; targetDivision: string | null } | null;
+  readOnly?: boolean;
 }
 
 // Rolling win rate: for each match, calculate win rate of last N games
