@@ -1,5 +1,7 @@
 "use server";
 
+import type { BatchItem } from "drizzle-orm/batch";
+
 import { eq, and, isNotNull, desc, sql, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cacheLife, cacheTag } from "next/cache";
@@ -345,6 +347,10 @@ export async function backfillDuoGames(): Promise<{
 
   let duoFound = 0;
 
+  // Collect all updates in memory (CPU-only JSON parsing, no I/O)
+  // then execute as a single batched round-trip to Turso
+  const pendingUpdates: BatchItem<"sqlite">[] = [];
+
   for (const m of allMatches) {
     if (!m.rawMatchJson) continue;
     try {
@@ -359,21 +365,28 @@ export async function backfillDuoGames(): Promise<{
       );
 
       if (partnerOnTeam) {
-        await db
-          .update(matches)
-          .set({
-            duoPartnerPuuid: partnerOnTeam.puuid,
-            duoPartnerChampionName: partnerOnTeam.championName,
-            duoPartnerKills: partnerOnTeam.kills,
-            duoPartnerDeaths: partnerOnTeam.deaths,
-            duoPartnerAssists: partnerOnTeam.assists,
-          })
-          .where(and(eq(matches.id, m.id), eq(matches.userId, user.id)));
+        pendingUpdates.push(
+          db
+            .update(matches)
+            .set({
+              duoPartnerPuuid: partnerOnTeam.puuid,
+              duoPartnerChampionName: partnerOnTeam.championName,
+              duoPartnerKills: partnerOnTeam.kills,
+              duoPartnerDeaths: partnerOnTeam.deaths,
+              duoPartnerAssists: partnerOnTeam.assists,
+            })
+            .where(and(eq(matches.id, m.id), eq(matches.userId, user.id))),
+        );
         duoFound++;
       }
     } catch {
       // Skip unparseable matches
     }
+  }
+
+  // Execute all updates in a single batch round-trip
+  if (pendingUpdates.length > 0) {
+    await db.batch(pendingUpdates as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]]);
   }
 
   revalidatePath("/duo");

@@ -128,9 +128,13 @@ export const matches = sqliteTable(
     primaryKey({ columns: [table.id, table.userId] }),
     unique("matches_user_odometer_unq").on(table.userId, table.odometer),
     index("matches_user_game_date_idx").on(table.userId, table.gameDate),
-    index("matches_user_reviewed_idx").on(table.userId, table.reviewed),
-    index("matches_user_duo_partner_idx").on(table.userId, table.duoPartnerPuuid),
-    index("matches_user_position_idx").on(table.userId, table.position),
+    index("matches_user_riot_reviewed_result_idx").on(
+      table.userId,
+      table.riotAccountId,
+      table.reviewed,
+      table.result,
+    ),
+    index("matches_user_riot_duo_idx").on(table.userId, table.riotAccountId, table.duoPartnerPuuid),
     index("matches_riot_account_idx").on(table.riotAccountId),
   ],
 );

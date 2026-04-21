@@ -170,66 +170,114 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
     async session({ session, token }) {
-      if (token.sub) {
-        // Look up our internal user by discord ID (the real JWT user)
-        const dbUser = await db.query.users.findFirst({
-          where: eq(users.discordId, token.discordId as string),
-        });
-        if (!dbUser) return session;
+      if (token.sub && token.userId) {
+        // Read user data from the JWT token (populated by jwt callback)
+        // instead of querying the DB on every request.
+        let effectiveUserId = token.userId as string;
+        let realAdminName: string | null = null;
 
-        // Check for impersonation — only admins may impersonate
-        let effectiveUser = dbUser;
-        let impersonating = false;
+        // Check for impersonation — only admins may impersonate.
+        // This is the only path that still hits the DB per-request,
+        // and only when the admin-impersonate cookie is set.
         const cookieStore = await cookies();
         const targetUserId = cookieStore.get(IMPERSONATE_COOKIE)?.value;
 
-        if (targetUserId && dbUser.role === "admin" && dbUser.id !== targetUserId) {
+        if (targetUserId && token.role === "admin" && token.userId !== targetUserId) {
           const targetUser = await db.query.users.findFirst({
             where: eq(users.id, targetUserId),
           });
           if (targetUser && !targetUser.deactivatedAt) {
-            effectiveUser = targetUser;
-            impersonating = true;
+            effectiveUserId = targetUser.id;
+            realAdminName = (token.name as string) ?? null;
+
+            // For impersonated user, populate session from DB
+            session.user.id = targetUser.id;
+            session.user.riotGameName = targetUser.riotGameName;
+            session.user.riotTagLine = targetUser.riotTagLine;
+            session.user.isRiotLinked = !!targetUser.puuid;
+            session.user.region = targetUser.region;
+            session.user.activeRiotAccountId = targetUser.activeRiotAccountId;
+            session.user.onboardingCompleted = targetUser.onboardingCompleted;
+            session.user.role = targetUser.role;
+            session.user.locale = targetUser.locale;
+            session.user.language = targetUser.language;
+            session.user.coachingCadenceDays = targetUser.coachingCadenceDays;
+
+            // Resolve role preferences for impersonated user
+            if (targetUser.activeRiotAccountId) {
+              const activeAccount = await db.query.riotAccounts.findFirst({
+                where: eq(riotAccounts.id, targetUser.activeRiotAccountId),
+                columns: { primaryRole: true, secondaryRole: true },
+              });
+              session.user.primaryRole = activeAccount?.primaryRole ?? null;
+              session.user.secondaryRole = activeAccount?.secondaryRole ?? null;
+            } else {
+              session.user.primaryRole = targetUser.primaryRole;
+              session.user.secondaryRole = targetUser.secondaryRole;
+            }
+
+            session.user.isImpersonating = true;
+            session.user.realAdminName = realAdminName;
+            return session;
           }
         }
 
-        session.user.id = effectiveUser.id;
-        session.user.riotGameName = effectiveUser.riotGameName;
-        session.user.riotTagLine = effectiveUser.riotTagLine;
-        session.user.isRiotLinked = !!effectiveUser.puuid;
-        session.user.region = effectiveUser.region;
-        session.user.activeRiotAccountId = effectiveUser.activeRiotAccountId;
-        session.user.onboardingCompleted = effectiveUser.onboardingCompleted;
-        session.user.role = impersonating ? effectiveUser.role : dbUser.role;
-        session.user.locale = effectiveUser.locale;
-        session.user.language = effectiveUser.language;
-        session.user.coachingCadenceDays = effectiveUser.coachingCadenceDays;
-
-        // Read role preferences from the active riot account (per-account)
-        if (effectiveUser.activeRiotAccountId) {
-          const activeAccount = await db.query.riotAccounts.findFirst({
-            where: eq(riotAccounts.id, effectiveUser.activeRiotAccountId),
-          });
-          session.user.primaryRole = activeAccount?.primaryRole ?? null;
-          session.user.secondaryRole = activeAccount?.secondaryRole ?? null;
-        } else {
-          // Fallback to user-level roles for backwards compatibility
-          session.user.primaryRole = effectiveUser.primaryRole;
-          session.user.secondaryRole = effectiveUser.secondaryRole;
-        }
-
-        // Signal impersonation state to the client
-        if (impersonating) {
-          session.user.isImpersonating = true;
-          session.user.realAdminName = dbUser.name;
-        }
+        // Normal path: read everything from the JWT token (zero DB queries)
+        session.user.id = effectiveUserId;
+        session.user.riotGameName = (token.riotGameName as string) ?? null;
+        session.user.riotTagLine = (token.riotTagLine as string) ?? null;
+        session.user.isRiotLinked = (token.isRiotLinked as boolean) ?? false;
+        session.user.region = (token.region as string) ?? null;
+        session.user.activeRiotAccountId = (token.activeRiotAccountId as string) ?? null;
+        session.user.onboardingCompleted = (token.onboardingCompleted as boolean) ?? false;
+        session.user.role = (token.role as "admin" | "premium" | "free") ?? "free";
+        session.user.locale = (token.locale as string) ?? null;
+        session.user.language = (token.language as string) ?? null;
+        session.user.coachingCadenceDays = (token.coachingCadenceDays as number) ?? null;
+        session.user.primaryRole = (token.primaryRole as string) ?? null;
+        session.user.secondaryRole = (token.secondaryRole as string) ?? null;
       }
       return session;
     },
-    async jwt({ token, account }) {
+    async jwt({ token, account, trigger }) {
       if (account?.provider === "discord" || account?.provider === "demo") {
         token.discordId = account.providerAccountId;
       }
+
+      // On sign-in or explicit session.update(), load user data into the JWT
+      // so the session callback doesn't need to hit the DB on every request.
+      if (trigger === "signIn" || trigger === "update" || (token.discordId && !token.userId)) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.discordId, token.discordId as string),
+        });
+        if (dbUser) {
+          token.userId = dbUser.id;
+          token.riotGameName = dbUser.riotGameName;
+          token.riotTagLine = dbUser.riotTagLine;
+          token.isRiotLinked = !!dbUser.puuid;
+          token.region = dbUser.region;
+          token.activeRiotAccountId = dbUser.activeRiotAccountId;
+          token.onboardingCompleted = dbUser.onboardingCompleted;
+          token.role = dbUser.role;
+          token.locale = dbUser.locale;
+          token.language = dbUser.language;
+          token.coachingCadenceDays = dbUser.coachingCadenceDays;
+
+          // Resolve role preferences from active riot account
+          if (dbUser.activeRiotAccountId) {
+            const activeAccount = await db.query.riotAccounts.findFirst({
+              where: eq(riotAccounts.id, dbUser.activeRiotAccountId),
+              columns: { primaryRole: true, secondaryRole: true },
+            });
+            token.primaryRole = activeAccount?.primaryRole ?? null;
+            token.secondaryRole = activeAccount?.secondaryRole ?? null;
+          } else {
+            token.primaryRole = dbUser.primaryRole;
+            token.secondaryRole = dbUser.secondaryRole;
+          }
+        }
+      }
+
       return token;
     },
   },
