@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { cacheLife, cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -11,9 +12,28 @@ import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches, riotAccounts } from "@/db/schema";
 import { AuthProvider } from "@/lib/auth-client";
+import { sidebarTag } from "@/lib/cache";
 import { getLatestChangelogVersion } from "@/lib/changelog";
 import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
+
+async function getCachedSidebarCounts(
+  userId: string,
+  primaryRole: string | null,
+  activeRiotAccountId: string | null,
+) {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag(sidebarTag(userId));
+
+  return db
+    .select(sidebarReviewCountsSelect(primaryRole))
+    .from(matches)
+    .where(
+      and(eq(matches.userId, userId), accountScope(matches.riotAccountId, activeRiotAccountId)),
+    )
+    .then((rows) => rows[0]);
+}
 
 async function SidebarWithUser() {
   await connection();
@@ -26,16 +46,7 @@ async function SidebarWithUser() {
 
   // Lightweight count for sidebar review badges (excludes remakes + off-role)
   const [reviewCounts, latestVersion, userRiotAccounts] = await Promise.all([
-    db
-      .select(sidebarReviewCountsSelect(user.primaryRole))
-      .from(matches)
-      .where(
-        and(
-          eq(matches.userId, user.id),
-          accountScope(matches.riotAccountId, user.activeRiotAccountId),
-        ),
-      )
-      .then((rows) => rows[0]),
+    getCachedSidebarCounts(user.id, user.primaryRole, user.activeRiotAccountId),
     getLatestChangelogVersion(),
     db
       .select({

@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, count, max, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { users, matches } from "@/db/schema";
+import { users } from "@/db/schema";
 import { IMPERSONATE_COOKIE, requireAdmin } from "@/lib/session";
 
 export interface AdminUser {
@@ -26,7 +26,8 @@ export interface AdminUser {
 export async function getUsers(): Promise<AdminUser[]> {
   await requireAdmin();
 
-  // Single query: join users with aggregated match stats
+  // Use scalar subqueries instead of LEFT JOIN to avoid row explosion
+  // (users × matches GROUP BY). Each subquery is a simple indexed lookup.
   const rows = await db
     .select({
       id: users.id,
@@ -39,13 +40,21 @@ export async function getUsers(): Promise<AdminUser[]> {
       role: users.role,
       deactivatedAt: users.deactivatedAt,
       createdAt: users.createdAt,
-      matchCount: count(matches.id),
-      scopedMatchCount: sql<number>`SUM(CASE WHEN ${matches.riotAccountId} = ${users.activeRiotAccountId} THEN 1 ELSE 0 END)`,
-      lastSync: max(matches.syncedAt),
+      matchCount:
+        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = ${users.id})`.as(
+          "match_count",
+        ),
+      scopedMatchCount:
+        sql<number>`(SELECT count(*) FROM matches WHERE matches.user_id = ${users.id} AND matches.riot_account_id = ${users.activeRiotAccountId})`.as(
+          "scoped_match_count",
+        ),
+      lastSync: sql<
+        string | null
+      >`(SELECT max(matches.synced_at) FROM matches WHERE matches.user_id = ${users.id})`.as(
+        "last_sync",
+      ),
     })
     .from(users)
-    .leftJoin(matches, eq(users.id, matches.userId))
-    .groupBy(users.id)
     .orderBy(users.createdAt);
 
   return rows.map((r) => ({

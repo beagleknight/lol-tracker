@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc, gte } from "drizzle-orm";
 
 import type { ChallengeTransition } from "@/lib/challenges";
 
@@ -180,11 +180,25 @@ export async function GET(request: Request) {
         // ── Sync logic (same as before, with adaptive delays) ────────────
         send({ type: "status", message: "Checking existing matches..." });
 
-        // Check which matches we already have
-        const existingMatches = await db.query.matches.findMany({
+        // Check which matches we already have.
+        // Optimization: only load IDs newer than (mostRecent - 24h) to avoid
+        // scanning all historic matches. The 24h buffer covers Riot's delayed
+        // match processing. On first sync (no matches), falls back to empty set.
+        const DEDUP_BUFFER_MS = 24 * 60 * 60 * 1000;
+        const mostRecentMatch = await db.query.matches.findFirst({
           where: eq(matches.userId, user.id),
-          columns: { id: true },
+          orderBy: desc(matches.gameDate),
+          columns: { gameDate: true },
         });
+        const dedupCutoff = mostRecentMatch?.gameDate
+          ? new Date(mostRecentMatch.gameDate.getTime() - DEDUP_BUFFER_MS)
+          : null;
+        const existingMatches = dedupCutoff
+          ? await db.query.matches.findMany({
+              where: and(eq(matches.userId, user.id), gte(matches.gameDate, dedupCutoff)),
+              columns: { id: true },
+            })
+          : [];
         const existingIds = new Set(existingMatches.map((m: { id: string }) => m.id));
 
         send({ type: "status", message: "Fetching match history from Riot..." });
@@ -192,10 +206,13 @@ export async function GET(request: Request) {
         // Season 2026 start: January 8, 2026 (epoch seconds)
         const SEASON_START = Math.floor(new Date("2026-01-05T00:00:00Z").getTime() / 1000);
 
-        // Fetch all ranked match IDs via pagination
+        // Fetch ranked match IDs via pagination (Riot returns newest-first).
+        // Early termination: if 2 consecutive pages are fully known, stop —
+        // all older matches are guaranteed to be stored already.
         const allMatchIds: string[] = [];
         let start = 0;
         const PAGE_SIZE = 100;
+        let consecutiveAllKnownPages = 0;
 
         while (true) {
           const batch = await getMatchIds(
@@ -213,6 +230,22 @@ export async function GET(request: Request) {
 
           allMatchIds.push(...batch);
           start += batch.length;
+
+          // Early termination: if every match in this page is already stored,
+          // increment counter. After 2 consecutive all-known pages, stop.
+          const allKnown = batch.every((id) => existingIds.has(id));
+          if (allKnown) {
+            consecutiveAllKnownPages++;
+            if (consecutiveAllKnownPages >= 2) {
+              send({
+                type: "status",
+                message: `Found ${allMatchIds.length} matches in history (caught up).`,
+              });
+              break;
+            }
+          } else {
+            consecutiveAllKnownPages = 0;
+          }
 
           send({
             type: "status",

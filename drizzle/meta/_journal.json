@@ -218,6 +218,13 @@
       "when": 1776211200000,
       "tag": "0030_challenges_system",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1776297600000,
+      "tag": "0031_optimize_match_indexes",
+      "breakpoints": true
     }
   ]
 }

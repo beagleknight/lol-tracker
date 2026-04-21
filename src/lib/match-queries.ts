@@ -26,25 +26,6 @@ export const notRemake: SQL = sql`${matches.result} != 'Remake'`;
 // ─── Aggregate Helpers ───────────────────────────────────────────────────────
 
 /**
- * Build a SELECT that returns win/loss/remake/unreviewed/vodPending counts.
- * Use with `db.select(matchStatCountsSelect).from(matches).where(...)`.
- */
-export const matchStatCountsSelect = {
-  total: sql<number>`SUM(CASE WHEN ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as("total"),
-  wins: sql<number>`SUM(CASE WHEN ${matches.result} = 'Victory' THEN 1 ELSE 0 END)`.as("wins"),
-  remakes: sql<number>`SUM(CASE WHEN ${matches.result} = 'Remake' THEN 1 ELSE 0 END)`.as("remakes"),
-  unreviewed:
-    sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 ELSE 0 END)`.as(
-      "unreviewed",
-    ),
-  vodPending:
-    sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
-    ${matches.comment} IS NOT NULL
-    OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
-  ) THEN 1 ELSE 0 END)`.as("vod_pending"),
-};
-
-/**
  * Returns win/loss/remake counts for a result-aware query.
  * Use: `db.select(winLossRemakeSelect).from(matches).where(...)`
  */
