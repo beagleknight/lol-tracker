@@ -84,94 +84,20 @@ async function main() {
     const metricCondition = challenge.metric_condition as string;
     const metricThreshold = challenge.metric_threshold as number;
     const targetGames = challenge.target_games as number;
-    const createdAt = challenge.created_at as number;
     const oldStatus = challenge.status as string;
     const oldCurrent = challenge.current_games as number;
     const oldSuccessful = challenge.successful_games as number;
-    const riotAccountId = challenge.riot_account_id as string | null;
 
-    // Map metric name to column name
-    let metricColumn: string;
-    switch (metric) {
-      case "cspm":
-        metricColumn = "cs_per_min";
-        break;
-      case "deaths":
-        metricColumn = "deaths";
-        break;
-      case "vision_score":
-        metricColumn = "vision_score";
-        break;
-      default:
-        console.log(`  [skip] Challenge #${id} "${title}" — unknown metric "${metric}"`);
-        continue;
-    }
-
-    // Count matches synced after the challenge was created, for this user
-    // These are the matches that SHOULD have been evaluated
-    const matchCountResult = await client.execute({
-      sql: `
-        SELECT count(*) as total
-        FROM matches
-        WHERE user_id = ?
-          AND synced_at >= ?
-          ${riotAccountId ? "AND riot_account_id = ?" : ""}
-      `,
-      args: riotAccountId ? [userId, createdAt, riotAccountId] : [userId, createdAt],
-    });
-    const actualGames = Number(matchCountResult.rows[0].total);
-
-    // Count how many of those matches met the condition
-    let conditionSql: string;
-    if (metricCondition === "at_least") {
-      conditionSql = `${metricColumn} >= ?`;
-    } else {
-      conditionSql = `${metricColumn} <= ?`;
-    }
-
-    const successResult = await client.execute({
-      sql: `
-        SELECT count(*) as total
-        FROM matches
-        WHERE user_id = ?
-          AND synced_at >= ?
-          AND ${metricColumn} IS NOT NULL
-          AND ${conditionSql}
-          ${riotAccountId ? "AND riot_account_id = ?" : ""}
-      `,
-      args: riotAccountId
-        ? [userId, createdAt, metricThreshold, riotAccountId]
-        : [userId, createdAt, metricThreshold],
-    });
-    const actualSuccessful = Number(successResult.rows[0].total);
-
-    // Determine correct status
-    let correctStatus: string;
-    let correctCompletedAt: number | null = null;
-    let correctFailedAt: number | null = null;
-
-    if (actualGames >= targetGames) {
-      // Challenge has enough games to resolve
-      const failedGames = actualGames - actualSuccessful;
-      if (failedGames > 0) {
-        correctStatus = "failed";
-        correctFailedAt = Math.floor(Date.now() / 1000);
-      } else {
-        correctStatus = "completed";
-        correctCompletedAt = Math.floor(Date.now() / 1000);
-      }
-    } else {
-      // Not enough games yet — check if already mathematically impossible
-      const failedGames = actualGames - actualSuccessful;
-      if (failedGames > 0) {
-        // Already failed a game, and ALL must pass → impossible
-        correctStatus = "failed";
-        correctFailedAt = Math.floor(Date.now() / 1000);
-      } else {
-        // Still possible — reset to active
-        correctStatus = "active";
-      }
-    }
+    // We cannot accurately reconstruct the original counters because:
+    // - synced_at gets overwritten on every upsert (the bug did exactly that)
+    // - game_date reflects when the match was played, not when it was first synced
+    // - odometer is stable but we don't know what it was when the challenge was created
+    //
+    // The safest fix is to reset to active with 0/0 counters. The challenge
+    // will count correctly going forward now that the sync dedup bug is fixed.
+    const correctStatus = "active";
+    const actualGames = 0;
+    const actualSuccessful = 0;
 
     const changed =
       correctStatus !== oldStatus ||
@@ -203,14 +129,7 @@ async function main() {
               failed_at = ?
           WHERE id = ?
         `,
-        args: [
-          actualGames,
-          actualSuccessful,
-          correctStatus,
-          correctCompletedAt,
-          correctFailedAt,
-          id,
-        ],
+        args: [actualGames, actualSuccessful, correctStatus, null, null, id],
       });
       console.log(`    ✓ Fixed challenge #${id}`);
     }
