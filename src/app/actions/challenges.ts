@@ -120,6 +120,57 @@ export async function createByGamesChallenge(data: {
   return { success: true, challengeId: challenge.id };
 }
 
+// ─── Retry a failed challenge (re-create with same parameters) ─────────────
+
+export async function retryChallenge(challengeId: number) {
+  const user = await requireUser();
+  await blockIfImpersonating();
+
+  // Fetch the failed challenge + its topics
+  const original = await db.query.challenges.findFirst({
+    where: and(
+      eq(challenges.id, challengeId),
+      eq(challenges.userId, user.id),
+      eq(challenges.status, "failed"),
+    ),
+  });
+
+  if (!original) {
+    return { error: "Failed challenge not found." };
+  }
+
+  const originalTopics = await db.query.challengeTopics.findMany({
+    where: eq(challengeTopics.challengeId, challengeId),
+  });
+  const topicIds = originalTopics.map((ct) => ct.topicId);
+
+  if (original.type === "by-date") {
+    // Compute original duration and apply from now
+    const originalDuration =
+      original.deadline && original.createdAt
+        ? new Date(original.deadline).getTime() - new Date(original.createdAt).getTime()
+        : null;
+    const newDeadline = originalDuration ? new Date(Date.now() + originalDuration) : null;
+
+    return createByDateChallenge({
+      targetTier: original.targetTier!,
+      targetDivision: original.targetDivision,
+      deadline: newDeadline ? newDeadline.toISOString() : null,
+      topicIds,
+    });
+  }
+
+  // by-games challenge
+  return createByGamesChallenge({
+    title: original.title,
+    metric: original.metric as ChallengeMetric,
+    metricCondition: original.metricCondition as MetricCondition,
+    metricThreshold: original.metricThreshold!,
+    targetGames: original.targetGames!,
+    topicIds,
+  });
+}
+
 // ─── Retire a challenge ────────────────────────────────────────────────────
 
 export async function retireChallenge(challengeId: number) {

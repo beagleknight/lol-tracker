@@ -973,7 +973,9 @@
       "retireError": "Error al retirar el desafío.",
       "challengeDeleted": "Desafío eliminado.",
       "deleteError": "Error al eliminar el desafío.",
-      "challengeCompleted": "¡Desafío completado! ¡Felicidades!"
+      "challengeCompleted": "¡Desafío completado! ¡Felicidades!",
+      "challengeRetried": "¡Desafío recreado! ¡Buena suerte!",
+      "retryError": "Error al reintentar el desafío."
     }
   },
   "Onboarding": {

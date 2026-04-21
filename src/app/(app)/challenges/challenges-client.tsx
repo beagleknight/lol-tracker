@@ -20,18 +20,17 @@ import { toast } from "sonner";
 
 import type { Challenge } from "@/db/schema";
 
-import { retireChallenge, deleteChallenge } from "@/app/actions/challenges";
+import { retireChallenge, deleteChallenge, retryChallenge } from "@/app/actions/challenges";
 import { EmptyState } from "@/components/empty-state";
 import { Pagination, paginate } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
-import { cn } from "@/lib/utils";
 
 interface ChallengesClientProps {
   challenges: Challenge[];
@@ -344,6 +343,7 @@ function PastChallengeCard({
 }) {
   const t = useTranslations("Challenges");
   const [isDeleting, startDelete] = useTransition();
+  const [isRetrying, startRetry] = useTransition();
 
   function handleDelete() {
     if (!confirm(t("deleteConfirm"))) return;
@@ -414,16 +414,33 @@ function PastChallengeCard({
           {t(challenge.status as "completed" | "failed" | "retired")}
         </Badge>
         {!readOnly && challenge.status === "failed" && (
-          <Link
-            href="/challenges/new"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "h-7 gap-1.5 text-xs",
-            )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            disabled={isRetrying}
+            onClick={() => {
+              startRetry(async () => {
+                try {
+                  const result = await retryChallenge(challenge.id);
+                  if ("error" in result) {
+                    toast.error(result.error);
+                  } else {
+                    toast.success(t("toasts.challengeRetried"));
+                  }
+                } catch {
+                  toast.error(t("toasts.retryError"));
+                }
+              });
+            }}
           >
-            <RotateCcw className="h-3 w-3" />
+            {isRetrying ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RotateCcw className="h-3 w-3" />
+            )}
             {t("tryAgain")}
-          </Link>
+          </Button>
         )}
         {!readOnly && (
           <Button
