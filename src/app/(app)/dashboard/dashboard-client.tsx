@@ -189,9 +189,9 @@ export function DashboardClient({
     recentMatches.length > 0
       ? (recentMatches.reduce((s, m) => s + m.assists, 0) / recentMatches.length).toFixed(1)
       : "0";
-  const avgCS =
+  const avgCSPM =
     recentMatches.length > 0
-      ? (recentMatches.reduce((s, m) => s + m.cs, 0) / recentMatches.length).toFixed(0)
+      ? (recentMatches.reduce((s, m) => s + (m.csPerMin ?? 0), 0) / recentMatches.length).toFixed(1)
       : "0";
 
   // Games needing review
@@ -368,7 +368,7 @@ export function DashboardClient({
             <p className="font-mono text-2xl font-bold text-gold">
               {avgKills}/{avgDeaths}/{avgAssists}
             </p>
-            <p className="font-mono text-sm text-muted-foreground">{t("avgCs", { avgCS })}</p>
+            <p className="font-mono text-sm text-muted-foreground">{t("avgCspm", { avgCSPM })}</p>
           </CardContent>
         </Card>
       </div>
