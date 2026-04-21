@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { MatchesClient } from "@/app/(app)/matches/matches-client";
@@ -12,7 +12,7 @@ export default async function DemoMatchesPage({
 }) {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const params = await searchParams;
   const page = Math.max(1, parseInt(String(params.page ?? "1"), 10) || 1);

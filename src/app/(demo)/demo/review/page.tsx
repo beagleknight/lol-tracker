@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { ReviewClient } from "@/app/(app)/review/review-client";
@@ -12,7 +12,7 @@ export default async function DemoReviewPage({
 }) {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const params = await searchParams;
 

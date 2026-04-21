@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { ChallengesClient } from "@/app/(app)/challenges/challenges-client";
@@ -8,7 +8,7 @@ import { getChallengesData } from "@/lib/queries/challenges";
 export default async function DemoChallengesPage() {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const data = await getChallengesData(user.id, user.activeRiotAccountId);
 

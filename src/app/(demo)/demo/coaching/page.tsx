@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { CoachingHubClient } from "@/app/(app)/coaching/coaching-hub-client";
@@ -8,7 +8,7 @@ import { getCoachingData } from "@/lib/queries/coaching";
 export default async function DemoCoachingPage() {
   await connection();
   const user = await getDemoUser();
-  if (!user) redirect("/login");
+  if (!user) notFound();
 
   const data = await getCoachingData(user.id, user.activeRiotAccountId);
 
