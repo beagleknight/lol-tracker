@@ -15,7 +15,10 @@ export default async function DemoScoutPage({
   if (!user) redirect("/login");
 
   const params = await searchParams;
-  const data = await getScoutData(!!user.puuid, params);
+  const data = await getScoutData(!!user.puuid, params, {
+    userId: user.id,
+    riotAccountId: user.activeRiotAccountId,
+  });
 
   return (
     <ScoutClient
@@ -28,6 +31,7 @@ export default async function DemoScoutPage({
       mostFaced={data.mostFaced}
       isAiConfigured={data.isAiConfigured}
       readOnly
+      matchBasePath="/demo/matches"
     />
   );
 }

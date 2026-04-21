@@ -103,6 +103,7 @@ interface DashboardClientProps {
   topicNames: { id: number; name: string }[];
   /** When true, all write actions are hidden (demo mode) */
   readOnly?: boolean;
+  matchBasePath?: string;
 }
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
@@ -148,6 +149,7 @@ export function DashboardClient({
   ddragonVersion,
   topicNames,
   readOnly,
+  matchBasePath,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
   const { user: authUser } = useAuth();
@@ -413,6 +415,7 @@ export function DashboardClient({
                     variant="compact"
                     showScoutLink
                     userPrimaryRole={authUser?.primaryRole}
+                    matchBasePath={matchBasePath}
                   />
                 ))}
               </div>

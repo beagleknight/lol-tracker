@@ -52,6 +52,7 @@ interface MatchesClientProps {
     review: string;
   };
   readOnly?: boolean;
+  matchBasePath?: string;
 }
 
 // ─── URL helper ─────────────────────────────────────────────────────────────
@@ -174,6 +175,7 @@ export function MatchesClient({
   champions,
   filters,
   readOnly,
+  matchBasePath,
 }: MatchesClientProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -390,6 +392,7 @@ export function MatchesClient({
                   matchHighlights={highlightsPerMatch[match.id] || []}
                   locale={locale}
                   userPrimaryRole={user?.primaryRole}
+                  matchBasePath={matchBasePath}
                 />
               ))}
             </div>

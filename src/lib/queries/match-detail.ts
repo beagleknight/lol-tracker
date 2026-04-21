@@ -50,6 +50,7 @@ export async function getMatchDetailData(
   userId: string,
   activeRiotAccountId: string | null,
   userPuuid: string | null,
+  options?: { skipAuthDependentQueries?: boolean },
 ) {
   const ddragonVersionPromise = getLatestVersion();
 
@@ -126,11 +127,13 @@ export async function getMatchDetailData(
           activeRiotAccountId ? eq(matchHighlights.riotAccountId, activeRiotAccountId) : undefined,
         ),
       ),
-    match.matchupChampionName
+    match.matchupChampionName && !options?.skipAuthDependentQueries
       ? getMatchupNotesForMatch(match.championName, match.matchupChampionName)
       : Promise.resolve([]),
     checkAiConfigured(),
-    getCachedInsight("post-game", { matchId: match.id }),
+    options?.skipAuthDependentQueries
+      ? Promise.resolve(null)
+      : getCachedInsight("post-game", { matchId: match.id }),
   ]);
 
   const highlightItems = highlights.map((h) => ({

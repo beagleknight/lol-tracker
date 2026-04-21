@@ -24,7 +24,16 @@ const authenticatedPages = [
   { name: "Settings", path: "/settings" },
 ];
 
-const publicPages = [{ name: "Login", path: "/login" }];
+const publicPages = [
+  { name: "Login", path: "/login" },
+  { name: "Demo Dashboard", path: "/demo" },
+  { name: "Demo Analytics", path: "/demo/analytics" },
+  { name: "Demo Matches", path: "/demo/matches" },
+  { name: "Demo Review", path: "/demo/review" },
+  { name: "Demo Coaching", path: "/demo/coaching" },
+  { name: "Demo Scout", path: "/demo/scout" },
+  { name: "Demo Challenges", path: "/demo/challenges" },
+];
 
 test.describe("Accessibility — authenticated pages", () => {
   for (const { name, path } of authenticatedPages) {

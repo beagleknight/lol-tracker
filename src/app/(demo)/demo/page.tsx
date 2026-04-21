@@ -36,6 +36,7 @@ export default async function DemoDashboardPage() {
       ddragonVersion={data.ddragonVersion}
       topicNames={data.topicNames}
       readOnly
+      matchBasePath="/demo/matches"
     />
   );
 }

@@ -11,7 +11,9 @@ export default async function DemoMatchDetailPage({ params }: { params: Promise<
   const user = await getDemoUser();
   if (!user) redirect("/login");
 
-  const data = await getMatchDetailData(id, user.id, user.activeRiotAccountId, user.puuid);
+  const data = await getMatchDetailData(id, user.id, user.activeRiotAccountId, user.puuid, {
+    skipAuthDependentQueries: true,
+  });
 
   if (!data) {
     notFound();

@@ -9,6 +9,7 @@ import { DemoBanner } from "@/components/demo-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches } from "@/db/schema";
+import { AuthProvider } from "@/lib/auth-client";
 import { getLatestChangelogVersion } from "@/lib/changelog";
 import {
   DEMO_USER_ID,
@@ -70,25 +71,29 @@ async function LocalizedContent({ children }: { children: React.ReactNode }) {
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense>
-      <LocalizedContent>
-        <div className="bg-mesh flex min-h-screen">
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow-lg"
-          >
-            Skip to main content
-          </a>
-          <DemoBanner />
-          <Suspense>
-            <DemoSidebar />
-          </Suspense>
-          <main id="main-content" className="flex-1 md:ml-64">
-            <div className="container mx-auto max-w-7xl p-6 pt-16 md:p-8 md:pt-16">{children}</div>
-          </main>
-        </div>
-        <Toaster />
-      </LocalizedContent>
-    </Suspense>
+    <AuthProvider>
+      <Suspense>
+        <LocalizedContent>
+          <div className="bg-mesh flex min-h-screen">
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow-lg"
+            >
+              Skip to main content
+            </a>
+            <DemoBanner />
+            <Suspense>
+              <DemoSidebar />
+            </Suspense>
+            <main id="main-content" className="flex-1 md:ml-64">
+              <div className="container mx-auto max-w-7xl p-6 pt-16 md:p-8 md:pt-16">
+                {children}
+              </div>
+            </main>
+          </div>
+          <Toaster />
+        </LocalizedContent>
+      </Suspense>
+    </AuthProvider>
   );
 }
