@@ -9,10 +9,12 @@
 //
 // What this script does:
 // 1. Finds by-games challenges that were failed/completed after #228 was merged
-// 2. Recalculates their counters from scratch using matches synced AFTER the
-//    challenge was created (the correct set of matches)
-// 3. Resets status to "active" if the challenge isn't actually resolved yet,
-//    or sets the correct completed/failed status if it legitimately finished
+// 2. Resets them to active with 0/0 counters (fresh start)
+//
+// We cannot accurately reconstruct original counters because:
+// - synced_at gets overwritten on every upsert (the bug did exactly that)
+// - game_date reflects when the match was played, not when it was first synced
+// - odometer is stable but we don't know what it was when the challenge was created
 //
 // Usage:
 //   Local:  npx tsx scripts/fix-corrupted-challenges.ts
@@ -57,7 +59,7 @@ async function main() {
     sql: `
       SELECT id, user_id, title, metric, metric_condition, metric_threshold,
              target_games, current_games, successful_games, status,
-             created_at, failed_at, completed_at, riot_account_id
+             created_at, failed_at, completed_at
       FROM challenges
       WHERE type = 'by-games'
         AND status IN ('failed', 'completed')
@@ -84,99 +86,9 @@ async function main() {
     const metricCondition = challenge.metric_condition as string;
     const metricThreshold = challenge.metric_threshold as number;
     const targetGames = challenge.target_games as number;
-    const createdAt = challenge.created_at as number;
     const oldStatus = challenge.status as string;
     const oldCurrent = challenge.current_games as number;
     const oldSuccessful = challenge.successful_games as number;
-    const riotAccountId = challenge.riot_account_id as string | null;
-
-    // Map metric name to column name
-    let metricColumn: string;
-    switch (metric) {
-      case "cspm":
-        metricColumn = "cs_per_min";
-        break;
-      case "deaths":
-        metricColumn = "deaths";
-        break;
-      case "vision_score":
-        metricColumn = "vision_score";
-        break;
-      default:
-        console.log(`  [skip] Challenge #${id} "${title}" — unknown metric "${metric}"`);
-        continue;
-    }
-
-    // Count matches synced after the challenge was created, for this user
-    // These are the matches that SHOULD have been evaluated
-    const matchCountResult = await client.execute({
-      sql: `
-        SELECT count(*) as total
-        FROM matches
-        WHERE user_id = ?
-          AND synced_at >= ?
-          ${riotAccountId ? "AND riot_account_id = ?" : ""}
-      `,
-      args: riotAccountId ? [userId, createdAt, riotAccountId] : [userId, createdAt],
-    });
-    const actualGames = Number(matchCountResult.rows[0].total);
-
-    // Count how many of those matches met the condition
-    let conditionSql: string;
-    if (metricCondition === "at_least") {
-      conditionSql = `${metricColumn} >= ?`;
-    } else {
-      conditionSql = `${metricColumn} <= ?`;
-    }
-
-    const successResult = await client.execute({
-      sql: `
-        SELECT count(*) as total
-        FROM matches
-        WHERE user_id = ?
-          AND synced_at >= ?
-          AND ${metricColumn} IS NOT NULL
-          AND ${conditionSql}
-          ${riotAccountId ? "AND riot_account_id = ?" : ""}
-      `,
-      args: riotAccountId
-        ? [userId, createdAt, metricThreshold, riotAccountId]
-        : [userId, createdAt, metricThreshold],
-    });
-    const actualSuccessful = Number(successResult.rows[0].total);
-
-    // Determine correct status
-    let correctStatus: string;
-    let correctCompletedAt: number | null = null;
-    let correctFailedAt: number | null = null;
-
-    if (actualGames >= targetGames) {
-      // Challenge has enough games to resolve
-      const failedGames = actualGames - actualSuccessful;
-      if (failedGames > 0) {
-        correctStatus = "failed";
-        correctFailedAt = Math.floor(Date.now() / 1000);
-      } else {
-        correctStatus = "completed";
-        correctCompletedAt = Math.floor(Date.now() / 1000);
-      }
-    } else {
-      // Not enough games yet — check if already mathematically impossible
-      const failedGames = actualGames - actualSuccessful;
-      if (failedGames > 0) {
-        // Already failed a game, and ALL must pass → impossible
-        correctStatus = "failed";
-        correctFailedAt = Math.floor(Date.now() / 1000);
-      } else {
-        // Still possible — reset to active
-        correctStatus = "active";
-      }
-    }
-
-    const changed =
-      correctStatus !== oldStatus ||
-      actualGames !== oldCurrent ||
-      actualSuccessful !== oldSuccessful;
 
     console.log(`  Challenge #${id}: "${title}"`);
     console.log(`    User: ${userId}`);
@@ -186,33 +98,24 @@ async function main() {
     console.log(
       `    Before: status=${oldStatus}, current=${oldCurrent}, successful=${oldSuccessful}`,
     );
-    console.log(
-      `    After:  status=${correctStatus}, current=${actualGames}, successful=${actualSuccessful}`,
-    );
-    console.log(`    ${changed ? "→ WILL FIX" : "→ No change needed"}`);
+    console.log(`    After:  status=active, current=0, successful=0`);
+    console.log(`    → WILL RESET`);
     console.log();
 
-    if (changed && !dryRun) {
+    if (!dryRun) {
       await client.execute({
         sql: `
           UPDATE challenges
-          SET current_games = ?,
-              successful_games = ?,
-              status = ?,
-              completed_at = ?,
-              failed_at = ?
+          SET current_games = 0,
+              successful_games = 0,
+              status = 'active',
+              completed_at = NULL,
+              failed_at = NULL
           WHERE id = ?
         `,
-        args: [
-          actualGames,
-          actualSuccessful,
-          correctStatus,
-          correctCompletedAt,
-          correctFailedAt,
-          id,
-        ],
+        args: [id],
       });
-      console.log(`    ✓ Fixed challenge #${id}`);
+      console.log(`    ✓ Reset challenge #${id} to active`);
     }
   }
 
