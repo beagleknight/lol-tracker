@@ -1,4 +1,4 @@
-import { and, eq, desc, gte } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 
 import type { ChallengeTransition } from "@/lib/challenges";
 
@@ -180,25 +180,14 @@ export async function GET(request: Request) {
         // ── Sync logic (same as before, with adaptive delays) ────────────
         send({ type: "status", message: "Checking existing matches..." });
 
-        // Check which matches we already have.
-        // Optimization: only load IDs newer than (mostRecent - 24h) to avoid
-        // scanning all historic matches. The 24h buffer covers Riot's delayed
-        // match processing. On first sync (no matches), falls back to empty set.
-        const DEDUP_BUFFER_MS = 24 * 60 * 60 * 1000;
-        const mostRecentMatch = await db.query.matches.findFirst({
+        // Check which matches we already have (needed for correct dedup).
+        // We must load ALL match IDs — not just recent ones — because the
+        // upsert triggers challenge evaluation, and re-evaluating old matches
+        // would corrupt challenge counters (currentGames/successfulGames).
+        const existingMatches = await db.query.matches.findMany({
           where: eq(matches.userId, user.id),
-          orderBy: desc(matches.gameDate),
-          columns: { gameDate: true },
+          columns: { id: true },
         });
-        const dedupCutoff = mostRecentMatch?.gameDate
-          ? new Date(mostRecentMatch.gameDate.getTime() - DEDUP_BUFFER_MS)
-          : null;
-        const existingMatches = dedupCutoff
-          ? await db.query.matches.findMany({
-              where: and(eq(matches.userId, user.id), gte(matches.gameDate, dedupCutoff)),
-              columns: { id: true },
-            })
-          : [];
         const existingIds = new Set(existingMatches.map((m: { id: string }) => m.id));
 
         send({ type: "status", message: "Fetching match history from Riot..." });
