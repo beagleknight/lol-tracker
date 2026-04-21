@@ -174,7 +174,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Read user data from the JWT token (populated by jwt callback)
         // instead of querying the DB on every request.
         let effectiveUserId = token.userId as string;
-        let impersonating = false;
         let realAdminName: string | null = null;
 
         // Check for impersonation — only admins may impersonate.
@@ -189,7 +188,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
           if (targetUser && !targetUser.deactivatedAt) {
             effectiveUserId = targetUser.id;
-            impersonating = true;
             realAdminName = (token.name as string) ?? null;
 
             // For impersonated user, populate session from DB
