@@ -85,15 +85,17 @@ export async function mockGetSoloQueueEntryByPuuid(
 // ─── Mock: getMatchIds ───────────────────────────────────────────────────────
 
 export async function mockGetMatchIds(_region?: string): Promise<string[]> {
-  // All matches are already seeded — return empty to simulate "no new matches"
-  return [];
+  // Return one new match so demo-mode sync triggers challenge evaluation.
+  // This match ID must NOT exist in seed data — it simulates a "new" game.
+  return ["EUW1_DEMO_CHALLENGE_001"];
 }
 
 // ─── Mock: getMatch ──────────────────────────────────────────────────────────
 
 export async function mockGetMatch(matchId: string, _region?: string): Promise<RiotMatch> {
-  // This should rarely be called in demo mode since getMatchIds returns [],
-  // but provide a minimal valid response in case it is.
+  // Mock match with stats that trigger one challenge success and one failure:
+  // - CS/min ~8.0 (totalMinionsKilled=210 + neutralMinionsKilled=30 in 30min) → passes cspm ≥ 7
+  // - Deaths: 7 → fails deaths ≤ 5
   return {
     metadata: {
       matchId,
@@ -118,10 +120,10 @@ export async function mockGetMatch(matchId: string, _region?: string): Promise<R
           teamId: 100,
           win: true,
           kills: 5,
-          deaths: 2,
+          deaths: 7,
           assists: 8,
-          totalMinionsKilled: 180,
-          neutralMinionsKilled: 10,
+          totalMinionsKilled: 210,
+          neutralMinionsKilled: 30,
           goldEarned: 12000,
           visionScore: 25,
           individualPosition: "MIDDLE",

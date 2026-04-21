@@ -24,6 +24,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { ChallengeResultModal } from "@/components/challenge-result-modal";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -164,7 +165,8 @@ function SidebarContent({
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
   const isLinked = !!user.isRiotLinked;
-  const { isSyncing, handleSync } = useSyncMatches(isLinked);
+  const { isSyncing, handleSync, challengeTransitions, dismissChallengeTransitions } =
+    useSyncMatches(isLinked);
 
   // Track whether there are unseen changelog entries
   const [hasUnseenChangelog, setHasUnseenChangelog] = useState(false);
@@ -303,6 +305,12 @@ function SidebarContent({
           activeAccountId={activeRiotAccountId ?? null}
         />
       </div>
+
+      {/* Challenge result popup — rendered via portal */}
+      <ChallengeResultModal
+        transitions={challengeTransitions}
+        onDismiss={dismissChallengeTransitions}
+      />
     </div>
   );
 }
