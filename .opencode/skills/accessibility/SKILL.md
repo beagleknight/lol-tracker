@@ -127,17 +127,31 @@ Add `aria-label` when there's no visible label adjacent:
 </SelectTrigger>
 ```
 
-**CRITICAL: Base UI `SelectValue` displays the raw `value` string, NOT the `SelectItem` label.** The `placeholder` prop is used as the display text when the value matches the default. To ensure the correct label is shown, always provide a `placeholder` that matches the default option's display text:
+**CRITICAL: Base UI `SelectValue` displays the raw `value` string, NOT the `SelectItem` label.** This is the #1 recurring UI bug in this codebase. The `placeholder` prop only works when NO value is selected. When a value IS selected (including the default), `SelectValue` renders the raw value string (e.g. `"suggested"` instead of `"Suggested"`).
+
+**The ONLY reliable fix** is to use the `children` render function, which receives the current value and lets you map it to the correct label:
 
 ```tsx
-// WRONG — shows "suggested" instead of "Suggested"
-<SelectValue />
+// WRONG — shows raw value "suggested"
+<SelectValue placeholder="Suggested" />
 
-// CORRECT — shows "Suggested" as the placeholder text
+// WRONG — placeholder only shows when value is null/undefined
 <SelectValue placeholder={t("sort.suggested")} />
+
+// CORRECT — children function maps value to label
+<SelectValue placeholder={t("sort.suggested")}>
+  {(value: string) => {
+    const labels: Record<string, string> = {
+      suggested: t("sort.suggested"),
+      newest: t("sort.newestFirst"),
+      oldest: t("sort.oldestFirst"),
+    };
+    return labels[value] ?? value;
+  }}
+</SelectValue>
 ```
 
-This is a known Base UI quirk — `SelectValue` does not automatically resolve the label from the matching `SelectItem`.
+**MANDATORY: Every `<SelectValue>` in this codebase MUST use the children function pattern.** No exceptions. The `placeholder` prop alone is never sufficient when a default value is set.
 
 ### Tooltip triggers
 
