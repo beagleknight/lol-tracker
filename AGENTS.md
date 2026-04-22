@@ -165,3 +165,27 @@ If you forgot to capture "before" screenshots, check out `main`, capture them, t
 Full workflow details are in the `ui-screenshots` OpenCode skill.
 
 <!-- END:ui-screenshots-rules -->
+
+<!-- BEGIN:base-ui-select-rules -->
+
+# Base UI Select — MANDATORY
+
+**`SelectValue` displays the raw `value` string, NOT the `SelectItem` label.** This is the #1 recurring UI bug in this codebase. The `placeholder` prop only works when no value is selected.
+
+**Every `<SelectValue>` MUST use the children render function:**
+
+```tsx
+<SelectValue placeholder={t("default.label")}>
+  {(value: string) => {
+    const labels: Record<string, string> = {
+      optionA: t("optionA.label"),
+      optionB: t("optionB.label"),
+    };
+    return labels[value] ?? value;
+  }}
+</SelectValue>
+```
+
+**Every `<SelectTrigger>` without a visible adjacent label MUST have `aria-label`.**
+
+<!-- END:base-ui-select-rules -->

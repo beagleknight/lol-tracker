@@ -46,7 +46,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
@@ -286,10 +294,17 @@ function PendingReviewCard({
             </div>
           </button>
           {priorityScore >= PRIORITY_THRESHOLD && (
-            <Badge variant="secondary" className="gap-1 text-gold">
-              <Sparkles className="h-3 w-3" />
-              {t("suggested")}
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger aria-label={t("sort.suggestedInfoLabel")}>
+                <Badge variant="secondary" className="gap-1 text-gold">
+                  <Sparkles className="h-3 w-3" />
+                  {t("suggested")}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-[200px] text-xs">{t("sort.suggestedTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
           <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -651,15 +666,24 @@ export function ReviewClient({
   );
 
   // Sort pending matches by priority
+  const [pendingSortMode, setPendingSortMode] = useState<"suggested" | "newest" | "oldest">(
+    "suggested",
+  );
   const { pendingMatches, priorityScores } = useMemo(() => {
     const remaining = unreviewedMatches.filter((m) => !actionedIds.has(m.id));
     const scores: Record<string, number> = {};
     for (const m of remaining) {
       scores[m.id] = computePriorityScore(m);
     }
-    remaining.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
+    if (pendingSortMode === "suggested") {
+      remaining.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
+    } else if (pendingSortMode === "newest") {
+      remaining.sort((a, b) => b.gameDate.getTime() - a.gameDate.getTime());
+    } else {
+      remaining.sort((a, b) => a.gameDate.getTime() - b.gameDate.getTime());
+    }
     return { pendingMatches: remaining, priorityScores: scores };
-  }, [unreviewedMatches, actionedIds]);
+  }, [unreviewedMatches, actionedIds, pendingSortMode]);
 
   // Auto-expand the first card
   const hasAutoExpanded = useRef(false);
@@ -799,7 +823,35 @@ export function ReviewClient({
               />
             ) : (
               <>
-                <p className="text-xs text-muted-foreground">{t("pendingHint")}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">{t("pendingHint")}</p>
+                  <div className="flex items-center gap-1.5">
+                    <Select
+                      value={pendingSortMode}
+                      onValueChange={(v) =>
+                        setPendingSortMode(v as "suggested" | "newest" | "oldest")
+                      }
+                    >
+                      <SelectTrigger size="sm" className="w-[150px]" aria-label={t("sort.label")}>
+                        <SelectValue placeholder={t("sort.suggested")}>
+                          {(value: string) => {
+                            const labels: Record<string, string> = {
+                              suggested: t("sort.suggested"),
+                              newest: t("sort.newestFirst"),
+                              oldest: t("sort.oldestFirst"),
+                            };
+                            return labels[value] ?? value;
+                          }}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="suggested">{t("sort.suggested")}</SelectItem>
+                        <SelectItem value="newest">{t("sort.newestFirst")}</SelectItem>
+                        <SelectItem value="oldest">{t("sort.oldestFirst")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 {paginatedPending.map((match) => (
                   <PendingReviewCard
                     key={match.id}

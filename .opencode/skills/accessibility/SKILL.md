@@ -127,6 +127,56 @@ Add `aria-label` when there's no visible label adjacent:
 </SelectTrigger>
 ```
 
+**CRITICAL: Base UI `SelectValue` displays the raw `value` string, NOT the `SelectItem` label.** This is the #1 recurring UI bug in this codebase. The `placeholder` prop only works when NO value is selected. When a value IS selected (including the default), `SelectValue` renders the raw value string (e.g. `"suggested"` instead of `"Suggested"`).
+
+**The ONLY reliable fix** is to use the `children` render function, which receives the current value and lets you map it to the correct label:
+
+```tsx
+// WRONG — shows raw value "suggested"
+<SelectValue placeholder="Suggested" />
+
+// WRONG — placeholder only shows when value is null/undefined
+<SelectValue placeholder={t("sort.suggested")} />
+
+// CORRECT — children function maps value to label
+<SelectValue placeholder={t("sort.suggested")}>
+  {(value: string) => {
+    const labels: Record<string, string> = {
+      suggested: t("sort.suggested"),
+      newest: t("sort.newestFirst"),
+      oldest: t("sort.oldestFirst"),
+    };
+    return labels[value] ?? value;
+  }}
+</SelectValue>
+```
+
+**MANDATORY: Every `<SelectValue>` in this codebase MUST use the children function pattern.** No exceptions. The `placeholder` prop alone is never sufficient when a default value is set.
+
+### Tooltip triggers
+
+`TooltipTrigger` renders a `<button>` element. If the content is an icon-only element, it **must** have an `aria-label` — otherwise axe-core reports a `button-name` violation:
+
+```tsx
+// WRONG — button has no accessible name
+<Tooltip>
+  <TooltipTrigger>
+    <Info className="h-3.5 w-3.5" />
+  </TooltipTrigger>
+  ...
+</Tooltip>
+
+// CORRECT — aria-label provides the accessible name
+<Tooltip>
+  <TooltipTrigger aria-label={t("tooltipLabel")}>
+    <Info className="h-3.5 w-3.5" />
+  </TooltipTrigger>
+  ...
+</Tooltip>
+```
+
+Remember: every `aria-label={t("key")}` requires keys in BOTH `messages/en.json` AND `messages/es.json`.
+
 ### Dialogs and drawers
 
 Focus trapping is handled automatically by `@base-ui/react/dialog`. No manual implementation needed for Dialog, AlertDialog, or drawer patterns using Dialog primitives.
