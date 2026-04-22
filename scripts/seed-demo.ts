@@ -843,10 +843,22 @@ async function seedDemo() {
         topicName: "Laning",
       },
       {
+        matchId: "EUW1_7000000005",
+        type: "highlight",
+        text: null,
+        topicName: "Roaming",
+      },
+      {
         matchId: "EUW1_7000000010",
         type: "highlight",
         text: "3-man roam bot got us dragon + double kill",
         topicName: "Roaming",
+      },
+      {
+        matchId: "EUW1_7000000010",
+        type: "lowlight",
+        text: null,
+        topicName: "Wave management",
       },
       {
         matchId: "EUW1_7000000015",
@@ -861,6 +873,12 @@ async function seedDemo() {
         topicName: "Laning",
       },
       {
+        matchId: "EUW1_7000000015",
+        type: "lowlight",
+        text: null,
+        topicName: "Positioning",
+      },
+      {
         matchId: "EUW1_7000000020",
         type: "highlight",
         text: null,
@@ -871,6 +889,12 @@ async function seedDemo() {
         type: "lowlight",
         text: null,
         topicName: "Team fighting",
+      },
+      {
+        matchId: "EUW1_7000000020",
+        type: "highlight",
+        text: "Flash engage won the 5v5 at dragon soul",
+        topicName: "Objective control",
       },
       {
         matchId: "EUW1_7000000025",
@@ -879,9 +903,21 @@ async function seedDemo() {
         topicName: "Laning",
       },
       {
+        matchId: "EUW1_7000000025",
+        type: "lowlight",
+        text: null,
+        topicName: "Roaming",
+      },
+      {
         matchId: "EUW1_7000000030",
         type: "lowlight",
         text: null,
+        topicName: "Vision control",
+      },
+      {
+        matchId: "EUW1_7000000030",
+        type: "highlight",
+        text: "Set up a deep ward that caught the jungler invade",
         topicName: "Vision control",
       },
       {
@@ -891,16 +927,46 @@ async function seedDemo() {
         topicName: "Wave management",
       },
       {
+        matchId: "EUW1_7000000035",
+        type: "lowlight",
+        text: "Died pushing side lane without vision — tunnel visioned on cs",
+        topicName: "Positioning",
+      },
+      {
         matchId: "EUW1_7000000040",
         type: "lowlight",
         text: "Missed every skillshot in the baron fight",
         topicName: "Team fighting",
       },
       {
+        matchId: "EUW1_7000000040",
+        type: "highlight",
+        text: null,
+        topicName: "Wave management",
+      },
+      {
+        matchId: "EUW1_7000000040",
+        type: "lowlight",
+        text: null,
+        topicName: "Objective control",
+      },
+      {
         matchId: "EUW1_7000000045",
         type: "highlight",
         text: "Clean 1v1 outplay under tower for first blood",
         topicName: "Laning",
+      },
+      {
+        matchId: "EUW1_7000000045",
+        type: "lowlight",
+        text: "Kept fighting when behind instead of farming back into the game",
+        topicName: "Laning",
+      },
+      {
+        matchId: "EUW1_7000000045",
+        type: "highlight",
+        text: null,
+        topicName: "Vision control",
       },
     ];
 
@@ -932,7 +998,7 @@ async function seedDemo() {
       const aiIds = actionItemRows.rows.map((r) => Number(r.id));
       const reviewedMatchIds = seedMatches
         .filter((m) => m.reviewed)
-        .slice(0, 5)
+        .slice(0, 8)
         .map((m) => m.matchId);
 
       const outcomes: Array<{ matchId: string; actionItemId: number; outcome: string }> = [];
@@ -949,6 +1015,13 @@ async function seedDemo() {
             matchId,
             actionItemId: aiIds[4],
             outcome: pick(["nailed_it", "nailed_it", "forgot"]),
+          });
+        }
+        if (aiIds[5] && rand() < 0.6) {
+          outcomes.push({
+            matchId,
+            actionItemId: aiIds[5],
+            outcome: pick(["nailed_it", "unsure", "unsure", "forgot"]),
           });
         }
       }

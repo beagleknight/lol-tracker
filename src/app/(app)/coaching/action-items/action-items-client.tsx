@@ -34,19 +34,29 @@ interface ActionItemWithSession {
   sessionDate: Date | null;
 }
 
+interface OutcomeStats {
+  nailed_it: number;
+  forgot: number;
+  unsure: number;
+  total: number;
+}
+
 interface ActionItemsClientProps {
   items: ActionItemWithSession[];
   topicNames: { id: number; name: string }[];
+  outcomeStats: Record<number, OutcomeStats>;
 }
 
 function ActionItemRow({
   item,
   locale,
   topicNames,
+  stats,
 }: {
   item: ActionItemWithSession;
   locale: string;
   topicNames: { id: number; name: string }[];
+  stats?: OutcomeStats;
 }) {
   const t = useTranslations("ActionItems");
   const [isPending, startTransition] = useTransition();
@@ -118,6 +128,13 @@ function ActionItemRow({
           ) : (
             <span className="text-xs text-muted-foreground italic">{t("standalone")}</span>
           )}
+          {stats && stats.total > 0 && (
+            <span className="text-xs text-muted-foreground">
+              · <span title={t("outcomeNailedIt")}>✅ {stats.nailed_it}</span>{" "}
+              <span title={t("outcomeForgot")}>❌ {stats.forgot}</span>{" "}
+              <span title={t("outcomeUnsure")}>🤷 {stats.unsure}</span>
+            </span>
+          )}
         </div>
       </div>
       <Badge
@@ -144,7 +161,7 @@ function ActionItemRow({
   );
 }
 
-export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps) {
+export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionItemsClientProps) {
   const { user } = useAuth();
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("ActionItems");
@@ -297,7 +314,13 @@ export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps)
         <>
           <div className="space-y-2">
             {paginatedItems.map((item) => (
-              <ActionItemRow key={item.id} item={item} locale={locale} topicNames={topicNames} />
+              <ActionItemRow
+                key={item.id}
+                item={item}
+                locale={locale}
+                topicNames={topicNames}
+                stats={outcomeStats[item.id]}
+              />
             ))}
           </div>
           <Pagination currentPage={safePage} totalItems={filtered.length} onPageChange={setPage} />

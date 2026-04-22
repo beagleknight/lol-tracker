@@ -570,6 +570,9 @@
     "noFilterMatch": "Ninguna tarea coincide con tus filtros",
     "noFilterMatchDescription": "Prueba a ajustar los filtros.",
     "deleteConfirm": "¿Eliminar esta tarea? No se puede deshacer.",
+    "outcomeNailedIt": "Clavado",
+    "outcomeForgot": "Olvidado",
+    "outcomeUnsure": "No seguro",
     "toasts": {
       "statusUpdated": "Actualizada a {status}.",
       "statusUpdateError": "Error al actualizar el estado.",

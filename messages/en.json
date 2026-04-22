@@ -570,6 +570,9 @@
     "noFilterMatch": "No items match your filters",
     "noFilterMatchDescription": "Try adjusting your filters.",
     "deleteConfirm": "Delete this action item? This cannot be undone.",
+    "outcomeNailedIt": "Nailed it",
+    "outcomeForgot": "Forgot",
+    "outcomeUnsure": "Unsure",
     "toasts": {
       "statusUpdated": "Updated to {status}.",
       "statusUpdateError": "Failed to update status.",
