@@ -695,28 +695,29 @@ export function ReviewClient({
   }, [pendingMatches, expandedId]);
 
   // Navigate to the correct page and scroll to the target match when initialMatchId is set
-  const hasNavigatedToMatch = useRef(false);
+  const prevMatchIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (hasNavigatedToMatch.current || !initialMatchId || pendingMatches.length === 0) return;
+    if (!initialMatchId || pendingMatches.length === 0) return;
+    // Only act when initialMatchId actually changes (handles client-side navigation)
+    if (prevMatchIdRef.current === initialMatchId) return;
+    prevMatchIdRef.current = initialMatchId;
+
+    // Sync expandedId to the new target match
+    setExpandedId(initialMatchId);
+
     const idx = pendingMatches.findIndex((m) => m.id === initialMatchId);
     if (idx === -1) return; // match not found (already reviewed or invalid)
     const targetPage = Math.ceil((idx + 1) / PAGE_SIZE);
-    if (targetPage !== pendingPage) {
-      setPendingPage(targetPage);
-    }
-    hasNavigatedToMatch.current = true;
-  }, [initialMatchId, pendingMatches, pendingPage]);
+    setPendingPage(targetPage);
 
-  // Scroll to target match card once it's rendered
-  useEffect(() => {
-    if (!initialMatchId || !hasNavigatedToMatch.current) return;
-    const el = document.querySelector(`[data-match-id="${initialMatchId}"]`);
-    if (!el) return;
-    // Wait one frame for layout to settle after page change
+    // Scroll to the card after React commits the page change
     requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-match-id="${initialMatchId}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
     });
-  }, [initialMatchId, pendingPage]);
+  }, [initialMatchId, pendingMatches]);
 
   const handleReviewed = useCallback(
     (matchId: string) => {
