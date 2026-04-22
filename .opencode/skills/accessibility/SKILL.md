@@ -127,6 +127,42 @@ Add `aria-label` when there's no visible label adjacent:
 </SelectTrigger>
 ```
 
+**CRITICAL: Base UI `SelectValue` displays the raw `value` string, NOT the `SelectItem` label.** The `placeholder` prop is used as the display text when the value matches the default. To ensure the correct label is shown, always provide a `placeholder` that matches the default option's display text:
+
+```tsx
+// WRONG — shows "suggested" instead of "Suggested"
+<SelectValue />
+
+// CORRECT — shows "Suggested" as the placeholder text
+<SelectValue placeholder={t("sort.suggested")} />
+```
+
+This is a known Base UI quirk — `SelectValue` does not automatically resolve the label from the matching `SelectItem`.
+
+### Tooltip triggers
+
+`TooltipTrigger` renders a `<button>` element. If the content is an icon-only element, it **must** have an `aria-label` — otherwise axe-core reports a `button-name` violation:
+
+```tsx
+// WRONG — button has no accessible name
+<Tooltip>
+  <TooltipTrigger>
+    <Info className="h-3.5 w-3.5" />
+  </TooltipTrigger>
+  ...
+</Tooltip>
+
+// CORRECT — aria-label provides the accessible name
+<Tooltip>
+  <TooltipTrigger aria-label={t("tooltipLabel")}>
+    <Info className="h-3.5 w-3.5" />
+  </TooltipTrigger>
+  ...
+</Tooltip>
+```
+
+Remember: every `aria-label={t("key")}` requires keys in BOTH `messages/en.json` AND `messages/es.json`.
+
 ### Dialogs and drawers
 
 Focus trapping is handled automatically by `@base-ui/react/dialog`. No manual implementation needed for Dialog, AlertDialog, or drawer patterns using Dialog primitives.

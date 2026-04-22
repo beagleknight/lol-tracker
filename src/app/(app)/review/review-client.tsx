@@ -15,7 +15,6 @@ import {
   Sparkles,
   Crosshair,
   Globe,
-  Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -295,10 +294,17 @@ function PendingReviewCard({
             </div>
           </button>
           {priorityScore >= PRIORITY_THRESHOLD && (
-            <Badge variant="secondary" className="gap-1 text-gold">
-              <Sparkles className="h-3 w-3" />
-              {t("suggested")}
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger aria-label={t("sort.suggestedInfoLabel")}>
+                <Badge variant="secondary" className="gap-1 text-gold">
+                  <Sparkles className="h-3 w-3" />
+                  {t("suggested")}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-[200px] text-xs">{t("sort.suggestedTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
           <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -835,16 +841,6 @@ export function ReviewClient({
                         <SelectItem value="oldest">{t("sort.oldestFirst")}</SelectItem>
                       </SelectContent>
                     </Select>
-                    {pendingSortMode === "suggested" && (
-                      <Tooltip>
-                        <TooltipTrigger aria-label={t("sort.suggestedInfoLabel")}>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-[200px] text-xs">{t("sort.suggestedTooltip")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
                   </div>
                 </div>
                 {paginatedPending.map((match) => (
