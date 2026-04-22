@@ -26,6 +26,7 @@ import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 import { updateActionItemStatus, deleteCoachingSession } from "@/app/actions/coaching";
 import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { MatchCard, type MatchCardData, type MatchHighlightData } from "@/components/match-card";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,18 +51,6 @@ interface LinkedMatch {
   vodUrl: string | null;
 }
 
-interface ProgressMatch {
-  id: string;
-  gameDate: Date;
-  result: string;
-  championName: string;
-  matchupChampionName: string | null;
-  kills: number;
-  deaths: number;
-  assists: number;
-  gameDurationSeconds: number;
-}
-
 interface CoachingDetailClientProps {
   session: CoachingSession;
   linkedMatches: LinkedMatch[];
@@ -78,7 +67,7 @@ interface CoachingDetailClientProps {
       topicName?: string;
     }>
   >;
-  progressMatches: ProgressMatch[];
+  progressMatches: MatchCardData[];
   progressHighlightsByMatch: Record<
     string,
     Array<{
@@ -565,10 +554,9 @@ export function CoachingDetailClient({
               <div className="space-y-3">
                 {progressMatches.map((match) => {
                   const matchHL = progressHighlightsByMatch[match.id] || [];
-                  const highlights: HighlightItem[] = matchHL.map((h) => ({
+                  const matchHighlights: MatchHighlightData[] = matchHL.map((h) => ({
                     type: h.type,
                     text: h.text,
-                    topicId: h.topicId,
                     topicName: h.topicName,
                   }));
 
@@ -577,95 +565,22 @@ export function CoachingDetailClient({
                     (h) => h.topicName && actionItemTopics.has(h.topicName),
                   );
 
-                  const matchDateStr = formatDate(match.gameDate, locale, "short-compact");
-
                   return (
                     <div
                       key={match.id}
-                      className={`space-y-2 rounded-lg border p-3 ${
+                      className={
                         hasRelevantNotes
-                          ? "border-gold/30 bg-gold/5"
-                          : "border-border/50 bg-surface-elevated"
-                      }`}
+                          ? "rounded-lg border border-gold/30 bg-gold/5 p-1"
+                          : undefined
+                      }
                     >
-                      {/* Match summary row */}
-                      <Link
-                        href={`/matches/${match.id}`}
-                        className="flex items-center gap-3 transition-opacity hover:opacity-80"
-                      >
-                        <ResultBar result={match.result} size="sm" />
-                        <Image
-                          src={getChampionIconUrl(ddragonVersion, match.championName)}
-                          alt={match.championName}
-                          width={24}
-                          height={24}
-                          unoptimized
-                          className="rounded"
-                        />
-                        <span className="text-sm font-medium">{match.championName}</span>
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          {t("vs")}
-                          {match.matchupChampionName ? (
-                            <>
-                              <Image
-                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                                alt={match.matchupChampionName}
-                                width={16}
-                                height={16}
-                                unoptimized
-                                className="rounded"
-                              />
-                              {match.matchupChampionName}
-                            </>
-                          ) : (
-                            "?"
-                          )}
-                        </span>
-                        <div className="ml-auto flex items-center gap-2">
-                          <span className="font-mono text-xs text-gold">
-                            {match.kills}/{match.deaths}/{match.assists}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{matchDateStr}</span>
-                          <ResultBadge result={match.result} />
-                        </div>
-                      </Link>
-
-                      {/* Highlights with action item topic highlighting */}
-                      {highlights.length > 0 && (
-                        <div className="ml-4">
-                          <div className="space-y-1">
-                            {highlights.map((h, i) => {
-                              const isRelevant = h.topicName && actionItemTopics.has(h.topicName);
-                              return (
-                                <div
-                                  key={i}
-                                  className={`flex items-start gap-2 rounded px-2 py-1 text-xs ${
-                                    isRelevant ? "border border-gold/20 bg-gold/10" : ""
-                                  }`}
-                                >
-                                  <Swords
-                                    className={`mt-0.5 h-3 w-3 shrink-0 ${
-                                      h.type === "highlight" ? "text-win" : "text-loss"
-                                    }`}
-                                  />
-                                  {h.text && (
-                                    <span className={isRelevant ? "text-gold" : ""}>{h.text}</span>
-                                  )}
-                                  {h.topicName && (
-                                    <Badge
-                                      variant={isRelevant ? "default" : "secondary"}
-                                      className="shrink-0 px-1.5 py-0 text-[10px]"
-                                    >
-                                      {h.topicName}
-                                      {isRelevant && " *"}
-                                    </Badge>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                      <MatchCard
+                        match={match}
+                        ddragonVersion={ddragonVersion}
+                        matchHighlights={matchHighlights}
+                        locale={locale}
+                        variant="compact"
+                      />
                     </div>
                   );
                 })}

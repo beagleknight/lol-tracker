@@ -1,6 +1,8 @@
 import { eq, and, gt, lte, asc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
+import type { MatchResult } from "@/lib/match-result";
+
 import { db } from "@/db";
 import {
   coachingSessions,
@@ -112,13 +114,22 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
   let progressMatches: Array<{
     id: string;
     gameDate: Date;
-    result: string;
+    result: MatchResult;
     championName: string;
     matchupChampionName: string | null;
     kills: number;
     deaths: number;
     assists: number;
+    cs: number;
+    csPerMin: number | null;
     gameDurationSeconds: number;
+    goldEarned: number | null;
+    visionScore: number | null;
+    runeKeystoneName: string | null;
+    comment: string | null;
+    reviewed: boolean;
+    duoPartnerPuuid: string | null;
+    position: string | null;
   }> = [];
   const progressHighlightsByMatch: Record<
     string,
@@ -159,7 +170,16 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         kills: true,
         deaths: true,
         assists: true,
+        cs: true,
+        csPerMin: true,
         gameDurationSeconds: true,
+        goldEarned: true,
+        visionScore: true,
+        runeKeystoneName: true,
+        comment: true,
+        reviewed: true,
+        duoPartnerPuuid: true,
+        position: true,
       },
     });
 
