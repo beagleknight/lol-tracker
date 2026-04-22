@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  Play,
   Loader2,
   ListChecks,
   TrendingUp,
@@ -73,12 +72,7 @@ function ActionItemMiniRow({
   const [isPending, startTransition] = useTransition();
 
   function cycleStatus() {
-    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> = {
-      pending: "in_progress",
-      in_progress: "completed",
-      completed: "pending",
-    };
-    const next = nextStatus[item.status];
+    const next: "active" | "completed" = item.status === "active" ? "completed" : "active";
     startTransition(async () => {
       try {
         await updateActionItemStatus(item.id, next);
@@ -89,8 +83,7 @@ function ActionItemMiniRow({
   }
 
   const icons = {
-    pending: <Circle className="h-3.5 w-3.5 text-muted-foreground" />,
-    in_progress: <Play className="h-3.5 w-3.5 text-status-progress" />,
+    active: <Circle className="h-3.5 w-3.5 text-status-progress" />,
     completed: <CheckCircle2 className="h-3.5 w-3.5 text-win" />,
   };
 

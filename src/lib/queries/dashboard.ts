@@ -8,7 +8,6 @@ import { eq, desc, and, count, sql, asc, lte, ne } from "drizzle-orm";
 import { db } from "@/db";
 import {
   matches,
-  matchHighlights,
   rankSnapshots,
   coachingActionItems,
   coachingSessions,
@@ -27,7 +26,6 @@ export async function getDashboardData(userId: string, accountId: string | null)
     recentMatches,
     latestRank,
     activeActionItems,
-    inProgressActionItems,
     matchStats,
     upcomingSession,
     activeChallenges,
@@ -62,8 +60,6 @@ export async function getDashboardData(userId: string, accountId: string | null)
         goldEarned: true,
         visionScore: true,
         reviewed: true,
-        reviewNotes: true,
-        reviewSkippedReason: true,
         comment: true,
         duoPartnerPuuid: true,
         queueId: true,
@@ -78,15 +74,8 @@ export async function getDashboardData(userId: string, accountId: string | null)
       orderBy: desc(rankSnapshots.capturedAt),
     }),
     db.query.coachingActionItems.findMany({
-      where: and(eq(coachingActionItems.userId, userId), eq(coachingActionItems.status, "pending")),
-      limit: 5,
-    }),
-    db.query.coachingActionItems.findMany({
-      where: and(
-        eq(coachingActionItems.userId, userId),
-        eq(coachingActionItems.status, "in_progress"),
-      ),
-      limit: 5,
+      where: and(eq(coachingActionItems.userId, userId), eq(coachingActionItems.status, "active")),
+      limit: 10,
     }),
     db
       .select({
@@ -95,12 +84,6 @@ export async function getDashboardData(userId: string, accountId: string | null)
         remakes: count(sql`CASE WHEN ${matches.result} = 'Remake' THEN 1 END`),
         unreviewed: count(
           sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' THEN 1 END`,
-        ),
-        vodPending: count(
-          sql`CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' AND (
-            ${matches.comment} IS NOT NULL
-            OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
-          ) THEN 1 END`,
         ),
       })
       .from(matches)
@@ -133,9 +116,7 @@ export async function getDashboardData(userId: string, accountId: string | null)
     wins,
     remakes: _remakes,
     unreviewed,
-    vodPending,
-  } = matchStats[0] ?? { total: 0, wins: 0, remakes: 0, unreviewed: 0, vodPending: 0 };
-  const postGamePending = unreviewed - vodPending;
+  } = matchStats[0] ?? { total: 0, wins: 0, remakes: 0, unreviewed: 0 };
 
   // Fetch highlights for recent matches
   const highlightsPerMatch = await getHighlightsPerMatch(
@@ -187,11 +168,11 @@ export async function getDashboardData(userId: string, accountId: string | null)
     ddragonVersion,
     recentMatches,
     highlightsPerMatch,
-    matchStats: { total, wins, losses: total - wins, unreviewed, postGamePending, vodPending },
+    matchStats: { total, wins, losses: total - wins, unreviewed },
     latestRank: latestRankOrUndef,
     lpTrend,
     lpTrendDays,
-    actionItems: [...inProgressActionItems, ...activeActionItems],
+    actionItems: activeActionItems,
     upcomingSession: upcomingSession ?? null,
     activeChallenges,
     lastCompletedSession: lastCompletedSession ?? null,

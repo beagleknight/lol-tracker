@@ -67,7 +67,7 @@ export default async function ScheduleCoachingSessionPage() {
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicId: number | null;
       topicName: string | null;
     }>

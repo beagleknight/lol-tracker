@@ -48,7 +48,7 @@ interface EditSessionClientProps {
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicId: number | null;
       topicName: string | null;
     }>

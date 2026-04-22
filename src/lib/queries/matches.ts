@@ -55,7 +55,6 @@ export async function getMatchesData(
         OR ${matches.matchupChampionName} LIKE ${pattern}
         OR ${matches.runeKeystoneName} LIKE ${pattern}
         OR ${matches.comment} LIKE ${pattern}
-        OR ${matches.reviewNotes} LIKE ${pattern}
       )`,
     );
   }
@@ -91,8 +90,6 @@ export async function getMatchesData(
         visionScore: true,
         comment: true,
         reviewed: true,
-        reviewNotes: true,
-        reviewSkippedReason: true,
         vodUrl: true,
         queueId: true,
         syncedAt: true,

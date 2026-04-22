@@ -49,8 +49,6 @@ interface DashboardMatch {
   goldEarned: number | null;
   visionScore: number | null;
   reviewed: boolean;
-  reviewNotes: string | null;
-  reviewSkippedReason: string | null;
   comment: string | null;
   duoPartnerPuuid: string | null;
   queueId: number | null;
@@ -62,8 +60,6 @@ interface MatchStats {
   wins: number;
   losses: number;
   unreviewed: number;
-  postGamePending: number;
-  vodPending: number;
 }
 
 interface UpcomingSession {
@@ -692,25 +688,15 @@ export function DashboardClient({
                 <div className="space-y-2">
                   {actionItems.map((item) => (
                     <div key={item.id} className="flex items-start gap-2 text-sm">
-                      <div
-                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                          item.status === "in_progress" ? "bg-gold" : "bg-muted-foreground"
-                        }`}
-                      />
+                      <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate">{item.description}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-1">
                           <Badge
                             variant="secondary"
-                            className={`text-xs ${
-                              item.status === "in_progress"
-                                ? "border-gold/30 bg-gold/10 text-gold"
-                                : ""
-                            }`}
+                            className="border-gold/30 bg-gold/10 text-xs text-gold"
                           >
-                            {item.status === "in_progress"
-                              ? t("actionItemInProgress")
-                              : t("actionItemPending")}
+                            {t("actionItemActive")}
                           </Badge>
                           {item.topicId && (
                             <Badge variant="secondary" className="text-xs">

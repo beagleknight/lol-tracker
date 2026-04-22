@@ -30,14 +30,13 @@ interface MatchupGameDetail {
   items: number[];
   comment: string | null;
   reviewed: boolean;
-  reviewNotes: string | null;
   vodUrl: string | null;
   duoPartnerPuuid: string | null;
   duoPartnerChampionName: string | null;
   position: string | null;
   highlights: Array<{
     type: "highlight" | "lowlight";
-    text: string;
+    text: string | null;
     topicName: string | null;
   }>;
 }
@@ -205,7 +204,7 @@ async function getCachedMatchupReport(
   // Group highlights by matchId
   const highlightsByMatch = new Map<
     string,
-    Array<{ type: "highlight" | "lowlight"; text: string; topicName: string | null }>
+    Array<{ type: "highlight" | "lowlight"; text: string | null; topicName: string | null }>
   >();
   for (const h of allHighlights) {
     const list = highlightsByMatch.get(h.matchId) || [];
@@ -258,7 +257,6 @@ async function getCachedMatchupReport(
       items,
       comment: m.comment,
       reviewed: m.reviewed,
-      reviewNotes: m.reviewNotes,
       vodUrl: m.vodUrl ?? null,
       duoPartnerPuuid: m.duoPartnerPuuid ?? null,
       duoPartnerChampionName: m.duoPartnerChampionName ?? null,

@@ -105,10 +105,8 @@ export const matches = sqliteTable(
     goldEarned: integer("gold_earned").default(0),
     visionScore: integer("vision_score").default(0),
     // Manual fields (user editable)
-    comment: text("comment"),
+    comment: text("comment"), // Unified notes field (markdown) — includes migrated highlight texts + review notes
     reviewed: integer("reviewed", { mode: "boolean" }).notNull().default(false),
-    reviewNotes: text("review_notes"),
-    reviewSkippedReason: text("review_skipped_reason"), // e.g. "Already know what went wrong"
     vodUrl: text("vod_url"), // Ascent VOD link
     // Metadata
     queueId: integer("queue_id"), // 420 = Solo/Duo
@@ -231,10 +229,10 @@ export const coachingActionItems = sqliteTable(
     description: text("description").notNull(),
     topicId: integer("topic_id").references(() => topics.id, { onDelete: "set null" }),
     status: text("status", {
-      enum: ["pending", "in_progress", "completed"],
+      enum: ["active", "completed"],
     })
       .notNull()
-      .default("pending"),
+      .default("active"),
     completedAt: integer("completed_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -314,7 +312,7 @@ export const matchHighlights = sqliteTable(
       onDelete: "set null",
     }),
     type: text("type", { enum: ["highlight", "lowlight"] }).notNull(),
-    text: text("text").notNull(),
+    text: text("text"), // Optional — new highlights are topic-click only
     topicId: integer("topic_id").references(() => topics.id, { onDelete: "set null" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -324,6 +322,32 @@ export const matchHighlights = sqliteTable(
     index("match_highlights_match_user_idx").on(table.matchId, table.userId),
     index("match_highlights_user_idx").on(table.userId),
     index("match_highlights_topic_idx").on(table.topicId),
+  ],
+);
+
+// ─── Match Action Item Outcomes ──────────────────────────────────────────────
+// Per-game tracking of whether a player applied a coaching action item.
+// Created during match review — links action items to specific matches.
+
+export const matchActionItemOutcomes = sqliteTable(
+  "match_action_item_outcomes",
+  {
+    matchId: text("match_id").notNull(),
+    actionItemId: integer("action_item_id")
+      .notNull()
+      .references(() => coachingActionItems.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    outcome: text("outcome", { enum: ["nailed_it", "forgot", "unsure"] }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    primaryKey({ columns: [table.matchId, table.actionItemId] }),
+    index("match_action_item_outcomes_user_idx").on(table.userId),
+    index("match_action_item_outcomes_item_idx").on(table.actionItemId),
   ],
 );
 

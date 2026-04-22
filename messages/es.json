@@ -124,6 +124,7 @@
     "actionItems": "Tareas",
     "actionItemInProgress": "En progreso",
     "actionItemPending": "Pendiente",
+    "actionItemActive": "Activa",
     "noActiveActionItems": "No hay tareas activas.",
     "challengesWidget": "Desafíos",
     "noActiveChallenges": "Sin desafíos activos.",
@@ -176,6 +177,7 @@
     "duration": "Duración",
     "keystone": "Runa principal",
     "highlightsAndLowlights": "Aciertos y errores",
+    "review": "Revisión",
     "blueTeam": "Equipo azul",
     "redTeam": "Equipo rojo",
     "playerColumn": "Jugador",
@@ -235,7 +237,9 @@
     "tabs": {
       "postGame": "Post-partida",
       "vodReview": "Revisión VOD",
-      "completed": "Completadas"
+      "completed": "Completadas",
+      "pending": "Pendientes",
+      "reviewed": "Revisadas"
     },
     "emptyStates": {
       "noPostGameTitle": "No hay revisiones post-partida pendientes",
@@ -243,17 +247,28 @@
       "noVodReviewTitle": "No hay revisiones de VOD pendientes",
       "noVodReviewDescription": "Completa las revisiones post-partida primero, luego aparecerán aquí para revisión de VOD.",
       "noCompletedTitle": "Aún no hay revisiones completadas",
-      "noCompletedDescription": "Las partidas revisadas aparecerán aquí como referencia."
+      "noCompletedDescription": "Las partidas revisadas aparecerán aquí como referencia.",
+      "noPendingTitle": "¡Al día!",
+      "noPendingDescription": "No hay partidas pendientes de revisión. ¡Juega algunas partidas y vuelve!",
+      "noReviewedTitle": "Aún no hay partidas revisadas",
+      "noReviewedDescription": "Las partidas que revises aparecerán aquí."
     },
     "postGameHint": "Estas partidas no han sido revisadas. Añade aciertos, notas y opcionalmente un enlace de VOD.",
     "vodReviewHint": "Estas partidas tienen notas post-partida pero no han sido revisadas con VOD. Mira el VOD y añade tus conclusiones.",
+    "pendingHint": "Haz clic en los temas para marcar aciertos y errores, añade notas y guarda para marcar como revisada.",
     "reviewedGamesCount": "{count, plural, one {# partida revisada} other {# partidas revisadas}}.",
     "suggested": "Sugerida",
     "disabledSaveTooltip": "Añade al menos un acierto, nota o enlace VOD para guardar.",
     "sessionProgress": "{done} de {total} revisadas en esta sesión",
     "moreActions": "Más acciones",
     "viewMatchDetails": "Ver detalles de la partida",
+    "notesOptional": "Notas (opcional)",
+    "notes": "Notas",
+    "saveReview": "Guardar y marcar revisada",
+    "editReview": "Editar revisión",
+    "reviewed": "Revisada",
     "toasts": {
+      "reviewSaved": "¡Revisión guardada!",
       "reviewSavedAndSkipped": "Revisión guardada y VOD omitido.",
       "postGameReviewSaved": "¡Revisión post-partida guardada!",
       "failedToSaveReview": "Error al guardar la revisión.",
@@ -264,6 +279,26 @@
       "bulkMarkReviewed": "{count, plural, one {# partida marcada} other {# partidas marcadas}} como revisadas.",
       "failedToMarkReviewed": "Error al marcar las partidas como revisadas."
     }
+  },
+  "TopicClickGrid": {
+    "clickToToggle": "Haz clic para marcar como acierto o error",
+    "markHighlight": "Marcar {topic} como acierto",
+    "markLowlight": "Marcar {topic} como error"
+  },
+  "MarkdownTextarea": {
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "bulletList": "Lista con viñetas",
+    "numberedList": "Lista numerada"
+  },
+  "ActionItemCheckin": {
+    "title": "Seguimiento de tareas",
+    "nailedIt": "Marcar {item} como logrado",
+    "forgot": "Marcar {item} como olvidado",
+    "unsure": "Marcar {item} como no seguro",
+    "nailedItLabel": "Logrado",
+    "forgotLabel": "Olvidado",
+    "unsureLabel": "No seguro"
   },
   "Scout": {
     "pageTitle": "Explorador de matchups",
@@ -517,12 +552,13 @@
   },
   "ActionItems": {
     "title": "Tareas",
-    "summary": "{pendingCount} pendientes · {inProgressCount} en progreso · {completedCount} completadas",
+    "summary": "{activeCount} activas · {completedCount} completadas",
     "statusFilterPlaceholder": "Estado",
     "topicFilterPlaceholder": "Tema",
     "allStatuses": "Todos los estados",
     "pending": "Pendiente",
     "inProgress": "En progreso",
+    "active": "Activa",
     "completed": "Completada",
     "allTopics": "Todos los temas",
     "emptyStateTitle": "Sin tareas aún",
@@ -535,6 +571,9 @@
     "noFilterMatch": "Ninguna tarea coincide con tus filtros",
     "noFilterMatchDescription": "Prueba a ajustar los filtros.",
     "deleteConfirm": "¿Eliminar esta tarea? No se puede deshacer.",
+    "outcomeNailedIt": "Clavado",
+    "outcomeForgot": "Olvidado",
+    "outcomeUnsure": "No seguro",
     "toasts": {
       "statusUpdated": "Actualizada a {status}.",
       "statusUpdateError": "Error al actualizar el estado.",

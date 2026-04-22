@@ -50,11 +50,3 @@ export async function getTopicById(id: number) {
     where: eq(topics.id, id),
   });
 }
-
-/**
- * Predefined reasons for skipping VOD review.
- */
-export const SKIP_REVIEW_REASONS = [
-  "Already know what went wrong",
-  "Stomp — nothing to review",
-] as const;

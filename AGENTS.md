@@ -57,26 +57,6 @@ Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 
 <!-- END:turso-migration-rules -->
 
-<!-- BEGIN:migration-safety-rules -->
-
-# Migration data safety — MANDATORY
-
-**Every migration that creates a new table from existing data MUST include `INSERT INTO ... SELECT FROM` to populate it.** A CREATE TABLE without the corresponding data migration is a production outage waiting to happen.
-
-**Incident reference**: Migration 0022 created `riot_accounts` but never copied existing user Riot data into it. All production users lost visibility of their linked accounts and match history. The seed script masked the bug because it creates riot_accounts rows directly — CI tests passed because they run against a freshly seeded database, not a migrated one.
-
-Before committing ANY migration file (`drizzle/*.sql`), answer these questions:
-
-1. **Does this migration create a new table?** If yes, does existing data need to be migrated into it? Write the `INSERT INTO ... SELECT FROM` in the same migration file.
-2. **Does this migration add a foreign key column?** If yes, are existing rows backfilled? A new FK column that's NULL for all existing rows means all existing data becomes invisible to queries that join/filter on it.
-3. **Does this migration move data from one table to another** (e.g., denormalization, table split)? Both the source read and destination write must be in the migration.
-4. **Does the seed script create data for this new table/column directly?** If yes, that's a red flag — the migration itself should be creating that data for existing production rows. The seed script should only create demo/test fixtures, not compensate for missing migration logic.
-5. **If I run this migration against a production database with real users, will the app still work immediately after?** Test mentally: user logs in → navigates to dashboard → sees their data. If any step breaks, the migration is incomplete.
-
-**The seed script is NOT a substitute for data migrations.** The seed script creates demo data for local dev and CI tests. Production databases are populated by migrations and user activity — never by the seed script.
-
-<!-- END:migration-safety-rules -->
-
 <!-- BEGIN:env-safety-rules -->
 
 # Environment variable safety — MANDATORY
@@ -184,43 +164,4 @@ If you forgot to capture "before" screenshots, check out `main`, capture them, t
 
 Full workflow details are in the `ui-screenshots` OpenCode skill.
 
-**MANDATORY: NEVER include login screen screenshots in changelogs or PR descriptions.** The login screen is only visible in demo mode (DemoPlayer/DuoPartner/AdminUser buttons). Real users authenticate via Discord OAuth and never see this screen. Screenshots of it leak internal demo infrastructure to players. This applies to any demo-only UI — if a real user would never see it, it must not appear in the changelog.
-
-**MANDATORY: Screenshot consistency rules.** Before pushing any changelog with images, verify ALL of the following:
-
-1. **Every screenshot must be a full 1280x720 viewport capture** — never crop or screenshot individual UI elements (e.g., just the sidebar). Always capture the full page at the standard viewport size.
-2. **Related images must use `changelog-image-grid`** — never place two loose standalone `![](...)` images in sequence. Wrap them in `<div className="changelog-image-grid">` so they render side-by-side at consistent dimensions.
-3. **Both images in a grid must be 1280x720** — mixing dimensions (e.g., a 253x682 crop next to a 1280x720 page) breaks the visual layout.
-4. **"After" images must be annotated** — use red arrows/labels following the annotation spec in the `ui-screenshots` skill, and use the `-annotated` filename suffix.
-5. **Grids can serve three purposes** — pick the right one for the context:
-   - **Before/after comparison**: left = `before-*.png`, right = `after-*-annotated.png` (e.g., duo-partner-search, coaching-ux)
-   - **Two views of a new feature** (no "before" exists): both images are `after-*-annotated.png` showing different aspects of the same feature (e.g., canny-feedback-widget: sidebar link + feature page)
-   - **Sequential steps**: both images are `after-*-annotated.png` showing step 1 and step 2 (e.g., onboarding-wizard)
-6. **A single standalone image is valid** when there is only one screenshot to show (e.g., a new page with no related second view). Do NOT force a grid with one real image and one filler.
-
-**Incident reference**: PR #176 (riot-disclaimer) shipped a 253x682 cropped sidebar screenshot alongside a 1280x720 page screenshot, with no grid wrapper. The cropped image rendered at a completely different aspect ratio, breaking the visual consistency of the changelog page. The fix was to re-capture the sidebar as a full 1280x720 viewport screenshot and wrap both images in a `changelog-image-grid`.
-
 <!-- END:ui-screenshots-rules -->
-
-<!-- BEGIN:security-rules -->
-
-# Security — MANDATORY
-
-**Every server action and API route MUST call `requireUser()` or `requireAdmin()` as its first operation.** All DB queries must be scoped with `userId: user.id` from the authenticated session. Never accept a `userId` parameter from the client.
-
-**Functions that accept a `userId` parameter MUST NOT be exported from `"use server"` files.** Place them in `src/lib/` instead — otherwise any client can invoke them with an arbitrary user ID.
-
-**User-supplied URLs (VOD links, etc.) MUST be validated:**
-
-1. On write: use `validateVodUrl()` from `src/lib/url.ts` in the server action
-2. On render: use `safeExternalUrl()` from `src/lib/url.ts` in the `href` attribute
-
-**Never expose raw API errors, status codes, or stack traces to the client.** Use `RiotApiError.userMessage` for Riot API errors and generic messages for everything else.
-
-**All cookies MUST include the `Secure` flag** (with protocol check for client-side cookies).
-
-**When adding new external resources** (CDN, images, scripts), update the CSP in `next.config.ts`. Never use `*` wildcards.
-
-Full security patterns are in the `security` OpenCode skill.
-
-<!-- END:security-rules -->

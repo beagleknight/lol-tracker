@@ -6,17 +6,12 @@ import {
   ChevronRight,
   ChevronDown,
   CheckCircle2,
-  MessageSquare,
-  SkipForward,
   Link as LinkIcon,
   Eye,
-  EyeOff,
   ClipboardEdit,
-  Video,
   ExternalLink,
   Pencil,
   X,
-  Ellipsis,
   Sparkles,
   Crosshair,
   Globe,
@@ -30,45 +25,31 @@ import { toast } from "sonner";
 
 import type { Match } from "@/db/schema";
 
-import { savePostGameReview, bulkMarkReviewed } from "@/app/actions/matches";
+import { saveReview } from "@/app/actions/matches";
+import {
+  ActionItemCheckin,
+  type ActionItemOutcome,
+  type OutcomeValue,
+} from "@/components/action-item-checkin";
 import { EmptyState } from "@/components/empty-state";
 import {
-  HighlightsEditor,
   HighlightsDisplay,
   type HighlightItem,
   type TopicOption,
 } from "@/components/highlights-editor";
+import { MarkdownTextarea } from "@/components/markdown-textarea";
 import { Pagination, paginate } from "@/components/pagination";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { TopicClickGrid, type TopicToggle } from "@/components/topic-click-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
-import { SKIP_REVIEW_REASONS } from "@/lib/topics";
 import { safeExternalUrl } from "@/lib/url";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -81,56 +62,44 @@ interface ReviewClientProps {
     Array<{
       id: number;
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicId?: number;
       topicName?: string;
     }>
   >;
   ddragonVersion: string;
-  completedPage: number;
-  completedTotalPages: number;
-  completedTotal: number;
-  initialTab: "post-game" | "vod" | "completed";
+  reviewedPage: number;
+  reviewedTotalPages: number;
+  reviewedTotal: number;
+  initialTab: "pending" | "reviewed";
   topics: TopicOption[];
+  activeActionItems: Array<{ id: number; description: string; topicId: number | null }>;
+  initialMatchId?: string;
   readOnly?: boolean;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * F1.2 — Priority scoring heuristic for review ordering.
- * Higher score = more worth reviewing. Factors:
- * - Losses score higher than wins (more to learn)
- * - High death count (deaths > 7)
- * - Long games (> 25 min) have more to review
- * - Close games (KDA near 1.0) are more instructive
+ * Priority scoring heuristic for review ordering.
+ * Higher score = more worth reviewing.
  */
 function computePriorityScore(match: Match): number {
   let score = 0;
-
-  // Losses are more instructive
   if (match.result === "Defeat") score += 3;
-
-  // High deaths
   if (match.deaths > 7) score += 2;
   else if (match.deaths > 4) score += 1;
-
-  // Long games have more to review
   if (match.gameDurationSeconds > 25 * 60) score += 1;
-
-  // Close games (low KDA ratio → more to learn)
   const kda =
     match.deaths === 0 ? match.kills + match.assists : (match.kills + match.assists) / match.deaths;
   if (kda < 2) score += 2;
   else if (kda < 3) score += 1;
-
   return score;
 }
 
-/** Threshold: score >= 4 gets "Suggested" badge */
 const PRIORITY_THRESHOLD = 4;
 
-// ─── Match Header (shared across card types) ────────────────────────────────
+// ─── Match Header (shared) ──────────────────────────────────────────────────
 
 function MatchCardHeaderInfo({
   match,
@@ -222,11 +191,10 @@ function MatchCardHeaderInfo({
   );
 }
 
-// ─── Post-Game Review Card ──────────────────────────────────────────────────
-// For games with NO highlights and NO comment — fresh, never-touched games.
-// Shows: highlights editor, game notes, VOD URL, save + skip buttons.
+// ─── Pending Review Card ────────────────────────────────────────────────────
+// Single-pass review: topic grid + notes + VOD URL + action item check-in
 
-function PostGameCard({
+function PendingReviewCard({
   match,
   existingHighlights,
   ddragonVersion,
@@ -236,6 +204,7 @@ function PostGameCard({
   onToggleExpand,
   priorityScore,
   topics,
+  activeActionItems,
 }: {
   match: Match;
   existingHighlights: HighlightItem[];
@@ -246,43 +215,59 @@ function PostGameCard({
   onToggleExpand: () => void;
   priorityScore: number;
   topics: TopicOption[];
+  activeActionItems: Array<{ id: number; description: string; topicId: number | null }>;
 }) {
-  const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
+  // Convert existing highlights to TopicToggle format
+  const initialSelected: TopicToggle[] = existingHighlights
+    .filter((h) => h.topicId != null)
+    .map((h) => ({
+      topicId: h.topicId!,
+      topicName: h.topicName ?? "",
+      type: h.type,
+    }));
+
+  const [selected, setSelected] = useState<TopicToggle[]>(initialSelected);
   const [comment, setComment] = useState(match.comment || "");
-  const [showComment, setShowComment] = useState(!!match.comment);
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
+  const [outcomes, setOutcomes] = useState<ActionItemOutcome[]>(
+    activeActionItems.map((ai) => ({
+      actionItemId: ai.id,
+      description: ai.description,
+      topicName: ai.topicId ? topics.find((t) => t.id === ai.topicId)?.name : undefined,
+      outcome: null,
+    })),
+  );
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("Review");
 
-  const hasContent = highlights.length > 0 || comment.trim() || vodUrl.trim();
-
-  const handleSave = useCallback(
-    (skipReason?: string) => {
-      startTransition(async () => {
-        try {
-          const result = await savePostGameReview(match.id, {
-            highlights,
-            comment: comment || undefined,
-            vodUrl: vodUrl || undefined,
-            reviewed: !!skipReason,
-            reviewSkippedReason: skipReason,
-          });
-          if (result.success) {
-            toast.success(
-              skipReason ? t("toasts.reviewSavedAndSkipped") : t("toasts.postGameReviewSaved"),
-            );
-            // If skipped, move to completed; otherwise move to VOD Review
-            onReviewed(match.id);
-          } else {
-            toast.error(t("toasts.failedToSaveReview"));
-          }
-        } catch {
-          toast.error(t("toasts.failedToSaveReview"));
+  const handleSave = useCallback(() => {
+    startTransition(async () => {
+      try {
+        const result = await saveReview(match.id, {
+          highlights: selected.map((s) => ({
+            type: s.type,
+            topicId: s.topicId,
+          })),
+          comment: comment || undefined,
+          vodUrl: vodUrl || undefined,
+          outcomes: outcomes
+            .filter(
+              (o): o is ActionItemOutcome & { outcome: NonNullable<OutcomeValue> } =>
+                o.outcome !== null,
+            )
+            .map((o) => ({ actionItemId: o.actionItemId, outcome: o.outcome })),
+        });
+        if (result && "error" in result) {
+          toast.error(result.error);
+        } else {
+          toast.success(t("toasts.reviewSaved"));
+          onReviewed(match.id);
         }
-      });
-    },
-    [match.id, highlights, comment, vodUrl, onReviewed, t],
-  );
+      } catch {
+        toast.error(t("toasts.failedToSaveReview"));
+      }
+    });
+  }, [match.id, selected, comment, vodUrl, outcomes, onReviewed, t]);
 
   return (
     <Card className="surface-glow">
@@ -313,34 +298,20 @@ function PostGameCard({
       </CardHeader>
       {isExpanded && (
         <CardContent className="space-y-4">
-          {/* Highlights / Lowlights (primary) */}
-          <HighlightsEditor highlights={highlights} onChange={setHighlights} topics={topics} />
+          {/* Topic click grid for highlights/lowlights */}
+          <TopicClickGrid topics={topics} selected={selected} onChange={setSelected} />
+
+          {/* Notes (markdown) */}
           <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setShowComment(!showComment)}
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <MessageSquare className="h-3 w-3" />
-              {t("gameNotesOptional")}
-              {match.comment && !showComment && (
-                <span className="ml-1 max-w-48 truncate text-muted-foreground italic">
-                  &ldquo;{match.comment}&rdquo;
-                </span>
-              )}
-              <ChevronDown
-                className={`h-3 w-3 transition-transform ${showComment ? "rotate-180" : ""}`}
-              />
-            </button>
-            {showComment && (
-              <Textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder={t("gameNotesPlaceholder")}
-                rows={2}
-                className="resize-none text-sm"
-              />
-            )}
+            <label className="text-xs font-medium text-muted-foreground">
+              {t("notesOptional")}
+            </label>
+            <MarkdownTextarea
+              value={comment}
+              onChange={setComment}
+              placeholder={t("gameNotesPlaceholder")}
+              rows={3}
+            />
           </div>
 
           {/* VOD Link */}
@@ -357,63 +328,19 @@ function PostGameCard({
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2">
-            {/* Skip VOD Review */}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        disabled={isPending || !hasContent}
-                        render={
-                          <Button variant="outline" size="sm" className="gap-1.5">
-                            <SkipForward className="h-3 w-3" />
-                            {t("saveAndSkipVod")}
-                          </Button>
-                        }
-                      />
-                      <DropdownMenuContent align="end">
-                        {SKIP_REVIEW_REASONS.map((reason) => (
-                          <DropdownMenuItem key={reason} onClick={() => handleSave(reason)}>
-                            {reason}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                }
-              />
-              {!hasContent && !isPending && (
-                <TooltipContent>{t("disabledSaveTooltip")}</TooltipContent>
-              )}
-            </Tooltip>
+          {/* Action item check-in */}
+          <ActionItemCheckin items={outcomes} onChange={setOutcomes} />
 
-            {/* Save */}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSave()}
-                      disabled={isPending || !hasContent}
-                    >
-                      {isPending ? (
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      ) : (
-                        <Save className="mr-2 h-3 w-3" />
-                      )}
-                      {t("save")}
-                    </Button>
-                  </div>
-                }
-              />
-              {!hasContent && !isPending && (
-                <TooltipContent>{t("disabledSaveTooltip")}</TooltipContent>
+          {/* Save button */}
+          <div className="flex items-center justify-end">
+            <Button size="sm" onClick={handleSave} disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-3 w-3" />
               )}
-            </Tooltip>
+              {t("saveReview")}
+            </Button>
           </div>
         </CardContent>
       )}
@@ -421,207 +348,9 @@ function PostGameCard({
   );
 }
 
-// ─── VOD Review Card ────────────────────────────────────────────────────────
-// For games that have post-game notes but haven't been VOD-reviewed yet.
-// Shows existing highlights/notes as read-only context, plus VOD fields.
+// ─── Reviewed Card ──────────────────────────────────────────────────────────
 
-function VodReviewCard({
-  match,
-  existingHighlights,
-  ddragonVersion,
-  onReviewed,
-  locale,
-  isExpanded,
-  onToggleExpand,
-}: {
-  match: Match;
-  existingHighlights: HighlightItem[];
-  ddragonVersion: string;
-  onReviewed: (matchId: string) => void;
-  locale: string;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-}) {
-  const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
-  const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
-  const [isPending, startTransition] = useTransition();
-  const t = useTranslations("Review");
-
-  const hasContent = vodUrl.trim() || reviewNotes.trim();
-
-  const handleSave = useCallback(
-    (skipReason?: string) => {
-      startTransition(async () => {
-        try {
-          const result = await savePostGameReview(match.id, {
-            highlights: existingHighlights, // preserve existing
-            comment: match.comment || undefined,
-            vodUrl: vodUrl || undefined,
-            reviewed: !!skipReason || !!reviewNotes,
-            reviewNotes: reviewNotes || undefined,
-            reviewSkippedReason: skipReason,
-          });
-          if (result.success) {
-            toast.success(skipReason ? t("toasts.vodReviewSkipped") : t("toasts.vodReviewSaved"));
-            if (skipReason || reviewNotes) {
-              onReviewed(match.id);
-            }
-          } else {
-            toast.error(t("toasts.failedToSaveReview"));
-          }
-        } catch {
-          toast.error(t("toasts.failedToSaveReview"));
-        }
-      });
-    },
-    [match.id, match.comment, existingHighlights, vodUrl, reviewNotes, onReviewed, t],
-  );
-
-  return (
-    <Card className="surface-glow">
-      <CardHeader className="pb-3">
-        <div className="flex w-full items-center gap-3">
-          <button
-            type="button"
-            onClick={onToggleExpand}
-            className="flex flex-1 items-center gap-3 text-left"
-          >
-            <ChevronDown
-              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`}
-            />
-            <div className="flex-1">
-              <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
-            </div>
-          </button>
-          <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
-        </div>
-      </CardHeader>
-      {isExpanded && (
-        <CardContent className="space-y-4">
-          {/* Existing post-game notes — read-only context */}
-          {existingHighlights.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">{t("postGameNotes")}</p>
-              <HighlightsDisplay highlights={existingHighlights} compact />
-            </div>
-          )}
-          {match.comment && (
-            <div className="rounded-md border border-border/50 bg-surface/30 p-2.5">
-              <p className="line-clamp-3 text-xs text-foreground/70 italic">
-                &ldquo;{match.comment}&rdquo;
-              </p>
-            </div>
-          )}
-
-          {/* VOD Link */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <LinkIcon className="h-3 w-3" />
-              {t("vodLink")}
-            </label>
-            <Input
-              value={vodUrl}
-              onChange={(e) => setVodUrl(e.target.value)}
-              placeholder={t("vodLinkGenericPlaceholder")}
-              className="h-8 text-sm"
-            />
-            {match.vodUrl && (
-              <a
-                href={safeExternalUrl(match.vodUrl) ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-electric hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                {t("openVod")}
-              </a>
-            )}
-          </div>
-
-          {/* VOD Review Notes */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-foreground">
-              {t("vodReviewNotesLabel")}
-            </label>
-            <Textarea
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder={t("vodReviewNotesPlaceholder")}
-              rows={2}
-              className="resize-none text-sm"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2">
-            {/* Skip VOD Review */}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        disabled={isPending || !hasContent}
-                        render={
-                          <Button variant="outline" size="sm" className="gap-1.5">
-                            <SkipForward className="h-3 w-3" />
-                            {t("skipVod")}
-                          </Button>
-                        }
-                      />
-                      <DropdownMenuContent align="end">
-                        {SKIP_REVIEW_REASONS.map((reason) => (
-                          <DropdownMenuItem key={reason} onClick={() => handleSave(reason)}>
-                            {reason}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                }
-              />
-              {!hasContent && !isPending && (
-                <TooltipContent>{t("disabledSaveTooltip")}</TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* Save */}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSave()}
-                      disabled={isPending || !hasContent}
-                    >
-                      {isPending ? (
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      ) : (
-                        <Save className="mr-2 h-3 w-3" />
-                      )}
-                      {t("save")}
-                    </Button>
-                  </div>
-                }
-              />
-              {!hasContent && !isPending && (
-                <TooltipContent>{t("disabledSaveTooltip")}</TooltipContent>
-              )}
-            </Tooltip>
-          </div>
-        </CardContent>
-      )}
-    </Card>
-  );
-}
-
-// ─── Completed Card ─────────────────────────────────────────────────────────
-// Read-only card with inline edit toggle for reviewed games.
-
-function CompletedCard({
+function ReviewedCard({
   match,
   existingHighlights,
   ddragonVersion,
@@ -639,44 +368,51 @@ function CompletedCard({
   readOnly?: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [highlights, setHighlights] = useState<HighlightItem[]>(existingHighlights);
+
+  // Edit state
+  const initialSelected: TopicToggle[] = existingHighlights
+    .filter((h) => h.topicId != null)
+    .map((h) => ({
+      topicId: h.topicId!,
+      topicName: h.topicName ?? "",
+      type: h.type,
+    }));
+  const [selected, setSelected] = useState<TopicToggle[]>(initialSelected);
   const [comment, setComment] = useState(match.comment || "");
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
-  const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("Review");
 
   const handleSave = useCallback(() => {
     startTransition(async () => {
       try {
-        const result = await savePostGameReview(match.id, {
-          highlights,
+        const result = await saveReview(match.id, {
+          highlights: selected.map((s) => ({
+            type: s.type,
+            topicId: s.topicId,
+          })),
           comment: comment || undefined,
           vodUrl: vodUrl || undefined,
-          reviewed: true,
-          reviewNotes: reviewNotes || undefined,
         });
-        if (result.success) {
+        if (result && "error" in result) {
+          toast.error(result.error);
+        } else {
           toast.success(t("toasts.reviewUpdated"));
           setIsEditing(false);
           onSaved();
-        } else {
-          toast.error(t("toasts.failedToUpdateReview"));
         }
       } catch {
         toast.error(t("toasts.failedToUpdateReview"));
       }
     });
-  }, [match.id, highlights, comment, vodUrl, reviewNotes, onSaved, t]);
+  }, [match.id, selected, comment, vodUrl, onSaved, t]);
 
   const handleCancel = useCallback(() => {
-    // Reset to original values
-    setHighlights(existingHighlights);
+    setSelected(initialSelected);
     setComment(match.comment || "");
     setVodUrl(match.vodUrl || "");
-    setReviewNotes(match.reviewNotes || "");
     setIsEditing(false);
-  }, [existingHighlights, match.comment, match.vodUrl, match.reviewNotes]);
+  }, [initialSelected, match.comment, match.vodUrl]);
 
   if (isEditing) {
     return (
@@ -685,25 +421,18 @@ function CompletedCard({
           <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Highlights / Lowlights */}
-          <HighlightsEditor highlights={highlights} onChange={setHighlights} topics={topics} />
+          <TopicClickGrid topics={topics} selected={selected} onChange={setSelected} />
 
-          {/* Game Notes */}
           <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <MessageSquare className="h-3 w-3" />
-              {t("gameNotes")}
-            </label>
-            <Textarea
+            <label className="text-xs font-medium text-muted-foreground">{t("notes")}</label>
+            <MarkdownTextarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={setComment}
               placeholder={t("gameNotesPlaceholder")}
-              rows={2}
-              className="resize-none text-sm"
+              rows={3}
             />
           </div>
 
-          {/* VOD Link */}
           <div className="space-y-2">
             <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <LinkIcon className="h-3 w-3" />
@@ -717,21 +446,6 @@ function CompletedCard({
             />
           </div>
 
-          {/* VOD Review Notes */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-foreground">
-              {t("vodReviewNotes")}
-            </label>
-            <Textarea
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder={t("vodReviewNotesPlaceholder")}
-              rows={2}
-              className="resize-none text-sm"
-            />
-          </div>
-
-          {/* Actions */}
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isPending}>
               <X className="mr-1.5 h-3 w-3" />
@@ -764,7 +478,7 @@ function CompletedCard({
               size="icon"
               className="h-8 w-8 shrink-0"
               onClick={() => setIsEditing(true)}
-              aria-label="Edit review"
+              aria-label={t("editReview")}
             >
               <Pencil className="h-3.5 w-3.5" />
             </Button>
@@ -772,12 +486,9 @@ function CompletedCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Highlights */}
         {existingHighlights.length > 0 && (
           <HighlightsDisplay highlights={existingHighlights} compact />
         )}
-
-        {/* Comment */}
         {match.comment && (
           <div className="rounded-md border border-border/50 bg-surface/30 p-2.5">
             <p className="line-clamp-2 text-xs text-muted-foreground italic">
@@ -785,8 +496,6 @@ function CompletedCard({
             </p>
           </div>
         )}
-
-        {/* Review info row */}
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           {match.vodUrl && (
             <a
@@ -799,29 +508,19 @@ function CompletedCard({
               {t("vod")}
             </a>
           )}
-          {match.reviewNotes && (
-            <span className="inline-flex items-start gap-1">
-              <Eye className="mt-0.5 h-3 w-3 shrink-0" />
-              <span className="line-clamp-2">{match.reviewNotes}</span>
-            </span>
-          )}
-          {match.reviewSkippedReason && (
-            <span className="inline-flex items-center gap-1 italic">
-              <SkipForward className="h-3 w-3" />
-              {t("skippedReason", { reason: match.reviewSkippedReason })}
-            </span>
-          )}
+          <span className="inline-flex items-center gap-1 text-win">
+            <Eye className="h-3 w-3" />
+            {t("reviewed")}
+          </span>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-// ─── Tab Content Wrapper ────────────────────────────────────────────────────
+// ─── Server-side pagination for Reviewed tab ────────────────────────────────
 
-// ─── Server-side pagination for Completed tab ───────────────────────────────
-
-function CompletedPagination({
+function ReviewedPagination({
   currentPage,
   totalPages,
   disabled,
@@ -894,11 +593,13 @@ export function ReviewClient({
   reviewedMatches,
   highlightsByMatch,
   ddragonVersion,
-  completedPage,
-  completedTotalPages,
-  completedTotal,
+  reviewedPage,
+  reviewedTotalPages,
+  reviewedTotal,
   initialTab,
   topics,
+  activeActionItems,
+  initialMatchId,
   readOnly,
 }: ReviewClientProps) {
   const router = useRouter();
@@ -908,110 +609,66 @@ export function ReviewClient({
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Review");
 
-  // Track which matches have been actioned this session (optimistic removal/movement)
+  // Track which matches have been actioned this session (optimistic removal)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
 
-  // F1.1 — Accordion state: only one card expanded at a time per tab
-  const [expandedPostGameId, setExpandedPostGameId] = useState<string | null>(null);
-  const [expandedVodId, setExpandedVodId] = useState<string | null>(null);
+  // Accordion state: only one card expanded at a time
+  const [expandedId, setExpandedId] = useState<string | null>(initialMatchId ?? null);
 
-  // Bulk action state
-  const [isBulkPending, startBulkTransition] = useTransition();
-  const [bulkSkipReason, setBulkSkipReason] = useState<string>(SKIP_REVIEW_REASONS[0]);
+  // Pagination state for Pending tab (client-side)
+  const [pendingPage, setPendingPage] = useState(1);
 
-  // Pagination state for Post-Game and VOD Review tabs (client-side)
-  const [postGamePage, setPostGamePage] = useState(1);
-  const [vodReviewPage, setVodReviewPage] = useState(1);
+  // Server-side pagination for Reviewed tab
+  const [isReviewedNavigating, startReviewedTransition] = useTransition();
 
-  // Server-side pagination for Completed tab
-  const [isCompletedNavigating, startCompletedTransition] = useTransition();
+  // Tab state
+  const tabValue = isReadOnly ? 1 : initialTab === "reviewed" ? 1 : 0;
 
-  // Tab state — controlled to avoid Base UI uncontrolled defaultValue warning
-  const tabValue = isReadOnly ? 2 : initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
-
-  // Tab change handler — sync tab to URL
   const handleTabChange = useCallback(
     (value: unknown) => {
-      const tabMap: Record<number, string> = {
-        0: "post-game",
-        1: "vod",
-        2: "completed",
-      };
+      const tabMap: Record<number, string> = { 0: "pending", 1: "reviewed" };
       const tabName = typeof value === "number" ? tabMap[value] : String(value);
       if (!tabName) return;
       const sp = new URLSearchParams(searchParams.toString());
       sp.set("tab", tabName);
-      // Reset completedPage when switching away from completed tab
-      if (tabName !== "completed") sp.delete("completedPage");
+      if (tabName !== "reviewed") sp.delete("reviewedPage");
       router.replace(`/review?${sp.toString()}`, { scroll: false });
     },
     [router, searchParams],
   );
 
-  const navigateCompletedPage = useCallback(
+  const navigateReviewedPage = useCallback(
     (page: number) => {
       const sp = new URLSearchParams(searchParams.toString());
-      sp.set("tab", "completed");
-      if (page > 1) sp.set("completedPage", String(page));
-      else sp.delete("completedPage");
-      startCompletedTransition(() => {
+      sp.set("tab", "reviewed");
+      if (page > 1) sp.set("reviewedPage", String(page));
+      else sp.delete("reviewedPage");
+      startReviewedTransition(() => {
         router.push(`/review?${sp.toString()}`, { scroll: false });
       });
     },
     [router, searchParams],
   );
 
-  // Partition unreviewed matches into Post-Game vs VOD Review
-  // F1.2 — Sort by priority score (highest first)
-  const { postGameMatches, vodReviewMatches, priorityScores } = useMemo(() => {
+  // Sort pending matches by priority
+  const { pendingMatches, priorityScores } = useMemo(() => {
     const remaining = unreviewedMatches.filter((m) => !actionedIds.has(m.id));
-    const postGame: Match[] = [];
-    const vodReview: Match[] = [];
     const scores: Record<string, number> = {};
-
     for (const m of remaining) {
       scores[m.id] = computePriorityScore(m);
-      const highlights = highlightsByMatch[m.id] || [];
-      const hasNotes = highlights.length > 0 || !!m.comment;
-      if (hasNotes) {
-        vodReview.push(m);
-      } else {
-        postGame.push(m);
-      }
     }
+    remaining.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
+    return { pendingMatches: remaining, priorityScores: scores };
+  }, [unreviewedMatches, actionedIds]);
 
-    // Sort by priority score descending (most instructive first)
-    postGame.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
-    vodReview.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
-
-    return {
-      postGameMatches: postGame,
-      vodReviewMatches: vodReview,
-      priorityScores: scores,
-    };
-  }, [unreviewedMatches, actionedIds, highlightsByMatch]);
-
-  // F1.1 — Auto-expand the first card when no card is expanded
-  const hasAutoExpandedPostGame = useRef(false);
-  const hasAutoExpandedVod = useRef(false);
-
+  // Auto-expand the first card
+  const hasAutoExpanded = useRef(false);
   useEffect(() => {
-    if (
-      !hasAutoExpandedPostGame.current &&
-      postGameMatches.length > 0 &&
-      expandedPostGameId === null
-    ) {
-      setExpandedPostGameId(postGameMatches[0].id);
-      hasAutoExpandedPostGame.current = true;
+    if (!hasAutoExpanded.current && pendingMatches.length > 0 && expandedId === null) {
+      setExpandedId(pendingMatches[0].id);
+      hasAutoExpanded.current = true;
     }
-  }, [postGameMatches, expandedPostGameId]);
-
-  useEffect(() => {
-    if (!hasAutoExpandedVod.current && vodReviewMatches.length > 0 && expandedVodId === null) {
-      setExpandedVodId(vodReviewMatches[0].id);
-      hasAutoExpandedVod.current = true;
-    }
-  }, [vodReviewMatches, expandedVodId]);
+  }, [pendingMatches, expandedId]);
 
   const handleReviewed = useCallback(
     (matchId: string) => {
@@ -1020,82 +677,27 @@ export function ReviewClient({
         next.add(matchId);
         return next;
       });
-      // F1.1 — Auto-advance to next card after reviewing
-      if (expandedPostGameId === matchId) {
-        const idx = postGameMatches.findIndex((m) => m.id === matchId);
-        const nextMatch = postGameMatches[idx + 1];
-        setExpandedPostGameId(nextMatch?.id ?? null);
-      }
-      if (expandedVodId === matchId) {
-        const idx = vodReviewMatches.findIndex((m) => m.id === matchId);
-        const nextMatch = vodReviewMatches[idx + 1];
-        setExpandedVodId(nextMatch?.id ?? null);
-      }
-
-      // Auto-switch tab when current tab becomes empty (#78)
-      // Compute next-state counts (after this match is removed)
-      const nextPostGameCount = postGameMatches.filter((m) => m.id !== matchId).length;
-      const nextVodCount = vodReviewMatches.filter((m) => m.id !== matchId).length;
-
-      if (tabValue === 0 && nextPostGameCount === 0 && nextVodCount > 0) {
-        handleTabChange(1);
-      } else if (tabValue === 1 && nextVodCount === 0 && nextPostGameCount > 0) {
-        handleTabChange(0);
+      // Auto-advance to next card
+      if (expandedId === matchId) {
+        const idx = pendingMatches.findIndex((m) => m.id === matchId);
+        const nextMatch = pendingMatches[idx + 1];
+        setExpandedId(nextMatch?.id ?? null);
       }
     },
-    [
-      expandedPostGameId,
-      expandedVodId,
-      postGameMatches,
-      vodReviewMatches,
-      tabValue,
-      handleTabChange,
-    ],
+    [expandedId, pendingMatches],
   );
 
-  const handleCompletedSaved = useCallback(() => {
-    // Refresh the page to get updated data from the server
+  const handleReviewedSaved = useCallback(() => {
     router.refresh();
   }, [router]);
 
-  const handleBulkMarkReviewed = useCallback(() => {
-    startBulkTransition(async () => {
-      try {
-        const result = await bulkMarkReviewed(bulkSkipReason);
-        if (result.success) {
-          toast.success(t("toasts.bulkMarkReviewed", { count: result.count }));
-          // Mark all remaining unreviewed as actioned
-          setActionedIds((prev) => {
-            const next = new Set(prev);
-            for (const m of unreviewedMatches) next.add(m.id);
-            return next;
-          });
-        } else {
-          toast.error(t("toasts.failedToMarkReviewed"));
-        }
-      } catch {
-        toast.error(t("toasts.failedToMarkReviewed"));
-      }
-    });
-  }, [bulkSkipReason, unreviewedMatches, t]);
-
-  const totalUnreviewed = postGameMatches.length + vodReviewMatches.length;
-
-  // F1.7 — Track original count for progress indicator
   const originalUnreviewedCount = unreviewedMatches.length;
+  const paginatedPending = paginate(pendingMatches, pendingPage);
 
-  // Client-side paginated data for Post-Game and VOD Review
-  const paginatedPostGame = paginate(postGameMatches, postGamePage);
-  const paginatedVodReview = paginate(vodReviewMatches, vodReviewPage);
-
-  // Auto-correct pages when items are removed
-  const postGameTotalPages = Math.ceil(postGameMatches.length / 10);
-  const vodReviewTotalPages = Math.ceil(vodReviewMatches.length / 10);
-  if (postGamePage > postGameTotalPages && postGameTotalPages > 0) {
-    setPostGamePage(postGameTotalPages);
-  }
-  if (vodReviewPage > vodReviewTotalPages && vodReviewTotalPages > 0) {
-    setVodReviewPage(vodReviewTotalPages);
+  // Auto-correct page when items are removed
+  const pendingTotalPages = Math.ceil(pendingMatches.length / 10);
+  if (pendingPage > pendingTotalPages && pendingTotalPages > 0) {
+    setPendingPage(pendingTotalPages);
   }
 
   function getHighlightItems(matchId: string): HighlightItem[] {
@@ -1113,14 +715,13 @@ export function ReviewClient({
       <div className="animate-in-up flex items-start justify-between gap-4">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
-          {totalUnreviewed === 0 ? (
+          {pendingMatches.length === 0 ? (
             <p className="text-muted-foreground">{t("allCaughtUp")}</p>
           ) : (
             <p className="text-muted-foreground">
-              {t("gamesWaitingForReview", { count: totalUnreviewed })}
+              {t("gamesWaitingForReview", { count: pendingMatches.length })}
             </p>
           )}
-          {/* F1.7 — Session progress indicator */}
           {actionedIds.size > 0 && originalUnreviewedCount > 0 && (
             <p className="mt-1 text-xs text-gold">
               {t("sessionProgress", {
@@ -1130,83 +731,6 @@ export function ReviewClient({
             </p>
           )}
         </div>
-
-        {/* F1.3 — Overflow menu with Mark All Reviewed */}
-        {!isReadOnly && totalUnreviewed > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  aria-label={t("moreActions")}
-                >
-                  <Ellipsis className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end" className="w-auto">
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      className="whitespace-nowrap"
-                    >
-                      <SkipForward className="mr-2 h-3.5 w-3.5 shrink-0" />
-                      {t("markAllReviewed")}
-                    </DropdownMenuItem>
-                  }
-                />
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t("markAllReviewedConfirmTitle", {
-                        count: totalUnreviewed,
-                      })}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t("markAllReviewedConfirmDescription")}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <div className="px-0">
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      {t("skipReason")}
-                    </label>
-                    <div className="flex flex-col gap-1.5">
-                      {SKIP_REVIEW_REASONS.map((reason) => (
-                        <button
-                          key={reason}
-                          type="button"
-                          onClick={() => setBulkSkipReason(reason)}
-                          className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                            bulkSkipReason === reason
-                              ? "border-primary bg-primary/10 text-foreground"
-                              : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                          }`}
-                        >
-                          {reason}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleBulkMarkReviewed} disabled={isBulkPending}>
-                      {isBulkPending ? (
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      ) : (
-                        <SkipForward className="mr-2 h-3 w-3" />
-                      )}
-                      {t("markAllReviewed")}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
       </div>
 
       {!isReadOnly && !user?.primaryRole && (
@@ -1245,148 +769,102 @@ export function ReviewClient({
           {!isReadOnly && (
             <TabsTrigger value={0}>
               <ClipboardEdit className="h-3.5 w-3.5" />
-              {t("tabs.postGame")}
-              {postGameMatches.length > 0 && (
+              {t("tabs.pending")}
+              {pendingMatches.length > 0 && (
                 <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
-                  {postGameMatches.length}
+                  {pendingMatches.length}
                 </Badge>
               )}
             </TabsTrigger>
           )}
-          {!isReadOnly && (
-            <TabsTrigger value={1}>
-              <Video className="h-3.5 w-3.5" />
-              {t("tabs.vodReview")}
-              {vodReviewMatches.length > 0 && (
-                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
-                  {vodReviewMatches.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          )}
-          <TabsTrigger value={2}>
+          <TabsTrigger value={1}>
             <CheckCircle2 className="h-3.5 w-3.5" />
-            {t("tabs.completed")}
-            {completedTotal > 0 && (
+            {t("tabs.reviewed")}
+            {reviewedTotal > 0 && (
               <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
-                {completedTotal}
+                {reviewedTotal}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
-        {/* Post-Game Tab */}
+        {/* Pending Tab */}
         <TabsContent value={0}>
           <div className="space-y-4 pt-4">
-            {postGameMatches.length === 0 ? (
+            {pendingMatches.length === 0 ? (
               <EmptyState
                 icon={CheckCircle2}
-                title={t("emptyStates.noPostGameTitle")}
-                description={t("emptyStates.noPostGameDescription")}
+                title={t("emptyStates.noPendingTitle")}
+                description={t("emptyStates.noPendingDescription")}
               />
             ) : (
               <>
-                <p className="text-xs text-muted-foreground">{t("postGameHint")}</p>
-                {paginatedPostGame.map((match) => (
-                  <PostGameCard
+                <p className="text-xs text-muted-foreground">{t("pendingHint")}</p>
+                {paginatedPending.map((match) => (
+                  <PendingReviewCard
                     key={match.id}
                     match={match}
                     existingHighlights={getHighlightItems(match.id)}
                     ddragonVersion={ddragonVersion}
                     onReviewed={handleReviewed}
                     locale={locale}
-                    isExpanded={expandedPostGameId === match.id}
+                    isExpanded={expandedId === match.id}
                     onToggleExpand={() =>
-                      setExpandedPostGameId((prev) => (prev === match.id ? null : match.id))
+                      setExpandedId((prev) => (prev === match.id ? null : match.id))
                     }
                     priorityScore={priorityScores[match.id] ?? 0}
                     topics={topics}
+                    activeActionItems={activeActionItems}
                   />
                 ))}
                 <Pagination
-                  currentPage={postGamePage}
-                  totalItems={postGameMatches.length}
-                  onPageChange={setPostGamePage}
+                  currentPage={pendingPage}
+                  totalItems={pendingMatches.length}
+                  onPageChange={setPendingPage}
                 />
               </>
             )}
           </div>
         </TabsContent>
 
-        {/* VOD Review Tab */}
+        {/* Reviewed Tab */}
         <TabsContent value={1}>
-          <div className="space-y-4 pt-4">
-            {vodReviewMatches.length === 0 ? (
-              <EmptyState
-                icon={Video}
-                title={t("emptyStates.noVodReviewTitle")}
-                description={t("emptyStates.noVodReviewDescription")}
-              />
-            ) : (
-              <>
-                <p className="text-xs text-muted-foreground">{t("vodReviewHint")}</p>
-                {paginatedVodReview.map((match) => (
-                  <VodReviewCard
-                    key={match.id}
-                    match={match}
-                    existingHighlights={getHighlightItems(match.id)}
-                    ddragonVersion={ddragonVersion}
-                    onReviewed={handleReviewed}
-                    locale={locale}
-                    isExpanded={expandedVodId === match.id}
-                    onToggleExpand={() =>
-                      setExpandedVodId((prev) => (prev === match.id ? null : match.id))
-                    }
-                  />
-                ))}
-                <Pagination
-                  currentPage={vodReviewPage}
-                  totalItems={vodReviewMatches.length}
-                  onPageChange={setVodReviewPage}
-                />
-              </>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* Completed Tab */}
-        <TabsContent value={2}>
           <div className="relative space-y-4 pt-4">
-            {isCompletedNavigating && (
+            {isReviewedNavigating && (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            {reviewedMatches.length === 0 && completedTotal === 0 ? (
+            {reviewedMatches.length === 0 && reviewedTotal === 0 ? (
               <EmptyState
-                icon={EyeOff}
-                title={t("emptyStates.noCompletedTitle")}
-                description={t("emptyStates.noCompletedDescription")}
+                icon={Eye}
+                title={t("emptyStates.noReviewedTitle")}
+                description={t("emptyStates.noReviewedDescription")}
               />
             ) : (
-              <div className={isCompletedNavigating ? "opacity-40" : ""}>
+              <div className={isReviewedNavigating ? "opacity-40" : ""}>
                 <p className="text-xs text-muted-foreground">
-                  {t("reviewedGamesCount", { count: completedTotal })}
+                  {t("reviewedGamesCount", { count: reviewedTotal })}
                 </p>
                 <div className="mt-4 space-y-4">
                   {reviewedMatches.map((match) => (
-                    <CompletedCard
+                    <ReviewedCard
                       key={match.id}
                       match={match}
                       existingHighlights={getHighlightItems(match.id)}
                       ddragonVersion={ddragonVersion}
-                      onSaved={handleCompletedSaved}
+                      onSaved={handleReviewedSaved}
                       locale={locale}
                       topics={topics}
                       readOnly={isReadOnly}
                     />
                   ))}
                 </div>
-                <CompletedPagination
-                  currentPage={completedPage}
-                  totalPages={completedTotalPages}
-                  disabled={isCompletedNavigating}
-                  onPageChange={navigateCompletedPage}
+                <ReviewedPagination
+                  currentPage={reviewedPage}
+                  totalPages={reviewedTotalPages}
+                  disabled={isReviewedNavigating}
+                  onPageChange={navigateReviewedPage}
                 />
               </div>
             )}

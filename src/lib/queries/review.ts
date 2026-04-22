@@ -8,28 +8,28 @@ import { eq, ne, and, asc, desc, count, or, isNull } from "drizzle-orm";
 import type { Match } from "@/db/schema";
 
 import { db } from "@/db";
-import { matches } from "@/db/schema";
+import { matches, coachingActionItems } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 import { getDefaultTopics } from "@/lib/topics";
 
 import { getDetailedHighlightsByMatch } from "./highlights";
 
-const COMPLETED_PAGE_SIZE = 10;
-const VALID_TABS = ["post-game", "vod", "completed"] as const;
+const REVIEWED_PAGE_SIZE = 10;
+const VALID_TABS = ["pending", "reviewed"] as const;
 
 export async function getReviewData(
   userId: string,
   activeRiotAccountId: string | null,
   primaryRole: string | null,
-  params: { completedPage?: string; tab?: string },
+  params: { reviewedPage?: string; tab?: string },
 ) {
-  const completedPage = Math.max(1, parseInt(String(params.completedPage ?? "1"), 10) || 1);
-  const tabParam = String(params.tab ?? "post-game");
+  const reviewedPage = Math.max(1, parseInt(String(params.reviewedPage ?? "1"), 10) || 1);
+  const tabParam = String(params.tab ?? "pending");
   const initialTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
     ? (tabParam as (typeof VALID_TABS)[number])
-    : "post-game";
-  const completedOffset = (completedPage - 1) * COMPLETED_PAGE_SIZE;
+    : "pending";
+  const reviewedOffset = (reviewedPage - 1) * REVIEWED_PAGE_SIZE;
 
   const reviewedWhere = and(
     eq(matches.userId, userId),
@@ -60,8 +60,6 @@ export async function getReviewData(
     visionScore: true,
     comment: true,
     reviewed: true,
-    reviewNotes: true,
-    reviewSkippedReason: true,
     vodUrl: true,
     queueId: true,
     syncedAt: true,
@@ -73,33 +71,43 @@ export async function getReviewData(
     ? or(eq(matches.position, primaryRole), isNull(matches.position))
     : undefined;
 
-  const [ddragonVersion, unreviewedMatches, reviewedMatches, reviewedCountResult] =
-    await Promise.all([
-      getLatestVersion(),
-      db.query.matches.findMany({
-        where: and(
-          eq(matches.userId, userId),
-          accountScope(matches.riotAccountId, activeRiotAccountId),
-          eq(matches.reviewed, false),
-          ne(matches.result, "Remake"),
-          unreviewedPositionFilter,
-        ),
-        orderBy: asc(matches.gameDate),
-        limit: 50,
-        columns: matchColumns,
-      }) as unknown as Promise<Match[]>,
-      db.query.matches.findMany({
-        where: reviewedWhere,
-        orderBy: desc(matches.gameDate),
-        limit: COMPLETED_PAGE_SIZE,
-        offset: completedOffset,
-        columns: matchColumns,
-      }) as unknown as Promise<Match[]>,
-      db.select({ total: count() }).from(matches).where(reviewedWhere),
-    ]);
+  const [
+    ddragonVersion,
+    unreviewedMatches,
+    reviewedMatches,
+    reviewedCountResult,
+    activeActionItems,
+  ] = await Promise.all([
+    getLatestVersion(),
+    db.query.matches.findMany({
+      where: and(
+        eq(matches.userId, userId),
+        accountScope(matches.riotAccountId, activeRiotAccountId),
+        eq(matches.reviewed, false),
+        ne(matches.result, "Remake"),
+        unreviewedPositionFilter,
+      ),
+      orderBy: asc(matches.gameDate),
+      limit: 50,
+      columns: matchColumns,
+    }) as unknown as Promise<Match[]>,
+    db.query.matches.findMany({
+      where: reviewedWhere,
+      orderBy: desc(matches.gameDate),
+      limit: REVIEWED_PAGE_SIZE,
+      offset: reviewedOffset,
+      columns: matchColumns,
+    }) as unknown as Promise<Match[]>,
+    db.select({ total: count() }).from(matches).where(reviewedWhere),
+    // Fetch active action items for the check-in during review
+    db.query.coachingActionItems.findMany({
+      where: and(eq(coachingActionItems.userId, userId), eq(coachingActionItems.status, "active")),
+      columns: { id: true, description: true, topicId: true },
+    }),
+  ]);
 
-  const completedTotal = reviewedCountResult[0]?.total ?? 0;
-  const completedTotalPages = Math.max(1, Math.ceil(completedTotal / COMPLETED_PAGE_SIZE));
+  const reviewedTotal = reviewedCountResult[0]?.total ?? 0;
+  const reviewedTotalPages = Math.max(1, Math.ceil(reviewedTotal / REVIEWED_PAGE_SIZE));
 
   const allMatchIds = [...unreviewedMatches.map((m) => m.id), ...reviewedMatches.map((m) => m.id)];
   const highlightsByMatch = await getDetailedHighlightsByMatch(
@@ -115,10 +123,11 @@ export async function getReviewData(
     reviewedMatches,
     highlightsByMatch,
     ddragonVersion,
-    completedPage: Math.min(completedPage, completedTotalPages),
-    completedTotalPages,
-    completedTotal,
+    reviewedPage: Math.min(reviewedPage, reviewedTotalPages),
+    reviewedTotalPages,
+    reviewedTotal,
     initialTab,
     topics,
+    activeActionItems,
   };
 }

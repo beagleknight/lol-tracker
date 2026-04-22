@@ -11,7 +11,7 @@ import { accountScope } from "@/lib/match-queries";
 
 export type HighlightItem = {
   type: "highlight" | "lowlight";
-  text: string;
+  text: string | null;
   topicName: string | null;
 };
 
@@ -64,7 +64,7 @@ export async function getHighlightsPerMatch(
 export type DetailedHighlightItem = {
   id: number;
   type: "highlight" | "lowlight";
-  text: string;
+  text: string | null;
   topicId?: number;
   topicName?: string;
 };

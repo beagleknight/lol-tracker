@@ -3,7 +3,7 @@
 
 import { eq, sql, type SQL } from "drizzle-orm";
 
-import { matches, matchHighlights } from "@/db/schema";
+import { matches } from "@/db/schema";
 
 // ─── Account Scoping ─────────────────────────────────────────────────────────
 
@@ -123,13 +123,9 @@ export function sidebarReviewCountsSelect(primaryRole?: string | null) {
     : sql``;
 
   return {
-    postGame:
-      sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' ${roleFilter} AND ${matches.comment} IS NULL AND NOT EXISTS (
-      SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id}
-    ) THEN 1 ELSE 0 END)`.as("post_game"),
-    vod: sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' ${roleFilter} AND (
-      ${matches.comment} IS NOT NULL
-      OR EXISTS (SELECT 1 FROM ${matchHighlights} WHERE ${matchHighlights.matchId} = ${matches.id})
-    ) THEN 1 ELSE 0 END)`.as("vod"),
+    pending:
+      sql<number>`SUM(CASE WHEN ${matches.reviewed} = 0 AND ${matches.result} != 'Remake' ${roleFilter} THEN 1 ELSE 0 END)`.as(
+        "pending",
+      ),
   };
 }

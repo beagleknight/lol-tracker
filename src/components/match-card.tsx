@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  MessageSquare,
-  Eye,
-  Users,
-  ThumbsUp,
-  ThumbsDown,
-  ChevronRight,
-  EyeOff,
-} from "lucide-react";
+import { Eye, Users, ThumbsUp, ThumbsDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,7 +19,7 @@ import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 export interface MatchHighlightData {
   type: "highlight" | "lowlight";
-  text: string;
+  text: string | null;
   topicName?: string | null;
 }
 
@@ -49,8 +41,6 @@ export interface MatchCardData {
   runeKeystoneName: string | null;
   comment: string | null;
   reviewed: boolean;
-  reviewNotes: string | null;
-  reviewSkippedReason?: string | null;
   duoPartnerPuuid: string | null;
   position?: string | null;
 }
@@ -100,7 +90,6 @@ export function MatchCard({
   const t = useTranslations("MatchCard");
   const isCompact = variant === "compact";
   const hasComment = !!match.comment;
-  const hasReviewNotes = !!match.reviewNotes;
   const roleRelevance = getRoleRelevance(match.position, userPrimaryRole);
   const isOffRole = roleRelevance === "off-role";
   const kda =
@@ -127,11 +116,9 @@ export function MatchCard({
 
   // Review status for tooltip
   const reviewStatusText = match.reviewed
-    ? match.reviewSkippedReason
-      ? t("reviewSkipped", { reason: match.reviewSkippedReason })
-      : hasReviewNotes
-        ? match.reviewNotes!
-        : t("reviewed")
+    ? hasComment
+      ? match.comment!
+      : t("reviewed")
     : t("notReviewed");
 
   // Position icon color based on role relevance
@@ -224,26 +211,15 @@ export function MatchCard({
               {/* Compact: highlight pills on champion line */}
               {isCompact &&
                 hasHighlights &&
-                visibleHighlights.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`h-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                        }`}
-                      >
-                        <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
+                visibleHighlights.map((item, i) => (
+                  <span
+                    key={`h-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-win/10 px-1.5 py-0.5 text-[10px] text-win"
+                  >
+                    <ThumbsUp className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
               {isCompact && hasHighlights && highlightOverflow > 0 && (
                 <span className="text-[10px] text-muted-foreground">+{highlightOverflow}</span>
               )}
@@ -278,26 +254,15 @@ export function MatchCard({
                     : t("csLabel", { cs: match.cs })}
                 </span>
                 {hasHighlights &&
-                  visibleLowlights.map((item, i) => {
-                    const hasText = !!(item.text && item.topicName);
-                    return (
-                      <Tooltip key={`l-${i}`}>
-                        <TooltipTrigger
-                          className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                            hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                          }`}
-                        >
-                          <ThumbsDown className="h-2.5 w-2.5" />
-                          {item.topicName || item.text}
-                        </TooltipTrigger>
-                        {hasText && (
-                          <TooltipContent side="bottom" className="max-w-sm">
-                            <p className="whitespace-pre-wrap">{item.text}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    );
-                  })}
+                  visibleLowlights.map((item, i) => (
+                    <span
+                      key={`l-${i}`}
+                      className="inline-flex items-center gap-0.5 rounded-md bg-loss/10 px-1.5 py-0.5 text-[10px] text-loss"
+                    >
+                      <ThumbsDown className="h-2.5 w-2.5" />
+                      {item.topicName}
+                    </span>
+                  ))}
                 {isCompact && hasHighlights && lowlightOverflow > 0 && (
                   <span className="text-[10px] text-muted-foreground">+{lowlightOverflow}</span>
                 )}
@@ -307,46 +272,24 @@ export function MatchCard({
             {/* Highlights preview — default variant only (compact shows them inline above) */}
             {!isCompact && hasHighlights && (
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                {highlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`h-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                        }`}
-                      >
-                        <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
-                {lowlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`l-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                        }`}
-                      >
-                        <ThumbsDown className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
+                {highlightItems.map((item, i) => (
+                  <span
+                    key={`h-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-win/10 px-1.5 py-0.5 text-[10px] text-win"
+                  >
+                    <ThumbsUp className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
+                {lowlightItems.map((item, i) => (
+                  <span
+                    key={`l-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-loss/10 px-1.5 py-0.5 text-[10px] text-loss"
+                  >
+                    <ThumbsDown className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
               </div>
             )}
 
@@ -391,16 +334,6 @@ export function MatchCard({
                 <TooltipContent>{t("duoGameTooltip")}</TooltipContent>
               </Tooltip>
             )}
-            {!isCompact && hasComment && (
-              <Tooltip>
-                <TooltipTrigger className="cursor-default" aria-label="Has comment">
-                  <MessageSquare className="h-3.5 w-3.5 text-gold/70" />
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-sm">
-                  <p className="line-clamp-4 whitespace-pre-wrap">{match.comment}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
             {match.reviewed && (
               <Tooltip>
                 <TooltipTrigger className="cursor-default" aria-label="Reviewed">
@@ -409,14 +342,6 @@ export function MatchCard({
                 <TooltipContent side="bottom" className="max-w-sm">
                   <p className="line-clamp-4 whitespace-pre-wrap">{reviewStatusText}</p>
                 </TooltipContent>
-              </Tooltip>
-            )}
-            {!match.reviewed && (hasReviewNotes || hasHighlights || hasComment) && (
-              <Tooltip>
-                <TooltipTrigger className="cursor-default" aria-label="Not reviewed">
-                  <EyeOff className="h-3.5 w-3.5 text-warning/70" />
-                </TooltipTrigger>
-                <TooltipContent>{t("hasNotesNotReviewed")}</TooltipContent>
               </Tooltip>
             )}
           </div>

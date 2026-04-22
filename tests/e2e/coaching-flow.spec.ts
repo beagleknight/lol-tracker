@@ -185,8 +185,8 @@ test.describe("Coaching flow", () => {
       .locator('[data-testid="action-item-row"]')
       .filter({ hasText: "Practice freezing near tower for 5 games" });
 
-    // Verify initial status is pending
-    await expect(firstActionItemRow).toHaveAttribute("data-status", "pending");
+    // Verify initial status is active
+    await expect(firstActionItemRow).toHaveAttribute("data-status", "active");
 
     // Wait for React hydration — event handlers aren't attached until this
     // attribute appears. Without this guard the click can be silently swallowed
@@ -196,15 +196,15 @@ test.describe("Coaching flow", () => {
     // Click the cycle button with retry — even after the hydration attribute is
     // set, the browser event loop may not have fully wired handlers on slow CI
     // runners. We only re-click if the status hasn't changed (the previous
-    // click was swallowed). This avoids over-cycling past in_progress (#74).
+    // click was swallowed).
     const cycleButton = firstActionItemRow.locator("button").first();
     await expect(cycleButton).toBeVisible();
     await expect(async () => {
       const currentStatus = await firstActionItemRow.getAttribute("data-status");
-      if (currentStatus === "pending") {
+      if (currentStatus === "active") {
         await cycleButton.click();
       }
-      await expect(firstActionItemRow).toHaveAttribute("data-status", "in_progress", {
+      await expect(firstActionItemRow).toHaveAttribute("data-status", "completed", {
         timeout: 2_000,
       });
     }).toPass({ timeout: 15_000, intervals: [500, 1_000, 2_000] });
