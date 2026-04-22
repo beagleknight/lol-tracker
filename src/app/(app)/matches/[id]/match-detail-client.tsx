@@ -5,8 +5,6 @@ import {
   ClipboardEdit,
   Link as LinkIcon,
   Eye,
-  EyeOff,
-  SkipForward,
   MessageSquare,
   ExternalLink,
 } from "lucide-react";
@@ -212,8 +210,7 @@ export function MatchDetailClient({
   const hasHighlights = highlights.length > 0;
   const hasComment = !!match.comment;
   const hasVodUrl = !!match.vodUrl;
-  const hasReviewNotes = !!match.reviewNotes;
-  const hasAnyNotes = hasHighlights || hasComment || hasReviewNotes;
+  const hasAnyNotes = hasHighlights || hasComment;
 
   return (
     <div className="space-y-6">
@@ -250,9 +247,8 @@ export function MatchDetailClient({
                     {t("reviewed")}
                   </Badge>
                 )}
-                {!match.reviewed && hasAnyNotes && (
+                {!match.reviewed && (
                   <Badge variant="outline" className="gap-1 border-warning/30 text-warning">
-                    <EyeOff className="h-3 w-3" />
                     {t("pendingReview")}
                   </Badge>
                 )}
@@ -507,7 +503,7 @@ export function MatchDetailClient({
       )}
 
       {/* Notes & Review Section — read-only */}
-      {(hasComment || hasVodUrl || hasReviewNotes || match.reviewed) && (
+      {(hasComment || hasVodUrl || match.reviewed) && (
         <>
           <Separator />
 
@@ -531,7 +527,7 @@ export function MatchDetailClient({
               )}
 
               {/* VOD & Review — read-only */}
-              {(hasVodUrl || hasReviewNotes || match.reviewed) && (
+              {(hasVodUrl || match.reviewed) && (
                 <Card className="surface-glow">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -559,28 +555,8 @@ export function MatchDetailClient({
                       </div>
                     )}
 
-                    {/* Review notes */}
-                    {hasReviewNotes && (
-                      <div className="space-y-1.5">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {t("reviewNotes")}
-                        </p>
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
-                          {match.reviewNotes}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Skip reason */}
-                    {match.reviewSkippedReason && (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
-                        <SkipForward className="h-3 w-3" />
-                        {t("skipped", { reason: match.reviewSkippedReason })}
-                      </div>
-                    )}
-
                     {/* Review status badge */}
-                    {match.reviewed && !hasReviewNotes && !match.reviewSkippedReason && (
+                    {match.reviewed && (
                       <p className="flex items-center gap-1.5 text-xs text-win">
                         <Eye className="h-3 w-3" />
                         {t("markedAsReviewed")}

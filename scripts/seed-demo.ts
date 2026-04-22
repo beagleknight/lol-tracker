@@ -545,8 +545,6 @@ async function seedDemo() {
       matchup: { id: number; name: string };
       reviewed: boolean;
       comment: string | null;
-      reviewNotes: string | null;
-      reviewSkipped: string | null;
       odometer: number;
       position: string;
     }
@@ -578,7 +576,6 @@ async function seedDemo() {
       const visionScore = isRemake ? randInt(0, 3) : randInt(10, 50);
       const reviewRoll = rand();
       const reviewed = isRemake ? false : reviewRoll < 0.3;
-      const skipped = isRemake ? false : reviewRoll >= 0.3 && reviewRoll < 0.4;
 
       seedMatches.push({
         matchId: `EUW1_${7000000000 + i}`,
@@ -596,31 +593,14 @@ async function seedDemo() {
         visionScore,
         matchup,
         reviewed,
-        comment:
-          reviewed && rand() < 0.6
-            ? pick([
-                "Good wave management this game",
-                "Should have roamed more after pushing",
-                "Team fights went well, positioning was solid",
-                "Got caught warding alone twice — need to be more careful",
-                "Lane phase was rough but recovered well",
-                "Good TP plays this game",
-              ])
-            : null,
-        reviewNotes: reviewed
+        comment: reviewed
           ? pick([
-              "Focus on cs leads in the first 5 minutes",
-              "Back timings were off — lost waves unnecessarily",
-              "Vision control around dragon was excellent",
-              "Died to ganks — check minimap before trading",
-              "Good roam timing, keep it up",
-            ])
-          : null,
-        reviewSkipped: skipped
-          ? pick([
-              "Already know what went wrong",
-              "Remake / short game",
-              "Not much to learn from this one",
+              "Good wave management this game. Focus on cs leads in the first 5 minutes.",
+              "Should have roamed more after pushing.\n\n---\n\nBack timings were off — lost waves unnecessarily",
+              "Team fights went well, positioning was solid. Vision control around dragon was excellent.",
+              "Got caught warding alone twice — need to be more careful.\n\nDied to ganks — check minimap before trading.",
+              "Lane phase was rough but recovered well. Good roam timing, keep it up.",
+              "Good TP plays this game",
             ])
           : null,
         odometer: i + 1,
@@ -636,9 +616,9 @@ async function seedDemo() {
                 matchup_champion_id, matchup_champion_name,
                 kills, deaths, assists, cs, cs_per_min,
                 game_duration_seconds, gold_earned, vision_score,
-                comment, reviewed, review_notes, review_skipped_reason,
+                comment, reviewed,
                 queue_id, position, synced_at, raw_match_json
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           m.matchId,
           m.odometer,
@@ -662,8 +642,6 @@ async function seedDemo() {
           m.visionScore,
           m.comment,
           m.reviewed ? 1 : 0,
-          m.reviewNotes,
-          m.reviewSkipped,
           420,
           m.position,
           ts(m.gameDate),
@@ -813,21 +791,21 @@ async function seedDemo() {
         sessionIdx: 1,
         desc: "Play 3 games focusing on max-range ability usage in team fights",
         topicName: "Team fighting",
-        status: "in_progress",
+        status: "active",
         completedAt: null,
       },
       {
         sessionIdx: 1,
         desc: "Place 2+ control wards per game before dragon spawns",
         topicName: "Vision control",
-        status: "in_progress",
+        status: "active",
         completedAt: null,
       },
       {
         sessionIdx: 1,
         desc: "Watch LCK mid lane team fight positioning VODs",
         topicName: "Team fighting",
-        status: "pending",
+        status: "active",
         completedAt: null,
       },
     ];
@@ -885,13 +863,13 @@ async function seedDemo() {
       {
         matchId: "EUW1_7000000020",
         type: "highlight",
-        text: "Team fight positioning was great — stayed max range entire fight",
+        text: null,
         topicName: "Team fighting",
       },
       {
         matchId: "EUW1_7000000020",
         type: "lowlight",
-        text: "Used flash aggressively when it wasn't needed",
+        text: null,
         topicName: "Team fighting",
       },
       {
@@ -903,7 +881,7 @@ async function seedDemo() {
       {
         matchId: "EUW1_7000000030",
         type: "lowlight",
-        text: "Walked into unwarded jungle and got collapsed on",
+        text: null,
         topicName: "Vision control",
       },
       {
@@ -940,6 +918,48 @@ async function seedDemo() {
           ts(now),
         ],
       });
+    }
+
+    // ─── Action Item Outcomes ───────────────────────────────────────────────
+    console.log("Creating action item outcomes...");
+
+    const actionItemRows = await tx.execute({
+      sql: `SELECT id, description FROM coaching_action_items WHERE user_id = ? ORDER BY id`,
+      args: [DEMO_USER_ID],
+    });
+
+    if (actionItemRows.rows.length > 0) {
+      const aiIds = actionItemRows.rows.map((r) => Number(r.id));
+      const reviewedMatchIds = seedMatches
+        .filter((m) => m.reviewed)
+        .slice(0, 5)
+        .map((m) => m.matchId);
+
+      const outcomes: Array<{ matchId: string; actionItemId: number; outcome: string }> = [];
+      for (const matchId of reviewedMatchIds) {
+        if (aiIds[3]) {
+          outcomes.push({
+            matchId,
+            actionItemId: aiIds[3],
+            outcome: pick(["nailed_it", "forgot", "unsure"]),
+          });
+        }
+        if (aiIds[4]) {
+          outcomes.push({
+            matchId,
+            actionItemId: aiIds[4],
+            outcome: pick(["nailed_it", "nailed_it", "forgot"]),
+          });
+        }
+      }
+
+      for (const o of outcomes) {
+        await tx.execute({
+          sql: `INSERT INTO match_action_item_outcomes (match_id, action_item_id, user_id, outcome, created_at)
+                VALUES (?, ?, ?, ?, ?)`,
+          args: [o.matchId, o.actionItemId, DEMO_USER_ID, o.outcome, ts(now)],
+        });
+      }
     }
 
     // ─── Challenges ────────────────────────────────────────────────────────

@@ -50,7 +50,6 @@ const CSV_HEADERS = [
   "Queue ID",
   "Reviewed",
   "Comment",
-  "Review Notes",
   "VOD URL",
   "Duo Partner Champion",
 ] as const;
@@ -73,7 +72,6 @@ function matchToCsvRow(match: {
   queueId: number | null;
   reviewed: boolean;
   comment: string | null;
-  reviewNotes: string | null;
   vodUrl: string | null;
   duoPartnerChampionName: string | null;
 }): string {
@@ -95,7 +93,6 @@ function matchToCsvRow(match: {
     csvEscape(match.queueId),
     csvEscape(match.reviewed ? "Yes" : "No"),
     csvEscape(match.comment),
-    csvEscape(match.reviewNotes),
     csvEscape(match.vodUrl),
     csvEscape(match.duoPartnerChampionName),
   ].join(",");
@@ -151,7 +148,6 @@ export async function GET(request: Request) {
         OR ${matches.matchupChampionName} LIKE ${pattern}
         OR ${matches.runeKeystoneName} LIKE ${pattern}
         OR ${matches.comment} LIKE ${pattern}
-        OR ${matches.reviewNotes} LIKE ${pattern}
       )`,
     );
   }
@@ -178,7 +174,6 @@ export async function GET(request: Request) {
       queueId: true,
       reviewed: true,
       comment: true,
-      reviewNotes: true,
       vodUrl: true,
       duoPartnerChampionName: true,
     },

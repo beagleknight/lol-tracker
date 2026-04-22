@@ -122,7 +122,7 @@ export async function buildMatchupContext(
       csPerMin: number;
       gameDurationSeconds: number;
       comment: string | null;
-      highlights: Array<{ type: string; text: string; topicName: string | null }>;
+      highlights: Array<{ type: string; text: string | null; topicName: string | null }>;
     }>;
   },
 ): Promise<MatchupInsightContext> {
@@ -238,8 +238,7 @@ export interface PostGameInsightContext {
   gameDurationMin: number;
   runeKeystoneName: string | null;
   comment: string | null;
-  reviewNotes: string | null;
-  highlights: Array<{ type: string; text: string; topicName: string | null }>;
+  highlights: Array<{ type: string; text: string | null; topicName: string | null }>;
   championAvgStats: AvgStats | null;
   matchupNotes: string | null;
   activeActionItems: ActionItemSummary[];
@@ -396,7 +395,6 @@ export async function buildPostGameContext(
     gameDurationMin: Math.round(match.gameDurationSeconds / 60),
     runeKeystoneName: match.runeKeystoneName,
     comment: match.comment,
-    reviewNotes: match.reviewNotes,
     highlights: highlightRows,
     championAvgStats,
     matchupNotes: noteContent,

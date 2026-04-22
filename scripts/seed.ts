@@ -665,8 +665,6 @@ async function seed() {
     duoAssists: number;
     reviewed: boolean;
     comment: string | null;
-    reviewNotes: string | null;
-    reviewSkipped: string | null;
     odometer: number;
     position: string;
   }
@@ -713,7 +711,6 @@ async function seed() {
     // ~30% reviewed, ~10% skipped, rest unreviewed (remakes never reviewed)
     const reviewRoll = rand();
     const reviewed = isRemake ? false : reviewRoll < 0.3;
-    const skipped = isRemake ? false : reviewRoll >= 0.3 && reviewRoll < 0.4;
 
     seedMatches.push({
       matchId: `EUW1_${7000000000 + i}`,
@@ -736,31 +733,14 @@ async function seed() {
       duoDeaths: hasDuo ? randInt(0, 8) : 0,
       duoAssists: hasDuo ? randInt(2, 20) : 0,
       reviewed,
-      comment:
-        reviewed && rand() < 0.6
-          ? pick([
-              "Good wave management this game",
-              "Should have roamed more after pushing",
-              "Team fights went well, positioning was solid",
-              "Got caught warding alone twice — need to be more careful",
-              "Lane phase was rough but recovered well",
-              "Good TP plays this game",
-            ])
-          : null,
-      reviewNotes: reviewed
+      comment: reviewed
         ? pick([
-            "Focus on cs leads in the first 5 minutes",
-            "Back timings were off — lost waves unnecessarily",
-            "Vision control around dragon was excellent",
-            "Died to ganks — check minimap before trading",
-            "Good roam timing, keep it up",
-          ])
-        : null,
-      reviewSkipped: skipped
-        ? pick([
-            "Already know what went wrong",
-            "Remake / short game",
-            "Not much to learn from this one",
+            "Good wave management this game. Focus on cs leads in the first 5 minutes.",
+            "Should have roamed more after pushing.\n\n---\n\nBack timings were off — lost waves unnecessarily",
+            "Team fights went well, positioning was solid. Vision control around dragon was excellent.",
+            "Got caught warding alone twice — need to be more careful.\n\nDied to ganks — check minimap before trading.",
+            "Lane phase was rough but recovered well. Good roam timing, keep it up.",
+            "Good TP plays this game",
           ])
         : null,
       odometer: i + 1,
@@ -776,11 +756,11 @@ async function seed() {
               matchup_champion_id, matchup_champion_name,
               kills, deaths, assists, cs, cs_per_min,
               game_duration_seconds, gold_earned, vision_score,
-              comment, reviewed, review_notes, review_skipped_reason,
+              comment, reviewed,
               queue_id, position, synced_at, raw_match_json,
               duo_partner_puuid, duo_partner_champion_name,
               duo_partner_kills, duo_partner_deaths, duo_partner_assists
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         m.matchId,
         m.odometer,
@@ -804,8 +784,6 @@ async function seed() {
         m.visionScore,
         m.comment,
         m.reviewed ? 1 : 0,
-        m.reviewNotes,
-        m.reviewSkipped,
         420,
         m.position,
         ts(m.gameDate),
@@ -844,8 +822,6 @@ async function seed() {
     position: string;
     reviewed: boolean;
     comment: string | null;
-    reviewNotes: string | null;
-    reviewSkipped: string | null;
   }> = [];
 
   let duoOdometer = 0;
@@ -869,7 +845,6 @@ async function seed() {
 
     const reviewRoll = rand();
     const reviewed = isRemake ? false : reviewRoll < 0.25;
-    const skipped = isRemake ? false : reviewRoll >= 0.25 && reviewRoll < 0.35;
 
     duoMatches.push({
       matchId: m.matchId, // same Riot match — both players were in this game
@@ -890,25 +865,15 @@ async function seed() {
       hasDuo: true, // main user is the duo partner from this perspective
       position: "UTILITY",
       reviewed,
-      comment:
-        reviewed && rand() < 0.5
-          ? pick([
-              "Good peel in team fights",
-              "Roam timings were solid",
-              "Should have warded dragon pit earlier",
-              "Engage timing was off in the baron fight",
-              "Lane presence was strong, zoned well",
-            ])
-          : null,
-      reviewNotes: reviewed
+      comment: reviewed
         ? pick([
-            "Work on roam timing after ADC backs",
-            "Vision score was excellent this game",
-            "Engage timing needs improvement",
-            "Good lane control with bushes",
+            "Good peel in team fights. Work on roam timing after ADC backs.",
+            "Roam timings were solid. Vision score was excellent this game.",
+            "Should have warded dragon pit earlier.\n\nEngage timing needs improvement.",
+            "Engage timing was off in the baron fight. Good lane control with bushes.",
+            "Lane presence was strong, zoned well",
           ])
         : null,
-      reviewSkipped: skipped ? pick(["Short game", "Nothing new to note"]) : null,
     });
   }
 
@@ -941,7 +906,6 @@ async function seed() {
 
     const reviewRoll = rand();
     const reviewed = isRemake ? false : reviewRoll < 0.2;
-    const skipped = isRemake ? false : reviewRoll >= 0.2 && reviewRoll < 0.3;
 
     duoMatches.push({
       matchId: `EUW1_${8000000000 + i}`, // separate match IDs (solo games)
@@ -962,22 +926,13 @@ async function seed() {
       hasDuo: false,
       position: rand() < 0.8 ? "UTILITY" : pick(["MIDDLE", "BOTTOM"]),
       reviewed,
-      comment:
-        reviewed && rand() < 0.5
-          ? pick([
-              "Played well from behind",
-              "Good roam bot after first back",
-              "Need to track enemy jungler better",
-            ])
-          : null,
-      reviewNotes: reviewed
+      comment: reviewed
         ? pick([
-            "Focus on level 2 all-in timing",
-            "Ward coverage was lacking this game",
-            "Good engage patience in team fights",
+            "Played well from behind. Focus on level 2 all-in timing.",
+            "Good roam bot after first back. Ward coverage was lacking this game.",
+            "Need to track enemy jungler better. Good engage patience in team fights.",
           ])
         : null,
-      reviewSkipped: skipped ? pick(["Quick game", "Nothing notable"]) : null,
     });
   }
 
@@ -991,11 +946,11 @@ async function seed() {
               matchup_champion_id, matchup_champion_name,
               kills, deaths, assists, cs, cs_per_min,
               game_duration_seconds, gold_earned, vision_score,
-              comment, reviewed, review_notes, review_skipped_reason,
+              comment, reviewed,
               queue_id, position, synced_at, raw_match_json,
               duo_partner_puuid, duo_partner_champion_name,
               duo_partner_kills, duo_partner_deaths, duo_partner_assists
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         m.matchId,
         m.odometer,
@@ -1019,8 +974,6 @@ async function seed() {
         m.visionScore,
         m.comment,
         m.reviewed ? 1 : 0,
-        m.reviewNotes,
-        m.reviewSkipped,
         420,
         m.position,
         ts(m.gameDate),
@@ -1208,21 +1161,21 @@ async function seed() {
       sessionId: 2,
       desc: "Play 3 games focusing on max-range ability usage in team fights",
       topicName: "Team fighting",
-      status: "in_progress",
+      status: "active",
       completedAt: null,
     },
     {
       sessionId: 2,
       desc: "Place 2+ control wards per game before dragon spawns",
       topicName: "Vision control",
-      status: "in_progress",
+      status: "active",
       completedAt: null,
     },
     {
       sessionId: 2,
       desc: "Watch LCK mid lane team fight positioning VODs",
       topicName: "Team fighting",
-      status: "pending",
+      status: "active",
       completedAt: null,
     },
   ];
@@ -1280,13 +1233,13 @@ async function seed() {
     {
       matchId: "EUW1_7000000020",
       type: "highlight",
-      text: "Team fight positioning was great — stayed max range entire fight",
+      text: null,
       topicName: "Team fighting",
     },
     {
       matchId: "EUW1_7000000020",
       type: "lowlight",
-      text: "Used flash aggressively when it wasn't needed",
+      text: null,
       topicName: "Team fighting",
     },
     {
@@ -1298,7 +1251,7 @@ async function seed() {
     {
       matchId: "EUW1_7000000030",
       type: "lowlight",
-      text: "Walked into unwarded jungle and got collapsed on",
+      text: null,
       topicName: "Vision control",
     },
     {
@@ -1335,6 +1288,56 @@ async function seed() {
         ts(now),
       ],
     });
+  }
+
+  // ─── Action Item Outcomes ─────────────────────────────────────────────────
+  console.log("Creating action item outcomes...");
+
+  // Action items are inserted with sessionId 1 (items 1-3, completed) and sessionId 2 (items 4-6, active)
+  // We need the actual IDs — they're auto-incremented, so we query them
+  const actionItemRows = await client.execute({
+    sql: `SELECT id, description FROM coaching_action_items WHERE user_id = ? ORDER BY id`,
+    args: [MAIN_USER_ID],
+  });
+
+  if (actionItemRows.rows.length > 0) {
+    // Map action items by description prefix for clarity
+    const aiIds = actionItemRows.rows.map((r) => Number(r.id));
+
+    // Outcomes for active items (items 4-6) across reviewed matches
+    const reviewedMatchIds = seedMatches
+      .filter((m) => m.reviewed)
+      .slice(0, 5)
+      .map((m) => m.matchId);
+
+    const outcomes: Array<{ matchId: string; actionItemId: number; outcome: string }> = [];
+    for (const matchId of reviewedMatchIds) {
+      // Item 4 (active): "Play 3 games focusing on max-range ability usage"
+      if (aiIds[3]) {
+        outcomes.push({
+          matchId,
+          actionItemId: aiIds[3],
+          outcome: pick(["nailed_it", "forgot", "unsure"]),
+        });
+      }
+      // Item 5 (active): "Place 2+ control wards per game"
+      if (aiIds[4]) {
+        outcomes.push({
+          matchId,
+          actionItemId: aiIds[4],
+          outcome: pick(["nailed_it", "nailed_it", "forgot"]), // mostly nailed it
+        });
+      }
+      // Item 6 (active): skip some — not every item gets tracked every game
+    }
+
+    for (const o of outcomes) {
+      await client.execute({
+        sql: `INSERT INTO match_action_item_outcomes (match_id, action_item_id, user_id, outcome, created_at)
+              VALUES (?, ?, ?, ?, ?)`,
+        args: [o.matchId, o.actionItemId, MAIN_USER_ID, o.outcome, ts(now)],
+      });
+    }
   }
 
   // ─── Challenges ────────────────────────────────────────────────────────────

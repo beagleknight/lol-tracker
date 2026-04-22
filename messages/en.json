@@ -124,6 +124,7 @@
     "actionItems": "Action items",
     "actionItemInProgress": "In progress",
     "actionItemPending": "Pending",
+    "actionItemActive": "Active",
     "noActiveActionItems": "No active action items.",
     "challengesWidget": "Challenges",
     "noActiveChallenges": "No active challenges.",
@@ -235,7 +236,9 @@
     "tabs": {
       "postGame": "Post-game",
       "vodReview": "VOD review",
-      "completed": "Completed"
+      "completed": "Completed",
+      "pending": "Pending",
+      "reviewed": "Reviewed"
     },
     "emptyStates": {
       "noPostGameTitle": "No post-game reviews pending",
@@ -243,17 +246,28 @@
       "noVodReviewTitle": "No VOD reviews pending",
       "noVodReviewDescription": "Complete post-game reviews first, then they'll appear here for VOD review.",
       "noCompletedTitle": "No completed reviews yet",
-      "noCompletedDescription": "Reviewed games will appear here for reference."
+      "noCompletedDescription": "Reviewed games will appear here for reference.",
+      "noPendingTitle": "All caught up!",
+      "noPendingDescription": "No games waiting for review. Play some games and come back!",
+      "noReviewedTitle": "No reviewed games yet",
+      "noReviewedDescription": "Games you review will appear here."
     },
     "postGameHint": "These games haven't been reviewed yet. Add highlights, notes, and optionally a VOD link.",
     "vodReviewHint": "These games have post-game notes but haven't been VOD-reviewed yet. Watch the VOD and add your takeaways.",
+    "pendingHint": "Click topics to mark highlights and lowlights, add notes, and save to mark as reviewed.",
     "reviewedGamesCount": "{count, plural, one {# reviewed game} other {# reviewed games}}.",
     "suggested": "Suggested",
     "disabledSaveTooltip": "Add at least one highlight, note, or VOD link to save.",
     "sessionProgress": "{done} of {total} reviewed this session",
     "moreActions": "More actions",
     "viewMatchDetails": "View match details",
+    "notesOptional": "Notes (optional)",
+    "notes": "Notes",
+    "saveReview": "Save & mark reviewed",
+    "editReview": "Edit review",
+    "reviewed": "Reviewed",
     "toasts": {
+      "reviewSaved": "Review saved!",
       "reviewSavedAndSkipped": "Review saved & VOD review skipped.",
       "postGameReviewSaved": "Post-game review saved!",
       "failedToSaveReview": "Failed to save review.",
@@ -264,6 +278,23 @@
       "bulkMarkReviewed": "Marked {count, plural, one {# game} other {# games}} as reviewed.",
       "failedToMarkReviewed": "Failed to mark games as reviewed."
     }
+  },
+  "TopicClickGrid": {
+    "clickToToggle": "Click to mark as highlight or lowlight",
+    "markHighlight": "Mark {topic} as highlight",
+    "markLowlight": "Mark {topic} as lowlight"
+  },
+  "MarkdownTextarea": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list"
+  },
+  "ActionItemCheckin": {
+    "title": "Action item check-in",
+    "nailedIt": "Mark {item} as nailed it",
+    "forgot": "Mark {item} as forgot",
+    "unsure": "Mark {item} as unsure"
   },
   "Scout": {
     "pageTitle": "Matchup scout",
@@ -517,12 +548,13 @@
   },
   "ActionItems": {
     "title": "Action items",
-    "summary": "{pendingCount} pending · {inProgressCount} in progress · {completedCount} completed",
+    "summary": "{activeCount} active · {completedCount} completed",
     "statusFilterPlaceholder": "Status",
     "topicFilterPlaceholder": "Topic",
     "allStatuses": "All statuses",
     "pending": "Pending",
     "inProgress": "In progress",
+    "active": "Active",
     "completed": "Completed",
     "allTopics": "All topics",
     "emptyStateTitle": "No action items yet",

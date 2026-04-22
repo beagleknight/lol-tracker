@@ -76,8 +76,7 @@ async function SidebarWithUser() {
           role: user.role,
         }}
         reviewCounts={{
-          postGame: reviewCounts?.postGame ?? 0,
-          vod: reviewCounts?.vod ?? 0,
+          pending: reviewCounts?.pending ?? 0,
         }}
         latestChangelogVersion={latestVersion}
         riotAccounts={userRiotAccounts}

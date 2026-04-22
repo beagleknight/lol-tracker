@@ -12,7 +12,7 @@ export default async function ReviewPage({
   const params = await searchParams;
 
   const data = await getReviewData(user.id, user.activeRiotAccountId, user.primaryRole, {
-    completedPage: typeof params.completedPage === "string" ? params.completedPage : undefined,
+    reviewedPage: typeof params.reviewedPage === "string" ? params.reviewedPage : undefined,
     tab: typeof params.tab === "string" ? params.tab : undefined,
   });
 
@@ -22,11 +22,12 @@ export default async function ReviewPage({
       reviewedMatches={data.reviewedMatches}
       highlightsByMatch={data.highlightsByMatch}
       ddragonVersion={data.ddragonVersion}
-      completedPage={data.completedPage}
-      completedTotalPages={data.completedTotalPages}
-      completedTotal={data.completedTotal}
+      reviewedPage={data.reviewedPage}
+      reviewedTotalPages={data.reviewedTotalPages}
+      reviewedTotal={data.reviewedTotal}
       initialTab={data.initialTab}
       topics={data.topics}
+      activeActionItems={data.activeActionItems}
     />
   );
 }

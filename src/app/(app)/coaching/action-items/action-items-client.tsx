@@ -53,16 +53,11 @@ function ActionItemRow({
   const [isDeleting, startDelete] = useTransition();
 
   function cycleStatus() {
-    const nextStatus: Record<string, "pending" | "in_progress" | "completed"> = {
-      pending: "in_progress",
-      in_progress: "completed",
-      completed: "pending",
-    };
-    const next = nextStatus[item.status];
+    const next: "active" | "completed" = item.status === "active" ? "completed" : "active";
     startTransition(async () => {
       try {
         await updateActionItemStatus(item.id, next);
-        toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
+        toast.success(t("toasts.statusUpdated", { status: next }));
       } catch {
         toast.error(t("toasts.statusUpdateError"));
       }
@@ -126,22 +121,14 @@ function ActionItemRow({
         </div>
       </div>
       <Badge
-        variant={
-          item.status === "completed"
-            ? "default"
-            : item.status === "in_progress"
-              ? "secondary"
-              : "outline"
-        }
+        variant={item.status === "completed" ? "default" : "secondary"}
         className={`shrink-0 text-xs ${
           item.status === "completed"
             ? "border-win/30 bg-win/15 text-win"
-            : item.status === "in_progress"
-              ? "border-status-progress/30 bg-status-progress/15 text-status-progress"
-              : ""
+            : "border-status-progress/30 bg-status-progress/15 text-status-progress"
         }`}
       >
-        {item.status.replace("_", " ")}
+        {item.status}
       </Badge>
       <Button
         variant="ghost"
@@ -182,8 +169,7 @@ export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps)
   const safePage = Math.min(page, totalPages);
   const paginatedItems = paginate(filtered, safePage);
 
-  const pendingCount = items.filter((i) => i.status === "pending").length;
-  const inProgressCount = items.filter((i) => i.status === "in_progress").length;
+  const activeCount = items.filter((i) => i.status === "active").length;
   const completedCount = items.filter((i) => i.status === "completed").length;
 
   function handleAddItem() {
@@ -209,9 +195,7 @@ export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">
-            {t("summary", { pendingCount, inProgressCount, completedCount })}
-          </p>
+          <p className="text-muted-foreground">{t("summary", { activeCount, completedCount })}</p>
         </div>
         <Button size="sm" onClick={() => setShowAddForm((prev) => !prev)}>
           <Plus className="mr-1 h-3.5 w-3.5" />
@@ -269,8 +253,7 @@ export function ActionItemsClient({ items, topicNames }: ActionItemsClientProps)
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("allStatuses")}</SelectItem>
-            <SelectItem value="pending">{t("pending")}</SelectItem>
-            <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
+            <SelectItem value="active">{t("active")}</SelectItem>
             <SelectItem value="completed">{t("completed")}</SelectItem>
           </SelectContent>
         </Select>

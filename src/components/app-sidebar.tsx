@@ -88,8 +88,7 @@ interface SidebarProps {
     role?: string | null;
   };
   reviewCounts?: {
-    postGame: number;
-    vod: number;
+    pending: number;
   };
   latestChangelogVersion?: string | null;
   riotAccounts?: RiotAccountItem[];
@@ -210,7 +209,7 @@ function SidebarContent({
   const bottomNav = resolve(navDefs.bottom);
 
   // Inject review badge counts and premium lock into the tracker nav
-  const totalReview = (reviewCounts?.postGame ?? 0) + (reviewCounts?.vod ?? 0);
+  const totalReview = reviewCounts?.pending ?? 0;
   const isFreeUser = user.role === "free";
   const trackerNavWithBadges = trackerNav.map((item) => {
     let updated = item;

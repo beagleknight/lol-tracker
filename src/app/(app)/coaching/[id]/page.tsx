@@ -94,7 +94,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicName: string | undefined;
     }>
   > = {};
@@ -124,7 +124,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicName?: string | undefined;
     }>
   > = {};

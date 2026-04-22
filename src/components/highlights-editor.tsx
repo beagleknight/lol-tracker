@@ -16,7 +16,7 @@ export interface TopicOption {
 
 export interface HighlightItem {
   type: "highlight" | "lowlight";
-  text: string;
+  text?: string | null;
   topicId?: number;
   topicName?: string; // For display — resolved from topicId
 }

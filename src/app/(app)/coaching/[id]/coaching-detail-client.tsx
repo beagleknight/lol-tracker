@@ -7,7 +7,6 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  Play,
   Video,
   ExternalLink,
   CalendarCheck,
@@ -74,7 +73,7 @@ interface CoachingDetailClientProps {
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicId?: number;
       topicName?: string;
     }>
@@ -84,7 +83,7 @@ interface CoachingDetailClientProps {
     string,
     Array<{
       type: "highlight" | "lowlight";
-      text: string;
+      text: string | null;
       topicId?: number;
       topicName?: string;
     }>
@@ -114,10 +113,9 @@ function ActionItemRow({
   // revalidation flight arriving with stale props, causing flaky E2E (#102).
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(item.status);
 
-  const nextStatusMap: Record<string, "pending" | "in_progress" | "completed"> = {
-    pending: "in_progress",
-    in_progress: "completed",
-    completed: "pending",
+  const nextStatusMap: Record<string, "active" | "completed"> = {
+    active: "completed",
+    completed: "active",
   };
 
   function cycleStatus() {
@@ -126,7 +124,7 @@ function ActionItemRow({
       setOptimisticStatus(next);
       try {
         await updateActionItemStatus(item.id, next);
-        toast.success(t("toasts.statusUpdated", { status: next.replace("_", " ") }));
+        toast.success(t("toasts.statusUpdated", { status: next }));
       } catch {
         toast.error(t("toasts.statusUpdateError"));
       }
@@ -136,8 +134,7 @@ function ActionItemRow({
   const displayStatus = optimisticStatus;
 
   const icons = {
-    pending: <Circle className="h-4 w-4 text-muted-foreground" />,
-    in_progress: <Play className="h-4 w-4 text-status-progress" />,
+    active: <Circle className="h-4 w-4 text-status-progress" />,
     completed: <CheckCircle2 className="h-4 w-4 text-win" />,
   };
 
@@ -171,22 +168,14 @@ function ActionItemRow({
         )}
       </div>
       <Badge
-        variant={
-          displayStatus === "completed"
-            ? "default"
-            : displayStatus === "in_progress"
-              ? "secondary"
-              : "outline"
-        }
+        variant={displayStatus === "completed" ? "default" : "secondary"}
         className={`shrink-0 text-xs ${
           displayStatus === "completed"
             ? "border-win/30 bg-win/15 text-win"
-            : displayStatus === "in_progress"
-              ? "border-status-progress/30 bg-status-progress/15 text-status-progress"
-              : ""
+            : "border-status-progress/30 bg-status-progress/15 text-status-progress"
         }`}
       >
-        {displayStatus.replace("_", " ")}
+        {displayStatus}
       </Badge>
     </div>
   );

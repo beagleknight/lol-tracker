@@ -365,7 +365,6 @@ function ScoutingReport({
                 runeKeystoneName: game.runeKeystoneName,
                 comment: game.comment,
                 reviewed: game.reviewed,
-                reviewNotes: game.reviewNotes,
                 duoPartnerPuuid: game.duoPartnerPuuid,
                 position: game.position,
               }}

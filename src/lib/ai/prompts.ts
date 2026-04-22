@@ -143,10 +143,7 @@ export function buildPostGamePrompt(ctx: PostGameInsightContext, language: strin
 
   // Player's notes for this game
   if (ctx.comment) {
-    sections.push(`## Player's Game Comment\n"${ctx.comment}"`);
-  }
-  if (ctx.reviewNotes) {
-    sections.push(`## Player's Review Notes\n"${ctx.reviewNotes}"`);
+    sections.push(`## Player's Notes\n"${ctx.comment}"`);
   }
 
   // Highlights and lowlights

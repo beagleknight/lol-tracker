@@ -45,7 +45,7 @@ interface CompleteSessionClientProps {
   vodMatch: VodMatch | null;
   vodHighlights: Array<{
     type: "highlight" | "lowlight";
-    text: string;
+    text: string | null;
     topicId: number | null;
     topicName: string | null;
   }>;

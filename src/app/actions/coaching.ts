@@ -254,10 +254,7 @@ export async function deleteCoachingSession(sessionId: number) {
 
 // ─── Action Items ────────────────────────────────────────────────────────────
 
-export async function updateActionItemStatus(
-  itemId: number,
-  status: "pending" | "in_progress" | "completed",
-) {
+export async function updateActionItemStatus(itemId: number, status: "active" | "completed") {
   const user = await requireUser();
   await blockIfImpersonating();
   await blockDemoWrites();
