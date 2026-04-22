@@ -576,7 +576,7 @@ async function seedDemo() {
       const goldEarned = isRemake ? randInt(500, 1000) : randInt(7000, 18000);
       const visionScore = isRemake ? randInt(0, 3) : randInt(10, 50);
       // Review the last ~20 on-role, non-remake matches (most recent ones)
-      const isOffRole = position !== "MIDDLE" && position !== "BOTTOM";
+      const isOffRole = position !== "MIDDLE";
       const reviewed = isRemake || isOffRole ? false : i >= totalMatches - 20;
 
       seedMatches.push({

@@ -710,7 +710,7 @@ async function seed() {
     const duoChampion = hasDuo ? pick(SUPPORT_CHAMPIONS) : null;
 
     // Review the last ~20 on-role, non-remake matches (most recent ones)
-    const isOffRole = position !== "MIDDLE" && position !== "BOTTOM";
+    const isOffRole = position !== "MIDDLE";
     const reviewed = isRemake || isOffRole ? false : i >= totalMatches - 20;
 
     seedMatches.push({
