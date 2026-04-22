@@ -363,10 +363,10 @@ const DUO_RIOT_ACCOUNT_ID = "seed-riot-acct-0002-000000000002";
 const MAIN_USER = {
   id: MAIN_USER_ID,
   discordId: "seed_discord_001",
-  name: "DemoPlayer",
+  name: "SeedPlayer",
   image: null,
-  email: "demo@example.com",
-  riotGameName: "DemoPlayer",
+  email: "seed@example.com",
+  riotGameName: "SeedPlayer",
   riotTagLine: "EUW",
   puuid: "seed-puuid-main-0000000000000000000000000000000000000000",
   summonerId: "seed-summoner-main",
