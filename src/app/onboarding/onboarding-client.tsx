@@ -90,7 +90,11 @@ function RegionStep({
           }}
         >
           <SelectTrigger id="onboarding-region" className="w-full" aria-label={t("region.label")}>
-            <SelectValue placeholder={t("region.placeholder")} />
+            <SelectValue placeholder={t("region.placeholder")}>
+              {(value: string) =>
+                `${PLATFORM_LABELS[value as keyof typeof PLATFORM_LABELS]} (${value})`
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {PLATFORM_IDS.map((id) => (

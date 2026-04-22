@@ -308,7 +308,17 @@ export function MatchesClient({
           onValueChange={(v) => navigateWithFilter("result", v ?? "all")}
         >
           <SelectTrigger className="w-full sm:w-[130px]" aria-label="Filter by result">
-            <SelectValue placeholder={t("resultFilterPlaceholder")} />
+            <SelectValue placeholder={t("resultFilterPlaceholder")}>
+              {(value: string) => {
+                const labels: Record<string, string> = {
+                  all: t("allResults"),
+                  Victory: t("victories"),
+                  Defeat: t("defeats"),
+                  Remake: t("remakes"),
+                };
+                return labels[value] ?? value;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("allResults")}</SelectItem>
@@ -322,7 +332,12 @@ export function MatchesClient({
           onValueChange={(v) => navigateWithFilter("champion", v ?? "all")}
         >
           <SelectTrigger className="w-full sm:w-[150px]" aria-label="Filter by champion">
-            <SelectValue placeholder={t("championFilterPlaceholder")} />
+            <SelectValue placeholder={t("championFilterPlaceholder")}>
+              {(value: string) => {
+                if (value === "all") return t("allChampions");
+                return value;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("allChampions")}</SelectItem>
@@ -348,7 +363,17 @@ export function MatchesClient({
           onValueChange={(v) => navigateWithFilter("review", v ?? "all")}
         >
           <SelectTrigger className="w-full sm:w-[160px]" aria-label="Filter by review status">
-            <SelectValue placeholder={t("reviewFilterPlaceholder")} />
+            <SelectValue placeholder={t("reviewFilterPlaceholder")}>
+              {(value: string) => {
+                const labels: Record<string, string> = {
+                  all: t("reviewAll"),
+                  reviewed: t("reviewed"),
+                  unreviewed: t("notReviewed"),
+                  "has-notes": t("hasNotes"),
+                };
+                return labels[value] ?? value;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("reviewAll")}</SelectItem>

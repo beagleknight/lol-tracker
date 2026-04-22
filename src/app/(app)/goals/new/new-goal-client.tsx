@@ -148,7 +148,9 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                 }}
               >
                 <SelectTrigger aria-label="Select tier">
-                  <SelectValue placeholder={t("selectTier")} />
+                  <SelectValue placeholder={t("selectTier")}>
+                    {(value: string) => value.charAt(0) + value.slice(1).toLowerCase()}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {TIER_ORDER.map((tier) => (
@@ -166,7 +168,9 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
                 <Label>{t("division")}</Label>
                 <Select value={selectedDivision} onValueChange={(v) => v && setSelectedDivision(v)}>
                   <SelectTrigger aria-label="Select division">
-                    <SelectValue placeholder={t("selectDivision")} />
+                    <SelectValue placeholder={t("selectDivision")}>
+                      {(value: string) => value}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {DIVISION_ORDER.map((div) => (
