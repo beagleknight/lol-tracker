@@ -345,7 +345,7 @@ export function HighlightsDisplay({
                     {displayTopic}
                   </Badge>
                 )}
-                <span className="flex-1 text-foreground/80">{item.text || displayTopic}</span>
+                {item.text && <span className="flex-1 text-foreground/80">{item.text}</span>}
               </div>
             );
           })}
@@ -372,7 +372,7 @@ export function HighlightsDisplay({
                     {displayTopic}
                   </Badge>
                 )}
-                <span className="flex-1 text-foreground/80">{item.text || displayTopic}</span>
+                {item.text && <span className="flex-1 text-foreground/80">{item.text}</span>}
               </div>
             );
           })}

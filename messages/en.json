@@ -294,7 +294,10 @@
     "title": "Action item check-in",
     "nailedIt": "Mark {item} as nailed it",
     "forgot": "Mark {item} as forgot",
-    "unsure": "Mark {item} as unsure"
+    "unsure": "Mark {item} as unsure",
+    "nailedItLabel": "Nailed it",
+    "forgotLabel": "Forgot",
+    "unsureLabel": "Unsure"
   },
   "Scout": {
     "pageTitle": "Matchup scout",

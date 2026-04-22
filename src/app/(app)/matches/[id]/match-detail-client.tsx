@@ -354,7 +354,7 @@ export function MatchDetailClient({
             </p>
             <p className="text-xs text-muted-foreground">{t("reviewCtaSubtext")}</p>
           </div>
-          <Link href={`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`}>
+          <Link href={`/review?tab=pending&matchId=${match.id}`}>
             <Button size="sm" className="shrink-0 gap-1.5">
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("reviewButton")}

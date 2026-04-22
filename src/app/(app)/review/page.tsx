@@ -28,6 +28,7 @@ export default async function ReviewPage({
       initialTab={data.initialTab}
       topics={data.topics}
       activeActionItems={data.activeActionItems}
+      initialMatchId={typeof params.matchId === "string" ? params.matchId : undefined}
     />
   );
 }

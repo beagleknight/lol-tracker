@@ -74,6 +74,7 @@ interface ReviewClientProps {
   initialTab: "pending" | "reviewed";
   topics: TopicOption[];
   activeActionItems: Array<{ id: number; description: string; topicId: number | null }>;
+  initialMatchId?: string;
   readOnly?: boolean;
 }
 
@@ -598,6 +599,7 @@ export function ReviewClient({
   initialTab,
   topics,
   activeActionItems,
+  initialMatchId,
   readOnly,
 }: ReviewClientProps) {
   const router = useRouter();
@@ -611,7 +613,7 @@ export function ReviewClient({
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
 
   // Accordion state: only one card expanded at a time
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(initialMatchId ?? null);
 
   // Pagination state for Pending tab (client-side)
   const [pendingPage, setPendingPage] = useState(1);

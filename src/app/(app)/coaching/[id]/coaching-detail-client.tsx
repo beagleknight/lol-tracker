@@ -648,7 +648,9 @@ export function CoachingDetailClient({
                                       h.type === "highlight" ? "text-win" : "text-loss"
                                     }`}
                                   />
-                                  <span className={isRelevant ? "text-gold" : ""}>{h.text}</span>
+                                  {h.text && (
+                                    <span className={isRelevant ? "text-gold" : ""}>{h.text}</span>
+                                  )}
                                   {h.topicName && (
                                     <Badge
                                       variant={isRelevant ? "default" : "secondary"}

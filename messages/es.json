@@ -294,7 +294,10 @@
     "title": "Seguimiento de tareas",
     "nailedIt": "Marcar {item} como logrado",
     "forgot": "Marcar {item} como olvidado",
-    "unsure": "Marcar {item} como no seguro"
+    "unsure": "Marcar {item} como no seguro",
+    "nailedItLabel": "Logrado",
+    "forgotLabel": "Olvidado",
+    "unsureLabel": "No seguro"
   },
   "Scout": {
     "pageTitle": "Explorador de matchups",

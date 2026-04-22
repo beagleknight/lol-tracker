@@ -19,10 +19,15 @@ interface ActionItemCheckinProps {
   onChange: (items: ActionItemOutcome[]) => void;
 }
 
-const OUTCOME_OPTIONS: Array<{ value: OutcomeValue & string; emoji: string; key: string }> = [
-  { value: "nailed_it", emoji: "✅", key: "nailedIt" },
-  { value: "forgot", emoji: "❌", key: "forgot" },
-  { value: "unsure", emoji: "🤷", key: "unsure" },
+const OUTCOME_OPTIONS: Array<{
+  value: OutcomeValue & string;
+  emoji: string;
+  key: string;
+  labelKey: string;
+}> = [
+  { value: "nailed_it", emoji: "✅", key: "nailedIt", labelKey: "nailedItLabel" },
+  { value: "forgot", emoji: "❌", key: "forgot", labelKey: "forgotLabel" },
+  { value: "unsure", emoji: "🤷", key: "unsure", labelKey: "unsureLabel" },
 ];
 
 export function ActionItemCheckin({ items, onChange }: ActionItemCheckinProps) {
@@ -57,13 +62,13 @@ export function ActionItemCheckin({ items, onChange }: ActionItemCheckinProps) {
               {item.topicName && <p className="text-xs text-muted-foreground">{item.topicName}</p>}
             </div>
             <div className="flex gap-1">
-              {OUTCOME_OPTIONS.map(({ value, emoji, key }) => (
+              {OUTCOME_OPTIONS.map(({ value, emoji, key, labelKey }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setOutcome(item.actionItemId, value)}
                   className={cn(
-                    "rounded px-2 py-1 text-sm transition-colors",
+                    "rounded px-2 py-1 text-xs transition-colors",
                     item.outcome === value
                       ? "bg-accent text-foreground ring-1 ring-ring"
                       : "text-muted-foreground hover:bg-accent/50",
@@ -71,7 +76,7 @@ export function ActionItemCheckin({ items, onChange }: ActionItemCheckinProps) {
                   aria-label={t(key, { item: item.description })}
                   aria-pressed={item.outcome === value}
                 >
-                  {emoji}
+                  {emoji} {t(labelKey)}
                 </button>
               ))}
             </div>
