@@ -69,7 +69,6 @@ interface ScoutClientProps {
   mostPlayed?: ChampionPickCount[];
   mostFaced?: ChampionPickCount[];
   readOnly?: boolean;
-  matchBasePath?: string;
 }
 
 // ─── Scouting Report ────────────────────────────────────────────────────────
@@ -483,7 +482,6 @@ export function ScoutClient({
   mostPlayed = [],
   mostFaced = [],
   readOnly,
-  matchBasePath: _matchBasePath,
 }: ScoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();

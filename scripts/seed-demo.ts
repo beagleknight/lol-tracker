@@ -120,6 +120,234 @@ function ts(date: Date): number {
   return Math.floor(date.getTime() / 1000);
 }
 
+// Common item IDs from League of Legends (mid-lane oriented)
+const ITEM_IDS = [
+  3089, 3157, 3165, 3100, 3020, 3135, 3116, 3152, 3040, 3003, 3285, 3907, 3102, 3190, 3050, 3504,
+  3115, 3091, 3153, 3124, 3046, 3094, 3031, 3036, 3072, 3139, 3156, 3026, 3742, 3143, 3065, 3083,
+  3075, 3110, 3001, 2055, 3364, 3340,
+];
+
+const FAKE_NAMES = [
+  "AzirLord99",
+  "MidOrFeed",
+  "JungleDiff",
+  "TopGapper",
+  "ADCarry420",
+  "SupportMain",
+  "FlashOnD",
+  "GankMePlz",
+  "BaronThief",
+];
+
+const POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+
+/**
+ * Build a fake RiotMatch JSON string for a seeded match.
+ * Only includes the fields parsed by `slimParticipants()` in match-detail.ts.
+ */
+function buildFakeRawMatchJson(m: {
+  matchId: string;
+  champion: { id: number; name: string };
+  keystone: { id: number; name: string };
+  result: "Victory" | "Defeat" | "Remake";
+  kills: number;
+  deaths: number;
+  assists: number;
+  cs: number;
+  durationSeconds: number;
+  goldEarned: number;
+  visionScore: number;
+  matchup: { id: number; name: string };
+  position: string;
+  gameDate: Date;
+}): string {
+  const userTeamId = 100;
+  const enemyTeamId = 200;
+  const userWin = m.result === "Victory";
+
+  // Build 10 participants: 5 per team, user is first on blue team
+  const participants: Record<string, unknown>[] = [];
+
+  // User participant
+  participants.push({
+    puuid: DEMO_USER.puuid,
+    summonerName: DEMO_USER.riotGameName,
+    riotIdGameName: DEMO_USER.riotGameName,
+    riotIdTagline: DEMO_USER.riotTagLine,
+    championId: m.champion.id,
+    championName: m.champion.name,
+    teamId: userTeamId,
+    win: userWin,
+    kills: m.kills,
+    deaths: m.deaths,
+    assists: m.assists,
+    totalMinionsKilled: Math.round(m.cs * 0.8),
+    neutralMinionsKilled: Math.round(m.cs * 0.2),
+    goldEarned: m.goldEarned,
+    visionScore: m.visionScore,
+    individualPosition: m.position,
+    teamPosition: m.position,
+    totalDamageDealtToChampions: randInt(10000, 35000),
+    totalDamageTaken: randInt(8000, 25000),
+    wardsPlaced: randInt(5, 20),
+    wardsKilled: randInt(1, 10),
+    item0: pick(ITEM_IDS),
+    item1: pick(ITEM_IDS),
+    item2: pick(ITEM_IDS),
+    item3: pick(ITEM_IDS),
+    item4: pick(ITEM_IDS),
+    item5: pick(ITEM_IDS),
+    item6: pick([3340, 3364, 2055]),
+    perks: {
+      statPerks: { defense: 5002, flex: 5008, offense: 5005 },
+      styles: [
+        {
+          description: "primaryStyle",
+          style: 8200,
+          selections: [
+            { perk: m.keystone.id, var1: 0, var2: 0, var3: 0 },
+            { perk: 8226, var1: 0, var2: 0, var3: 0 },
+            { perk: 8233, var1: 0, var2: 0, var3: 0 },
+            { perk: 8237, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+        {
+          description: "subStyle",
+          style: 8300,
+          selections: [
+            { perk: 8304, var1: 0, var2: 0, var3: 0 },
+            { perk: 8345, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+      ],
+    },
+  });
+
+  // 4 allied teammates
+  const usedChampions = new Set([m.champion.id, m.matchup.id]);
+  const allyPositions = POSITIONS.filter((p) => p !== m.position);
+  for (let i = 0; i < 4; i++) {
+    const champ = pickUnique(usedChampions);
+    participants.push(
+      makeFakeParticipant(champ, userTeamId, userWin, allyPositions[i], FAKE_NAMES[i], m),
+    );
+  }
+
+  // 5 enemy participants — enemy laner (matchup) is first
+  const enemyPositions = [...POSITIONS];
+  const matchupPosIdx = enemyPositions.indexOf(m.position);
+  // Put matchup champion in the same position as user
+  participants.push(
+    makeFakeParticipant(
+      m.matchup,
+      enemyTeamId,
+      !userWin,
+      enemyPositions[matchupPosIdx],
+      FAKE_NAMES[4],
+      m,
+    ),
+  );
+  usedChampions.add(m.matchup.id);
+
+  for (let i = 0; i < 4; i++) {
+    const pos = enemyPositions.filter((p) => p !== m.position)[i];
+    const champ = pickUnique(usedChampions);
+    participants.push(makeFakeParticipant(champ, enemyTeamId, !userWin, pos, FAKE_NAMES[5 + i], m));
+  }
+
+  return JSON.stringify({
+    metadata: {
+      matchId: m.matchId,
+      participants: participants.map((p) => p.puuid as string),
+    },
+    info: {
+      gameCreation: m.gameDate.getTime(),
+      gameDuration: m.durationSeconds,
+      gameEndedInEarlySurrender: m.result === "Remake",
+      gameId: parseInt(m.matchId.replace("EUW1_", "")),
+      gameMode: "CLASSIC",
+      gameType: "MATCHED_GAME",
+      queueId: 420,
+      participants,
+    },
+  });
+}
+
+function pickUnique(usedIds: Set<number>): { id: number; name: string } {
+  let champ = pick(CHAMPIONS);
+  let attempts = 0;
+  while (usedIds.has(champ.id) && attempts < 50) {
+    champ = pick(CHAMPIONS);
+    attempts++;
+  }
+  usedIds.add(champ.id);
+  return champ;
+}
+
+function makeFakeParticipant(
+  champ: { id: number; name: string },
+  teamId: number,
+  win: boolean,
+  position: string,
+  name: string,
+  m: { durationSeconds: number },
+): Record<string, unknown> {
+  const durationMin = m.durationSeconds / 60;
+  return {
+    puuid: `fake-puuid-${name.toLowerCase()}-${champ.id}`,
+    summonerName: name,
+    riotIdGameName: name,
+    riotIdTagline: "EUW",
+    championId: champ.id,
+    championName: champ.name,
+    teamId,
+    win,
+    kills: randInt(0, 12),
+    deaths: randInt(0, 8),
+    assists: randInt(1, 15),
+    totalMinionsKilled: Math.round(durationMin * (4 + rand() * 5)),
+    neutralMinionsKilled: position === "JUNGLE" ? Math.round(durationMin * 3) : randInt(0, 20),
+    goldEarned: randInt(6000, 17000),
+    visionScore: randInt(8, 45),
+    individualPosition: position,
+    teamPosition: position,
+    totalDamageDealtToChampions: randInt(8000, 32000),
+    totalDamageTaken: randInt(7000, 28000),
+    wardsPlaced: randInt(3, 18),
+    wardsKilled: randInt(0, 8),
+    item0: pick(ITEM_IDS),
+    item1: pick(ITEM_IDS),
+    item2: pick(ITEM_IDS),
+    item3: pick(ITEM_IDS),
+    item4: pick(ITEM_IDS),
+    item5: pick(ITEM_IDS),
+    item6: pick([3340, 3364, 2055]),
+    perks: {
+      statPerks: { defense: 5002, flex: 5008, offense: 5005 },
+      styles: [
+        {
+          description: "primaryStyle",
+          style: 8200,
+          selections: [
+            { perk: pick(KEYSTONES).id, var1: 0, var2: 0, var3: 0 },
+            { perk: 8226, var1: 0, var2: 0, var3: 0 },
+            { perk: 8233, var1: 0, var2: 0, var3: 0 },
+            { perk: 8237, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+        {
+          description: "subStyle",
+          style: 8300,
+          selections: [
+            { perk: 8304, var1: 0, var2: 0, var3: 0 },
+            { perk: 8345, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+      ],
+    },
+  };
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function seedDemo() {
@@ -437,7 +665,7 @@ async function seedDemo() {
           420,
           m.position,
           ts(m.gameDate),
-          null,
+          m.result === "Remake" ? null : buildFakeRawMatchJson(m),
         ],
       });
     }

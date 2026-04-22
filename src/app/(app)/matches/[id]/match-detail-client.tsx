@@ -41,6 +41,7 @@ import {
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrl } from "@/lib/riot-api";
+import { useAppHref } from "@/lib/route-prefix";
 import { safeExternalUrl } from "@/lib/url";
 
 /** Slim participant — only fields needed for the match detail view */
@@ -199,6 +200,7 @@ export function MatchDetailClient({
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
   const tAi = useTranslations("AiInsights");
+  const appHref = useAppHref();
 
   // Role relevance
   const roleRelevance = getRoleRelevance(match.position, userPrimaryRole);
@@ -337,7 +339,7 @@ export function MatchDetailClient({
       {linkedSessions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {linkedSessions.map((s) => (
-            <Link key={s.sessionId} href={`/coaching/${s.sessionId}`}>
+            <Link key={s.sessionId} href={appHref(`/coaching/${s.sessionId}`)}>
               <Badge variant="secondary" className="gap-1">
                 <GraduationCap className="h-3 w-3" />
                 {t("reviewedWithCoach", { coachName: s.coachName })}
@@ -357,7 +359,7 @@ export function MatchDetailClient({
             </p>
             <p className="text-xs text-muted-foreground">{t("reviewCtaSubtext")}</p>
           </div>
-          <Link href={`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`}>
+          <Link href={appHref(`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`)}>
             <Button size="sm" className="shrink-0 gap-1.5">
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("reviewButton")}

@@ -18,6 +18,7 @@ import {
   getDemoRiotAccounts,
 } from "@/lib/demo-user";
 import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
+import { RoutePrefixProvider } from "@/lib/route-prefix";
 
 async function DemoSidebar() {
   await connection();
@@ -87,7 +88,7 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
             </Suspense>
             <main id="main-content" className="flex-1 md:ml-64">
               <div className="container mx-auto max-w-7xl p-6 pt-16 md:p-8 md:pt-16">
-                {children}
+                <RoutePrefixProvider prefix="/demo">{children}</RoutePrefixProvider>
               </div>
             </main>
           </div>

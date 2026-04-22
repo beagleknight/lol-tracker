@@ -42,7 +42,6 @@ export default async function DemoMatchesPage({
       champions={data.champions}
       filters={data.filters}
       readOnly
-      matchBasePath="/demo/matches"
     />
   );
 }

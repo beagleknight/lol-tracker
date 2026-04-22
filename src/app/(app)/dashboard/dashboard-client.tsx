@@ -29,6 +29,7 @@ import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
 import { getRankEmblemUrl } from "@/lib/rank-utils";
+import { useAppHref } from "@/lib/route-prefix";
 
 interface DashboardMatch {
   id: string;
@@ -103,7 +104,6 @@ interface DashboardClientProps {
   topicNames: { id: number; name: string }[];
   /** When true, all write actions are hidden (demo mode) */
   readOnly?: boolean;
-  matchBasePath?: string;
 }
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
@@ -149,9 +149,9 @@ export function DashboardClient({
   ddragonVersion,
   topicNames,
   readOnly,
-  matchBasePath,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
+  const appHref = useAppHref();
   const { user: authUser } = useAuth();
   const locale = authUser?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.isRiotLinked;
@@ -394,7 +394,7 @@ export function DashboardClient({
                 })}
               </CardDescription>
             </div>
-            <Link href="/matches">
+            <Link href={appHref("/matches")}>
               <Button variant="ghost" size="sm">
                 {t("viewAll")}
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -415,7 +415,6 @@ export function DashboardClient({
                     variant="compact"
                     showScoutLink
                     userPrimaryRole={authUser?.primaryRole}
-                    matchBasePath={matchBasePath}
                   />
                 ))}
               </div>
@@ -447,7 +446,7 @@ export function DashboardClient({
                       <Calendar className="h-4 w-4 text-gold" />
                       {t("coachingWidget")}
                     </CardTitle>
-                    <Link href={`/coaching/${upcomingSession.id}`}>
+                    <Link href={appHref(`/coaching/${upcomingSession.id}`)}>
                       <Button variant="ghost" size="sm">
                         {t("view")}
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -532,7 +531,7 @@ export function DashboardClient({
                       <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
                       {t("coachingWidget")}
                     </CardTitle>
-                    <Link href={`/coaching/${lastCompletedSession.id}`}>
+                    <Link href={appHref(`/coaching/${lastCompletedSession.id}`)}>
                       <Button variant="ghost" size="sm">
                         {t("view")}
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -557,7 +556,7 @@ export function DashboardClient({
                       </p>
                     )}
                     {!readOnly && (
-                      <Link href="/coaching/new" className="mt-3 block">
+                      <Link href={appHref("/coaching/new")} className="mt-3 block">
                         <Button variant="outline" size="sm" className="w-full">
                           {t("scheduleNext")}
                         </Button>
@@ -580,7 +579,7 @@ export function DashboardClient({
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
                   {!readOnly && (
-                    <Link href="/coaching/new" className="mt-2 inline-block">
+                    <Link href={appHref("/coaching/new")} className="mt-2 inline-block">
                       <Button variant="outline" size="sm">
                         {t("scheduleFirst")}
                       </Button>
@@ -680,7 +679,7 @@ export function DashboardClient({
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">{t("actionItems")}</CardTitle>
-              <Link href="/coaching/action-items">
+              <Link href={appHref("/coaching/action-items")}>
                 <Button variant="ghost" size="sm">
                   {t("viewAll")}
                   <ChevronRight className="ml-1 h-3 w-3" />

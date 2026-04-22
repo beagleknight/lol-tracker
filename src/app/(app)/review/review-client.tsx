@@ -68,6 +68,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
+import { useAppHref } from "@/lib/route-prefix";
 import { SKIP_REVIEW_REASONS } from "@/lib/topics";
 import { safeExternalUrl } from "@/lib/url";
 
@@ -253,6 +254,7 @@ function PostGameCard({
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("Review");
+  const appHref = useAppHref();
 
   const hasContent = highlights.length > 0 || comment.trim() || vodUrl.trim();
 
@@ -306,7 +308,7 @@ function PostGameCard({
               {t("suggested")}
             </Badge>
           )}
-          <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
+          <Link href={appHref(`/matches/${match.id}`)} aria-label={t("viewMatchDetails")}>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
         </div>
@@ -446,6 +448,7 @@ function VodReviewCard({
   const [reviewNotes, setReviewNotes] = useState(match.reviewNotes || "");
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("Review");
+  const appHref = useAppHref();
 
   const hasContent = vodUrl.trim() || reviewNotes.trim();
 
@@ -493,7 +496,7 @@ function VodReviewCard({
               <MatchCardHeaderInfo match={match} ddragonVersion={ddragonVersion} locale={locale} />
             </div>
           </button>
-          <Link href={`/matches/${match.id}`} aria-label={t("viewMatchDetails")}>
+          <Link href={appHref(`/matches/${match.id}`)} aria-label={t("viewMatchDetails")}>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
         </div>

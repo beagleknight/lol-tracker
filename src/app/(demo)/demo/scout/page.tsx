@@ -31,7 +31,6 @@ export default async function DemoScoutPage({
       mostFaced={data.mostFaced}
       isAiConfigured={data.isAiConfigured}
       readOnly
-      matchBasePath="/demo/matches"
     />
   );
 }
