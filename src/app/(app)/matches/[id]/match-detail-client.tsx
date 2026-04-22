@@ -41,7 +41,6 @@ import {
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { getKeystoneIconUrl } from "@/lib/riot-api";
-import { useAppHref } from "@/lib/route-prefix";
 import { safeExternalUrl } from "@/lib/url";
 
 /** Slim participant — only fields needed for the match detail view */
@@ -197,10 +196,10 @@ export function MatchDetailClient({
   readOnly,
 }: MatchDetailClientProps) {
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
   const tAi = useTranslations("AiInsights");
-  const appHref = useAppHref();
 
   // Role relevance
   const roleRelevance = getRoleRelevance(match.position, userPrimaryRole);
@@ -257,7 +256,7 @@ export function MatchDetailClient({
                     {t("pendingReview")}
                   </Badge>
                 )}
-                {!readOnly && (
+                {!isReadOnly && (
                   <AiInsightDrawer
                     title={tAi("postGameTitle")}
                     cachedInsight={cachedAiInsight}
@@ -339,7 +338,7 @@ export function MatchDetailClient({
       {linkedSessions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {linkedSessions.map((s) => (
-            <Link key={s.sessionId} href={appHref(`/coaching/${s.sessionId}`)}>
+            <Link key={s.sessionId} href={`/coaching/${s.sessionId}`}>
               <Badge variant="secondary" className="gap-1">
                 <GraduationCap className="h-3 w-3" />
                 {t("reviewedWithCoach", { coachName: s.coachName })}
@@ -350,7 +349,7 @@ export function MatchDetailClient({
       )}
 
       {/* Review this game CTA — hidden for off-role matches and readOnly */}
-      {!readOnly && !match.reviewed && !isOffRole && (
+      {!isReadOnly && !match.reviewed && !isOffRole && (
         <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
           <ClipboardEdit className="h-5 w-5 shrink-0 text-gold" />
           <div className="flex-1">
@@ -359,7 +358,7 @@ export function MatchDetailClient({
             </p>
             <p className="text-xs text-muted-foreground">{t("reviewCtaSubtext")}</p>
           </div>
-          <Link href={appHref(`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`)}>
+          <Link href={`/review?tab=${hasAnyNotes ? "vod" : "post-game"}`}>
             <Button size="sm" className="shrink-0 gap-1.5">
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("reviewButton")}

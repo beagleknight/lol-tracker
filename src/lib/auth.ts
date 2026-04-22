@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 import { db } from "@/db";
 import { users, invites, riotAccounts } from "@/db/schema";
-import { isDemoMode, demoCredentialsProvider } from "@/lib/fake-auth";
+import { demoCredentialsProvider, isDemoUserId } from "@/lib/fake-auth";
 
 // Duplicated from session.ts to avoid circular import (session.ts imports auth.ts)
 const IMPERSONATE_COOKIE = "admin-impersonate";
@@ -20,9 +20,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         params: { prompt: "none" },
       },
     }),
-    // Demo/preview mode: cookie-based Credentials provider that bypasses
-    // Discord OAuth. Only authorizes when NEXT_PUBLIC_DEMO_MODE=true.
-    ...(isDemoMode() ? [demoCredentialsProvider()] : []),
+    // Demo/preview mode: cookie-based Credentials provider that allows
+    // demo user sign-in. Always registered; authorize() enforces restrictions.
+    demoCredentialsProvider(),
   ],
   callbacks: {
     async signIn({ user, account }) {
@@ -236,6 +236,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.coachingCadenceDays = (token.coachingCadenceDays as number) ?? null;
         session.user.primaryRole = (token.primaryRole as string) ?? null;
         session.user.secondaryRole = (token.secondaryRole as string) ?? null;
+        session.user.isDemoUser = (token.isDemoUser as boolean) ?? false;
       }
       return session;
     },
@@ -262,6 +263,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.locale = dbUser.locale;
           token.language = dbUser.language;
           token.coachingCadenceDays = dbUser.coachingCadenceDays;
+          token.isDemoUser = isDemoUserId(dbUser.id);
 
           // Resolve role preferences from active riot account
           if (dbUser.activeRiotAccountId) {

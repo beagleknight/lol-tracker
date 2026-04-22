@@ -22,7 +22,6 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { resultBgTint } from "@/lib/match-result";
 import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
-import { useAppHref } from "@/lib/route-prefix";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -99,7 +98,6 @@ export function MatchCard({
   userPrimaryRole?: string | null;
 }) {
   const t = useTranslations("MatchCard");
-  const appHref = useAppHref();
   const isCompact = variant === "compact";
   const hasComment = !!match.comment;
   const hasReviewNotes = !!match.reviewNotes;
@@ -155,7 +153,7 @@ export function MatchCard({
   return (
     <TooltipProvider>
       <Link
-        href={appHref(`/matches/${match.id}`)}
+        href={`/matches/${match.id}`}
         className={`block rounded-lg border transition-all ${isOffRole ? "off-role-stripes bg-surface-elevated/50" : `hover-lift bg-card hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>

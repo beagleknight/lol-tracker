@@ -35,6 +35,8 @@ export interface AuthUser {
   isImpersonating?: boolean;
   /** The real admin's display name during impersonation */
   realAdminName?: string | null;
+  /** True when the user is a public demo user (read-only) */
+  isDemoUser?: boolean;
 }
 
 export interface UseAuthReturn {

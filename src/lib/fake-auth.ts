@@ -1,12 +1,13 @@
 /**
  * Fake auth utilities for demo/preview mode.
  *
- * When NEXT_PUBLIC_DEMO_MODE is set, a Credentials provider is added to
- * NextAuth that accepts a demo user ID and creates a real session.
+ * A Credentials provider is always registered that accepts demo user IDs
+ * (prefixed with "demo-") and creates a real NextAuth session.
  * This avoids any changes to session handling, useSession(), or SessionProvider.
  *
- * Safety: The Credentials provider checks NEXT_PUBLIC_DEMO_MODE at runtime
- * and rejects all attempts if the flag is not set.
+ * In preview mode (NEXT_PUBLIC_DEMO_MODE=true), any seeded user can log in
+ * via the demo login form. In production, only "demo-" prefixed user IDs
+ * are accepted (the public demo user).
  */
 
 import { eq } from "drizzle-orm";
@@ -19,9 +20,16 @@ export function isDemoMode(): boolean {
   return process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 }
 
+/** Check if a user ID belongs to a seeded demo user. */
+export function isDemoUserId(userId: string): boolean {
+  return userId.startsWith("demo-");
+}
+
 /**
- * Returns the demo Credentials provider. Only authorizes when
- * NEXT_PUBLIC_DEMO_MODE is "true" at runtime.
+ * Returns the demo Credentials provider.
+ *
+ * In preview mode (NEXT_PUBLIC_DEMO_MODE=true): authorizes any seeded user.
+ * In production: only authorizes demo-prefixed user IDs.
  */
 export function demoCredentialsProvider() {
   return Credentials({
@@ -31,14 +39,13 @@ export function demoCredentialsProvider() {
       userId: { label: "User ID", type: "text" },
     },
     async authorize(credentials) {
-      // Runtime guard — never authorize in production even if
-      // this provider somehow ends up in the config
-      if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") {
-        return null;
-      }
-
       const userId = credentials?.userId;
       if (!userId || typeof userId !== "string") return null;
+
+      // In production, only allow demo-prefixed user IDs
+      if (!isDemoMode() && !isDemoUserId(userId)) {
+        return null;
+      }
 
       // Look up the seeded user
       const user = await db.query.users.findFirst({

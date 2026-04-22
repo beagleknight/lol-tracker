@@ -69,14 +69,13 @@ const navDefs = {
 } as const;
 
 // All nav hrefs — used to resolve active state conflicts between parent/child routes
-const baseHrefs = [
+const allNavHrefs = [
   ...navDefs.dashboard,
   ...navDefs.tracker,
   ...navDefs.insights,
   ...navDefs.coaching,
   ...navDefs.bottom,
 ].map((item) => item.href);
-const allNavHrefs = [...baseHrefs, ...baseHrefs.map((h) => demoHref(h))];
 
 interface SidebarProps {
   user: {
@@ -166,16 +165,8 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   );
 }
 
-/** Locked nav items in demo mode — shown grayed out with lock icon */
-const demoLockedHrefs = new Set(["/duo", "/feedback", "/coaching/action-items"]);
-
-/** Remap a regular app href to its /demo equivalent */
-function demoHref(href: string): string {
-  if (href === "/dashboard") return "/demo";
-  // /changelog and /legal are shared routes, no remapping
-  if (href === "/changelog" || href === "/legal") return href;
-  return `/demo${href}`;
-}
+/** Nav items locked for demo users — shown grayed out with lock icon */
+const demoLockedHrefs = new Set(["/duo", "/coaching/action-items"]);
 
 function DemoUserBadge() {
   const t = useTranslations("Sidebar");
@@ -236,7 +227,7 @@ function SidebarContent({
       })
       .map((d) => ({
         label: t(d.key),
-        href: demo ? demoHref(d.href) : d.href,
+        href: d.href,
         icon: d.icon,
         ...(d.external && { external: true }),
         ...(demo && demoLockedHrefs.has(d.href) && { locked: true }),
@@ -253,10 +244,10 @@ function SidebarContent({
   const isFreeUser = user.role === "free";
   const trackerNavWithBadges = trackerNav.map((item) => {
     let updated = item;
-    if ((item.href === "/review" || item.href === "/demo/review") && totalReview > 0) {
+    if (item.href === "/review" && totalReview > 0) {
       updated = { ...updated, badge: totalReview };
     }
-    if ((item.href === "/duo" || item.href === "/demo/duo") && (isFreeUser || demo)) {
+    if (item.href === "/duo" && (isFreeUser || demo)) {
       updated = { ...updated, locked: true };
     }
     return updated;

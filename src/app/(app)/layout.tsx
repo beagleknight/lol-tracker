@@ -7,6 +7,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { DemoBanner } from "@/components/demo-banner";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
@@ -14,6 +15,7 @@ import { matches, riotAccounts } from "@/db/schema";
 import { AuthProvider } from "@/lib/auth-client";
 import { sidebarTag } from "@/lib/cache";
 import { getLatestChangelogVersion } from "@/lib/changelog";
+import { isDemoUserId } from "@/lib/fake-auth";
 import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
 import { requireUser } from "@/lib/session";
 
@@ -38,9 +40,10 @@ async function getCachedSidebarCounts(
 async function SidebarWithUser() {
   await connection();
   const user = await requireUser();
+  const isDemo = isDemoUserId(user.id);
 
-  // Redirect to onboarding if user hasn't completed setup
-  if (!user.onboardingCompleted) {
+  // Redirect to onboarding if user hasn't completed setup (skip for demo users)
+  if (!isDemo && !user.onboardingCompleted) {
     redirect("/onboarding");
   }
 
@@ -63,23 +66,27 @@ async function SidebarWithUser() {
   ]);
 
   return (
-    <AppSidebar
-      user={{
-        name: user.name,
-        image: user.image,
-        riotGameName: user.riotGameName,
-        riotTagLine: user.riotTagLine,
-        isRiotLinked: !!user.puuid,
-        role: user.role,
-      }}
-      reviewCounts={{
-        postGame: reviewCounts?.postGame ?? 0,
-        vod: reviewCounts?.vod ?? 0,
-      }}
-      latestChangelogVersion={latestVersion}
-      riotAccounts={userRiotAccounts}
-      activeRiotAccountId={user.activeRiotAccountId}
-    />
+    <>
+      {isDemo && <DemoBanner />}
+      <AppSidebar
+        user={{
+          name: user.name,
+          image: user.image,
+          riotGameName: user.riotGameName,
+          riotTagLine: user.riotTagLine,
+          isRiotLinked: !!user.puuid,
+          role: user.role,
+        }}
+        reviewCounts={{
+          postGame: reviewCounts?.postGame ?? 0,
+          vod: reviewCounts?.vod ?? 0,
+        }}
+        latestChangelogVersion={latestVersion}
+        riotAccounts={userRiotAccounts}
+        activeRiotAccountId={user.activeRiotAccountId}
+        demo={isDemo}
+      />
+    </>
   );
 }
 

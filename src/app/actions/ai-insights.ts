@@ -12,7 +12,7 @@ import { buildPostGameContext } from "@/lib/ai/context";
 import { buildMatchupPrompt, buildPostGamePrompt } from "@/lib/ai/prompts";
 import { aiModel, isAiConfigured, AI_MODEL_ID } from "@/lib/ai/provider";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { blockIfImpersonating, isPremium, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, isPremium, requireUser } from "@/lib/session";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -133,6 +133,7 @@ export async function generateMatchupInsight(
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   if (!isAiConfigured()) {
     return { error: "AI insights are not configured." };
@@ -261,6 +262,7 @@ export async function generatePostGameInsight(
 ): Promise<InsightResult | InsightError> {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   if (!isAiConfigured()) {
     return { error: "AI insights are not configured." };

@@ -29,7 +29,6 @@ import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
 import { getRankEmblemUrl } from "@/lib/rank-utils";
-import { useAppHref } from "@/lib/route-prefix";
 
 interface DashboardMatch {
   id: string;
@@ -151,8 +150,8 @@ export function DashboardClient({
   readOnly,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
-  const appHref = useAppHref();
   const { user: authUser } = useAuth();
+  const isReadOnly = readOnly || authUser?.isDemoUser;
   const locale = authUser?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.isRiotLinked;
   const streak = getStreak(recentMatches);
@@ -215,7 +214,7 @@ export function DashboardClient({
         </div>
       </div>
 
-      {!readOnly && !isLinked && (
+      {!isReadOnly && !isLinked && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
@@ -230,7 +229,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {!readOnly && isLinked && !authUser?.primaryRole && (
+      {!isReadOnly && isLinked && !authUser?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -245,7 +244,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {!readOnly && isLinked && !authUser?.region && (
+      {!isReadOnly && isLinked && !authUser?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -394,7 +393,7 @@ export function DashboardClient({
                 })}
               </CardDescription>
             </div>
-            <Link href={appHref("/matches")}>
+            <Link href={"/matches"}>
               <Button variant="ghost" size="sm">
                 {t("viewAll")}
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -446,7 +445,7 @@ export function DashboardClient({
                       <Calendar className="h-4 w-4 text-gold" />
                       {t("coachingWidget")}
                     </CardTitle>
-                    <Link href={appHref(`/coaching/${upcomingSession.id}`)}>
+                    <Link href={`/coaching/${upcomingSession.id}`}>
                       <Button variant="ghost" size="sm">
                         {t("view")}
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -531,7 +530,7 @@ export function DashboardClient({
                       <GraduationCap className={`h-4 w-4 ${cadenceColors[coachingCadence]}`} />
                       {t("coachingWidget")}
                     </CardTitle>
-                    <Link href={appHref(`/coaching/${lastCompletedSession.id}`)}>
+                    <Link href={`/coaching/${lastCompletedSession.id}`}>
                       <Button variant="ghost" size="sm">
                         {t("view")}
                         <ChevronRight className="ml-1 h-3 w-3" />
@@ -555,8 +554,8 @@ export function DashboardClient({
                         {t("nextDueIn", { days: daysUntilDue })}
                       </p>
                     )}
-                    {!readOnly && (
-                      <Link href={appHref("/coaching/new")} className="mt-3 block">
+                    {!isReadOnly && (
+                      <Link href={"/coaching/new"} className="mt-3 block">
                         <Button variant="outline" size="sm" className="w-full">
                           {t("scheduleNext")}
                         </Button>
@@ -578,8 +577,8 @@ export function DashboardClient({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
-                  {!readOnly && (
-                    <Link href={appHref("/coaching/new")} className="mt-2 inline-block">
+                  {!isReadOnly && (
+                    <Link href={"/coaching/new"} className="mt-2 inline-block">
                       <Button variant="outline" size="sm">
                         {t("scheduleFirst")}
                       </Button>
@@ -664,7 +663,7 @@ export function DashboardClient({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noActiveChallenges")}</p>
-                {!readOnly && (
+                {!isReadOnly && (
                   <Link href="/challenges/new" className="mt-2 inline-block">
                     <Button variant="outline" size="sm">
                       {t("newChallenge")}
@@ -679,7 +678,7 @@ export function DashboardClient({
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">{t("actionItems")}</CardTitle>
-              <Link href={appHref("/coaching/action-items")}>
+              <Link href={"/coaching/action-items"}>
                 <Button variant="ghost" size="sm">
                   {t("viewAll")}
                   <ChevronRight className="ml-1 h-3 w-3" />

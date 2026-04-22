@@ -59,6 +59,7 @@ export function ChallengesClient({
 }: ChallengesClientProps) {
   const t = useTranslations("Challenges");
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
 
   const searchParams = useSearchParams();
@@ -83,7 +84,7 @@ export function ChallengesClient({
           <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        {!readOnly && (
+        {!isReadOnly && (
           <Link href="/challenges/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -118,7 +119,7 @@ export function ChallengesClient({
                   topics={topicsByChallenge[challenge.id] ?? []}
                   currentRank={currentRank}
                   locale={locale}
-                  readOnly={readOnly}
+                  readOnly={isReadOnly}
                 />
               ))}
               <Pagination
@@ -133,7 +134,7 @@ export function ChallengesClient({
               title={t("noChallenges")}
               description={t("noChallengesDescription")}
               action={
-                !readOnly ? (
+                !isReadOnly ? (
                   <Link href="/challenges/new">
                     <Button>
                       <Plus className="mr-2 h-4 w-4" />
@@ -156,7 +157,7 @@ export function ChallengesClient({
                   challenge={challenge}
                   topics={topicsByChallenge[challenge.id] ?? []}
                   locale={locale}
-                  readOnly={readOnly}
+                  readOnly={isReadOnly}
                 />
               ))}
               <Pagination

@@ -32,7 +32,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { getChampionIconUrl } from "@/lib/riot-api";
-import { useAppHref } from "@/lib/route-prefix";
 
 interface VodMatchInfo {
   id: string;
@@ -128,9 +127,9 @@ export function CoachingHubClient({
   readOnly,
 }: CoachingHubClientProps) {
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Coaching");
-  const appHref = useAppHref();
   const totalSessions = scheduledSessions.length + completedSessions.length;
 
   return (
@@ -145,8 +144,8 @@ export function CoachingHubClient({
               : t("subtitleSummary", { totalSessions, activeCount: activeActionItems.length })}
           </p>
         </div>
-        {!readOnly && (
-          <Link href={appHref("/coaching/new")}>
+        {!isReadOnly && (
+          <Link href={"/coaching/new"}>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               {t("scheduleSessionButton")}
@@ -162,8 +161,8 @@ export function CoachingHubClient({
           title={t("emptyStateTitle")}
           description={t("emptyStateDescription")}
           action={
-            !readOnly ? (
-              <Link href={appHref("/coaching/new")}>
+            !isReadOnly ? (
+              <Link href={"/coaching/new"}>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   {t("scheduleSessionButton")}
@@ -195,7 +194,7 @@ export function CoachingHubClient({
 
               return (
                 <div key={session.id} className="space-y-1">
-                  <Link href={appHref(`/coaching/${session.id}`)}>
+                  <Link href={`/coaching/${session.id}`}>
                     <Card
                       className={`hover-lift cursor-pointer transition-colors ${
                         isOverdue
@@ -279,7 +278,7 @@ export function CoachingHubClient({
                       </CardContent>
                     </Card>
                   </Link>
-                  {!readOnly && isPastDue && (
+                  {!isReadOnly && isPastDue && (
                     <div className="flex items-center justify-end gap-2 px-1">
                       <span
                         className={`text-xs ${isOverdue ? "text-loss" : "text-muted-foreground"}`}
@@ -288,7 +287,7 @@ export function CoachingHubClient({
                           ? t("overdueSession", { days: daysPastDue })
                           : t("readyToComplete")}
                       </span>
-                      <Link href={appHref(`/coaching/${session.id}/complete`)}>
+                      <Link href={`/coaching/${session.id}/complete`}>
                         <Button
                           size="sm"
                           variant={isOverdue ? "destructive" : "default"}
@@ -318,7 +317,7 @@ export function CoachingHubClient({
                 {activeActionItems.length}
               </Badge>
             </div>
-            <Link href={appHref("/coaching/action-items")}>
+            <Link href={"/coaching/action-items"}>
               <Button variant="ghost" size="sm" className="text-xs">
                 {t("viewAll")}
                 <ChevronRight className="ml-1 h-3 w-3" />
@@ -332,7 +331,7 @@ export function CoachingHubClient({
                   key={item.id}
                   item={item}
                   topicNames={topicNames}
-                  readOnly={readOnly}
+                  readOnly={isReadOnly}
                 />
               ))}
               {activeActionItems.length > 8 && (
@@ -363,7 +362,7 @@ export function CoachingHubClient({
               return (
                 <div key={session.id} className="space-y-2">
                   {/* Session Card */}
-                  <Link href={appHref(`/coaching/${session.id}`)}>
+                  <Link href={`/coaching/${session.id}`}>
                     <Card className="hover-lift cursor-pointer transition-colors hover:bg-surface-elevated">
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
