@@ -48,8 +48,8 @@ function DemoLoginForm() {
         <div className="glow-gold-sm mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
           <Logo className="h-8 w-8 text-gold" />
         </div>
-        <CardTitle className="text-gradient-gold text-2xl">{t("demoModeTitle")}</CardTitle>
-        <CardDescription>{t("demoModeDescription")}</CardDescription>
+        <CardTitle className="text-gradient-gold text-2xl">{t("fakeAuthTitle")}</CardTitle>
+        <CardDescription>{t("fakeAuthDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {usersLoading

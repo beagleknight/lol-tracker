@@ -26,7 +26,7 @@ const authenticatedPages = [
 
 const publicPages = [
   { name: "Login", path: "/login" },
-  { name: "Demo entry", path: "/demo" },
+  // /demo is excluded — it auto-redirects (signIn) so axe can't analyze it
 ];
 
 test.describe("Accessibility — authenticated pages", () => {
