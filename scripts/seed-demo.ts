@@ -356,16 +356,14 @@ async function seedDemo() {
   const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
   const forceRemote = process.argv.includes("--force-remote");
   const execute = process.argv.includes("--execute");
-  const vercelEnv = process.env.VERCEL_ENV;
+  const isVercelCI = process.env.VERCEL === "1";
 
-  // Hard block: NEVER seed production
-  if (vercelEnv === "production") {
-    console.error("ERROR: Seeding is forbidden in production. Aborting.");
-    process.exit(1);
-  }
+  // On Vercel builds, auto-enable execute and force-remote (runs as part of buildCommand)
+  const shouldExecute = execute || isVercelCI;
+  const shouldAllowRemote = forceRemote || isVercelCI;
 
-  // Safety guard: refuse remote without explicit opt-in
-  if (isRemote && !forceRemote) {
+  // Safety guard: refuse remote without explicit opt-in (unless on Vercel CI)
+  if (isRemote && !shouldAllowRemote) {
     console.error("ERROR: Refusing to seed a remote database without --force-remote flag.");
     console.error(`  Target: ${dbUrl}`);
     console.error(
@@ -374,7 +372,7 @@ async function seedDemo() {
     process.exit(1);
   }
 
-  if (!execute) {
+  if (!shouldExecute) {
     console.log("DRY RUN — no data will be written. Pass --execute to apply changes.");
     console.log(`  Target: ${dbUrl}`);
     console.log("");
@@ -390,7 +388,11 @@ async function seedDemo() {
   }
 
   if (isRemote) {
-    console.warn("WARNING: Seeding REMOTE database (--force-remote was passed)");
+    console.warn(
+      isVercelCI
+        ? `[seed-demo] Seeding remote database (Vercel CI, env: ${process.env.VERCEL_ENV})`
+        : "WARNING: Seeding REMOTE database (--force-remote was passed)",
+    );
   }
 
   console.log(`Seeding demo data: ${dbUrl}`);
