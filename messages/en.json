@@ -1203,6 +1203,7 @@
   },
   "Demo": {
     "bannerText": "You're viewing the demo with sample data.",
-    "bannerSignUp": "Sign up for free"
+    "bannerSignUp": "Sign up for free",
+    "bannerExit": "Exit demo"
   }
 }

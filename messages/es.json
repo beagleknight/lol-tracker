@@ -1203,6 +1203,7 @@
   },
   "Demo": {
     "bannerText": "Estás viendo la demo con datos de ejemplo.",
-    "bannerSignUp": "Regístrate gratis"
+    "bannerSignUp": "Regístrate gratis",
+    "bannerExit": "Salir de la demo"
   }
 }
