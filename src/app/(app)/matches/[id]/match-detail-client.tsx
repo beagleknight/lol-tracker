@@ -22,6 +22,7 @@ import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { BackButton } from "@/components/back-button";
 import { ChampionLink } from "@/components/champion-link";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { MarkdownDisplay } from "@/components/markdown-display";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
@@ -427,14 +428,47 @@ export function MatchDetailClient({
         </Card>
       </div>
 
-      {/* Highlights / Lowlights — promoted above player tables for visibility */}
-      {hasHighlights && (
+      {/* Review — unified card with highlights, notes, and VOD */}
+      {match.reviewed && hasAnyNotes && (
         <Card className="surface-glow">
           <CardHeader>
-            <CardTitle>{t("highlightsAndLowlights")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              {t("review")}
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <HighlightsDisplay highlights={highlights} />
+          <CardContent className="space-y-4">
+            {hasHighlights && <HighlightsDisplay highlights={highlights} />}
+
+            {hasHighlights && (hasComment || hasVodUrl) && <Separator />}
+
+            {hasComment && (
+              <div className="space-y-1">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <MessageSquare className="h-3 w-3" />
+                  {t("gameNotes")}
+                </p>
+                <MarkdownDisplay content={match.comment!} />
+              </div>
+            )}
+
+            {hasVodUrl && (
+              <div className="space-y-1">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <LinkIcon className="h-3 w-3" />
+                  {t("ascentVod")}
+                </p>
+                <a
+                  href={safeExternalUrl(match.vodUrl) ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-electric hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  {t("openVod")}
+                </a>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -500,74 +534,6 @@ export function MatchDetailClient({
             </Card>
           ))}
         </div>
-      )}
-
-      {/* Notes & Review Section — read-only */}
-      {(hasComment || hasVodUrl || match.reviewed) && (
-        <>
-          <Separator />
-
-          <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Game Notes — read-only */}
-              {hasComment && (
-                <Card className="surface-glow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      {t("gameNotes")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
-                      {match.comment}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* VOD & Review — read-only */}
-              {(hasVodUrl || match.reviewed) && (
-                <Card className="surface-glow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      {t("vodReview")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* VOD URL */}
-                    {hasVodUrl && (
-                      <div className="space-y-1">
-                        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                          <LinkIcon className="h-3 w-3" />
-                          {t("ascentVod")}
-                        </p>
-                        <a
-                          href={safeExternalUrl(match.vodUrl) ?? "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-electric hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          {t("openVod")}
-                        </a>
-                      </div>
-                    )}
-
-                    {/* Review status badge */}
-                    {match.reviewed && (
-                      <p className="flex items-center gap-1.5 text-xs text-win">
-                        <Eye className="h-3 w-3" />
-                        {t("markedAsReviewed")}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </>
       )}
     </div>
   );
