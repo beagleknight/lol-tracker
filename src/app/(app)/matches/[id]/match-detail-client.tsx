@@ -247,7 +247,7 @@ export function MatchDetailClient({
                     {t("reviewed")}
                   </Badge>
                 )}
-                {!match.reviewed && (
+                {!match.reviewed && !isOffRole && (
                   <Badge variant="outline" className="gap-1 border-warning/30 text-warning">
                     {t("pendingReview")}
                   </Badge>
