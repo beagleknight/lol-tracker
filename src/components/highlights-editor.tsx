@@ -7,7 +7,6 @@ import { useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export interface TopicOption {
   id: number;
@@ -117,8 +116,7 @@ export function HighlightsEditor({
                   {displayTopic}
                 </Badge>
               )}
-              {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
-              {!item.text && <span className="flex-1" />}
+              <span className="flex-1" />
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
@@ -195,8 +193,7 @@ export function HighlightsEditor({
                   {displayTopic}
                 </Badge>
               )}
-              {item.text && <span className="flex-1 text-muted-foreground">{item.text}</span>}
-              {!item.text && <span className="flex-1" />}
+              <span className="flex-1" />
               <button
                 type="button"
                 onClick={() => removeItem(globalIdx)}
@@ -273,121 +270,69 @@ export function HighlightsDisplay({
 
   if (compact) {
     return (
-      <TooltipProvider>
-        <div className="flex flex-wrap gap-1.5">
-          {highlightItems.map((item, i) => {
-            const displayTopic = item.topicName;
-            const hasText = !!(item.text && displayTopic);
-            return (
-              <Tooltip key={`h-${i}`}>
-                <TooltipTrigger
-                  className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-0.5 text-[11px] ${
-                    hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                  }`}
-                >
-                  <ThumbsUp className="h-2.5 w-2.5" />
-                  {displayTopic || item.text}
-                </TooltipTrigger>
-                {hasText && (
-                  <TooltipContent side="bottom" className="max-w-sm">
-                    <p className="whitespace-pre-wrap">{item.text}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            );
-          })}
-          {lowlightItems.map((item, i) => {
-            const displayTopic = item.topicName;
-            const hasText = !!(item.text && displayTopic);
-            return (
-              <Tooltip key={`l-${i}`}>
-                <TooltipTrigger
-                  className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-0.5 text-[11px] ${
-                    hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                  }`}
-                >
-                  <ThumbsDown className="h-2.5 w-2.5" />
-                  {displayTopic || item.text}
-                </TooltipTrigger>
-                {hasText && (
-                  <TooltipContent side="bottom" className="max-w-sm">
-                    <p className="whitespace-pre-wrap">{item.text}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            );
-          })}
-        </div>
-      </TooltipProvider>
+      <div className="flex flex-wrap gap-1.5">
+        {highlightItems.map((item, i) => (
+          <span
+            key={`h-${i}`}
+            className="inline-flex items-center gap-1 rounded-md bg-win/10 px-2 py-0.5 text-[11px] text-win"
+          >
+            <ThumbsUp className="h-2.5 w-2.5" />
+            {item.topicName}
+          </span>
+        ))}
+        {lowlightItems.map((item, i) => (
+          <span
+            key={`l-${i}`}
+            className="inline-flex items-center gap-1 rounded-md bg-loss/10 px-2 py-0.5 text-[11px] text-loss"
+          >
+            <ThumbsDown className="h-2.5 w-2.5" />
+            {item.topicName}
+          </span>
+        ))}
+      </div>
     );
   }
 
   return (
-    <TooltipProvider>
-      <div className="space-y-3">
-        {highlightItems.length > 0 && (
-          <div className="space-y-2">
-            <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <ThumbsUp className="h-3 w-3 text-win" />
-              {t("highlightsHeading")}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {highlightItems.map((item, i) => {
-                const displayTopic = item.topicName;
-                const hasText = !!(item.text && displayTopic);
-                return (
-                  <Tooltip key={`h-${i}`}>
-                    <TooltipTrigger
-                      className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-1 text-xs ${
-                        hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                      }`}
-                    >
-                      <ThumbsUp className="h-3 w-3" />
-                      {displayTopic || item.text}
-                    </TooltipTrigger>
-                    {hasText && (
-                      <TooltipContent side="bottom" className="max-w-sm">
-                        <p className="whitespace-pre-wrap">{item.text}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-            </div>
+    <div className="space-y-3">
+      {highlightItems.length > 0 && (
+        <div className="space-y-2">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <ThumbsUp className="h-3 w-3 text-win" />
+            {t("highlightsHeading")}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {highlightItems.map((item, i) => (
+              <span
+                key={`h-${i}`}
+                className="inline-flex items-center gap-1 rounded-md bg-win/10 px-2 py-1 text-xs text-win"
+              >
+                <ThumbsUp className="h-3 w-3" />
+                {item.topicName}
+              </span>
+            ))}
           </div>
-        )}
-        {lowlightItems.length > 0 && (
-          <div className="space-y-2">
-            <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <ThumbsDown className="h-3 w-3 text-loss" />
-              {t("lowlightsHeading")}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {lowlightItems.map((item, i) => {
-                const displayTopic = item.topicName;
-                const hasText = !!(item.text && displayTopic);
-                return (
-                  <Tooltip key={`l-${i}`}>
-                    <TooltipTrigger
-                      className={`inline-flex cursor-default items-center gap-1 rounded-md px-2 py-1 text-xs ${
-                        hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                      }`}
-                    >
-                      <ThumbsDown className="h-3 w-3" />
-                      {displayTopic || item.text}
-                    </TooltipTrigger>
-                    {hasText && (
-                      <TooltipContent side="bottom" className="max-w-sm">
-                        <p className="whitespace-pre-wrap">{item.text}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-            </div>
+        </div>
+      )}
+      {lowlightItems.length > 0 && (
+        <div className="space-y-2">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <ThumbsDown className="h-3 w-3 text-loss" />
+            {t("lowlightsHeading")}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {lowlightItems.map((item, i) => (
+              <span
+                key={`l-${i}`}
+                className="inline-flex items-center gap-1 rounded-md bg-loss/10 px-2 py-1 text-xs text-loss"
+              >
+                <ThumbsDown className="h-3 w-3" />
+                {item.topicName}
+              </span>
+            ))}
           </div>
-        )}
-      </div>
-    </TooltipProvider>
+        </div>
+      )}
+    </div>
   );
 }

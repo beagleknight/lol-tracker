@@ -211,26 +211,15 @@ export function MatchCard({
               {/* Compact: highlight pills on champion line */}
               {isCompact &&
                 hasHighlights &&
-                visibleHighlights.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`h-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                        }`}
-                      >
-                        <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
+                visibleHighlights.map((item, i) => (
+                  <span
+                    key={`h-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-win/10 px-1.5 py-0.5 text-[10px] text-win"
+                  >
+                    <ThumbsUp className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
               {isCompact && hasHighlights && highlightOverflow > 0 && (
                 <span className="text-[10px] text-muted-foreground">+{highlightOverflow}</span>
               )}
@@ -265,26 +254,15 @@ export function MatchCard({
                     : t("csLabel", { cs: match.cs })}
                 </span>
                 {hasHighlights &&
-                  visibleLowlights.map((item, i) => {
-                    const hasText = !!(item.text && item.topicName);
-                    return (
-                      <Tooltip key={`l-${i}`}>
-                        <TooltipTrigger
-                          className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                            hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                          }`}
-                        >
-                          <ThumbsDown className="h-2.5 w-2.5" />
-                          {item.topicName || item.text}
-                        </TooltipTrigger>
-                        {hasText && (
-                          <TooltipContent side="bottom" className="max-w-sm">
-                            <p className="whitespace-pre-wrap">{item.text}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    );
-                  })}
+                  visibleLowlights.map((item, i) => (
+                    <span
+                      key={`l-${i}`}
+                      className="inline-flex items-center gap-0.5 rounded-md bg-loss/10 px-1.5 py-0.5 text-[10px] text-loss"
+                    >
+                      <ThumbsDown className="h-2.5 w-2.5" />
+                      {item.topicName}
+                    </span>
+                  ))}
                 {isCompact && hasHighlights && lowlightOverflow > 0 && (
                   <span className="text-[10px] text-muted-foreground">+{lowlightOverflow}</span>
                 )}
@@ -294,46 +272,24 @@ export function MatchCard({
             {/* Highlights preview — default variant only (compact shows them inline above) */}
             {!isCompact && hasHighlights && (
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                {highlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`h-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-win/20 text-win-muted" : "bg-win/10 text-win"
-                        }`}
-                      >
-                        <ThumbsUp className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
-                {lowlightItems.map((item, i) => {
-                  const hasText = !!(item.text && item.topicName);
-                  return (
-                    <Tooltip key={`l-${i}`}>
-                      <TooltipTrigger
-                        className={`inline-flex cursor-default items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] ${
-                          hasText ? "bg-loss/20 text-loss-muted" : "bg-loss/10 text-loss"
-                        }`}
-                      >
-                        <ThumbsDown className="h-2.5 w-2.5" />
-                        {item.topicName || item.text}
-                      </TooltipTrigger>
-                      {hasText && (
-                        <TooltipContent side="bottom" className="max-w-sm">
-                          <p className="whitespace-pre-wrap">{item.text}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
+                {highlightItems.map((item, i) => (
+                  <span
+                    key={`h-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-win/10 px-1.5 py-0.5 text-[10px] text-win"
+                  >
+                    <ThumbsUp className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
+                {lowlightItems.map((item, i) => (
+                  <span
+                    key={`l-${i}`}
+                    className="inline-flex items-center gap-0.5 rounded-md bg-loss/10 px-1.5 py-0.5 text-[10px] text-loss"
+                  >
+                    <ThumbsDown className="h-2.5 w-2.5" />
+                    {item.topicName}
+                  </span>
+                ))}
               </div>
             )}
 

@@ -1209,37 +1209,12 @@ async function seed() {
     "Objective control",
     "Positioning",
   ];
-  const HIGHLIGHT_TEXTS = [
-    "Perfect wave freeze denied enemy 2 waves",
-    "3-man roam bot got us dragon + double kill",
-    "Solo killed matchup at level 6 with full combo",
-    "Flash engage won the 5v5 at dragon soul",
-    "Won lane with good trades and back timing",
-    "Set up a deep ward that caught the jungler invade",
-    "Set up slow push before dragon and got priority",
-    "Clean 1v1 outplay under tower for first blood",
-    "Good TP flank turned the fight around",
-    "Zoned 3 enemies off baron with ability threat",
-    "Perfect recall timing to catch the wave and not lose xp",
-  ];
-  const LOWLIGHT_TEXTS = [
-    "Greeded for cannon and got chunked to 30%",
-    "Died to gank with no vision — need to ward before pushing",
-    "Missed every skillshot in the baron fight",
-    "Died pushing side lane without vision — tunnel visioned on cs",
-    "Kept fighting when behind instead of farming back into the game",
-    "Got caught face-checking without sweeper",
-    "Forgot to track enemy jungler pathing — died to obvious gank",
-    "Burned flash for nothing and got punished 30s later",
-    "Forced a bad dive and gave double kill",
-  ];
 
   const reviewedMatches = seedMatches.filter((m) => m.reviewed);
   for (const m of reviewedMatches) {
     // 1-3 highlights per match
     const highlightCount = randInt(1, 3);
     for (let j = 0; j < highlightCount; j++) {
-      const hasText = rand() < 0.6; // 60% have text, 40% topic-only
       await client.execute({
         sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -1248,7 +1223,7 @@ async function seed() {
           MAIN_USER_ID,
           MAIN_RIOT_ACCOUNT_ID,
           "highlight",
-          hasText ? pick(HIGHLIGHT_TEXTS) : null,
+          null,
           topicId(pick(HIGHLIGHT_TOPICS)),
           ts(now),
         ],
@@ -1257,7 +1232,6 @@ async function seed() {
     // 0-2 lowlights per match
     const lowlightCount = randInt(0, 2);
     for (let j = 0; j < lowlightCount; j++) {
-      const hasText = rand() < 0.6;
       await client.execute({
         sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -1266,7 +1240,7 @@ async function seed() {
           MAIN_USER_ID,
           MAIN_RIOT_ACCOUNT_ID,
           "lowlight",
-          hasText ? pick(LOWLIGHT_TEXTS) : null,
+          null,
           topicId(pick(HIGHLIGHT_TOPICS)),
           ts(now),
         ],
