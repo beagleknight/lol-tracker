@@ -10,7 +10,7 @@ export function DemoBanner() {
   const t = useTranslations("Demo");
 
   return (
-    <div className="fixed top-0 right-0 left-0 z-50 flex h-10 items-center justify-center gap-2 bg-gold/70 px-4 text-sm font-medium text-background backdrop-blur-sm">
+    <div className="fixed top-0 right-0 left-0 z-50 flex h-10 items-center justify-center gap-2 bg-gold/55 px-4 text-sm font-medium text-background backdrop-blur-sm">
       <Eye className="h-4 w-4" />
       <span>{t("bannerText")}</span>
       <Link href="/login" className="ml-2 underline hover:no-underline">
