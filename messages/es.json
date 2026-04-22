@@ -30,9 +30,7 @@
     "theme": "Tema: {theme}",
     "logout": "Cerrar sesión",
     "premiumBadge": "Miembro premium",
-    "adminBadge": "Admin",
-    "demoAccount": "Cuenta de demostración",
-    "demoSignUp": "Regístrate gratis"
+    "adminBadge": "Admin"
   },
   "MatchCard": {
     "vs": "vs",
@@ -1200,10 +1198,5 @@
     "dismissFailure": "Entendido",
     "previous": "Resultado anterior",
     "next": "Siguiente resultado"
-  },
-  "Demo": {
-    "bannerText": "Estás viendo la demo con datos de ejemplo.",
-    "bannerSignUp": "Regístrate gratis",
-    "bannerExit": "Salir de la demo"
   }
 }

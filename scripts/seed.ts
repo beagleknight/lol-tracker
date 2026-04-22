@@ -562,12 +562,12 @@ async function seed() {
   await client.execute({
     sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
-    args: ["DEMO-INVITE-001", MAIN_USER_ID, DUO_USER_ID, ts(now), ts(now)],
+    args: ["SEED-INVITE-001", MAIN_USER_ID, DUO_USER_ID, ts(now), ts(now)],
   });
   await client.execute({
     sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
-    args: ["DEMO-INVITE-002", MAIN_USER_ID, NEW_PLAYER_ID, ts(now), ts(now)],
+    args: ["SEED-INVITE-002", MAIN_USER_ID, NEW_PLAYER_ID, ts(now), ts(now)],
   });
 
   // ─── Riot Accounts ──────────────────────────────────────────────────────
@@ -593,7 +593,7 @@ async function seed() {
     ],
   });
 
-  // Smurf account for main user (to show account switcher in demo)
+  // Smurf account for main user (to show account switcher in preview)
   await client.execute({
     sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1446,7 +1446,7 @@ async function seed() {
   console.log(`  Highlights:       ${highlights.length}`);
   console.log(`  Challenges:       4`);
   console.log(`  Invites:          1`);
-  console.log(`\nDemo user logins:`);
+  console.log(`\nSeed user logins:`);
   console.log(`  ${ADMIN_USER.name} (admin, no Riot account, onboarding done)`);
   console.log(`  ${MAIN_USER.name} (premium, Riot linked, onboarding done)`);
   console.log(`  ${DUO_USER.name} (premium, Riot linked, onboarding done)`);

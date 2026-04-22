@@ -30,9 +30,7 @@
     "theme": "Theme: {theme}",
     "logout": "Log out",
     "premiumBadge": "Premium member",
-    "adminBadge": "Admin",
-    "demoAccount": "Demo account",
-    "demoSignUp": "Sign up for free"
+    "adminBadge": "Admin"
   },
   "MatchCard": {
     "vs": "vs",
@@ -1200,10 +1198,5 @@
     "dismissFailure": "Got it",
     "previous": "Previous result",
     "next": "Next result"
-  },
-  "Demo": {
-    "bannerText": "You're viewing the demo with sample data.",
-    "bannerSignUp": "Sign up for free",
-    "bannerExit": "Exit demo"
   }
 }

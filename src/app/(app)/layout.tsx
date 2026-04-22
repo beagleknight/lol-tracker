@@ -7,7 +7,6 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import { DemoBanner } from "@/components/demo-banner";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
@@ -67,7 +66,6 @@ async function SidebarWithUser() {
 
   return (
     <>
-      {isDemo && <DemoBanner />}
       <AppSidebar
         user={{
           name: user.name,
@@ -84,7 +82,6 @@ async function SidebarWithUser() {
         latestChangelogVersion={latestVersion}
         riotAccounts={userRiotAccounts}
         activeRiotAccountId={user.activeRiotAccountId}
-        demo={isDemo}
       />
     </>
   );
