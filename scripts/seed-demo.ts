@@ -86,6 +86,7 @@ const TOPIC_SLUG_MAP: Record<string, string> = {
   "Vision control": "vision-control",
   "Trading patterns": "trading-patterns",
   "Objective control": "macro-objectives",
+  Positioning: "teamfighting",
 };
 
 // ─── Fixed IDs (must start with "demo-") ─────────────────────────────────────
@@ -829,161 +830,76 @@ async function seedDemo() {
     // ─── Match Highlights ──────────────────────────────────────────────────
     console.log("Creating match highlights...");
 
-    const highlights = [
-      {
-        matchId: "EUW1_7000000005",
-        type: "highlight",
-        text: "Perfect wave freeze denied enemy 2 waves",
-        topicName: "Wave management",
-      },
-      {
-        matchId: "EUW1_7000000005",
-        type: "lowlight",
-        text: "Greeded for cannon and got chunked to 30%",
-        topicName: "Laning",
-      },
-      {
-        matchId: "EUW1_7000000005",
-        type: "highlight",
-        text: null,
-        topicName: "Roaming",
-      },
-      {
-        matchId: "EUW1_7000000010",
-        type: "highlight",
-        text: "3-man roam bot got us dragon + double kill",
-        topicName: "Roaming",
-      },
-      {
-        matchId: "EUW1_7000000010",
-        type: "lowlight",
-        text: null,
-        topicName: "Wave management",
-      },
-      {
-        matchId: "EUW1_7000000015",
-        type: "lowlight",
-        text: "Died to gank with no vision — need to ward before pushing",
-        topicName: "Vision control",
-      },
-      {
-        matchId: "EUW1_7000000015",
-        type: "highlight",
-        text: "Solo killed matchup at level 6 with full combo",
-        topicName: "Laning",
-      },
-      {
-        matchId: "EUW1_7000000015",
-        type: "lowlight",
-        text: null,
-        topicName: "Positioning",
-      },
-      {
-        matchId: "EUW1_7000000020",
-        type: "highlight",
-        text: null,
-        topicName: "Team fighting",
-      },
-      {
-        matchId: "EUW1_7000000020",
-        type: "lowlight",
-        text: null,
-        topicName: "Team fighting",
-      },
-      {
-        matchId: "EUW1_7000000020",
-        type: "highlight",
-        text: "Flash engage won the 5v5 at dragon soul",
-        topicName: "Objective control",
-      },
-      {
-        matchId: "EUW1_7000000025",
-        type: "highlight",
-        text: "Won lane with good trades and back timing",
-        topicName: "Laning",
-      },
-      {
-        matchId: "EUW1_7000000025",
-        type: "lowlight",
-        text: null,
-        topicName: "Roaming",
-      },
-      {
-        matchId: "EUW1_7000000030",
-        type: "lowlight",
-        text: null,
-        topicName: "Vision control",
-      },
-      {
-        matchId: "EUW1_7000000030",
-        type: "highlight",
-        text: "Set up a deep ward that caught the jungler invade",
-        topicName: "Vision control",
-      },
-      {
-        matchId: "EUW1_7000000035",
-        type: "highlight",
-        text: "Set up slow push before dragon and got priority",
-        topicName: "Wave management",
-      },
-      {
-        matchId: "EUW1_7000000035",
-        type: "lowlight",
-        text: "Died pushing side lane without vision — tunnel visioned on cs",
-        topicName: "Positioning",
-      },
-      {
-        matchId: "EUW1_7000000040",
-        type: "lowlight",
-        text: "Missed every skillshot in the baron fight",
-        topicName: "Team fighting",
-      },
-      {
-        matchId: "EUW1_7000000040",
-        type: "highlight",
-        text: null,
-        topicName: "Wave management",
-      },
-      {
-        matchId: "EUW1_7000000040",
-        type: "lowlight",
-        text: null,
-        topicName: "Objective control",
-      },
-      {
-        matchId: "EUW1_7000000045",
-        type: "highlight",
-        text: "Clean 1v1 outplay under tower for first blood",
-        topicName: "Laning",
-      },
-      {
-        matchId: "EUW1_7000000045",
-        type: "lowlight",
-        text: "Kept fighting when behind instead of farming back into the game",
-        topicName: "Laning",
-      },
-      {
-        matchId: "EUW1_7000000045",
-        type: "highlight",
-        text: null,
-        topicName: "Vision control",
-      },
+    const HIGHLIGHT_TOPICS = [
+      "Laning",
+      "Wave management",
+      "Roaming",
+      "Team fighting",
+      "Vision control",
+      "Objective control",
+      "Positioning",
+    ];
+    const HIGHLIGHT_TEXTS = [
+      "Perfect wave freeze denied enemy 2 waves",
+      "3-man roam bot got us dragon + double kill",
+      "Solo killed matchup at level 6 with full combo",
+      "Flash engage won the 5v5 at dragon soul",
+      "Won lane with good trades and back timing",
+      "Set up a deep ward that caught the jungler invade",
+      "Set up slow push before dragon and got priority",
+      "Clean 1v1 outplay under tower for first blood",
+      "Good TP flank turned the fight around",
+      "Zoned 3 enemies off baron with ability threat",
+      "Perfect recall timing to catch the wave and not lose xp",
+    ];
+    const LOWLIGHT_TEXTS = [
+      "Greeded for cannon and got chunked to 30%",
+      "Died to gank with no vision — need to ward before pushing",
+      "Missed every skillshot in the baron fight",
+      "Died pushing side lane without vision — tunnel visioned on cs",
+      "Kept fighting when behind instead of farming back into the game",
+      "Got caught face-checking without sweeper",
+      "Forgot to track enemy jungler pathing — died to obvious gank",
+      "Burned flash for nothing and got punished 30s later",
+      "Forced a bad dive and gave double kill",
     ];
 
-    for (const h of highlights) {
-      await tx.execute({
-        sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        args: [
-          h.matchId,
-          DEMO_USER_ID,
-          DEMO_RIOT_ACCOUNT_ID,
-          h.type,
-          h.text,
-          topicId(h.topicName),
-          ts(now),
-        ],
-      });
+    const reviewedMatches = seedMatches.filter((m) => m.reviewed);
+    for (const m of reviewedMatches) {
+      const highlightCount = randInt(1, 3);
+      for (let j = 0; j < highlightCount; j++) {
+        const hasText = rand() < 0.6;
+        await tx.execute({
+          sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          args: [
+            m.matchId,
+            DEMO_USER_ID,
+            DEMO_RIOT_ACCOUNT_ID,
+            "highlight",
+            hasText ? pick(HIGHLIGHT_TEXTS) : null,
+            topicId(pick(HIGHLIGHT_TOPICS)),
+            ts(now),
+          ],
+        });
+      }
+      const lowlightCount = randInt(0, 2);
+      for (let j = 0; j < lowlightCount; j++) {
+        const hasText = rand() < 0.6;
+        await tx.execute({
+          sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          args: [
+            m.matchId,
+            DEMO_USER_ID,
+            DEMO_RIOT_ACCOUNT_ID,
+            "lowlight",
+            hasText ? pick(LOWLIGHT_TEXTS) : null,
+            topicId(pick(HIGHLIGHT_TOPICS)),
+            ts(now),
+          ],
+        });
+      }
     }
 
     // ─── Action Item Outcomes ───────────────────────────────────────────────
@@ -1136,7 +1052,7 @@ async function seedDemo() {
     console.log(`  Rank snapshots:   ${rankProgression.length}`);
     console.log(`  Coaching sessions: ${sessions.length}`);
     console.log(`  Action items:     ${actionItems.length}`);
-    console.log(`  Highlights:       ${highlights.length}`);
+    console.log(`  Highlights:       ${reviewedMatches.length} matches with highlights`);
     console.log(`  Challenges:       4`);
   } catch (err) {
     await tx.rollback();
