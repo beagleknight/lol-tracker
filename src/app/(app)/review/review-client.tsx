@@ -38,7 +38,7 @@ import {
   type TopicOption,
 } from "@/components/highlights-editor";
 import { MarkdownTextarea } from "@/components/markdown-textarea";
-import { Pagination, paginate } from "@/components/pagination";
+import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { TopicClickGrid, type TopicToggle } from "@/components/topic-click-grid";
@@ -278,7 +278,7 @@ function PendingReviewCard({
   }, [match.id, selected, comment, vodUrl, outcomes, onReviewed, t]);
 
   return (
-    <Card className="surface-glow">
+    <Card className="surface-glow" data-match-id={match.id}>
       <CardHeader className="pb-3">
         <div className="flex w-full items-center gap-3">
           <button
@@ -693,6 +693,31 @@ export function ReviewClient({
       hasAutoExpanded.current = true;
     }
   }, [pendingMatches, expandedId]);
+
+  // Navigate to the correct page and scroll to the target match when initialMatchId is set
+  const prevMatchIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!initialMatchId || pendingMatches.length === 0) return;
+    // Only act when initialMatchId actually changes (handles client-side navigation)
+    if (prevMatchIdRef.current === initialMatchId) return;
+    prevMatchIdRef.current = initialMatchId;
+
+    // Sync expandedId to the new target match
+    setExpandedId(initialMatchId);
+
+    const idx = pendingMatches.findIndex((m) => m.id === initialMatchId);
+    if (idx === -1) return; // match not found (already reviewed or invalid)
+    const targetPage = Math.ceil((idx + 1) / PAGE_SIZE);
+    setPendingPage(targetPage);
+
+    // Scroll to the card after React commits the page change
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-match-id="${initialMatchId}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  }, [initialMatchId, pendingMatches]);
 
   const handleReviewed = useCallback(
     (matchId: string) => {
