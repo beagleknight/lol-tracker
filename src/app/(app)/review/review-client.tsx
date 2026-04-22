@@ -904,6 +904,7 @@ export function ReviewClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Review");
 
@@ -926,7 +927,7 @@ export function ReviewClient({
   const [isCompletedNavigating, startCompletedTransition] = useTransition();
 
   // Tab state — controlled to avoid Base UI uncontrolled defaultValue warning
-  const tabValue = readOnly ? 2 : initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
+  const tabValue = isReadOnly ? 2 : initialTab === "completed" ? 2 : initialTab === "vod" ? 1 : 0;
 
   // Tab change handler — sync tab to URL
   const handleTabChange = useCallback(
@@ -1131,7 +1132,7 @@ export function ReviewClient({
         </div>
 
         {/* F1.3 — Overflow menu with Mark All Reviewed */}
-        {!readOnly && totalUnreviewed > 0 && (
+        {!isReadOnly && totalUnreviewed > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -1208,7 +1209,7 @@ export function ReviewClient({
         )}
       </div>
 
-      {!readOnly && !user?.primaryRole && (
+      {!isReadOnly && !user?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -1223,7 +1224,7 @@ export function ReviewClient({
         </div>
       )}
 
-      {!readOnly && user?.isRiotLinked && !user?.region && (
+      {!isReadOnly && user?.isRiotLinked && !user?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -1241,7 +1242,7 @@ export function ReviewClient({
       {/* Tabs */}
       <Tabs value={tabValue} onValueChange={handleTabChange}>
         <TabsList>
-          {!readOnly && (
+          {!isReadOnly && (
             <TabsTrigger value={0}>
               <ClipboardEdit className="h-3.5 w-3.5" />
               {t("tabs.postGame")}
@@ -1252,7 +1253,7 @@ export function ReviewClient({
               )}
             </TabsTrigger>
           )}
-          {!readOnly && (
+          {!isReadOnly && (
             <TabsTrigger value={1}>
               <Video className="h-3.5 w-3.5" />
               {t("tabs.vodReview")}
@@ -1377,7 +1378,7 @@ export function ReviewClient({
                       onSaved={handleCompletedSaved}
                       locale={locale}
                       topics={topics}
-                      readOnly={readOnly}
+                      readOnly={isReadOnly}
                     />
                   ))}
                 </div>

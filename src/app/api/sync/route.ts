@@ -5,6 +5,7 @@ import type { ChallengeTransition } from "@/lib/challenges";
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
 import { checkByDateChallenges, evaluateByGamesChallenges } from "@/lib/challenges";
+import { isDemoUserId } from "@/lib/fake-auth";
 import { checkGoalAchievement } from "@/lib/goals";
 import { hasRecentEvent, peekRateLimit, recordRateLimitEvent } from "@/lib/rate-limit";
 import { calculateAdaptiveDelay } from "@/lib/rate-limiter";
@@ -58,6 +59,11 @@ export async function GET(request: Request) {
       { error: "Sync is disabled while viewing as another user." },
       { status: 403 },
     );
+  }
+
+  // Block sync for the public demo user (read-only, no real Riot account)
+  if (isDemoUserId(user.id)) {
+    return Response.json({ error: "Sync is disabled for demo accounts." }, { status: 403 });
   }
 
   if (!user.puuid) {

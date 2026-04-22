@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import { isDemoUserId } from "@/lib/fake-auth";
 import { IMPERSONATE_COOKIE, requireAdmin } from "@/lib/session";
 
 export interface AdminUser {
@@ -57,21 +58,25 @@ export async function getUsers(): Promise<AdminUser[]> {
     .from(users)
     .orderBy(users.createdAt);
 
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    image: r.image,
-    discordId: r.discordId,
-    riotGameName: r.riotGameName,
-    riotTagLine: r.riotTagLine,
-    region: r.region,
-    role: r.role,
-    deactivatedAt: r.deactivatedAt,
-    createdAt: r.createdAt,
-    matchCount: r.matchCount,
-    scopedMatchCount: r.scopedMatchCount ?? 0,
-    lastSync: r.lastSync ? new Date(r.lastSync) : null,
-  }));
+  // Hide the demo user from the admin list — it's synthetic seed data,
+  // not a real user, and impersonating it causes a broken read-only state.
+  return rows
+    .filter((r) => !isDemoUserId(r.id))
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      image: r.image,
+      discordId: r.discordId,
+      riotGameName: r.riotGameName,
+      riotTagLine: r.riotTagLine,
+      region: r.region,
+      role: r.role,
+      deactivatedAt: r.deactivatedAt,
+      createdAt: r.createdAt,
+      matchCount: r.matchCount,
+      scopedMatchCount: r.scopedMatchCount ?? 0,
+      lastSync: r.lastSync ? new Date(r.lastSync) : null,
+    }));
 }
 
 export async function deactivateUser(userId: string) {

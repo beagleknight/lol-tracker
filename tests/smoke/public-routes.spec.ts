@@ -21,6 +21,6 @@ test.describe("Public routes", () => {
   test("/login — login page loads with demo user picker", async ({ page }) => {
     const response = await page.goto("/login");
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole("button", { name: /DemoPlayer/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /SeedPlayer/ })).toBeVisible();
   });
 });

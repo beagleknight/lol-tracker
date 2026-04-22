@@ -4,14 +4,14 @@ import path from "path";
 const authFile = path.join(__dirname, ".auth", "demo-user.json");
 
 /**
- * Authenticate as the DemoPlayer user and save the session state.
+ * Authenticate as the SeedPlayer user and save the session state.
  * This runs before all smoke tests via the "setup" project dependency.
  */
-setup("authenticate as DemoPlayer", async ({ page }) => {
+setup("authenticate as SeedPlayer", async ({ page }) => {
   await page.goto("/login");
 
-  // Click the DemoPlayer card to log in
-  await page.getByText("DemoPlayer").first().click();
+  // Click the SeedPlayer card to log in
+  await page.getByText("SeedPlayer").first().click();
 
   // Wait for redirect to dashboard (confirms login succeeded)
   await page.waitForURL("**/dashboard", { timeout: 15_000 });

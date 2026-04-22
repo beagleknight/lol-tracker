@@ -11,13 +11,14 @@ import { invalidateAllCaches, invalidateDuoCaches } from "@/lib/cache";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/format";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
-import { blockIfImpersonating, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 
 const MAX_RIOT_ACCOUNTS = 5;
 
 export async function linkRiotAccount(formData: FormData) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Rate limit check
   const rateCheck = await checkRateLimit(user.id, "riot_lookup");
@@ -114,6 +115,7 @@ export async function linkRiotAccount(formData: FormData) {
 export async function unlinkRiotAccount() {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   if (!user.activeRiotAccountId) {
     return { error: "No active Riot account to unlink." };
@@ -217,6 +219,7 @@ export async function unlinkRiotAccount() {
 export async function updateRegion(region: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   if (!PLATFORM_IDS.includes(region)) {
     return { error: "Invalid region." };
@@ -307,6 +310,7 @@ export async function getDuoPartner() {
 export async function setDuoPartner(partnerUserId: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Verify the partner exists and has a linked Riot account
   const partner = await db.query.users.findFirst({
@@ -341,6 +345,7 @@ export async function setDuoPartner(partnerUserId: string) {
 export async function clearDuoPartner() {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   await db
     .update(users)
@@ -364,6 +369,7 @@ export async function clearDuoPartner() {
 export async function updateLocale(locale: SupportedLocale) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Validate locale is supported
   const valid = SUPPORTED_LOCALES.some((l) => l.value === locale);
@@ -393,6 +399,7 @@ export async function updateLocale(locale: SupportedLocale) {
 export async function updateLanguage(language: SupportedLanguage) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Validate language is supported
   const valid = SUPPORTED_LANGUAGES.some((l) => l.value === language);
@@ -438,6 +445,7 @@ const VALID_CADENCE_DAYS = [7, 14, 21, 30] as const;
 export async function updateCoachingCadence(days: number) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   if (!VALID_CADENCE_DAYS.includes(days as (typeof VALID_CADENCE_DAYS)[number])) {
     return { error: "Invalid coaching cadence." };
@@ -467,6 +475,7 @@ export async function updateRolePreferences(
 ) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Validate positions
   if (primaryRole && !VALID_POSITIONS.includes(primaryRole as (typeof VALID_POSITIONS)[number])) {

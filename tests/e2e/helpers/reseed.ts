@@ -25,6 +25,17 @@ export async function reseedDatabase() {
     },
   });
 
+  // Re-seed demo user (seed.ts deletes all users, including the demo user)
+  execSync("npx tsx scripts/seed-demo.ts --execute", {
+    cwd: projectRoot,
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
+      TURSO_AUTH_TOKEN: "",
+    },
+  });
+
   // Brief pause so any in-flight server requests complete before tests start
   await new Promise((r) => setTimeout(r, 200));
   console.log("[e2e] Re-seed complete.");

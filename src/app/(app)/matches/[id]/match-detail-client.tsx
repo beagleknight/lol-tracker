@@ -196,6 +196,7 @@ export function MatchDetailClient({
   readOnly,
 }: MatchDetailClientProps) {
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("MatchDetail");
   const tAi = useTranslations("AiInsights");
@@ -255,7 +256,7 @@ export function MatchDetailClient({
                     {t("pendingReview")}
                   </Badge>
                 )}
-                {!readOnly && (
+                {!isReadOnly && (
                   <AiInsightDrawer
                     title={tAi("postGameTitle")}
                     cachedInsight={cachedAiInsight}
@@ -348,7 +349,7 @@ export function MatchDetailClient({
       )}
 
       {/* Review this game CTA — hidden for off-role matches and readOnly */}
-      {!readOnly && !match.reviewed && !isOffRole && (
+      {!isReadOnly && !match.reviewed && !isOffRole && (
         <div className="flex items-center gap-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
           <ClipboardEdit className="h-5 w-5 shrink-0 text-gold" />
           <div className="flex-1">

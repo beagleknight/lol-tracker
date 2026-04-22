@@ -6,7 +6,7 @@ import { updateTag } from "next/cache";
 import { db } from "@/db";
 import { matchupNotes } from "@/db/schema";
 import { scoutTag } from "@/lib/cache";
-import { blockIfImpersonating, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -105,6 +105,7 @@ export async function upsertMatchupNote(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
   const trimmed = content.trim();
 
   if (!matchupChampionName.trim()) {
@@ -159,6 +160,7 @@ export async function upsertMatchupNote(
 export async function deleteMatchupNote(id: number): Promise<{ success: boolean; error?: string }> {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   await db
     .delete(matchupNotes)

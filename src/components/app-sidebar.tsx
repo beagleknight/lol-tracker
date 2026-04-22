@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSyncMatches } from "@/hooks/use-sync-matches";
+import { useAuth } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 import { UserMenu, type RiotAccountItem } from "./user-menu";
@@ -69,14 +70,13 @@ const navDefs = {
 } as const;
 
 // All nav hrefs — used to resolve active state conflicts between parent/child routes
-const baseHrefs = [
+const allNavHrefs = [
   ...navDefs.dashboard,
   ...navDefs.tracker,
   ...navDefs.insights,
   ...navDefs.coaching,
   ...navDefs.bottom,
 ].map((item) => item.href);
-const allNavHrefs = [...baseHrefs, ...baseHrefs.map((h) => demoHref(h))];
 
 interface SidebarProps {
   user: {
@@ -94,8 +94,6 @@ interface SidebarProps {
   latestChangelogVersion?: string | null;
   riotAccounts?: RiotAccountItem[];
   activeRiotAccountId?: string | null;
-  /** When true, sidebar is in demo mode: links point to /demo/..., write actions hidden */
-  demo?: boolean;
 }
 
 function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
@@ -166,50 +164,20 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   );
 }
 
-/** Locked nav items in demo mode — shown grayed out with lock icon */
-const demoLockedHrefs = new Set(["/duo", "/feedback", "/coaching/action-items"]);
-
-/** Remap a regular app href to its /demo equivalent */
-function demoHref(href: string): string {
-  if (href === "/dashboard") return "/demo";
-  // /changelog and /legal are shared routes, no remapping
-  if (href === "/changelog" || href === "/legal") return href;
-  return `/demo${href}`;
-}
-
-function DemoUserBadge() {
-  const t = useTranslations("Sidebar");
-  return (
-    <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 ring-2 ring-gold/20">
-        <Sparkles className="h-4 w-4 text-gold" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{t("demoAccount")}</p>
-        <Link
-          href="/login"
-          className="text-xs font-medium text-gold hover:text-gold/80 hover:underline"
-        >
-          {t("demoSignUp")}
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function SidebarContent({
   user,
   reviewCounts,
   latestChangelogVersion,
   riotAccounts,
   activeRiotAccountId,
-  demo,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
   const isLinked = !!user.isRiotLinked;
+  const { user: authUser } = useAuth();
+  const isDemoUser = authUser?.isDemoUser ?? false;
   const { isSyncing, handleSync, challengeTransitions, dismissChallengeTransitions } =
-    useSyncMatches(demo ? false : isLinked);
+    useSyncMatches(isDemoUser ? false : isLinked);
 
   // Track whether there are unseen changelog entries
   const [hasUnseenChangelog, setHasUnseenChangelog] = useState(false);
@@ -228,19 +196,12 @@ function SidebarContent({
       external?: boolean;
     }[],
   ): NavItem[] =>
-    defs
-      .filter((d) => {
-        // Hide settings from demo nav entirely (it's in user menu for real users)
-        if (demo && d.key === "navSettings") return false;
-        return true;
-      })
-      .map((d) => ({
-        label: t(d.key),
-        href: demo ? demoHref(d.href) : d.href,
-        icon: d.icon,
-        ...(d.external && { external: true }),
-        ...(demo && demoLockedHrefs.has(d.href) && { locked: true }),
-      }));
+    defs.map((d) => ({
+      label: t(d.key),
+      href: d.href,
+      icon: d.icon,
+      ...(d.external && { external: true }),
+    }));
 
   const dashboardNav = resolve(navDefs.dashboard);
   const trackerNav = resolve(navDefs.tracker);
@@ -253,24 +214,22 @@ function SidebarContent({
   const isFreeUser = user.role === "free";
   const trackerNavWithBadges = trackerNav.map((item) => {
     let updated = item;
-    if ((item.href === "/review" || item.href === "/demo/review") && totalReview > 0) {
+    if (item.href === "/review" && totalReview > 0) {
       updated = { ...updated, badge: totalReview };
     }
-    if ((item.href === "/duo" || item.href === "/demo/duo") && (isFreeUser || demo)) {
+    if (item.href === "/duo" && isFreeUser) {
       updated = { ...updated, locked: true };
     }
     return updated;
   });
 
-  // Inject unseen dot into the changelog nav link (not in demo)
-  const bottomNavWithDot = demo
-    ? bottomNav
-    : bottomNav.map((item) =>
-        item.href === "/changelog" && hasUnseenChangelog ? { ...item, dot: true } : item,
-      );
+  // Inject unseen dot into the changelog nav link
+  const bottomNavWithDot = bottomNav.map((item) =>
+    item.href === "/changelog" && hasUnseenChangelog ? { ...item, dot: true } : item,
+  );
 
-  // Conditionally add Admin link for admin users (never in demo)
-  const isAdmin = !demo && user.role === "admin";
+  // Conditionally add Admin link for admin users
+  const isAdmin = user.role === "admin";
   const adminNav: NavItem[] = isAdmin
     ? [{ label: t("navAdmin"), href: "/admin", icon: Shield }]
     : [];
@@ -283,7 +242,7 @@ function SidebarContent({
           <Logo className="h-5 w-5 text-gold" />
           <span className="text-gradient-gold">LoL Tracker</span>
         </div>
-        {!demo && (
+        {!isDemoUser && (
           <Button
             variant="ghost"
             size="icon"
@@ -353,19 +312,15 @@ function SidebarContent({
       {/* User section */}
       <Separator />
       <div className="p-3">
-        {demo ? (
-          <DemoUserBadge />
-        ) : (
-          <UserMenu
-            user={user}
-            accounts={riotAccounts ?? []}
-            activeAccountId={activeRiotAccountId ?? null}
-          />
-        )}
+        <UserMenu
+          user={user}
+          accounts={riotAccounts ?? []}
+          activeAccountId={activeRiotAccountId ?? null}
+        />
       </div>
 
-      {/* Challenge result popup — rendered via portal (not in demo) */}
-      {!demo && (
+      {/* Challenge result popup — rendered via portal (not for demo users) */}
+      {!isDemoUser && (
         <ChallengeResultModal
           transitions={challengeTransitions}
           onDismiss={dismissChallengeTransitions}
@@ -381,7 +336,6 @@ export function AppSidebar({
   latestChangelogVersion,
   riotAccounts,
   activeRiotAccountId,
-  demo,
 }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -421,7 +375,6 @@ export function AppSidebar({
           latestChangelogVersion={latestChangelogVersion}
           riotAccounts={riotAccounts}
           activeRiotAccountId={activeRiotAccountId}
-          demo={demo}
           onNavClick={() => setMobileOpen(false)}
         />
       </aside>

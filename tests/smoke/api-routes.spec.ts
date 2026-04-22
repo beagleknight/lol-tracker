@@ -6,9 +6,9 @@ test.describe("API routes", () => {
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    // Logged in as DemoPlayer — session should have user data
+    // Logged in as SeedPlayer — session should have user data
     expect(body.user).toBeDefined();
-    expect(body.user.name).toBe("DemoPlayer");
+    expect(body.user.name).toBe("SeedPlayer");
   });
 
   test("/api/export/matches — returns CSV with correct headers", async ({ request }) => {

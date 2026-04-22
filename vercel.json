@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npx tsx scripts/migrate.ts && if [ \"$VERCEL_ENV\" = \"preview\" ]; then npx tsx scripts/seed.ts --force-remote; fi && next build --webpack",
+  "buildCommand": "npx tsx scripts/migrate.ts && if [ \"$VERCEL_ENV\" = \"preview\" ]; then npx tsx scripts/seed.ts --force-remote; fi && npx tsx scripts/seed-demo.ts && next build --webpack",
   "regions": ["dub1"]
 }

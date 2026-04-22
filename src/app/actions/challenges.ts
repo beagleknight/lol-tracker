@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { challenges, challengeTopics, rankSnapshots } from "@/db/schema";
 import { invalidateChallengesCaches } from "@/lib/cache";
-import { blockIfImpersonating, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 
 // ─── Supported metrics for by-games challenges ─────────────────────────────
 
@@ -23,6 +23,7 @@ export async function createByDateChallenge(data: {
 }) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Get current rank from latest snapshot
   const snapshotConditions = [eq(rankSnapshots.userId, user.id)];
@@ -87,6 +88,7 @@ export async function createByGamesChallenge(data: {
 }) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   const [challenge] = await db
     .insert(challenges)
@@ -125,6 +127,7 @@ export async function createByGamesChallenge(data: {
 export async function retryChallenge(challengeId: number) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Fetch the failed challenge + its topics
   const original = await db.query.challenges.findFirst({
@@ -176,6 +179,7 @@ export async function retryChallenge(challengeId: number) {
 export async function retireChallenge(challengeId: number) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   const challenge = await db.query.challenges.findFirst({
     where: and(
@@ -206,6 +210,7 @@ export async function retireChallenge(challengeId: number) {
 export async function deleteChallenge(challengeId: number) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   await db
     .delete(challenges)

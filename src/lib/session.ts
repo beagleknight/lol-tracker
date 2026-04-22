@@ -6,6 +6,7 @@ import { cache } from "react";
 import { db } from "@/db";
 import { type User, users, riotAccounts } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { isDemoUserId } from "@/lib/fake-auth";
 
 // ─── Impersonation cookie name ──────────────────────────────────────────────
 export const IMPERSONATE_COOKIE = "admin-impersonate";
@@ -115,6 +116,14 @@ export async function isImpersonating(): Promise<boolean> {
 export async function blockIfImpersonating(): Promise<void> {
   if (await isImpersonating()) {
     throw new Error("Action blocked: you are viewing as another user (read-only mode)");
+  }
+}
+
+/** Throws if the current user is a demo user. Use as a guard in mutative server actions. */
+export async function blockDemoWrites(): Promise<void> {
+  const user = await getCurrentUser();
+  if (user && isDemoUserId(user.id)) {
+    throw new Error("Action blocked: demo accounts are read-only");
   }
 }
 

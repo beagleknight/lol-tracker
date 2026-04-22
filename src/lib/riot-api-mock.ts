@@ -10,16 +10,16 @@
 
 import type { RiotMatch } from "@/lib/riot-api";
 
-// ─── Demo user constants (must match seed.ts) ───────────────────────────────
+// ─── Seed user constants (must match seed.ts) ───────────────────────────────
 
-const DEMO_MAIN = {
-  puuid: "demo-puuid-main-0000000000000000000000000000000000000000",
-  gameName: "DemoPlayer",
+const SEED_MAIN = {
+  puuid: "seed-puuid-main-0000000000000000000000000000000000000000",
+  gameName: "SeedPlayer",
   tagLine: "EUW",
 };
 
-const DEMO_DUO = {
-  puuid: "demo-puuid-duo-00000000000000000000000000000000000000000",
+const SEED_DUO = {
+  puuid: "seed-puuid-duo-00000000000000000000000000000000000000000",
   gameName: "DuoPartner",
   tagLine: "EUW",
 };
@@ -34,11 +34,11 @@ export async function mockGetAccountByRiotId(
   // Match against seeded accounts
   const lower = gameName.toLowerCase();
 
-  if (lower === "demoplayer" && tagLine.toUpperCase() === "EUW") {
-    return DEMO_MAIN;
+  if (lower === "seedplayer" && tagLine.toUpperCase() === "EUW") {
+    return SEED_MAIN;
   }
   if (lower === "duopartner" && tagLine.toUpperCase() === "EUW") {
-    return DEMO_DUO;
+    return SEED_DUO;
   }
 
   // For any other Riot ID in demo mode, return a fake account
@@ -65,7 +65,7 @@ export async function mockGetSoloQueueEntryByPuuid(
   wins: number;
   losses: number;
 } | null> {
-  if (puuid === DEMO_MAIN.puuid) {
+  if (puuid === SEED_MAIN.puuid) {
     return {
       leagueId: "demo-league-001",
       summonerId: "demo-summoner-main",
@@ -99,7 +99,7 @@ export async function mockGetMatch(matchId: string, _region?: string): Promise<R
   return {
     metadata: {
       matchId,
-      participants: [DEMO_MAIN.puuid],
+      participants: [SEED_MAIN.puuid],
     },
     info: {
       gameCreation: Date.now(),
@@ -111,10 +111,10 @@ export async function mockGetMatch(matchId: string, _region?: string): Promise<R
       queueId: 420,
       participants: [
         {
-          puuid: DEMO_MAIN.puuid,
-          summonerName: DEMO_MAIN.gameName,
-          riotIdGameName: DEMO_MAIN.gameName,
-          riotIdTagline: DEMO_MAIN.tagLine,
+          puuid: SEED_MAIN.puuid,
+          summonerName: SEED_MAIN.gameName,
+          riotIdGameName: SEED_MAIN.gameName,
+          riotIdTagline: SEED_MAIN.tagLine,
           championId: 103,
           championName: "Ahri",
           teamId: 100,

@@ -4,7 +4,7 @@ import { eq, count } from "drizzle-orm";
 
 import { db } from "@/db";
 import { users, riotAccounts, matches } from "@/db/schema";
-import { blockIfImpersonating, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 
 /**
  * Permanently delete the current user's account and all associated data.
@@ -20,6 +20,7 @@ import { blockIfImpersonating, requireUser } from "@/lib/session";
 export async function deleteAccount(confirmation: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // ── Validate confirmation ──────────────────────────────────────────────
   if (confirmation !== "DELETE") {

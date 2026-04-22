@@ -127,6 +127,7 @@ export function CoachingHubClient({
   readOnly,
 }: CoachingHubClientProps) {
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Coaching");
   const totalSessions = scheduledSessions.length + completedSessions.length;
@@ -143,8 +144,8 @@ export function CoachingHubClient({
               : t("subtitleSummary", { totalSessions, activeCount: activeActionItems.length })}
           </p>
         </div>
-        {!readOnly && (
-          <Link href="/coaching/new">
+        {!isReadOnly && (
+          <Link href={"/coaching/new"}>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               {t("scheduleSessionButton")}
@@ -160,8 +161,8 @@ export function CoachingHubClient({
           title={t("emptyStateTitle")}
           description={t("emptyStateDescription")}
           action={
-            !readOnly ? (
-              <Link href="/coaching/new">
+            !isReadOnly ? (
+              <Link href={"/coaching/new"}>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   {t("scheduleSessionButton")}
@@ -277,7 +278,7 @@ export function CoachingHubClient({
                       </CardContent>
                     </Card>
                   </Link>
-                  {!readOnly && isPastDue && (
+                  {!isReadOnly && isPastDue && (
                     <div className="flex items-center justify-end gap-2 px-1">
                       <span
                         className={`text-xs ${isOverdue ? "text-loss" : "text-muted-foreground"}`}
@@ -316,7 +317,7 @@ export function CoachingHubClient({
                 {activeActionItems.length}
               </Badge>
             </div>
-            <Link href="/coaching/action-items">
+            <Link href={"/coaching/action-items"}>
               <Button variant="ghost" size="sm" className="text-xs">
                 {t("viewAll")}
                 <ChevronRight className="ml-1 h-3 w-3" />
@@ -330,7 +331,7 @@ export function CoachingHubClient({
                   key={item.id}
                   item={item}
                   topicNames={topicNames}
-                  readOnly={readOnly}
+                  readOnly={isReadOnly}
                 />
               ))}
               {activeActionItems.length > 8 && (

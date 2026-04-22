@@ -213,8 +213,10 @@ export function AnalyticsClient({
   rankSnapshots,
   ddragonVersion,
   activeGoal,
+  readOnly,
 }: AnalyticsClientProps) {
   const { user } = useAuth();
+  const _isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Analytics");
   const cc = useChartColors();

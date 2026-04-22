@@ -30,9 +30,7 @@
     "theme": "Theme: {theme}",
     "logout": "Log out",
     "premiumBadge": "Premium member",
-    "adminBadge": "Admin",
-    "demoAccount": "Demo account",
-    "demoSignUp": "Sign up for free"
+    "adminBadge": "Admin"
   },
   "MatchCard": {
     "vs": "vs",
@@ -76,8 +74,8 @@
     "haveInviteCode": "Have an invite code?",
     "alreadyHaveAccount": "Already have an account? Just sign in without a code.",
     "legalLink": "Legal",
-    "demoModeTitle": "Demo mode",
-    "demoModeDescription": "Select an account to explore the app with sample data.",
+    "fakeAuthTitle": "Fake auth",
+    "fakeAuthDescription": "Select an account to explore the app with sample data.",
     "demoLoginButton": "Log in",
     "demoRoleAdmin": "Admin",
     "demoRoleUser": "User",
@@ -1200,9 +1198,5 @@
     "dismissFailure": "Got it",
     "previous": "Previous result",
     "next": "Next result"
-  },
-  "Demo": {
-    "bannerText": "You're viewing the demo with sample data.",
-    "bannerSignUp": "Sign up for free"
   }
 }

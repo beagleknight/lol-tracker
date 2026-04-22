@@ -51,6 +51,14 @@ export default async function globalSetup(_config: FullConfig) {
     env: dbEnv,
   });
 
+  // ─── 4. Seed demo user (public demo) ────────────────────────────────────
+  console.log("[smoke] Seeding demo user...");
+  execSync("npx tsx scripts/seed-demo.ts --execute", {
+    cwd: projectRoot,
+    stdio: "inherit",
+    env: dbEnv,
+  });
+
   // Ensure the .auth directory exists for the setup project
   const authDir = path.join(__dirname, ".auth");
   fs.mkdirSync(authDir, { recursive: true });

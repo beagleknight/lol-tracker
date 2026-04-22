@@ -69,7 +69,6 @@ interface ScoutClientProps {
   mostPlayed?: ChampionPickCount[];
   mostFaced?: ChampionPickCount[];
   readOnly?: boolean;
-  matchBasePath?: string;
 }
 
 // ─── Scouting Report ────────────────────────────────────────────────────────
@@ -97,6 +96,7 @@ function ScoutingReport({
   const t = useTranslations("Scout");
   const tAi = useTranslations("AiInsights");
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const [notesOpen, setNotesOpen] = useState(false);
 
   const { activeNote, activeChampionName } = pickActiveNote(matchupNotes, yourChampionName);
@@ -143,14 +143,14 @@ function ScoutingReport({
                   ? `${yourChampionName} ${t("vs")} ${report.matchupChampionName}`
                   : `${t("vs")} ${report.matchupChampionName}`}
               </h2>
-              {!readOnly && (
+              {!isReadOnly && (
                 <MatchupNotesTrigger
                   hasNote={hasNote}
                   isOpen={notesOpen}
                   onToggle={() => setNotesOpen(!notesOpen)}
                 />
               )}
-              {!readOnly && (
+              {!isReadOnly && (
                 <AiInsightDrawer
                   title={tAi("matchupTitle")}
                   isConfigured={isAiConfigured}
@@ -187,7 +187,7 @@ function ScoutingReport({
         </div>
 
         {/* Notes panel — renders below the header row */}
-        {!readOnly && notesOpen && (
+        {!isReadOnly && notesOpen && (
           <div className="mt-3">
             <MatchupNotesPanel
               note={activeNote}
@@ -483,11 +483,11 @@ export function ScoutClient({
   mostPlayed = [],
   mostFaced = [],
   readOnly,
-  matchBasePath: _matchBasePath,
 }: ScoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Scout");
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
@@ -665,7 +665,7 @@ export function ScoutClient({
           yourChampionName={yourChampion || undefined}
           isAiConfigured={isAiConfigured}
           onNotesChanged={refreshNotes}
-          readOnly={readOnly}
+          readOnly={isReadOnly}
         />
       )}
 
@@ -684,7 +684,7 @@ export function ScoutClient({
           />
 
           {/* Still allow adding notes even without match history */}
-          {!readOnly && (
+          {!isReadOnly && (
             <NoDataNotesBubble
               notes={matchupNotesList}
               matchupChampionName={enemyChampion}

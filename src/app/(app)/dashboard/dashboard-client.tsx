@@ -103,7 +103,6 @@ interface DashboardClientProps {
   topicNames: { id: number; name: string }[];
   /** When true, all write actions are hidden (demo mode) */
   readOnly?: boolean;
-  matchBasePath?: string;
 }
 
 function getStreak(matches: DashboardMatch[]): { type: "W" | "L"; count: number } | null {
@@ -149,10 +148,10 @@ export function DashboardClient({
   ddragonVersion,
   topicNames,
   readOnly,
-  matchBasePath,
 }: DashboardClientProps) {
   const t = useTranslations("Dashboard");
   const { user: authUser } = useAuth();
+  const isReadOnly = readOnly || authUser?.isDemoUser;
   const locale = authUser?.locale ?? DEFAULT_LOCALE;
   const isLinked = !!user.isRiotLinked;
   const streak = getStreak(recentMatches);
@@ -215,7 +214,7 @@ export function DashboardClient({
         </div>
       </div>
 
-      {!readOnly && !isLinked && (
+      {!isReadOnly && !isLinked && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
@@ -230,7 +229,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {!readOnly && isLinked && !authUser?.primaryRole && (
+      {!isReadOnly && isLinked && !authUser?.primaryRole && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Crosshair className="h-4 w-4 shrink-0" />
           <span>
@@ -245,7 +244,7 @@ export function DashboardClient({
         </div>
       )}
 
-      {!readOnly && isLinked && !authUser?.region && (
+      {!isReadOnly && isLinked && !authUser?.region && (
         <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold-light">
           <Globe className="h-4 w-4 shrink-0" />
           <span>
@@ -394,7 +393,7 @@ export function DashboardClient({
                 })}
               </CardDescription>
             </div>
-            <Link href="/matches">
+            <Link href={"/matches"}>
               <Button variant="ghost" size="sm">
                 {t("viewAll")}
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -415,7 +414,6 @@ export function DashboardClient({
                     variant="compact"
                     showScoutLink
                     userPrimaryRole={authUser?.primaryRole}
-                    matchBasePath={matchBasePath}
                   />
                 ))}
               </div>
@@ -556,8 +554,8 @@ export function DashboardClient({
                         {t("nextDueIn", { days: daysUntilDue })}
                       </p>
                     )}
-                    {!readOnly && (
-                      <Link href="/coaching/new" className="mt-3 block">
+                    {!isReadOnly && (
+                      <Link href={"/coaching/new"} className="mt-3 block">
                         <Button variant="outline" size="sm" className="w-full">
                           {t("scheduleNext")}
                         </Button>
@@ -579,8 +577,8 @@ export function DashboardClient({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{t("noCoachingSessions")}</p>
-                  {!readOnly && (
-                    <Link href="/coaching/new" className="mt-2 inline-block">
+                  {!isReadOnly && (
+                    <Link href={"/coaching/new"} className="mt-2 inline-block">
                       <Button variant="outline" size="sm">
                         {t("scheduleFirst")}
                       </Button>
@@ -665,7 +663,7 @@ export function DashboardClient({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t("noActiveChallenges")}</p>
-                {!readOnly && (
+                {!isReadOnly && (
                   <Link href="/challenges/new" className="mt-2 inline-block">
                     <Button variant="outline" size="sm">
                       {t("newChallenge")}
@@ -680,7 +678,7 @@ export function DashboardClient({
           <Card className="surface-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">{t("actionItems")}</CardTitle>
-              <Link href="/coaching/action-items">
+              <Link href={"/coaching/action-items"}>
                 <Button variant="ghost" size="sm">
                   {t("viewAll")}
                   <ChevronRight className="ml-1 h-3 w-3" />

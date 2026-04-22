@@ -8,7 +8,7 @@ import { users, riotAccounts } from "@/db/schema";
 import { invalidateAllCaches } from "@/lib/cache";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getAccountByRiotId, RiotApiError, PLATFORM_IDS } from "@/lib/riot-api";
-import { blockIfImpersonating, isPremium, requireUser } from "@/lib/session";
+import { blockDemoWrites, blockIfImpersonating, isPremium, requireUser } from "@/lib/session";
 
 const MAX_RIOT_ACCOUNTS_PREMIUM = 5;
 const MAX_RIOT_ACCOUNTS_FREE = 1;
@@ -23,6 +23,7 @@ const MAX_RIOT_ACCOUNTS_FREE = 1;
 export async function addRiotAccount(formData: FormData) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Rate limit check
   const rateCheck = await checkRateLimit(user.id, "riot_lookup");
@@ -133,6 +134,7 @@ export async function addRiotAccount(formData: FormData) {
 export async function removeRiotAccount(accountId: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Find the account and verify ownership
   const account = await db.query.riotAccounts.findFirst({
@@ -206,6 +208,7 @@ export async function removeRiotAccount(accountId: string) {
 export async function switchActiveAccount(accountId: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Verify ownership
   const account = await db.query.riotAccounts.findFirst({
@@ -250,6 +253,7 @@ export async function switchActiveAccount(accountId: string) {
 export async function setAccountAsPrimary(accountId: string) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Verify ownership
   const account = await db.query.riotAccounts.findFirst({
@@ -286,6 +290,7 @@ export async function setAccountAsPrimary(accountId: string) {
 export async function updateAccountLabel(accountId: string, label: string | null) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   const trimmed = label?.trim() || null;
   if (trimmed && trimmed.length > 30) {
@@ -324,6 +329,7 @@ export async function updateAccountRolePreferences(
 ) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Validate positions
   if (primaryRole && !VALID_POSITIONS.includes(primaryRole as (typeof VALID_POSITIONS)[number])) {
@@ -406,6 +412,7 @@ export async function getUserRiotAccounts() {
 export async function toggleAccountDiscoverable(accountId: string, discoverable: boolean) {
   const user = await requireUser();
   await blockIfImpersonating();
+  await blockDemoWrites();
 
   // Verify ownership
   const account = await db.query.riotAccounts.findFirst({

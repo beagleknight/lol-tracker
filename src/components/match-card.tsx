@@ -88,7 +88,6 @@ export function MatchCard({
   variant = "default",
   showScoutLink = false,
   userPrimaryRole,
-  matchBasePath = "/matches",
 }: {
   match: MatchCardData;
   ddragonVersion: string;
@@ -97,7 +96,6 @@ export function MatchCard({
   variant?: "default" | "compact";
   showScoutLink?: boolean;
   userPrimaryRole?: string | null;
-  matchBasePath?: string;
 }) {
   const t = useTranslations("MatchCard");
   const isCompact = variant === "compact";
@@ -155,7 +153,7 @@ export function MatchCard({
   return (
     <TooltipProvider>
       <Link
-        href={`${matchBasePath}/${match.id}`}
+        href={`/matches/${match.id}`}
         className={`block rounded-lg border transition-all ${isOffRole ? "off-role-stripes bg-surface-elevated/50" : `hover-lift bg-card hover:bg-surface-elevated/50 ${resultBgTint(match.result)}`}`}
       >
         <div className={`flex items-center gap-3 ${isCompact ? "px-3 py-2" : "px-4 py-3"}`}>
