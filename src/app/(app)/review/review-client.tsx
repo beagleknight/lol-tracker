@@ -833,7 +833,16 @@ export function ReviewClient({
                       }
                     >
                       <SelectTrigger size="sm" className="w-[150px]" aria-label={t("sort.label")}>
-                        <SelectValue placeholder={t("sort.suggested")} />
+                        <SelectValue placeholder={t("sort.suggested")}>
+                          {(value: string) => {
+                            const labels: Record<string, string> = {
+                              suggested: t("sort.suggested"),
+                              newest: t("sort.newestFirst"),
+                              oldest: t("sort.oldestFirst"),
+                            };
+                            return labels[value] ?? value;
+                          }}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="suggested">{t("sort.suggested")}</SelectItem>
