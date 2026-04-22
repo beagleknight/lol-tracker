@@ -81,7 +81,12 @@ interface ReviewClientProps {
   reviewedTotal: number;
   initialTab: "pending" | "reviewed";
   topics: TopicOption[];
-  activeActionItems: Array<{ id: number; description: string; topicId: number | null }>;
+  activeActionItems: Array<{
+    id: number;
+    description: string;
+    topicId: number | null;
+    createdAt: Date;
+  }>;
   initialMatchId?: string;
   readOnly?: boolean;
 }
@@ -223,7 +228,12 @@ function PendingReviewCard({
   onToggleExpand: () => void;
   priorityScore: number;
   topics: TopicOption[];
-  activeActionItems: Array<{ id: number; description: string; topicId: number | null }>;
+  activeActionItems: Array<{
+    id: number;
+    description: string;
+    topicId: number | null;
+    createdAt: Date;
+  }>;
 }) {
   // Convert existing highlights to TopicToggle format
   const initialSelected: TopicToggle[] = existingHighlights
@@ -237,8 +247,12 @@ function PendingReviewCard({
   const [selected, setSelected] = useState<TopicToggle[]>(initialSelected);
   const [comment, setComment] = useState(match.comment || "");
   const [vodUrl, setVodUrl] = useState(match.vodUrl || "");
+  // Only show action items that existed before this match was played
+  const matchActionItems = activeActionItems.filter(
+    (ai) => ai.createdAt.getTime() <= match.gameDate.getTime(),
+  );
   const [outcomes, setOutcomes] = useState<ActionItemOutcome[]>(
-    activeActionItems.map((ai) => ({
+    matchActionItems.map((ai) => ({
       actionItemId: ai.id,
       description: ai.description,
       topicName: ai.topicId ? topics.find((t) => t.id === ai.topicId)?.name : undefined,

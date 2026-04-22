@@ -102,7 +102,7 @@ export async function getReviewData(
     // Fetch active action items for the check-in during review
     db.query.coachingActionItems.findMany({
       where: and(eq(coachingActionItems.userId, userId), eq(coachingActionItems.status, "active")),
-      columns: { id: true, description: true, topicId: true },
+      columns: { id: true, description: true, topicId: true, createdAt: true },
     }),
   ]);
 

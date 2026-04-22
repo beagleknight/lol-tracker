@@ -1,0 +1,10 @@
+---
+version: "2026.04.26"
+date: "2026-04-22"
+title: "Los elementos de acción ahora corresponden al juego correcto"
+tags: ["fix"]
+---
+
+Los elementos de acción de las sesiones de coaching aparecían en todas las partidas sin revisar, incluso en partidas jugadas **antes** de que se creara el elemento de acción. Ahora, los elementos de acción solo aparecen en partidas jugadas después de su creación, para que el repaso de cada partida sea más relevante.
+
+La misma corrección aplica a los análisis post-partida generados por IA, que ya no hacen referencia a elementos de acción que no existían cuando se jugó la partida.
