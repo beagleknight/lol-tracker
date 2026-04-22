@@ -17,17 +17,7 @@ const DEMO_USER_ID = "demo-user-0001-0001-000000000001";
  */
 export default function DemoPage() {
   useEffect(() => {
-    void signIn("demo", {
-      userId: DEMO_USER_ID,
-      callbackUrl: "/dashboard",
-      redirect: false,
-    }).then((res) => {
-      if (res?.ok) {
-        window.location.href = "/dashboard";
-      } else {
-        console.error("Demo sign-in failed:", res);
-      }
-    });
+    void signIn("demo", { userId: DEMO_USER_ID, callbackUrl: "/dashboard" });
   }, []);
 
   return (
