@@ -20,16 +20,19 @@ export function isDemoMode(): boolean {
   return process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 }
 
-/** Check if a user ID belongs to a seeded demo user. */
+/** The single public demo user ID (must match seed-demo.ts). */
+const DEMO_USER_ID = "demo-user-0001-0001-000000000001";
+
+/** Check if a user ID is the public demo user (read-only). */
 export function isDemoUserId(userId: string): boolean {
-  return userId.startsWith("demo-");
+  return userId === DEMO_USER_ID;
 }
 
 /**
  * Returns the demo Credentials provider.
  *
  * In preview mode (NEXT_PUBLIC_DEMO_MODE=true): authorizes any seeded user.
- * In production: only authorizes demo-prefixed user IDs.
+ * In production: only authorizes the exact public demo user ID.
  */
 export function demoCredentialsProvider() {
   return Credentials({
@@ -42,7 +45,7 @@ export function demoCredentialsProvider() {
       const userId = credentials?.userId;
       if (!userId || typeof userId !== "string") return null;
 
-      // In production, only allow demo-prefixed user IDs
+      // In production, only allow the public demo user
       if (!isDemoMode() && !isDemoUserId(userId)) {
         return null;
       }

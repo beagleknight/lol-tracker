@@ -14,12 +14,12 @@ export async function demoLogin(userId: string) {
   await signIn("demo", { userId, redirectTo: "/dashboard" });
 }
 
-/** Demo user IDs (must match seed.ts) */
-const DEMO_USER_IDS = [
-  "demo-user-0004-0004-000000000004",
-  "demo-user-0001-0001-000000000001",
-  "demo-user-0002-0002-000000000002",
-  "demo-user-0003-0003-000000000003",
+/** Preview seed user IDs (must match seed.ts) */
+const SEED_USER_IDS = [
+  "seed-user-0004-0004-000000000004",
+  "seed-user-0001-0001-000000000001",
+  "seed-user-0002-0002-000000000002",
+  "seed-user-0003-0003-000000000003",
 ];
 
 export interface DemoUserInfo {
@@ -39,7 +39,7 @@ export async function getDemoUsers(): Promise<DemoUserInfo[]> {
   if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") return [];
 
   const rows = await db.query.users.findMany({
-    where: inArray(users.id, DEMO_USER_IDS),
+    where: inArray(users.id, SEED_USER_IDS),
     columns: {
       id: true,
       name: true,
@@ -50,8 +50,8 @@ export async function getDemoUsers(): Promise<DemoUserInfo[]> {
     },
   });
 
-  // Return in a stable order matching DEMO_USER_IDS, excluding deleted users
-  return DEMO_USER_IDS.flatMap((id) => {
+  // Return in a stable order matching SEED_USER_IDS, excluding deleted users
+  return SEED_USER_IDS.flatMap((id) => {
     const row = rows.find((r) => r.id === id);
     return row
       ? [

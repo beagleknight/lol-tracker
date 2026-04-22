@@ -54,6 +54,27 @@ function _uuid(): string {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+// Common item IDs from League of Legends
+const ITEM_IDS = [
+  3089, 3157, 3165, 3100, 3020, 3135, 3116, 3152, 3040, 3003, 3285, 3907, 3102, 3190, 3050, 3504,
+  3115, 3091, 3153, 3124, 3046, 3094, 3031, 3036, 3072, 3139, 3156, 3026, 3742, 3143, 3065, 3083,
+  3075, 3110, 3001, 2055, 3364, 3340,
+];
+
+const FAKE_NAMES = [
+  "AzirLord99",
+  "MidOrFeed",
+  "JungleDiff",
+  "TopGapper",
+  "ADCarry420",
+  "SupportMain",
+  "FlashOnD",
+  "GankMePlz",
+  "BaronThief",
+];
+
+const POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+
 const CHAMPIONS = [
   { id: 1, name: "Annie" },
   { id: 84, name: "Akali" },
@@ -97,6 +118,205 @@ const KEYSTONES = [
   { id: 8369, name: "First Strike" },
 ] as const;
 
+function pickUnique(usedIds: Set<number>): { id: number; name: string } {
+  let champ = pick(CHAMPIONS);
+  let attempts = 0;
+  while (usedIds.has(champ.id) && attempts < 50) {
+    champ = pick(CHAMPIONS);
+    attempts++;
+  }
+  usedIds.add(champ.id);
+  return champ;
+}
+
+function makeFakeParticipant(
+  champ: { id: number; name: string },
+  teamId: number,
+  win: boolean,
+  position: string,
+  name: string,
+  m: { durationSeconds: number },
+): Record<string, unknown> {
+  const durationMin = m.durationSeconds / 60;
+  return {
+    puuid: `fake-puuid-${name.toLowerCase()}-${champ.id}`,
+    summonerName: name,
+    riotIdGameName: name,
+    riotIdTagline: "EUW",
+    championId: champ.id,
+    championName: champ.name,
+    teamId,
+    win,
+    kills: randInt(0, 12),
+    deaths: randInt(0, 8),
+    assists: randInt(1, 15),
+    totalMinionsKilled: Math.round(durationMin * (4 + rand() * 5)),
+    neutralMinionsKilled: position === "JUNGLE" ? Math.round(durationMin * 3) : randInt(0, 20),
+    goldEarned: randInt(6000, 17000),
+    visionScore: randInt(8, 45),
+    individualPosition: position,
+    teamPosition: position,
+    totalDamageDealtToChampions: randInt(8000, 32000),
+    totalDamageTaken: randInt(7000, 28000),
+    wardsPlaced: randInt(3, 18),
+    wardsKilled: randInt(0, 8),
+    item0: pick(ITEM_IDS),
+    item1: pick(ITEM_IDS),
+    item2: pick(ITEM_IDS),
+    item3: pick(ITEM_IDS),
+    item4: pick(ITEM_IDS),
+    item5: pick(ITEM_IDS),
+    item6: pick([3340, 3364, 2055]),
+    perks: {
+      statPerks: { defense: 5002, flex: 5008, offense: 5005 },
+      styles: [
+        {
+          description: "primaryStyle",
+          style: 8200,
+          selections: [
+            { perk: pick(KEYSTONES).id, var1: 0, var2: 0, var3: 0 },
+            { perk: 8226, var1: 0, var2: 0, var3: 0 },
+            { perk: 8233, var1: 0, var2: 0, var3: 0 },
+            { perk: 8237, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+        {
+          description: "subStyle",
+          style: 8300,
+          selections: [
+            { perk: 8304, var1: 0, var2: 0, var3: 0 },
+            { perk: 8345, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function buildFakeRawMatchJson(
+  m: {
+    matchId: string;
+    champion: { id: number; name: string };
+    keystone: { id: number; name: string };
+    result: "Victory" | "Defeat" | "Remake";
+    kills: number;
+    deaths: number;
+    assists: number;
+    cs: number;
+    durationSeconds: number;
+    goldEarned: number;
+    visionScore: number;
+    matchup: { id: number; name: string };
+    position: string;
+    gameDate: Date;
+  },
+  user: { puuid: string; riotGameName: string; riotTagLine: string },
+): string {
+  const userTeamId = 100;
+  const enemyTeamId = 200;
+  const userWin = m.result === "Victory";
+
+  const participants: Record<string, unknown>[] = [];
+
+  participants.push({
+    puuid: user.puuid,
+    summonerName: user.riotGameName,
+    riotIdGameName: user.riotGameName,
+    riotIdTagline: user.riotTagLine,
+    championId: m.champion.id,
+    championName: m.champion.name,
+    teamId: userTeamId,
+    win: userWin,
+    kills: m.kills,
+    deaths: m.deaths,
+    assists: m.assists,
+    totalMinionsKilled: Math.round(m.cs * 0.8),
+    neutralMinionsKilled: Math.round(m.cs * 0.2),
+    goldEarned: m.goldEarned,
+    visionScore: m.visionScore,
+    individualPosition: m.position,
+    teamPosition: m.position,
+    totalDamageDealtToChampions: randInt(10000, 35000),
+    totalDamageTaken: randInt(8000, 25000),
+    wardsPlaced: randInt(5, 20),
+    wardsKilled: randInt(1, 10),
+    item0: pick(ITEM_IDS),
+    item1: pick(ITEM_IDS),
+    item2: pick(ITEM_IDS),
+    item3: pick(ITEM_IDS),
+    item4: pick(ITEM_IDS),
+    item5: pick(ITEM_IDS),
+    item6: pick([3340, 3364, 2055]),
+    perks: {
+      statPerks: { defense: 5002, flex: 5008, offense: 5005 },
+      styles: [
+        {
+          description: "primaryStyle",
+          style: 8200,
+          selections: [
+            { perk: m.keystone.id, var1: 0, var2: 0, var3: 0 },
+            { perk: 8226, var1: 0, var2: 0, var3: 0 },
+            { perk: 8233, var1: 0, var2: 0, var3: 0 },
+            { perk: 8237, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+        {
+          description: "subStyle",
+          style: 8300,
+          selections: [
+            { perk: 8304, var1: 0, var2: 0, var3: 0 },
+            { perk: 8345, var1: 0, var2: 0, var3: 0 },
+          ],
+        },
+      ],
+    },
+  });
+
+  const usedChampions = new Set([m.champion.id, m.matchup.id]);
+  const allyPositions = POSITIONS.filter((p) => p !== m.position);
+  for (let i = 0; i < 4; i++) {
+    const champ = pickUnique(usedChampions);
+    participants.push(
+      makeFakeParticipant(champ, userTeamId, userWin, allyPositions[i], FAKE_NAMES[i], m),
+    );
+  }
+
+  const enemyPositions = [...POSITIONS];
+  const matchupPosIdx = enemyPositions.indexOf(m.position);
+  participants.push(
+    makeFakeParticipant(
+      m.matchup,
+      enemyTeamId,
+      !userWin,
+      enemyPositions[matchupPosIdx],
+      FAKE_NAMES[4],
+      m,
+    ),
+  );
+  usedChampions.add(m.matchup.id);
+
+  for (let i = 0; i < 4; i++) {
+    const pos = enemyPositions.filter((p) => p !== m.position)[i];
+    const champ = pickUnique(usedChampions);
+    participants.push(makeFakeParticipant(champ, enemyTeamId, !userWin, pos, FAKE_NAMES[5 + i], m));
+  }
+
+  return JSON.stringify({
+    metadata: {
+      matchId: m.matchId,
+      participants: participants.map((p) => p.puuid as string),
+    },
+    info: {
+      gameCreation: m.gameDate.getTime(),
+      gameDuration: m.durationSeconds,
+      gameEndedInEarlySurrender: m.result === "Remake",
+      gameId: parseInt(m.matchId.replace("EUW1_", "")),
+      queueId: 420,
+      participants,
+    },
+  });
+}
+
 const SUPPORT_CHAMPIONS = [
   { id: 412, name: "Thresh" },
   { id: 12, name: "Alistar" },
@@ -131,25 +351,25 @@ const TOPIC_SLUG_MAP: Record<string, string> = {
 
 // ─── Fixed IDs ───────────────────────────────────────────────────────────────
 
-const ADMIN_USER_ID = "demo-user-0004-0004-000000000004";
-const MAIN_USER_ID = "demo-user-0001-0001-000000000001";
-const DUO_USER_ID = "demo-user-0002-0002-000000000002";
-const NEW_PLAYER_ID = "demo-user-0003-0003-000000000003";
+const ADMIN_USER_ID = "seed-user-0004-0004-000000000004";
+const MAIN_USER_ID = "seed-user-0001-0001-000000000001";
+const DUO_USER_ID = "seed-user-0002-0002-000000000002";
+const NEW_PLAYER_ID = "seed-user-0003-0003-000000000003";
 
-const MAIN_RIOT_ACCOUNT_ID = "demo-riot-acct-0001-000000000001";
-const MAIN_SMURF_ACCOUNT_ID = "demo-riot-acct-0003-000000000003";
-const DUO_RIOT_ACCOUNT_ID = "demo-riot-acct-0002-000000000002";
+const MAIN_RIOT_ACCOUNT_ID = "seed-riot-acct-0001-000000000001";
+const MAIN_SMURF_ACCOUNT_ID = "seed-riot-acct-0003-000000000003";
+const DUO_RIOT_ACCOUNT_ID = "seed-riot-acct-0002-000000000002";
 
 const MAIN_USER = {
   id: MAIN_USER_ID,
-  discordId: "demo_discord_001",
+  discordId: "seed_discord_001",
   name: "DemoPlayer",
   image: null,
   email: "demo@example.com",
   riotGameName: "DemoPlayer",
   riotTagLine: "EUW",
-  puuid: "demo-puuid-main-0000000000000000000000000000000000000000",
-  summonerId: "demo-summoner-main",
+  puuid: "seed-puuid-main-0000000000000000000000000000000000000000",
+  summonerId: "seed-summoner-main",
   duoPartnerUserId: DUO_USER_ID,
   region: "euw1",
   onboardingCompleted: true,
@@ -163,14 +383,14 @@ const MAIN_USER = {
 
 const DUO_USER = {
   id: DUO_USER_ID,
-  discordId: "demo_discord_002",
+  discordId: "seed_discord_002",
   name: "DuoPartner",
   image: null,
   email: "duo@example.com",
   riotGameName: "DuoPartner",
   riotTagLine: "EUW",
-  puuid: "demo-puuid-duo-00000000000000000000000000000000000000000",
-  summonerId: "demo-summoner-duo",
+  puuid: "seed-puuid-duo-00000000000000000000000000000000000000000",
+  summonerId: "seed-summoner-duo",
   duoPartnerUserId: MAIN_USER_ID,
   region: "euw1",
   onboardingCompleted: true,
@@ -184,7 +404,7 @@ const DUO_USER = {
 
 const NEW_PLAYER = {
   id: NEW_PLAYER_ID,
-  discordId: "demo_discord_003",
+  discordId: "seed_discord_003",
   name: "NewPlayer",
   image: null,
   email: "newplayer@example.com",
@@ -205,7 +425,7 @@ const NEW_PLAYER = {
 
 const ADMIN_USER = {
   id: ADMIN_USER_ID,
-  discordId: "demo_discord_004",
+  discordId: "seed_discord_004",
   name: "AdminUser",
   image: null,
   email: "admin@example.com",
@@ -380,10 +600,10 @@ async function seed() {
     args: [
       MAIN_SMURF_ACCOUNT_ID,
       MAIN_USER_ID,
-      "demo-puuid-smurf-000000000000000000000000000000000000000",
+      "seed-puuid-smurf-000000000000000000000000000000000000000",
       "SmurfAccount",
       "EUW",
-      "demo-summoner-smurf",
+      "seed-summoner-smurf",
       "euw1",
       0,
       0,
@@ -589,7 +809,7 @@ async function seed() {
         420,
         m.position,
         ts(m.gameDate),
-        null,
+        m.result === "Remake" ? null : buildFakeRawMatchJson(m, MAIN_USER),
         m.hasDuo ? DUO_USER.puuid : null,
         m.duoChampion?.name ?? null,
         m.hasDuo ? m.duoKills : null,
@@ -804,7 +1024,7 @@ async function seed() {
         420,
         m.position,
         ts(m.gameDate),
-        null,
+        m.result === "Remake" ? null : buildFakeRawMatchJson(m, DUO_USER),
         m.hasDuo ? MAIN_USER.puuid : null,
         m.hasDuo ? pick(MAIN_POOL).name : null,
         m.hasDuo ? randInt(2, 12) : null,
