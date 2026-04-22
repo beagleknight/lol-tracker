@@ -826,8 +826,8 @@ export function ReviewClient({
                         setPendingSortMode(v as "suggested" | "newest" | "oldest")
                       }
                     >
-                      <SelectTrigger size="sm" className="w-[150px]">
-                        <SelectValue />
+                      <SelectTrigger size="sm" className="w-[150px]" aria-label={t("sort.label")}>
+                        <SelectValue placeholder={t("sort.suggested")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="suggested">{t("sort.suggested")}</SelectItem>
@@ -837,7 +837,7 @@ export function ReviewClient({
                     </Select>
                     {pendingSortMode === "suggested" && (
                       <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger aria-label={t("sort.suggestedInfoLabel")}>
                           <Info className="h-3.5 w-3.5 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>

@@ -257,9 +257,11 @@
     "vodReviewHint": "These games have post-game notes but haven't been VOD-reviewed yet. Watch the VOD and add your takeaways.",
     "pendingHint": "Click topics to mark highlights and lowlights, add notes, and save to mark as reviewed.",
     "sort": {
+      "label": "Sort order",
       "suggested": "Suggested",
       "newestFirst": "Newest first",
       "oldestFirst": "Oldest first",
+      "suggestedInfoLabel": "What does suggested mean?",
       "suggestedTooltip": "Shows games where you likely have the most to learn first — losses, high deaths, low KDA, long games."
     },
     "reviewedGamesCount": "{count, plural, one {# reviewed game} other {# reviewed games}}.",
