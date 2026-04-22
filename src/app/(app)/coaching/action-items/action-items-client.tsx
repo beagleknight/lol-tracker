@@ -3,7 +3,7 @@
 import { Loader2, Circle, Play, CheckCircle2, Trash2, ListChecks, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 
 import { updateActionItemStatus, deleteActionItem, createActionItem } from "@/app/actions/coaching";
@@ -167,6 +167,7 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
   const t = useTranslations("ActionItems");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [page, setPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDescription, setNewDescription] = useState("");
@@ -175,11 +176,19 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
 
   const topics = [...new Set(items.map((i) => i.topicId).filter(Boolean))] as number[];
 
-  const filtered = items.filter((item) => {
-    if (statusFilter !== "all" && item.status !== statusFilter) return false;
-    if (topicFilter !== "all" && item.topicId !== Number(topicFilter)) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const result = items.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (topicFilter !== "all" && item.topicId !== Number(topicFilter)) return false;
+      return true;
+    });
+    if (sortOrder === "newest") {
+      result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    } else {
+      result.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    }
+    return result;
+  }, [items, statusFilter, topicFilter, sortOrder]);
 
   // Clamp page if filters reduce result count
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -319,6 +328,29 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
             </SelectContent>
           </Select>
         )}
+        <Select
+          value={sortOrder}
+          onValueChange={(v) => {
+            setSortOrder(v as "newest" | "oldest");
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[150px]" aria-label={t("sort.label")}>
+            <SelectValue placeholder={t("sort.newestFirst")}>
+              {(value: string) => {
+                const labels: Record<string, string> = {
+                  newest: t("sort.newestFirst"),
+                  oldest: t("sort.oldestFirst"),
+                };
+                return labels[value] ?? value;
+              }}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{t("sort.newestFirst")}</SelectItem>
+            <SelectItem value="oldest">{t("sort.oldestFirst")}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Items */}

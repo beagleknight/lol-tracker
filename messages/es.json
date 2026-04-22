@@ -589,6 +589,11 @@
       "deleteError": "Error al eliminar la tarea.",
       "itemCreated": "¡Tarea creada!",
       "createError": "Error al crear la tarea."
+    },
+    "sort": {
+      "label": "Orden",
+      "newestFirst": "Más recientes",
+      "oldestFirst": "Más antiguas"
     }
   },
   "ScheduleSession": {

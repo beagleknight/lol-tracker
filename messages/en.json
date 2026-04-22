@@ -589,6 +589,11 @@
       "deleteError": "Failed to delete action item.",
       "itemCreated": "Action item created!",
       "createError": "Failed to create action item."
+    },
+    "sort": {
+      "label": "Sort order",
+      "newestFirst": "Newest first",
+      "oldestFirst": "Oldest first"
     }
   },
   "ScheduleSession": {
