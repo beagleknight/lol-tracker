@@ -301,6 +301,7 @@ export async function buildPostGameContext(
           and(
             eq(coachingActionItems.userId, userId),
             sql`${coachingActionItems.status} != 'completed'`,
+            sql`${coachingActionItems.createdAt} <= ${match.gameDate.getTime()}`,
           ),
         ),
       db
