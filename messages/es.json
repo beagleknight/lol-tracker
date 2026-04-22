@@ -256,6 +256,12 @@
     "postGameHint": "Estas partidas no han sido revisadas. Añade aciertos, notas y opcionalmente un enlace de VOD.",
     "vodReviewHint": "Estas partidas tienen notas post-partida pero no han sido revisadas con VOD. Mira el VOD y añade tus conclusiones.",
     "pendingHint": "Haz clic en los temas para marcar aciertos y errores, añade notas y guarda para marcar como revisada.",
+    "sort": {
+      "suggested": "Sugeridas",
+      "newestFirst": "Más recientes",
+      "oldestFirst": "Más antiguas",
+      "suggestedTooltip": "Muestra primero las partidas de las que más puedes aprender — derrotas, muchas muertes, KDA bajo, partidas largas."
+    },
     "reviewedGamesCount": "{count, plural, one {# partida revisada} other {# partidas revisadas}}.",
     "suggested": "Sugerida",
     "disabledSaveTooltip": "Añade al menos un acierto, nota o enlace VOD para guardar.",
