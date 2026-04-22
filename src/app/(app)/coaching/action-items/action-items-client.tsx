@@ -239,7 +239,12 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
           <div className="w-36">
             <Select value={newTopic} onValueChange={(v) => setNewTopic(v ?? "")}>
               <SelectTrigger aria-label={t("addTopicPlaceholder")}>
-                <SelectValue placeholder={t("addTopicPlaceholder")} />
+                <SelectValue placeholder={t("addTopicPlaceholder")}>
+                  {(value: string) => {
+                    const topic = topicNames.find((tn) => String(tn.id) === value);
+                    return topic?.name ?? t("addTopicPlaceholder");
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {topicNames.map((tn) => (
@@ -266,7 +271,16 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
           }}
         >
           <SelectTrigger className="w-[150px]" aria-label="Filter by status">
-            <SelectValue placeholder={t("statusFilterPlaceholder")} />
+            <SelectValue placeholder={t("statusFilterPlaceholder")}>
+              {(value: string) => {
+                const labels: Record<string, string> = {
+                  all: t("allStatuses"),
+                  active: t("active"),
+                  completed: t("completed"),
+                };
+                return labels[value] ?? value;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("allStatuses")}</SelectItem>
@@ -283,7 +297,13 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
             }}
           >
             <SelectTrigger className="w-[180px]" aria-label="Filter by topic">
-              <SelectValue placeholder={t("topicFilterPlaceholder")} />
+              <SelectValue placeholder={t("topicFilterPlaceholder")}>
+                {(value: string) => {
+                  if (value === "all") return t("allTopics");
+                  const id = Number(value);
+                  return topicNames.find((tn) => tn.id === id)?.name ?? `Topic #${value}`;
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allTopics")}</SelectItem>

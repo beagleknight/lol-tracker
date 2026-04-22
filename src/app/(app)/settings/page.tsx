@@ -836,7 +836,11 @@ export default function SettingsPage() {
                           className="h-9 w-[160px]"
                           disabled={isPending}
                         >
-                          <SelectValue placeholder={t("riotAccounts.regionPlaceholder")} />
+                          <SelectValue placeholder={t("riotAccounts.regionPlaceholder")}>
+                            {(value: string) =>
+                              `${PLATFORM_LABELS[value as keyof typeof PLATFORM_LABELS]} (${value})`
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {PLATFORM_IDS.map((id) => (
@@ -976,7 +980,12 @@ export default function SettingsPage() {
                       className="w-full max-w-xs"
                       disabled={isPending}
                     >
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: string) => {
+                          const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+                          return lang?.label ?? value;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {SUPPORTED_LANGUAGES.map((lang) => (
@@ -995,7 +1004,12 @@ export default function SettingsPage() {
                       className="w-full max-w-xs"
                       disabled={isPending}
                     >
-                      <SelectValue placeholder={t("languageCard.selectPlaceholder")} />
+                      <SelectValue placeholder={t("languageCard.selectPlaceholder")}>
+                        {(value: string) => {
+                          const loc = SUPPORTED_LOCALES.find((l) => l.value === value);
+                          return loc ? `${loc.label} (${loc.description})` : value;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {SUPPORTED_LOCALES.map((loc) => (
