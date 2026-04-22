@@ -709,9 +709,8 @@ async function seed() {
     const hasDuo = rand() < 0.4;
     const duoChampion = hasDuo ? pick(SUPPORT_CHAMPIONS) : null;
 
-    // ~30% reviewed, ~10% skipped, rest unreviewed (remakes never reviewed)
-    const reviewRoll = rand();
-    const reviewed = isRemake ? false : reviewRoll < 0.3;
+    // Review all non-remake matches except the 5 most recent (not yet reviewed)
+    const reviewed = isRemake ? false : i < totalMatches - 5;
 
     seedMatches.push({
       matchId: `EUW1_${7000000000 + i}`,
