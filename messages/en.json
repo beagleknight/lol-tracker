@@ -1250,5 +1250,14 @@
     "dismissFailure": "Got it",
     "previous": "Previous result",
     "next": "Next result"
+  },
+  "SeasonFilter": {
+    "allTime": "All time",
+    "cycle2026": "2026 season",
+    "customRange": "Custom range...",
+    "clearFilter": "Clear season filter",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "now": "now"
   }
 }

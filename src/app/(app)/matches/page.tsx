@@ -1,4 +1,5 @@
 import { getMatchesData } from "@/lib/queries/matches";
+import { getSeasonDateRange } from "@/lib/season-filter";
 import { requireUser } from "@/lib/session";
 
 import { MatchesClient } from "./matches-client";
@@ -16,12 +17,14 @@ export default async function MatchesPage({
   const result = typeof params.result === "string" ? params.result : "all";
   const champion = typeof params.champion === "string" ? params.champion : "all";
   const review = typeof params.review === "string" ? params.review : "all";
+  const dateRange = await getSeasonDateRange();
 
   const data = await getMatchesData(user.id, user.activeRiotAccountId, page, {
     search,
     result,
     champion,
     review,
+    dateRange,
   });
 
   return (

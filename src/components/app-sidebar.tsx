@@ -26,6 +26,7 @@ import { useState, useEffect } from "react";
 
 import { ChallengeResultModal } from "@/components/challenge-result-modal";
 import { Logo } from "@/components/logo";
+import { SeasonFilter } from "@/components/season-filter";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -93,6 +94,7 @@ interface SidebarProps {
   latestChangelogVersion?: string | null;
   riotAccounts?: RiotAccountItem[];
   activeRiotAccountId?: string | null;
+  seasonFilter?: string;
 }
 
 function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
@@ -169,6 +171,7 @@ function SidebarContent({
   latestChangelogVersion,
   riotAccounts,
   activeRiotAccountId,
+  seasonFilter,
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const t = useTranslations("Sidebar");
@@ -308,6 +311,11 @@ function SidebarContent({
         </div>
       </ScrollArea>
 
+      {/* Season filter */}
+      <div className="px-3 pb-1">
+        <SeasonFilter currentFilter={seasonFilter ?? "all"} />
+      </div>
+
       {/* User section */}
       <Separator />
       <div className="p-3">
@@ -335,6 +343,7 @@ export function AppSidebar({
   latestChangelogVersion,
   riotAccounts,
   activeRiotAccountId,
+  seasonFilter,
 }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -374,6 +383,7 @@ export function AppSidebar({
           latestChangelogVersion={latestChangelogVersion}
           riotAccounts={riotAccounts}
           activeRiotAccountId={activeRiotAccountId}
+          seasonFilter={seasonFilter}
           onNavClick={() => setMobileOpen(false)}
         />
       </aside>

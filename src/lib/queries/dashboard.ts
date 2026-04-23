@@ -3,7 +3,9 @@
  * Extracted from (app)/dashboard/page.tsx for reuse in (demo)/dashboard/page.tsx.
  */
 
-import { eq, desc, and, count, sql, asc, lte, ne } from "drizzle-orm";
+import { eq, desc, and, count, sql, asc, lte, ne, gte } from "drizzle-orm";
+
+import type { DateRange } from "@/lib/seasons";
 
 import { db } from "@/db";
 import {
@@ -20,7 +22,18 @@ import { getDefaultTopics } from "@/lib/topics";
 
 import { getHighlightsPerMatch } from "./highlights";
 
-export async function getDashboardData(userId: string, accountId: string | null) {
+export async function getDashboardData(
+  userId: string,
+  accountId: string | null,
+  dateRange?: DateRange | null,
+) {
+  // Build date conditions for queries that should respect the season filter
+  const dateConditions = dateRange
+    ? [
+        gte(matches.gameDate, dateRange.start),
+        ...(dateRange.end ? [lte(matches.gameDate, dateRange.end)] : []),
+      ]
+    : [];
   const [
     ddragonVersion,
     recentMatches,
@@ -38,6 +51,7 @@ export async function getDashboardData(userId: string, accountId: string | null)
         eq(matches.userId, userId),
         accountScope(matches.riotAccountId, accountId),
         ne(matches.result, "Remake"),
+        ...dateConditions,
       ),
       orderBy: desc(matches.gameDate),
       limit: 10,
@@ -87,7 +101,13 @@ export async function getDashboardData(userId: string, accountId: string | null)
         ),
       })
       .from(matches)
-      .where(and(eq(matches.userId, userId), accountScope(matches.riotAccountId, accountId))),
+      .where(
+        and(
+          eq(matches.userId, userId),
+          accountScope(matches.riotAccountId, accountId),
+          ...dateConditions,
+        ),
+      ),
     db.query.coachingSessions.findFirst({
       where: and(eq(coachingSessions.userId, userId), eq(coachingSessions.status, "scheduled")),
       orderBy: asc(coachingSessions.date),

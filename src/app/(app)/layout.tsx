@@ -16,6 +16,7 @@ import { sidebarTag } from "@/lib/cache";
 import { getLatestChangelogVersion } from "@/lib/changelog";
 import { isDemoUserId } from "@/lib/fake-auth";
 import { accountScope, sidebarReviewCountsSelect } from "@/lib/match-queries";
+import { getSeasonFilterValue } from "@/lib/season-filter";
 import { requireUser } from "@/lib/session";
 
 async function getCachedSidebarCounts(
@@ -64,6 +65,8 @@ async function SidebarWithUser() {
       .where(eq(riotAccounts.userId, user.id)),
   ]);
 
+  const seasonFilter = await getSeasonFilterValue();
+
   return (
     <>
       <AppSidebar
@@ -81,6 +84,7 @@ async function SidebarWithUser() {
         latestChangelogVersion={latestVersion}
         riotAccounts={userRiotAccounts}
         activeRiotAccountId={user.activeRiotAccountId}
+        seasonFilter={seasonFilter}
       />
     </>
   );

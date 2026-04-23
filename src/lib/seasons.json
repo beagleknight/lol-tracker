@@ -1,0 +1,23 @@
+{
+  "cycleStart": "2026-01-08",
+  "seasons": [
+    {
+      "id": "2026-s1",
+      "name": "For Demacia",
+      "seasonNumber": 1,
+      "year": 2026,
+      "actIStart": "2026-01-08",
+      "actIIStart": "2026-03-04",
+      "endDate": "2026-04-29"
+    },
+    {
+      "id": "2026-s2",
+      "name": "Pandemonium",
+      "seasonNumber": 2,
+      "year": 2026,
+      "actIStart": "2026-04-29",
+      "actIIStart": "2026-06-10",
+      "endDate": "2026-08-12"
+    }
+  ]
+}

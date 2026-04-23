@@ -3,7 +3,9 @@
  * Extracted from (app)/matches/page.tsx for reuse in (demo)/matches/page.tsx.
  */
 
-import { eq, and, desc, sql, count } from "drizzle-orm";
+import { eq, and, desc, sql, count, gte, lte } from "drizzle-orm";
+
+import type { DateRange } from "@/lib/seasons";
 
 import { db } from "@/db";
 import { matches, type Match } from "@/db/schema";
@@ -19,6 +21,7 @@ export interface MatchesFilters {
   result: string;
   champion: string;
   review: string;
+  dateRange?: DateRange | null;
 }
 
 export async function getMatchesData(
@@ -27,13 +30,19 @@ export async function getMatchesData(
   page: number,
   filters: MatchesFilters,
 ) {
-  const { search, result, champion, review } = filters;
+  const { search, result, champion, review, dateRange } = filters;
 
   // Build WHERE conditions
   const conditions = [
     eq(matches.userId, userId),
     accountId ? eq(matches.riotAccountId, accountId) : sql`0`,
   ];
+  if (dateRange) {
+    conditions.push(gte(matches.gameDate, dateRange.start));
+    if (dateRange.end) {
+      conditions.push(lte(matches.gameDate, dateRange.end));
+    }
+  }
   if (result === "Victory" || result === "Defeat" || result === "Remake") {
     conditions.push(eq(matches.result, result));
   }

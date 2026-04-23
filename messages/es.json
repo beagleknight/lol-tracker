@@ -1250,5 +1250,14 @@
     "dismissFailure": "Entendido",
     "previous": "Resultado anterior",
     "next": "Siguiente resultado"
+  },
+  "SeasonFilter": {
+    "allTime": "Todo el tiempo",
+    "cycle2026": "Temporada 2026",
+    "customRange": "Rango personalizado...",
+    "clearFilter": "Limpiar filtro de temporada",
+    "cancel": "Cancelar",
+    "apply": "Aplicar",
+    "now": "ahora"
   }
 }
