@@ -66,6 +66,21 @@ Guide writing GitHub issues that are safe for a public open-source repository, w
 - `legal: implement GDPR data deletion handling`
 - `planning: apply for Riot production API key`
 
+## Before creating any issue — MANDATORY
+
+1. **Run the safety checklist** above against the full issue body
+2. **Search for duplicates**: `gh issue list --search "<keywords>"` — if a related issue exists, comment on it or reference it instead of creating a duplicate
+3. **Choose the right channel**: if the issue describes a security vulnerability, do NOT create a public issue — use [GitHub private security advisories](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/creating-a-repository-security-advisory) instead
+
+## Issue templates
+
+The repository has two issue templates in `.github/ISSUE_TEMPLATE/`:
+
+- **`bug_report.md`** — use for bugs (pre-fills the `bug:` title prefix and `bug` label)
+- **`feature_request.md`** — use for features (pre-fills the `feat:` title prefix and `enhancement` label)
+
+When creating issues via `gh issue create`, you don't use templates directly — follow the body structure below instead. Templates are for contributors who create issues via the GitHub web UI.
+
 ## Body structure
 
 Use the structure that matches the issue type. All issues should be understandable by an external contributor who has read the README but hasn't studied the full codebase.
@@ -185,7 +200,7 @@ Use existing repository labels. An issue should have 1-3 labels. Common combinat
 | Infrastructure    | `infra` or `infrastructure` | `dx`                                   |
 | Accessibility     | `accessibility`             | `polish`                               |
 | Planning/decision | `future`                    | `go-public`                            |
-| Legal/compliance  | `documentation`             | `go-public`                            |
+| Legal/compliance  | `legal`                     | `go-public`                            |
 | Flaky test        | `flaky-test`                | —                                      |
 
 ### Special labels
@@ -194,6 +209,16 @@ Use existing repository labels. An issue should have 1-3 labels. Common combinat
 - **`epic`** — large initiative that will be broken into sub-issues
 - **`good first issue`** — suitable for new contributors; requires clear description and limited scope
 - **`skip-changelog`** — used on PRs, not issues
+
+### Creating new labels
+
+Before creating a new label, check if an existing one fits. If not:
+
+```bash
+gh label create "<name>" --description "<short description>" --color "<hex without #>"
+```
+
+Keep label names lowercase, short (1-2 words), and consistent with existing ones. Ask the user before creating a new label.
 
 ## Issue linking
 
