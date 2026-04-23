@@ -135,6 +135,8 @@ All tasks, features, and bugs are tracked as **GitHub Issues** (not a local TODO
 
 Reference issues in commit messages when relevant.
 
+**Before creating any GitHub issue, load the `github-issues` skill.** It enforces title conventions, body templates, label selection, and an open-source safety checklist to prevent leaking sensitive information in a public repository.
+
 Full PR conventions are in the `pr-workflow` OpenCode skill.
 
 <!-- END:github-issues-rules -->
