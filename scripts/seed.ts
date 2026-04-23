@@ -1455,6 +1455,35 @@ async function seed() {
     ],
   });
 
+  // ─── Achievements (pre-evaluated) ──────────────────────────────────────────
+  // Seed a subset so the achievements page isn't empty but also not fully
+  // unlocked. The client-side evaluation will pick up any new ones on visit.
+  console.log("Creating achievements...");
+
+  const achievementRows: { id: string; tier: number | null; date: string }[] = [
+    // General — unlocked early
+    { id: "summoner_connected", tier: null, date: "2026-03-15T10:00:00Z" },
+    { id: "on_the_rift", tier: null, date: "2026-03-15T12:00:00Z" },
+    // Matches — tiered, moderate progress
+    { id: "matches_tracked", tier: 2, date: "2026-04-05T18:30:00Z" },
+    { id: "champions_played", tier: 1, date: "2026-03-25T20:00:00Z" },
+    // Combat — fun one-offs
+    { id: "flawless", tier: null, date: "2026-03-20T16:45:00Z" },
+    { id: "the_marathon", tier: null, date: "2026-04-01T22:10:00Z" },
+    // Highlights
+    { id: "spotlight_moment", tier: null, date: "2026-03-28T14:20:00Z" },
+    { id: "highlights_tagged", tier: 2, date: "2026-04-10T11:00:00Z" },
+  ];
+
+  for (const a of achievementRows) {
+    const unlockedAt = ts(new Date(a.date));
+    await client.execute({
+      sql: `INSERT INTO user_achievements (achievement_id, user_id, tier, unlocked_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)`,
+      args: [a.id, MAIN_USER_ID, a.tier, unlockedAt, unlockedAt],
+    });
+  }
+
   // ─── Summary ─────────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
   console.log(`  Users:            4`);
@@ -1466,7 +1495,7 @@ async function seed() {
   console.log(`  Action items:     ${actionItems.length}`);
   console.log(`  Highlights:       ${reviewedMatches.length} matches with highlights`);
   console.log(`  Challenges:       4`);
-  console.log(`  Achievements:     evaluated on first page visit`);
+  console.log(`  Achievements:     ${achievementRows.length} pre-unlocked`);
   console.log(`  Invites:          1`);
   console.log(`\nSeed user logins:`);
   console.log(`  ${ADMIN_USER.name} (admin, no Riot account, onboarding done)`);
