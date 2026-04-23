@@ -1141,8 +1141,17 @@
       "deleteError": "Failed to delete invite.",
       "codeCopied": "Invite code copied to clipboard.",
       "linkCopied": "Invite link copied to clipboard.",
-      "impersonateError": "Failed to start impersonation."
-    }
+      "impersonateError": "Failed to start impersonation.",
+      "scrubSuccess": "PUUID scrubbed from {count} match records. {duoCount} duo references cleared.",
+      "scrubError": "Failed to scrub PUUID.",
+      "scrubBelongsToUser": "This PUUID belongs to a registered user. Use account deletion instead."
+    },
+    "gdprHeading": "Data deletion requests",
+    "gdprDescription": "Process GDPR deletion requests from Riot Games by scrubbing a player's PUUID from stored match data.",
+    "gdprPuuidLabel": "PUUID to scrub",
+    "gdprPuuidPlaceholder": "Enter the PUUID to remove from all match data",
+    "gdprScrubButton": "Scrub PUUID",
+    "gdprWarning": "This permanently redacts the player's identifiable data from all stored match records. This action cannot be undone."
   },
   "Impersonation": {
     "banner": "Viewing as {name} — logged in as {admin} (read-only)",

@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, matches, riotAccounts } from "@/db/schema";
 import { isDemoUserId } from "@/lib/fake-auth";
 import { IMPERSONATE_COOKIE, requireAdmin } from "@/lib/session";
 
@@ -183,4 +183,128 @@ export async function stopImpersonation() {
 
   // Same as above — client handles navigation after session refresh.
   return { success: true };
+}
+
+// ─── GDPR PUUID Scrubbing ───────────────────────────────────────────────────
+
+/**
+ * Scrub a PUUID from all stored data. Used to process GDPR deletion requests
+ * received from Riot Games for non-registered players whose data appears in
+ * stored match records (rawMatchJson blobs).
+ *
+ * What this does:
+ * 1. If any registered user has this PUUID → deletes their account (full cascade)
+ * 2. Nulls out duoPartnerPuuid references on any matches
+ * 3. Scrubs the PUUID, summoner name, and game name from all rawMatchJson blobs
+ *
+ * Returns the count of affected matches for confirmation.
+ */
+export async function scrubPuuidFromAllData(puuid: string) {
+  await requireAdmin();
+
+  // Validate PUUID format (Riot PUUIDs are 78-char hex strings with hyphens)
+  if (!puuid || !/^[\da-f-]{40,80}$/i.test(puuid.trim())) {
+    throw new Error("Invalid PUUID format");
+  }
+
+  const normalizedPuuid = puuid.trim();
+
+  // ── 1. Check if any registered user owns this PUUID ────────────────────
+  const linkedAccount = await db.query.riotAccounts.findFirst({
+    where: eq(riotAccounts.puuid, normalizedPuuid),
+  });
+
+  if (linkedAccount) {
+    // This PUUID belongs to a registered user — their deleteAccount flow handles it.
+    // We don't cascade-delete from admin to avoid accidentally nuking a real user.
+    return {
+      success: false,
+      error: "PUUID_BELONGS_TO_USER" as const,
+      userId: linkedAccount.userId,
+    };
+  }
+
+  // ── 2. Null out duoPartnerPuuid on matches ─────────────────────────────
+  const duoResult = await db
+    .update(matches)
+    .set({
+      duoPartnerPuuid: null,
+      duoPartnerChampionName: null,
+      duoPartnerKills: null,
+      duoPartnerDeaths: null,
+      duoPartnerAssists: null,
+    })
+    .where(eq(matches.duoPartnerPuuid, normalizedPuuid));
+
+  // ── 3. Scrub PUUID from rawMatchJson blobs ─────────────────────────────
+  // Find all matches whose rawMatchJson contains this PUUID
+  const affectedMatches = await db
+    .select({ id: matches.id, userId: matches.userId, rawMatchJson: matches.rawMatchJson })
+    .from(matches)
+    .where(like(matches.rawMatchJson, `%${normalizedPuuid}%`));
+
+  let scrubbedCount = 0;
+
+  for (const match of affectedMatches) {
+    if (!match.rawMatchJson) continue;
+
+    try {
+      const json = JSON.parse(match.rawMatchJson);
+      const scrubbed = scrubPuuidFromMatchJson(json, normalizedPuuid);
+
+      await db
+        .update(matches)
+        .set({ rawMatchJson: JSON.stringify(scrubbed) })
+        .where(sql`${matches.id} = ${match.id} AND ${matches.userId} = ${match.userId}`);
+
+      scrubbedCount++;
+    } catch {
+      // If JSON is malformed, do a simple string replacement as fallback
+      const replaced = match.rawMatchJson.replaceAll(normalizedPuuid, "[REDACTED]");
+      await db
+        .update(matches)
+        .set({ rawMatchJson: replaced })
+        .where(sql`${matches.id} = ${match.id} AND ${matches.userId} = ${match.userId}`);
+      scrubbedCount++;
+    }
+  }
+
+  return {
+    success: true,
+    duoReferencesCleared: duoResult.rowsAffected ?? 0,
+    matchJsonsScrubbed: scrubbedCount,
+  };
+}
+
+/**
+ * Scrub a specific PUUID's identifiable data from a parsed Riot match JSON.
+ * Replaces the PUUID, summonerName, riotIdGameName, and riotIdTagline
+ * with "[REDACTED]" in the participant entry matching the given PUUID.
+ */
+function scrubPuuidFromMatchJson(json: Record<string, unknown>, puuid: string) {
+  // The Riot match JSON structure: { info: { participants: [...] }, metadata: { participants: [...] } }
+  const info = json.info as Record<string, unknown> | undefined;
+  const metadata = json.metadata as Record<string, unknown> | undefined;
+
+  // Scrub from metadata.participants (array of PUUID strings)
+  if (metadata?.participants && Array.isArray(metadata.participants)) {
+    metadata.participants = (metadata.participants as string[]).map((p) =>
+      p === puuid ? "[REDACTED]" : p,
+    );
+  }
+
+  // Scrub from info.participants (array of participant objects)
+  if (info?.participants && Array.isArray(info.participants)) {
+    for (const participant of info.participants as Record<string, unknown>[]) {
+      if (participant.puuid === puuid) {
+        participant.puuid = "[REDACTED]";
+        participant.summonerName = "[REDACTED]";
+        participant.riotIdGameName = "[REDACTED]";
+        participant.riotIdTagline = "[REDACTED]";
+        break;
+      }
+    }
+  }
+
+  return json;
 }
