@@ -11,7 +11,6 @@ import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
 import { matches, riotAccounts } from "@/db/schema";
-import { auth } from "@/lib/auth";
 import { AuthProvider } from "@/lib/auth-client";
 import { sidebarTag } from "@/lib/cache";
 import { getLatestChangelogVersion } from "@/lib/changelog";
@@ -102,19 +101,10 @@ async function LocalizedContent({ children }: { children: React.ReactNode }) {
   return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
 }
 
-/**
- * Async server component that fetches the auth session and passes it to
- * SessionProvider so the client never needs to call /api/auth/session.
- */
-async function AuthProviderWithSession({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-  return <AuthProvider session={session}>{children}</AuthProvider>;
-}
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense>
-      <AuthProviderWithSession>
+    <AuthProvider refetchOnWindowFocus={false}>
+      <Suspense>
         <LocalizedContent>
           <div className="bg-mesh flex min-h-screen">
             <a
@@ -133,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <Toaster />
         </LocalizedContent>
-      </AuthProviderWithSession>
-    </Suspense>
+      </Suspense>
+    </AuthProvider>
   );
 }
