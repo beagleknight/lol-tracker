@@ -17,6 +17,7 @@
     "navWhatsNew": "What's new",
     "navAdmin": "Admin",
     "navFeedback": "Feedback",
+    "navAchievements": "Achievements",
     "navLegal": "Legal",
     "sectionTracker": "Tracker",
     "sectionInsights": "Insights",
@@ -1248,6 +1249,7 @@
     "tryAgain": "Try again",
     "dismissSuccess": "Awesome!",
     "dismissFailure": "Got it",
+    "nextPage": "Next",
     "previous": "Previous result",
     "next": "Next result"
   },
@@ -1259,5 +1261,163 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "now": "now"
+  },
+  "Achievements": {
+    "pageTitle": "Achievements",
+    "pageDescription": "Track your milestones and unlock badges as you use the app.",
+    "summary": "{unlocked} / {total} unlocked",
+    "secretRemaining": "{count} secret achievements remaining",
+    "lockedSecret": "Keep playing to discover this achievement",
+    "lockedLabel": "Locked",
+    "unlockedLabel": "Unlocked on {date}",
+    "tierLabel": "{tier}",
+    "progressLabel": "{current} / {next}",
+    "progressForTier": "for {tier}",
+    "maxTierLabel": "Max tier reached",
+    "tabAll": "All",
+    "tabCoaching": "Coaching",
+    "tabChallenges": "Challenges",
+    "tabReviews": "Reviews",
+    "tabMatches": "Matches",
+    "tabCombat": "Combat",
+    "tabHighlights": "Highlights",
+    "tabGeneral": "General",
+    "tierIron": "Iron",
+    "tierBronze": "Bronze",
+    "tierSilver": "Silver",
+    "tierGold": "Gold",
+    "tierPlatinum": "Platinum",
+    "tierDiamond": "Diamond",
+    "coaching_sessions": {
+      "title": "Coach's favorite",
+      "description": "Complete coaching sessions"
+    },
+    "action_items_completed": {
+      "title": "Action hero",
+      "description": "Complete action items from coaching"
+    },
+    "challenges_completed": {
+      "title": "Challenger",
+      "description": "Complete challenges"
+    },
+    "challenges_failed": {
+      "title": "Thick skin",
+      "description": "Fail challenges — it happens to everyone"
+    },
+    "challenge_streak": {
+      "title": "On a roll",
+      "description": "Complete challenges in a row without failing"
+    },
+    "active_challenges": {
+      "title": "Multitasker",
+      "description": "Have multiple active challenges at once"
+    },
+    "denial": {
+      "title": "Denial",
+      "description": "Fail 3 challenges in a row. It's the matchmaking, obviously."
+    },
+    "reviews_written": {
+      "title": "Self aware",
+      "description": "Review your matches to improve"
+    },
+    "review_streak": {
+      "title": "Consistency is key",
+      "description": "Review matches on consecutive days"
+    },
+    "late_bloomer": {
+      "title": "Late bloomer",
+      "description": "Review a match more than 7 days after playing it"
+    },
+    "matches_tracked": {
+      "title": "Centurion",
+      "description": "Track matches in the app"
+    },
+    "win_streak": {
+      "title": "Hot hand",
+      "description": "Win games in a row"
+    },
+    "champions_played": {
+      "title": "Diverse pool",
+      "description": "Play different champions"
+    },
+    "one_trick": {
+      "title": "One-trick pony",
+      "description": "Play the same champion over and over. We get it, you like that champ."
+    },
+    "flawless": {
+      "title": "Flawless",
+      "description": "Win a game with 0 deaths"
+    },
+    "fill_main": {
+      "title": "Fill main",
+      "description": "Play at least one game in each of the 5 roles"
+    },
+    "the_marathon": {
+      "title": "The marathon",
+      "description": "Play a game lasting 45+ minutes"
+    },
+    "speedrun": {
+      "title": "Speedrun",
+      "description": "Win a game in under 20 minutes"
+    },
+    "inting_is_an_art": {
+      "title": "Inting is an art",
+      "description": "Die 15+ times in a single game. The classic power spike."
+    },
+    "kda_player": {
+      "title": "KDA player",
+      "description": "Win with 10+ kills, 0 deaths, and 10+ assists"
+    },
+    "cs_whats_that": {
+      "title": "CS? What's that?",
+      "description": "Win a game with less than 3 CS/min. Farming is optional."
+    },
+    "ghost_player": {
+      "title": "Ghost player",
+      "description": "Win a game with 0 kills and 0 assists. Were you even there?"
+    },
+    "vision_never_heard": {
+      "title": "Vision? Never heard of it",
+      "description": "Win a game with 0 vision score. Somewhere, a support main is crying."
+    },
+    "walking_atm": {
+      "title": "Walking ATM",
+      "description": "Die 10+ times in a game you won. Your team carried hard."
+    },
+    "highlights_tagged": {
+      "title": "Highlight reel",
+      "description": "Tag highlights across your matches"
+    },
+    "spotlight_moment": {
+      "title": "Spotlight moment",
+      "description": "Tag your first match highlight"
+    },
+    "summoner_connected": {
+      "title": "Summoner connected",
+      "description": "Link a Riot account to start tracking"
+    },
+    "smurf_detected": {
+      "title": "Smurf detected",
+      "description": "Link 2 or more Riot accounts"
+    },
+    "on_the_rift": {
+      "title": "On the rift",
+      "description": "Track your first match"
+    },
+    "weekly_warrior": {
+      "title": "Weekly warrior",
+      "description": "Use the app on consecutive days"
+    },
+    "unlockModal": {
+      "title": "Achievement unlocked!",
+      "tierUpTitle": "Tier up!",
+      "backfillTitle": "We checked your history...",
+      "backfillDescription": "Based on your existing data, you've already earned some achievements!",
+      "dismiss": "Nice!",
+      "nextPage": "Next",
+      "previous": "Previous achievement",
+      "next": "Next achievement",
+      "newTier": "Reached {tier}"
+    }
   }
 }

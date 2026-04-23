@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
+import type { AchievementTransition } from "@/lib/achievements";
 import type { ChallengeTransition } from "@/lib/challenges";
 
 import { invalidateSyncCaches } from "@/app/actions/sync";
@@ -54,6 +55,7 @@ export function useSyncMatches(isLinked: boolean = false) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [progress, setProgress] = useState<SyncProgress | null>(null);
   const [challengeTransitions, setChallengeTransitions] = useState<ChallengeTransition[]>([]);
+  const [achievementTransitions, setAchievementTransitions] = useState<AchievementTransition[]>([]);
   const router = useRouter();
   const toastIdRef = useRef<string | number | undefined>(undefined);
   const lastSyncAtRef = useRef<number>(0);
@@ -81,6 +83,7 @@ export function useSyncMatches(isLinked: boolean = false) {
       let cumulativeSynced = 0;
       let cumulativeFailed = 0;
       let cumulativeTransitions: ChallengeTransition[] = [];
+      let cumulativeAchievementTransitions: AchievementTransition[] = [];
 
       const runBatch = async (limit?: number, continuation = false): Promise<void> => {
         const params = new URLSearchParams();
@@ -169,6 +172,12 @@ export function useSyncMatches(isLinked: boolean = false) {
                 batchRemaining = data.remaining ?? 0;
                 if (Array.isArray(data.challengeTransitions)) {
                   cumulativeTransitions = [...cumulativeTransitions, ...data.challengeTransitions];
+                }
+                if (Array.isArray(data.achievementTransitions)) {
+                  cumulativeAchievementTransitions = [
+                    ...cumulativeAchievementTransitions,
+                    ...data.achievementTransitions,
+                  ];
                 }
                 setProgress((prev) =>
                   prev
@@ -263,6 +272,11 @@ export function useSyncMatches(isLinked: boolean = false) {
         if (cumulativeTransitions.length > 0) {
           setChallengeTransitions(cumulativeTransitions);
         }
+
+        // Trigger achievement unlock modal if any transitions occurred
+        if (cumulativeAchievementTransitions.length > 0) {
+          setAchievementTransitions(cumulativeAchievementTransitions);
+        }
       };
 
       // Start the first batch. If caller set a limit, use it.
@@ -341,5 +355,17 @@ export function useSyncMatches(isLinked: boolean = false) {
     setChallengeTransitions([]);
   }, []);
 
-  return { isSyncing, progress, handleSync, challengeTransitions, dismissChallengeTransitions };
+  const dismissAchievementTransitions = useCallback(() => {
+    setAchievementTransitions([]);
+  }, []);
+
+  return {
+    isSyncing,
+    progress,
+    handleSync,
+    challengeTransitions,
+    dismissChallengeTransitions,
+    achievementTransitions,
+    dismissAchievementTransitions,
+  };
 }

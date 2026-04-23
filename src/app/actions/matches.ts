@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { matches, matchHighlights, matchActionItemOutcomes } from "@/db/schema";
+import { evaluateAchievements } from "@/lib/achievements";
 import { invalidateReviewCaches } from "@/lib/cache";
 import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 import { validateVodUrl } from "@/lib/url";
@@ -95,5 +96,9 @@ export async function saveReview(
   revalidatePath("/scout");
   revalidatePath("/coaching");
   invalidateReviewCaches(user.id);
+
+  // Evaluate achievements (may unlock review-related achievements)
+  void evaluateAchievements(user.id);
+
   return { success: true };
 }

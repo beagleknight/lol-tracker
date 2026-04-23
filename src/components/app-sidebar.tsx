@@ -18,12 +18,14 @@ import {
   MessageSquarePlus,
   Scale,
   Lock,
+  Trophy,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 import { ChallengeResultModal } from "@/components/challenge-result-modal";
 import { Logo } from "@/components/logo";
 import { SeasonFilter } from "@/components/season-filter";
@@ -64,6 +66,7 @@ const navDefs = {
     { key: "navActionItems" as const, href: "/coaching/action-items", icon: ListChecks },
   ],
   bottom: [
+    { key: "navAchievements" as const, href: "/achievements", icon: Trophy },
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
     { key: "navLegal" as const, href: "/legal", icon: Scale },
@@ -178,8 +181,14 @@ function SidebarContent({
   const isLinked = !!user.isRiotLinked;
   const { user: authUser } = useAuth();
   const isDemoUser = authUser?.isDemoUser ?? false;
-  const { isSyncing, handleSync, challengeTransitions, dismissChallengeTransitions } =
-    useSyncMatches(isDemoUser ? false : isLinked);
+  const {
+    isSyncing,
+    handleSync,
+    challengeTransitions,
+    dismissChallengeTransitions,
+    achievementTransitions,
+    dismissAchievementTransitions,
+  } = useSyncMatches(isDemoUser ? false : isLinked);
 
   // Track whether there are unseen changelog entries
   const [hasUnseenChangelog, setHasUnseenChangelog] = useState(false);
@@ -331,6 +340,14 @@ function SidebarContent({
         <ChallengeResultModal
           transitions={challengeTransitions}
           onDismiss={dismissChallengeTransitions}
+        />
+      )}
+
+      {/* Achievement unlock popup — rendered via portal (not for demo users) */}
+      {!isDemoUser && (
+        <AchievementUnlockModal
+          transitions={achievementTransitions}
+          onDismiss={dismissAchievementTransitions}
         />
       )}
     </div>

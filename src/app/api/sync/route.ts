@@ -4,6 +4,7 @@ import type { ChallengeTransition } from "@/lib/challenges";
 
 import { db } from "@/db";
 import { matches, rankSnapshots, riotAccounts } from "@/db/schema";
+import { evaluateAchievements } from "@/lib/achievements";
 import { checkByDateChallenges, evaluateByGamesChallenges } from "@/lib/challenges";
 import { isDemoUserId } from "@/lib/fake-auth";
 import { checkGoalAchievement } from "@/lib/goals";
@@ -479,6 +480,9 @@ export async function GET(request: Request) {
         const dateTransitions = await checkByDateChallenges(user.id, activeRiotAccountId);
         allChallengeTransitions.push(...dateTransitions);
 
+        // Evaluate achievements after all matches and challenges are processed
+        const achievementTransitions = await evaluateAchievements(user.id);
+
         // Cache invalidation is handled client-side via a Server Action
         // after the "done" event (updateTag cannot be called from Route Handlers).
 
@@ -500,6 +504,7 @@ export async function GET(request: Request) {
           remaining,
           message: parts.join(" ") + ".",
           challengeTransitions: allChallengeTransitions,
+          achievementTransitions,
         });
       } catch (error) {
         console.error("Sync error:", error);

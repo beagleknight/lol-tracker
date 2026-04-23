@@ -66,6 +66,7 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
   const current = sorted[currentIndex];
   const isSuccess = current?.status === "completed";
   const total = sorted.length;
+  const isLastPage = currentIndex === total - 1;
 
   // Fire confetti for success transitions
   const fireConfetti = useCallback(() => {
@@ -135,7 +136,7 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
     <Dialog
       open={transitions.length > 0}
       onOpenChange={(open) => {
-        if (!open) onDismiss();
+        if (!open && isLastPage) onDismiss();
       }}
     >
       <DialogContent
@@ -231,7 +232,7 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
         )}
 
         <DialogFooter className="sm:justify-center">
-          {!isSuccess && (
+          {!isSuccess && isLastPage && (
             <Button
               variant="outline"
               onClick={handleTryAgain}
@@ -246,12 +247,21 @@ export function ChallengeResultModal({ transitions, onDismiss }: ChallengeResult
               {t("tryAgain")}
             </Button>
           )}
-          <Button
-            onClick={onDismiss}
-            className={cn(isSuccess && "bg-win text-white hover:bg-win/90")}
-          >
-            {isSuccess ? t("dismissSuccess") : t("dismissFailure")}
-          </Button>
+          {isLastPage ? (
+            <Button
+              onClick={onDismiss}
+              className={cn(isSuccess && "bg-win text-white hover:bg-win/90")}
+            >
+              {isSuccess ? t("dismissSuccess") : t("dismissFailure")}
+            </Button>
+          ) : (
+            <Button
+              onClick={goNext}
+              className={cn(isSuccess && "bg-win text-white hover:bg-win/90")}
+            >
+              {t("nextPage")}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
