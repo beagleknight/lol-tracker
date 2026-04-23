@@ -18,6 +18,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-demo": "tsx scripts/seed-demo.ts",
     "test:migration": "tsx scripts/test-migration.ts",
+    "test:migration-safety": "tsx scripts/check-migration-safety.ts",
     "test:smoke": "playwright test --project=smoke",
     "test:e2e": "playwright test --project=e2e",
     "prepare": "lefthook install",

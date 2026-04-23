@@ -55,6 +55,22 @@ Steps after any schema change:
 
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 
+## Destructive migrations — MANDATORY expand-contract pattern
+
+**CI blocks all destructive migrations.** The `migration-safety` check (`scripts/check-migration-safety.ts`) scans new migration SQL for `DROP TABLE`, `DROP COLUMN`, and `RENAME COLUMN` patterns. If found, CI fails and the PR cannot merge.
+
+**Why**: Migrations run before `next build` on Vercel. The old deployment still serves traffic while the build runs. Destructive schema changes break the old code immediately, causing downtime until the new deployment goes live (minutes later).
+
+**Incident reference**: PR #243 dropped columns from the `matches` table during deploy, causing a production outage (issue #246).
+
+**The expand-contract pattern is mandatory for all destructive changes:**
+
+- **Phase 1** (PR 1): Add new columns/tables. Deploy code that works with BOTH old and new schema. No drops.
+- **Phase 2** (PR 2, optional): Backfill/migrate data if needed.
+- **Phase 3** (PR 3, AFTER Phase 1 is live and verified): Drop old columns/tables in a separate migration. This is safe because no running code references them.
+
+**NEVER generate a single migration that adds new columns AND drops old ones.** Split into separate PRs. See the `drizzle-schema` skill for detailed examples.
+
 <!-- END:turso-migration-rules -->
 
 <!-- BEGIN:env-safety-rules -->

@@ -131,6 +131,69 @@ Always add indexes when:
 5. **Write a `.validate.sql` companion file.**
    For any migration that creates tables or moves data, write `drizzle/XXXX_name.validate.sql` with assertions that verify data integrity. The migration runner executes these after applying the migration. See `scripts/migrate.ts` for the validation mechanism.
 
+## Destructive migrations — MANDATORY expand-contract pattern
+
+**CI blocks all destructive migrations.** The `migration-safety` CI check (`scripts/check-migration-safety.ts`) scans new migration SQL for `DROP TABLE`, `DROP COLUMN`, and `RENAME COLUMN` patterns. If found, CI fails and the PR cannot merge. There is no override mechanism — this is a hard blocker.
+
+**Why**: Migrations run before `next build` on Vercel. The old deployment still serves traffic while the build runs. Destructive schema changes break the old code immediately, causing downtime until the new deployment goes live (minutes later).
+
+**Incident reference**: PR #243 dropped columns from the `matches` table during deploy, causing a brief production outage (issue #246).
+
+### The expand-contract pattern
+
+All destructive schema changes MUST be split across multiple PRs:
+
+**Phase 1 (PR 1) — Expand:**
+
+- Add new columns/tables
+- Deploy code that works with BOTH old and new schema
+- No drops, no renames
+
+**Phase 2 (PR 2, optional) — Migrate:**
+
+- Backfill data from old columns to new columns
+- Can be a data migration script or a SQL migration
+
+**Phase 3 (PR 3, AFTER Phase 1 is live and verified) — Contract:**
+
+- Drop old columns/tables in a separate migration
+- Only safe because no running code references them anymore
+
+### Example: renaming a column
+
+```
+-- BAD: Single migration (CI will block this)
+ALTER TABLE matches RENAME COLUMN review_notes TO notes;
+
+-- GOOD: Three-phase approach
+-- Phase 1 migration: Add new column
+ALTER TABLE matches ADD COLUMN notes text;
+-- Phase 1 code: Write to BOTH columns, read from new (fallback to old)
+
+-- Phase 2 migration: Backfill
+UPDATE matches SET notes = review_notes WHERE notes IS NULL AND review_notes IS NOT NULL;
+
+-- Phase 3 migration (separate PR): Drop old column
+ALTER TABLE matches DROP COLUMN review_notes;
+```
+
+### Example: recreating a table to change column constraints
+
+```
+-- BAD: Single migration with table recreation (CI will block this)
+CREATE TABLE match_highlights_new (...);
+INSERT INTO match_highlights_new SELECT * FROM match_highlights;
+DROP TABLE match_highlights;
+ALTER TABLE match_highlights_new RENAME TO match_highlights;
+
+-- GOOD: Use ALTER TABLE to add/modify columns where possible
+-- If SQLite doesn't support the needed ALTER, split across phases:
+-- Phase 1: Create new table + copy data + deploy code that reads from new table
+-- Phase 3: Drop old table (separate PR)
+```
+
+**NEVER generate a single migration that adds new columns AND drops old ones.** Always split into separate PRs.
+
 ## Data sync (db-push / db-pull)
 
 ### Safety rules

@@ -54,6 +54,7 @@ Branch naming conventions:
   npm run test:e2e
   ```
 - **MANDATORY: Verify the lockfile before every push** (when `package-lock.json` is staged). Run `npm ci` to confirm the lockfile is consistent. If it fails, regenerate with `npm install`. The canonical Node version is defined in `.tool-versions` — both local dev and CI use the same version.
+- **MANDATORY: Destructive migrations are blocked by CI.** If the PR adds migration SQL containing `DROP TABLE`, `DROP COLUMN`, or `RENAME COLUMN`, the `migration-safety` CI check will fail and the PR cannot merge. Use the expand-contract pattern (split across multiple PRs). See the `drizzle-schema` skill for the full pattern and examples.
 
 ### 3. Write a changelog entry
 
