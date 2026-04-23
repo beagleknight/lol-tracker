@@ -1288,6 +1288,8 @@
     "tierGold": "Oro",
     "tierPlatinum": "Platino",
     "tierDiamond": "Diamante",
+    "checkingAchievements": "Comprobando logros...",
+    "achievementsUpToDate": "Los logros están actualizados.",
     "coaching_sessions": {
       "title": "Favorito del coach",
       "description": "Completa sesiones de coaching"

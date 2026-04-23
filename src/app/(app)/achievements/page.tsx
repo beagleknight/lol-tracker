@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { evaluateAchievements, getAchievementProgress } from "@/lib/achievements";
+import { getAchievementProgress } from "@/lib/achievements";
 import { requireUser } from "@/lib/session";
 
 import { AchievementsClient } from "./achievements-client";
@@ -8,10 +8,6 @@ import { AchievementsClient } from "./achievements-client";
 export default async function AchievementsPage() {
   const user = await requireUser();
   const t = await getTranslations("Achievements");
-
-  // Evaluate achievements on page visit so existing users get credit
-  // for their historical data without needing to trigger a sync first.
-  await evaluateAchievements(user.id);
 
   const progress = await getAchievementProgress(user.id);
 

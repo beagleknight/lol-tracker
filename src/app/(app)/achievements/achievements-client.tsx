@@ -1,7 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
+import { checkAchievements } from "@/app/actions/achievements";
 import { AchievementBadge } from "@/components/achievement-badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -169,6 +173,27 @@ function getTierBadgeClasses(tier: number): string {
 
 export function AchievementsClient({ progress }: AchievementsClientProps) {
   const t = useTranslations("Achievements");
+  const router = useRouter();
+  const hasChecked = useRef(false);
+
+  // Evaluate achievements in the background on first visit
+  useEffect(() => {
+    if (hasChecked.current) return;
+    hasChecked.current = true;
+
+    const toastId = toast.loading(t("checkingAchievements"));
+
+    checkAchievements()
+      .then((result) => {
+        if (result.transitions.length > 0) {
+          router.refresh();
+        }
+        toast.dismiss(toastId);
+      })
+      .catch(() => {
+        toast.dismiss(toastId);
+      });
+  }, [t, router]);
 
   const categories: (AchievementCategory | "all")[] = ["all", ...ACHIEVEMENT_CATEGORIES];
 

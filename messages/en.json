@@ -1288,6 +1288,8 @@
     "tierGold": "Gold",
     "tierPlatinum": "Platinum",
     "tierDiamond": "Diamond",
+    "checkingAchievements": "Checking achievements...",
+    "achievementsUpToDate": "Achievements are up to date.",
     "coaching_sessions": {
       "title": "Coach's favorite",
       "description": "Complete coaching sessions"
