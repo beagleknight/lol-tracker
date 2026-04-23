@@ -3,17 +3,34 @@
  * Extracted from (app)/analytics/page.tsx for reuse in (demo)/analytics/page.tsx.
  */
 
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, gte, lte } from "drizzle-orm";
+
+import type { DateRange } from "@/lib/seasons";
 
 import { db } from "@/db";
 import { matches, coachingSessions, rankSnapshots, challenges } from "@/db/schema";
 import { accountScope } from "@/lib/match-queries";
 import { getLatestVersion } from "@/lib/riot-api";
 
-export async function getAnalyticsData(userId: string, riotAccountId: string | null) {
+export async function getAnalyticsData(
+  userId: string,
+  riotAccountId: string | null,
+  dateRange?: DateRange | null,
+) {
+  const dateConditions = dateRange
+    ? [
+        gte(matches.gameDate, dateRange.start),
+        ...(dateRange.end ? [lte(matches.gameDate, dateRange.end)] : []),
+      ]
+    : [];
+
   const [allMatches, sessions, ranks, ddragonVersion, activeGoal] = await Promise.all([
     db.query.matches.findMany({
-      where: and(eq(matches.userId, userId), accountScope(matches.riotAccountId, riotAccountId)),
+      where: and(
+        eq(matches.userId, userId),
+        accountScope(matches.riotAccountId, riotAccountId),
+        ...dateConditions,
+      ),
       orderBy: asc(matches.gameDate),
       columns: {
         gameDate: true,

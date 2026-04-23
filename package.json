@@ -20,7 +20,8 @@
     "test:migration": "tsx scripts/test-migration.ts",
     "test:smoke": "playwright test --project=smoke",
     "test:e2e": "playwright test --project=e2e",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "scrape:seasons": "tsx scripts/scrape-seasons.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.58",

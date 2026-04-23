@@ -1,11 +1,13 @@
 import { getDashboardData } from "@/lib/queries/dashboard";
+import { getSeasonDateRange } from "@/lib/season-filter";
 import { requireUser } from "@/lib/session";
 
 import { DashboardClient } from "./dashboard-client";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const data = await getDashboardData(user.id, user.activeRiotAccountId);
+  const dateRange = await getSeasonDateRange();
+  const data = await getDashboardData(user.id, user.activeRiotAccountId, dateRange);
 
   return (
     <DashboardClient

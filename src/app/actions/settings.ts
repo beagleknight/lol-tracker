@@ -514,3 +514,21 @@ export async function updateRolePreferences(
 
   return { success: true };
 }
+
+// ─── Season Filter ──────────────────────────────────────────────────────────
+
+/**
+ * Persist the season/date filter in a cookie and revalidate all pages.
+ */
+export async function setSeasonFilter(filter: string) {
+  const cookieStore = await cookies();
+  cookieStore.set("season-filter", filter, {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+  });
+
+  revalidatePath("/", "layout");
+}
