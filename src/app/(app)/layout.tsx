@@ -103,7 +103,7 @@ async function LocalizedContent({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
+    <AuthProvider refetchOnWindowFocus={false}>
       <Suspense>
         <LocalizedContent>
           <div className="bg-mesh flex min-h-screen">
