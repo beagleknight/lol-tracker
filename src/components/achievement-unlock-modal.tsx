@@ -3,7 +3,7 @@
 import confetti from "canvas-confetti";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import type { AchievementTransition } from "@/lib/achievements";
 
@@ -39,63 +39,60 @@ const BACKFILL_THRESHOLD = 3;
 export function AchievementUnlockModal({ transitions, onDismiss }: AchievementUnlockModalProps) {
   const t = useTranslations("Achievements");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const confettiFiredRef = useRef<Set<string>>(new Set());
+  const confettiFiredRef = useRef(false);
 
   const total = transitions.length;
   const isBackfill = total >= BACKFILL_THRESHOLD;
+  const isLastPage = currentIndex === total - 1;
   const current = transitions[currentIndex];
   const def = current ? getAchievementById(current.achievementId) : null;
 
-  const fireConfetti = useCallback(() => {
-    if (!current) return;
-    const key = `${current.achievementId}-${current.tier}`;
-    if (confettiFiredRef.current.has(key)) return;
-    confettiFiredRef.current.add(key);
-
-    const fire = (particleRatio: number, opts: confetti.Options) => {
-      void confetti({
-        origin: { y: 0.7 },
-        ...opts,
-        particleCount: Math.floor(200 * particleRatio),
-      });
-    };
-
-    fire(0.25, { spread: 26, startVelocity: 55, colors: ["#FFD700", "#FFA500"] });
-    fire(0.2, { spread: 60, colors: ["#FFD700", "#FFA500", "#FF6347"] });
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8,
-      colors: ["#FFD700", "#FFA500", "#fff"],
-    });
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2,
-      colors: ["#FFD700"],
-    });
-    fire(0.1, { spread: 120, startVelocity: 45, colors: ["#FFA500", "#FFD700"] });
-  }, [current]);
-
+  // Confetti only on the very first achievement unlock ever (index 0, first time)
   useEffect(() => {
-    if (transitions.length > 0) {
-      const timer = setTimeout(fireConfetti, 300);
+    if (transitions.length > 0 && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+
+      const fire = (particleRatio: number, opts: confetti.Options) => {
+        void confetti({
+          origin: { y: 0.7 },
+          ...opts,
+          particleCount: Math.floor(200 * particleRatio),
+        });
+      };
+
+      const timer = setTimeout(() => {
+        fire(0.25, { spread: 26, startVelocity: 55, colors: ["#FFD700", "#FFA500"] });
+        fire(0.2, { spread: 60, colors: ["#FFD700", "#FFA500", "#FF6347"] });
+        fire(0.35, {
+          spread: 100,
+          decay: 0.91,
+          scalar: 0.8,
+          colors: ["#FFD700", "#FFA500", "#fff"],
+        });
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 25,
+          decay: 0.92,
+          scalar: 1.2,
+          colors: ["#FFD700"],
+        });
+        fire(0.1, { spread: 120, startVelocity: 45, colors: ["#FFA500", "#FFD700"] });
+      }, 300);
       return () => clearTimeout(timer);
     }
-  }, [transitions.length, fireConfetti, currentIndex]);
+  }, [transitions.length]);
 
-  const goNext = useCallback(() => {
+  const goNext = () => {
     if (currentIndex < total - 1) {
       setCurrentIndex((i) => i + 1);
     }
-  }, [currentIndex, total]);
+  };
 
-  const goPrev = useCallback(() => {
+  const goPrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex((i) => i - 1);
     }
-  }, [currentIndex]);
+  };
 
   if (!current || !def) return null;
 
@@ -108,7 +105,7 @@ export function AchievementUnlockModal({ transitions, onDismiss }: AchievementUn
     <Dialog
       open={transitions.length > 0}
       onOpenChange={(open) => {
-        if (!open) onDismiss();
+        if (!open && isLastPage) onDismiss();
       }}
     >
       <DialogContent
@@ -190,9 +187,15 @@ export function AchievementUnlockModal({ transitions, onDismiss }: AchievementUn
         )}
 
         <DialogFooter className="sm:justify-center">
-          <Button onClick={onDismiss} className={cn("bg-gold text-white hover:bg-gold/90")}>
-            {t("unlockModal.dismiss")}
-          </Button>
+          {isLastPage ? (
+            <Button onClick={onDismiss} className={cn("bg-gold text-white hover:bg-gold/90")}>
+              {t("unlockModal.dismiss")}
+            </Button>
+          ) : (
+            <Button onClick={goNext} className={cn("bg-gold text-white hover:bg-gold/90")}>
+              {t("unlockModal.nextPage")}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

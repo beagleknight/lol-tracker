@@ -1249,6 +1249,7 @@
     "tryAgain": "Intentar de nuevo",
     "dismissSuccess": "¡Genial!",
     "dismissFailure": "Entendido",
+    "nextPage": "Siguiente",
     "previous": "Resultado anterior",
     "next": "Siguiente resultado"
   },
@@ -1271,6 +1272,7 @@
     "unlockedLabel": "Desbloqueado el {date}",
     "tierLabel": "{tier}",
     "progressLabel": "{current} / {next}",
+    "progressForTier": "para {tier}",
     "maxTierLabel": "Nivel máximo alcanzado",
     "tabAll": "Todos",
     "tabCoaching": "Coaching",
@@ -1412,6 +1414,7 @@
       "backfillTitle": "Revisamos tu historial...",
       "backfillDescription": "Basándonos en tus datos existentes, ¡ya has conseguido algunos logros!",
       "dismiss": "¡Genial!",
+      "nextPage": "Siguiente",
       "previous": "Logro anterior",
       "next": "Siguiente logro",
       "newTier": "Alcanzaste {tier}"

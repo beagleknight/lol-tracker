@@ -1249,6 +1249,7 @@
     "tryAgain": "Try again",
     "dismissSuccess": "Awesome!",
     "dismissFailure": "Got it",
+    "nextPage": "Next",
     "previous": "Previous result",
     "next": "Next result"
   },
@@ -1271,6 +1272,7 @@
     "unlockedLabel": "Unlocked on {date}",
     "tierLabel": "{tier}",
     "progressLabel": "{current} / {next}",
+    "progressForTier": "for {tier}",
     "maxTierLabel": "Max tier reached",
     "tabAll": "All",
     "tabCoaching": "Coaching",
@@ -1412,6 +1414,7 @@
       "backfillTitle": "We checked your history...",
       "backfillDescription": "Based on your existing data, you've already earned some achievements!",
       "dismiss": "Nice!",
+      "nextPage": "Next",
       "previous": "Previous achievement",
       "next": "Next achievement",
       "newTier": "Reached {tier}"

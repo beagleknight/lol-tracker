@@ -46,10 +46,10 @@ function AchievementCard({
 }) {
   const { def, unlocked, currentTier, progress, nextThreshold, unlockedAt } = item;
 
-  // Secret + locked: show mystery card
+  // Secret + locked: hide description but still show title
   const isSecretLocked = def.secret && !unlocked;
 
-  const title = isSecretLocked ? "???" : t(`${def.id}.title` as Parameters<typeof t>[0]);
+  const title = t(`${def.id}.title` as Parameters<typeof t>[0]);
   const description = isSecretLocked
     ? t("lockedSecret")
     : t(`${def.id}.description` as Parameters<typeof t>[0]);
@@ -103,7 +103,20 @@ function AchievementCard({
         {showProgress && (
           <div className="pt-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{t("progressLabel", { current: progress, next: nextThreshold })}</span>
+              <span>
+                {t("progressLabel", { current: progress, next: nextThreshold })}
+                {(() => {
+                  const nextTierNum = (currentTier ?? 0) + 1;
+                  const nextTierKey = TIER_LABEL_KEYS[getTierName(nextTierNum)];
+                  if (!nextTierKey) return null;
+                  const nextTierLabel = t(nextTierKey as Parameters<typeof t>[0]);
+                  return (
+                    <span className="ml-1 text-muted-foreground/70">
+                      {t("progressForTier", { tier: nextTierLabel })}
+                    </span>
+                  );
+                })()}
+              </span>
               {unlocked && def.tiers && currentTier === def.tiers.length && (
                 <span className="text-gold">{t("maxTierLabel")}</span>
               )}
@@ -161,7 +174,7 @@ export function AchievementsClient({ progress }: AchievementsClientProps) {
 
   return (
     <Tabs defaultValue="all">
-      <TabsList className="flex-wrap">
+      <TabsList className="flex-wrap gap-2">
         {categories.map((cat) => (
           <TabsTrigger key={cat} value={cat}>
             {t(TAB_KEYS[cat]! as Parameters<typeof t>[0])}

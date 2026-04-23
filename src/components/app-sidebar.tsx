@@ -56,7 +56,6 @@ const navDefs = {
     { key: "navReview" as const, href: "/review", icon: ClipboardCheck },
     { key: "navDuo" as const, href: "/duo", icon: Users },
     { key: "navChallenges" as const, href: "/challenges", icon: Target },
-    { key: "navAchievements" as const, href: "/achievements", icon: Trophy },
   ],
   insights: [
     { key: "navAnalytics" as const, href: "/analytics", icon: BarChart3 },
@@ -67,6 +66,7 @@ const navDefs = {
     { key: "navActionItems" as const, href: "/coaching/action-items", icon: ListChecks },
   ],
   bottom: [
+    { key: "navAchievements" as const, href: "/achievements", icon: Trophy },
     { key: "navWhatsNew" as const, href: "/changelog", icon: Sparkles },
     { key: "navFeedback" as const, href: "/feedback", icon: MessageSquarePlus },
     { key: "navLegal" as const, href: "/legal", icon: Scale },

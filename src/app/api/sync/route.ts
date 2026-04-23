@@ -1,6 +1,5 @@
 import { eq, desc } from "drizzle-orm";
 
-import type { AchievementTransition } from "@/lib/achievements";
 import type { ChallengeTransition } from "@/lib/challenges";
 
 import { db } from "@/db";

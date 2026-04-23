@@ -19,7 +19,6 @@ import {
   Layers,
   Link,
   ListChecks,
-  Lock,
   Play,
   Shuffle,
   Skull,
@@ -175,22 +174,7 @@ export function AchievementBadge({
   const categoryConfig = CATEGORY_CONFIG[category];
   const tierName = tier ? getTierName(tier) : null;
 
-  // Locked secret: show a "?" icon
-  if (!unlocked && secret) {
-    return (
-      <div
-        className={cn(
-          "flex shrink-0 items-center justify-center rounded-xl border-2 border-muted-foreground/20 bg-muted/30",
-          SIZE_CLASSES[size],
-          className,
-        )}
-      >
-        <HelpCircle className={cn("text-muted-foreground/40", ICON_SIZE_CLASSES[size])} />
-      </div>
-    );
-  }
-
-  // Locked (non-secret): show the icon dimmed
+  // Locked (secret or not): show the icon dimmed
   if (!unlocked) {
     const Icon = ICON_MAP[icon] ?? HelpCircle;
     return (

@@ -14,7 +14,6 @@ import {
   challenges,
   matchHighlights,
   riotAccounts,
-  users,
 } from "@/db/schema";
 
 // ─── Tier System ─────────────────────────────────────────────────────────────
@@ -539,12 +538,12 @@ async function buildEvalContext(userId: string): Promise<EvalContext> {
 
   // Review streak: consecutive days with at least one review
   const reviewStreakDays = calculateConsecutiveDays(
-    reviewDates.map((r) => r.gameDate).filter(Boolean) as Date[],
+    reviewDates.map((r) => r.gameDate).filter(Boolean),
   );
 
   // Consecutive days using the app (based on match dates)
   const consecutiveDays = calculateConsecutiveDays(
-    matchDatesForStreak.map((m) => m.gameDate).filter(Boolean) as Date[],
+    matchDatesForStreak.map((m) => m.gameDate).filter(Boolean),
   );
 
   return {
@@ -593,8 +592,8 @@ function calculateConsecutiveDays(dates: Date[]): number {
   let currentStreak = 1;
 
   for (let i = 1; i < uniqueDays.length; i++) {
-    const prev = new Date(uniqueDays[i - 1]!);
-    const curr = new Date(uniqueDays[i]!);
+    const prev = new Date(uniqueDays[i - 1]);
+    const curr = new Date(uniqueDays[i]);
     const diffMs = prev.getTime() - curr.getTime();
     const diffDays = Math.round(diffMs / (24 * 60 * 60 * 1000));
 
@@ -622,7 +621,7 @@ function evaluateSingle(
     // Tiered: find the highest tier the user qualifies for
     let qualifiedTier = 0;
     for (let i = 0; i < def.tiers.length; i++) {
-      if (value >= def.tiers[i]!) {
+      if (value >= def.tiers[i]) {
         qualifiedTier = i + 1;
       }
     }
