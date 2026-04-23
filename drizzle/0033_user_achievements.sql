@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS `user_achievements` (
   `updated_at` integer NOT NULL,
   PRIMARY KEY (`achievement_id`, `user_id`)
 );
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `user_achievements_user_idx` ON `user_achievements` (`user_id`);
