@@ -30,7 +30,7 @@ function getFilterLabel(filter: string, t: ReturnType<typeof useTranslations>): 
 
   const seasons = getSeasons();
   const season = seasons.find((s) => s.id === filter);
-  if (season) return season.name;
+  if (season) return `${season.year}/S${season.seasonNumber} ${season.name}`;
 
   if (filter.startsWith("custom:")) {
     const range = getDateRange(filter);
@@ -93,7 +93,7 @@ export function SeasonFilter({ currentFilter }: SeasonFilterProps) {
     { value: "2026", label: t("cycle2026") },
     ...seasons.map((s) => ({
       value: s.id,
-      label: s.name,
+      label: `${s.year}/S${s.seasonNumber} ${s.name}`,
     })),
     { value: "custom", label: t("customRange") },
   ];
@@ -128,7 +128,12 @@ export function SeasonFilter({ currentFilter }: SeasonFilterProps) {
             <ChevronDown className="h-3 w-3 shrink-0 opacity-50" />
           )}
         </PopoverTrigger>
-        <PopoverContent align="start" side="top" sideOffset={8} className="w-56 p-1">
+        <PopoverContent
+          align="start"
+          side="top"
+          sideOffset={8}
+          className={cn("p-1", showDatePicker ? "w-auto" : "w-56")}
+        >
           {!showDatePicker ? (
             <div className="flex flex-col">
               {filterOptions.map((option) => (
@@ -148,36 +153,45 @@ export function SeasonFilter({ currentFilter }: SeasonFilterProps) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-2 p-1">
+            <div className="flex flex-col gap-2 p-2">
               <DayPicker
                 mode="range"
                 selected={dateRange}
                 onSelect={setDateRange}
+                captionLayout="dropdown"
                 defaultMonth={new Date(2026, 0)}
+                startMonth={new Date(2024, 0)}
+                endMonth={new Date(2027, 11)}
+                numberOfMonths={2}
                 classNames={{
-                  root: "text-xs",
-                  months: "flex flex-col",
-                  month: "space-y-2",
-                  caption_label: "text-xs font-medium",
-                  nav: "flex items-center gap-1",
+                  root: "text-sm",
+                  months: "flex gap-4",
+                  month: "space-y-3",
+                  month_caption: "flex items-center justify-center gap-1 py-1",
+                  dropdowns: "flex items-center gap-1",
+                  dropdown:
+                    "rounded border border-border bg-background px-1.5 py-0.5 text-xs cursor-pointer",
+                  nav: "flex items-center justify-between absolute inset-x-2 top-2",
                   button_previous:
-                    "h-6 w-6 rounded p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center",
+                    "h-7 w-7 rounded-md border border-border bg-background p-0 hover:bg-accent inline-flex items-center justify-center cursor-pointer",
                   button_next:
-                    "h-6 w-6 rounded p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center",
-                  head_cell: "w-7 text-[10px] font-normal text-muted-foreground",
-                  cell: "text-center p-0",
-                  day: "h-7 w-7 rounded text-[11px] hover:bg-accent",
+                    "h-7 w-7 rounded-md border border-border bg-background p-0 hover:bg-accent inline-flex items-center justify-center cursor-pointer",
+                  weekdays: "flex",
+                  weekday: "w-8 text-xs font-normal text-muted-foreground text-center",
+                  week: "flex",
+                  day: "h-8 w-8 text-center p-0",
                   day_button:
-                    "h-7 w-7 rounded text-[11px] hover:bg-accent inline-flex items-center justify-center cursor-pointer",
+                    "h-8 w-8 rounded text-xs hover:bg-accent inline-flex items-center justify-center cursor-pointer",
                   selected: "bg-gold/20 text-gold",
                   range_start: "bg-gold text-gold-foreground rounded-l-md",
                   range_end: "bg-gold text-gold-foreground rounded-r-md",
                   range_middle: "bg-gold/10",
-                  today: "font-bold",
+                  today: "font-bold ring-1 ring-gold/30",
                   outside: "opacity-30",
+                  chevron: "h-4 w-4",
                 }}
               />
-              <div className="flex gap-1.5">
+              <div className="flex gap-2 border-t border-border pt-2">
                 <Button
                   variant="ghost"
                   size="sm"
