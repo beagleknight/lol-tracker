@@ -132,7 +132,7 @@ export function SeasonFilter({ currentFilter }: SeasonFilterProps) {
           align="start"
           side="top"
           sideOffset={8}
-          className={cn("p-1", showDatePicker ? "w-auto" : "w-56")}
+          className={cn("p-1", showDatePicker ? "w-64" : "w-56")}
         >
           {!showDatePicker ? (
             <div className="flex flex-col">
@@ -162,20 +162,18 @@ export function SeasonFilter({ currentFilter }: SeasonFilterProps) {
                 defaultMonth={new Date(2026, 0)}
                 startMonth={new Date(2024, 0)}
                 endMonth={new Date(2027, 11)}
-                numberOfMonths={2}
                 classNames={{
                   root: "text-sm",
-                  months: "flex gap-4",
+                  months: "flex flex-col",
                   month: "space-y-3",
                   month_caption: "flex items-center justify-center gap-1 py-1",
+                  caption_label: "hidden",
                   dropdowns: "flex items-center gap-1",
                   dropdown:
                     "rounded border border-border bg-background px-1.5 py-0.5 text-xs cursor-pointer",
-                  nav: "flex items-center justify-between absolute inset-x-2 top-2",
-                  button_previous:
-                    "h-7 w-7 rounded-md border border-border bg-background p-0 hover:bg-accent inline-flex items-center justify-center cursor-pointer",
-                  button_next:
-                    "h-7 w-7 rounded-md border border-border bg-background p-0 hover:bg-accent inline-flex items-center justify-center cursor-pointer",
+                  nav: "hidden",
+                  button_previous: "hidden",
+                  button_next: "hidden",
                   weekdays: "flex",
                   weekday: "w-8 text-xs font-normal text-muted-foreground text-center",
                   week: "flex",
