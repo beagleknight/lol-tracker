@@ -63,7 +63,7 @@ test.describe("Review flow", () => {
     });
   });
 
-  test("reviewed tab shows reviewed matches", async ({ page }) => {
+  test("reviewed tab shows topic labels for reviewed matches", async ({ page }) => {
     await page.goto("/review");
 
     // Click the Reviewed tab
@@ -78,5 +78,88 @@ test.describe("Review flow", () => {
     // At least some seeded matches are reviewed (~30%)
     const reviewedCards = page.locator('[class*="surface-glow"]');
     await expect(reviewedCards.first()).toBeVisible();
+
+    // Topic labels should render on reviewed match highlights (seed data has topics)
+    const topicLabel = page
+      .getByText(
+        /Laning phase|Wave management|Trading|Vision|Roaming|Team fighting|Objective control|Positioning/i,
+      )
+      .first();
+    await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("match list page shows topic labels in highlights", async ({ page }) => {
+    await page.goto("/matches");
+    const main = page.getByRole("main");
+
+    // Wait for match list to load
+    await expect(main.locator('a[href*="/matches/"]').first()).toBeVisible({ timeout: 10_000 });
+
+    // At least one match card should display a topic label from its highlights
+    const topicLabel = main
+      .getByText(
+        /Laning phase|Wave management|Trading|Vision|Roaming|Team fighting|Objective control|Positioning/i,
+      )
+      .first();
+    try {
+      await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+    } catch {
+      await page.reload();
+      await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+    }
+  });
+
+  test("match detail page shows topic labels in highlights", async ({ page }) => {
+    await page.goto("/matches");
+    const main = page.getByRole("main");
+
+    // Find a match card that has a topic label (reviewed match with highlights)
+    const topicLabel = main
+      .getByText(
+        /Laning phase|Wave management|Trading|Vision|Roaming|Team fighting|Objective control|Positioning/i,
+      )
+      .first();
+    await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+
+    // Click on the match card link containing the topic label to go to detail
+    const matchLink = topicLabel.locator('xpath=ancestor::a[contains(@href, "/matches/")]');
+    const href = await matchLink.getAttribute("href");
+    expect(href).toBeTruthy();
+    await page.goto(href!);
+    const detailMain = page.getByRole("main");
+
+    // Topic labels should render in the highlights display
+    const detailTopicLabel = detailMain
+      .getByText(
+        /Laning phase|Wave management|Trading|Vision|Roaming|Team fighting|Objective control|Positioning/i,
+      )
+      .first();
+    try {
+      await expect(detailTopicLabel).toBeVisible({ timeout: 10_000 });
+    } catch {
+      await page.reload();
+      await expect(detailTopicLabel).toBeVisible({ timeout: 10_000 });
+    }
+  });
+
+  test("dashboard shows topic labels in recent match highlights", async ({ page }) => {
+    await page.goto("/dashboard");
+    const main = page.getByRole("main");
+
+    // Wait for dashboard to load
+    await expect(main.locator('[class*="surface-glow"]').first()).toBeVisible({ timeout: 10_000 });
+
+    // Topic labels should render on match cards with highlights
+    const topicLabel = main
+      .getByText(
+        /Laning phase|Wave management|Trading|Vision|Roaming|Team fighting|Objective control|Positioning/i,
+      )
+      .first();
+    try {
+      await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+    } catch {
+      await page.reload();
+      await expect(topicLabel).toBeVisible({ timeout: 10_000 });
+    }
   });
 });
