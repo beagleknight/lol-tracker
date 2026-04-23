@@ -42,6 +42,16 @@ export default function LegalPage() {
           </a>
         </section>
 
+        {/* Privacy policy link */}
+        <section className="space-y-3">
+          <Link
+            href="/legal/privacy"
+            className="inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-gold/80"
+          >
+            {t("privacyPolicyLink")}
+          </Link>
+        </section>
+
         {/* Back link */}
         <div className="pt-4">
           <Link
