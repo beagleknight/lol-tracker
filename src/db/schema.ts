@@ -538,6 +538,32 @@ export const rateLimitEvents = sqliteTable(
   ],
 );
 
+// ─── User Achievements ──────────────────────────────────────────────────────
+// Tracks which achievements a user has unlocked and at what tier.
+// Achievement definitions live in src/lib/achievements.ts (static, not in DB).
+// Rule: every achievement must be earnable by a new user from day one.
+
+export const userAchievements = sqliteTable(
+  "user_achievements",
+  {
+    achievementId: text("achievement_id").notNull(), // references static definition id
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tier: integer("tier"), // current tier (1-6) for tiered achievements, null for one-off
+    unlockedAt: integer("unlocked_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    primaryKey({ columns: [table.achievementId, table.userId] }),
+    index("user_achievements_user_idx").on(table.userId),
+  ],
+);
+
 // ─── Sync Locks ─────────────────────────────────────────────────────────────
 
 export const syncLocks = sqliteTable("sync_locks", {
@@ -570,3 +596,4 @@ export type AiInsight = typeof aiInsights.$inferSelect;
 export type Invite = typeof invites.$inferSelect;
 export type SyncLock = typeof syncLocks.$inferSelect;
 export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
+export type UserAchievement = typeof userAchievements.$inferSelect;

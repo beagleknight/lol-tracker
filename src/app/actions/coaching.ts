@@ -11,6 +11,7 @@ import {
   coachingActionItems,
   topics,
 } from "@/db/schema";
+import { evaluateAchievements } from "@/lib/achievements";
 import { invalidateCoachingCaches } from "@/lib/cache";
 import { blockDemoWrites, blockIfImpersonating, requireUser } from "@/lib/session";
 
@@ -150,6 +151,9 @@ export async function completeCoachingSession(
   revalidatePath("/coaching/action-items");
   revalidatePath("/dashboard");
   invalidateCoachingCaches(user.id);
+
+  // Evaluate achievements (may unlock coaching-related achievements)
+  void evaluateAchievements(user.id);
 
   return { success: true };
 }

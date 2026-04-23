@@ -492,6 +492,7 @@ async function seed() {
   // only handles data.
   console.log("Clearing existing data...");
   await client.executeMultiple(`
+    DELETE FROM user_achievements;
     DELETE FROM ai_insights;
     DELETE FROM matchup_notes;
     DELETE FROM goals;
@@ -747,6 +748,58 @@ async function seed() {
       odometer: i + 1,
       position,
     });
+  }
+
+  // ─── Override specific matches for achievement triggers ─────────────────
+  // Tweak a few matches to trigger funny/one-off achievements.
+  // These overrides don't affect the PRNG state.
+
+  // Match 5: "Flawless" — 0 deaths, win
+  if (seedMatches[5]) {
+    seedMatches[5].result = "Victory";
+    seedMatches[5].deaths = 0;
+    seedMatches[5].kills = 12;
+    seedMatches[5].assists = 8;
+  }
+
+  // Match 10: "Inting is an art" — 15+ deaths
+  if (seedMatches[10]) {
+    seedMatches[10].deaths = 16;
+    seedMatches[10].result = "Defeat";
+  }
+
+  // Match 15: "Walking ATM" — 10+ deaths but win
+  if (seedMatches[15]) {
+    seedMatches[15].deaths = 11;
+    seedMatches[15].result = "Victory";
+    seedMatches[15].kills = 3;
+  }
+
+  // Match 20: "The marathon" — 45+ min game
+  if (seedMatches[20]) {
+    seedMatches[20].durationSeconds = 2800; // ~46.7 min
+    seedMatches[20].cs = Math.round((2800 / 60) * 7.5);
+    seedMatches[20].csPerMin = 7.5;
+  }
+
+  // Match 25: "Speedrun" — < 20 min win
+  if (seedMatches[25]) {
+    seedMatches[25].durationSeconds = 1100; // ~18.3 min
+    seedMatches[25].result = "Victory";
+    seedMatches[25].cs = Math.round((1100 / 60) * 8);
+    seedMatches[25].csPerMin = 8;
+  }
+
+  // Ensure all 5 positions are covered for "Fill main"
+  // Positions are already randomly assigned, but let's make sure we have all 5:
+  const allPositions = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+  const coveredPositions = new Set(seedMatches.map((m) => m.position));
+  let overrideIdx = 30;
+  for (const pos of allPositions) {
+    if (!coveredPositions.has(pos) && seedMatches[overrideIdx]) {
+      seedMatches[overrideIdx].position = pos;
+      overrideIdx++;
+    }
   }
 
   for (const m of seedMatches) {
@@ -1413,6 +1466,7 @@ async function seed() {
   console.log(`  Action items:     ${actionItems.length}`);
   console.log(`  Highlights:       ${reviewedMatches.length} matches with highlights`);
   console.log(`  Challenges:       4`);
+  console.log(`  Achievements:     evaluated on first page visit`);
   console.log(`  Invites:          1`);
   console.log(`\nSeed user logins:`);
   console.log(`  ${ADMIN_USER.name} (admin, no Riot account, onboarding done)`);

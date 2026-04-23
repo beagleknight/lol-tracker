@@ -17,6 +17,7 @@
     "navWhatsNew": "Novedades",
     "navAdmin": "Admin",
     "navFeedback": "Sugerencias",
+    "navAchievements": "Logros",
     "navLegal": "Legal",
     "sectionTracker": "Seguimiento",
     "sectionInsights": "Análisis",
@@ -1259,5 +1260,161 @@
     "cancel": "Cancelar",
     "apply": "Aplicar",
     "now": "ahora"
+  },
+  "Achievements": {
+    "pageTitle": "Logros",
+    "pageDescription": "Sigue tus hitos y desbloquea insignias mientras usas la app.",
+    "summary": "{unlocked} / {total} desbloqueados",
+    "secretRemaining": "{count} logros secretos por descubrir",
+    "lockedSecret": "Sigue jugando para descubrir este logro",
+    "lockedLabel": "Bloqueado",
+    "unlockedLabel": "Desbloqueado el {date}",
+    "tierLabel": "{tier}",
+    "progressLabel": "{current} / {next}",
+    "maxTierLabel": "Nivel máximo alcanzado",
+    "tabAll": "Todos",
+    "tabCoaching": "Coaching",
+    "tabChallenges": "Retos",
+    "tabReviews": "Reviews",
+    "tabMatches": "Partidas",
+    "tabCombat": "Combate",
+    "tabHighlights": "Highlights",
+    "tabGeneral": "General",
+    "tierIron": "Hierro",
+    "tierBronze": "Bronce",
+    "tierSilver": "Plata",
+    "tierGold": "Oro",
+    "tierPlatinum": "Platino",
+    "tierDiamond": "Diamante",
+    "coaching_sessions": {
+      "title": "Favorito del coach",
+      "description": "Completa sesiones de coaching"
+    },
+    "action_items_completed": {
+      "title": "Héroe de acción",
+      "description": "Completa elementos de acción del coaching"
+    },
+    "challenges_completed": {
+      "title": "Retador",
+      "description": "Completa retos"
+    },
+    "challenges_failed": {
+      "title": "Piel dura",
+      "description": "Falla retos — le pasa a todo el mundo"
+    },
+    "challenge_streak": {
+      "title": "En racha",
+      "description": "Completa retos seguidos sin fallar"
+    },
+    "active_challenges": {
+      "title": "Multitarea",
+      "description": "Ten varios retos activos a la vez"
+    },
+    "denial": {
+      "title": "Negación",
+      "description": "Falla 3 retos seguidos. Es culpa del matchmaking, obviamente."
+    },
+    "reviews_written": {
+      "title": "Autoconsciente",
+      "description": "Revisa tus partidas para mejorar"
+    },
+    "review_streak": {
+      "title": "La constancia es clave",
+      "description": "Revisa partidas en días consecutivos"
+    },
+    "late_bloomer": {
+      "title": "Más vale tarde",
+      "description": "Revisa una partida más de 7 días después de jugarla"
+    },
+    "matches_tracked": {
+      "title": "Centurión",
+      "description": "Registra partidas en la app"
+    },
+    "win_streak": {
+      "title": "Mano caliente",
+      "description": "Gana partidas seguidas"
+    },
+    "champions_played": {
+      "title": "Pool diverso",
+      "description": "Juega diferentes campeones"
+    },
+    "one_trick": {
+      "title": "One-trick pony",
+      "description": "Juega el mismo campeón una y otra vez. Ya entendimos, te gusta ese champ."
+    },
+    "flawless": {
+      "title": "Impecable",
+      "description": "Gana una partida con 0 muertes"
+    },
+    "fill_main": {
+      "title": "Main fill",
+      "description": "Juega al menos una partida en cada uno de los 5 roles"
+    },
+    "the_marathon": {
+      "title": "El maratón",
+      "description": "Juega una partida de más de 45 minutos"
+    },
+    "speedrun": {
+      "title": "Speedrun",
+      "description": "Gana una partida en menos de 20 minutos"
+    },
+    "inting_is_an_art": {
+      "title": "Intear es un arte",
+      "description": "Muere 15+ veces en una partida. El clásico power spike."
+    },
+    "kda_player": {
+      "title": "Jugador de KDA",
+      "description": "Gana con 10+ kills, 0 muertes y 10+ asistencias"
+    },
+    "cs_whats_that": {
+      "title": "¿CS? ¿Qué es eso?",
+      "description": "Gana una partida con menos de 3 CS/min. Farmear es opcional."
+    },
+    "ghost_player": {
+      "title": "Jugador fantasma",
+      "description": "Gana una partida con 0 kills y 0 asistencias. ¿Estabas ahí?"
+    },
+    "vision_never_heard": {
+      "title": "¿Visión? Ni idea",
+      "description": "Gana una partida con 0 de puntuación de visión. Un main support está llorando."
+    },
+    "walking_atm": {
+      "title": "Cajero automático",
+      "description": "Muere 10+ veces en una partida que ganaste. Tu equipo cargó fuerte."
+    },
+    "highlights_tagged": {
+      "title": "Lo mejor de lo mejor",
+      "description": "Etiqueta highlights en tus partidas"
+    },
+    "spotlight_moment": {
+      "title": "Momento estelar",
+      "description": "Etiqueta tu primer highlight de partida"
+    },
+    "summoner_connected": {
+      "title": "Invocador conectado",
+      "description": "Vincula una cuenta de Riot para empezar"
+    },
+    "smurf_detected": {
+      "title": "Smurf detectado",
+      "description": "Vincula 2 o más cuentas de Riot"
+    },
+    "on_the_rift": {
+      "title": "En la grieta",
+      "description": "Registra tu primera partida"
+    },
+    "weekly_warrior": {
+      "title": "Guerrero semanal",
+      "description": "Usa la app en días consecutivos"
+    },
+    "unlockModal": {
+      "title": "¡Logro desbloqueado!",
+      "tierUpTitle": "¡Subida de nivel!",
+      "backfillTitle": "Revisamos tu historial...",
+      "backfillDescription": "Basándonos en tus datos existentes, ¡ya has conseguido algunos logros!",
+      "dismiss": "¡Genial!",
+      "previous": "Logro anterior",
+      "next": "Siguiente logro",
+      "newTier": "Alcanzaste {tier}"
+    }
   }
 }

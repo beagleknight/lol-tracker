@@ -232,6 +232,13 @@
       "when": 1776384000000,
       "tag": "0032_review_overhaul",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1776470400000,
+      "tag": "0033_user_achievements",
+      "breakpoints": true
     }
   ]
 }

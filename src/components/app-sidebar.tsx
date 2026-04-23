@@ -18,12 +18,14 @@ import {
   MessageSquarePlus,
   Scale,
   Lock,
+  Trophy,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 import { ChallengeResultModal } from "@/components/challenge-result-modal";
 import { Logo } from "@/components/logo";
 import { SeasonFilter } from "@/components/season-filter";
@@ -54,6 +56,7 @@ const navDefs = {
     { key: "navReview" as const, href: "/review", icon: ClipboardCheck },
     { key: "navDuo" as const, href: "/duo", icon: Users },
     { key: "navChallenges" as const, href: "/challenges", icon: Target },
+    { key: "navAchievements" as const, href: "/achievements", icon: Trophy },
   ],
   insights: [
     { key: "navAnalytics" as const, href: "/analytics", icon: BarChart3 },
@@ -178,8 +181,14 @@ function SidebarContent({
   const isLinked = !!user.isRiotLinked;
   const { user: authUser } = useAuth();
   const isDemoUser = authUser?.isDemoUser ?? false;
-  const { isSyncing, handleSync, challengeTransitions, dismissChallengeTransitions } =
-    useSyncMatches(isDemoUser ? false : isLinked);
+  const {
+    isSyncing,
+    handleSync,
+    challengeTransitions,
+    dismissChallengeTransitions,
+    achievementTransitions,
+    dismissAchievementTransitions,
+  } = useSyncMatches(isDemoUser ? false : isLinked);
 
   // Track whether there are unseen changelog entries
   const [hasUnseenChangelog, setHasUnseenChangelog] = useState(false);
@@ -331,6 +340,14 @@ function SidebarContent({
         <ChallengeResultModal
           transitions={challengeTransitions}
           onDismiss={dismissChallengeTransitions}
+        />
+      )}
+
+      {/* Achievement unlock popup — rendered via portal (not for demo users) */}
+      {!isDemoUser && (
+        <AchievementUnlockModal
+          transitions={achievementTransitions}
+          onDismiss={dismissAchievementTransitions}
         />
       )}
     </div>
