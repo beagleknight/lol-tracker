@@ -36,7 +36,7 @@ export function ChangelogImage(props: React.ImgHTMLAttributes<HTMLImageElement>)
           onClick={() => setOpen(true)}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img {...props} alt={props.alt ?? ""} />
+          <img {...props} alt={props.alt ?? ""} loading="lazy" />
           <span className="changelog-zoom-icon" aria-hidden="true">
             <svg
               width="20"
