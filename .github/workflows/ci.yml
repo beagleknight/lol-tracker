@@ -92,12 +92,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
           cache: npm
       - run: npm ci
-      - run: npm run test:migration
+      - name: Check migration safety (destructive patterns)
+        run: npm run test:migration-safety
+      - name: Run migration integrity tests
+        run: npm run test:migration
 
   build:
     name: Build
