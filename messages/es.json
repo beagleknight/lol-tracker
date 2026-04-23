@@ -1141,8 +1141,17 @@
       "deleteError": "Error al eliminar invitación.",
       "codeCopied": "Código de invitación copiado al portapapeles.",
       "linkCopied": "Enlace de invitación copiado al portapapeles.",
-      "impersonateError": "Error al iniciar la suplantación."
-    }
+      "impersonateError": "Error al iniciar la suplantación.",
+      "scrubSuccess": "PUUID eliminado de {count} registros de partida. {duoCount} referencias de dúo limpiadas.",
+      "scrubError": "Error al eliminar el PUUID.",
+      "scrubBelongsToUser": "Este PUUID pertenece a un usuario registrado. Usa la eliminación de cuenta en su lugar."
+    },
+    "gdprHeading": "Solicitudes de eliminación de datos",
+    "gdprDescription": "Procesa solicitudes de eliminación RGPD de Riot Games eliminando el PUUID de un jugador de los datos de partidas almacenados.",
+    "gdprPuuidLabel": "PUUID a eliminar",
+    "gdprPuuidPlaceholder": "Ingresa el PUUID a eliminar de todos los datos de partidas",
+    "gdprScrubButton": "Eliminar PUUID",
+    "gdprWarning": "Esto elimina permanentemente los datos identificables del jugador de todos los registros de partidas almacenados. Esta acción no se puede deshacer."
   },
   "Impersonation": {
     "banner": "Viendo como {name} — sesión de {admin} (solo lectura)",

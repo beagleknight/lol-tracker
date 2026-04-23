@@ -7,6 +7,7 @@ import {
   Loader2,
   Plus,
   Shield,
+  ShieldAlert,
   Trash2,
   Ticket,
   UserCheck,
@@ -24,6 +25,7 @@ import {
   reactivateUser,
   updateUserRole,
   startImpersonation,
+  scrubPuuidFromAllData,
   type AdminUser,
 } from "@/app/actions/admin";
 import { createInvite, getInvites, deleteInvite } from "@/app/actions/invites";
@@ -497,6 +499,80 @@ function InvitesSection() {
   );
 }
 
+// ─── GDPR Deletion Section ──────────────────────────────────────────────────
+
+function GdprSection() {
+  const t = useTranslations("Admin");
+  const [puuid, setPuuid] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleScrub() {
+    if (!puuid.trim()) return;
+
+    startTransition(async () => {
+      try {
+        const result = await scrubPuuidFromAllData(puuid.trim());
+        if (!result.success && result.error === "PUUID_BELONGS_TO_USER") {
+          toast.error(t("toasts.scrubBelongsToUser"));
+          return;
+        }
+        if (result.success) {
+          toast.success(
+            t("toasts.scrubSuccess", {
+              count: result.matchJsonsScrubbed ?? 0,
+              duoCount: result.duoReferencesCleared ?? 0,
+            }),
+          );
+          setPuuid("");
+        }
+      } catch {
+        toast.error(t("toasts.scrubError"));
+      }
+    });
+  }
+
+  return (
+    <Card className="surface-glow">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ShieldAlert className="h-5 w-5 text-gold" />
+          {t("gdprHeading")}
+        </CardTitle>
+        <CardDescription>{t("gdprDescription")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-destructive">{t("gdprWarning")}</p>
+        <div className="flex gap-2">
+          <label className="sr-only" htmlFor="gdpr-puuid-input">
+            {t("gdprPuuidLabel")}
+          </label>
+          <input
+            id="gdpr-puuid-input"
+            type="text"
+            value={puuid}
+            onChange={(e) => setPuuid(e.target.value)}
+            placeholder={t("gdprPuuidPlaceholder")}
+            className="flex-1 rounded-md border border-border/50 bg-surface-elevated px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:ring-1 focus:ring-gold/30 focus:outline-none"
+          />
+          <Button
+            onClick={handleScrub}
+            disabled={isPending || !puuid.trim()}
+            variant="destructive"
+            size="sm"
+          >
+            {isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ShieldAlert className="mr-2 h-4 w-4" />
+            )}
+            {t("gdprScrubButton")}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -519,6 +595,7 @@ export default function AdminPage() {
       </div>
       <UsersSection />
       <InvitesSection />
+      <GdprSection />
     </div>
   );
 }
