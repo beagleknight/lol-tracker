@@ -1474,5 +1474,10 @@
       "next": "Next achievement",
       "newTier": "Reached {tier}"
     }
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backToDashboard": "Back to dashboard"
   }
 }
