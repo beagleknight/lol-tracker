@@ -40,7 +40,7 @@ import { useChartColors } from "@/hooks/use-chart-colors";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { filterMeaningful } from "@/lib/match-result";
-import { toCumulativeLP, getTierBoundaries, formatRank } from "@/lib/rank";
+import { toCumulativeLP, getTierBoundaries, formatRank, formatTierDivision } from "@/lib/rank";
 import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 /** Prepare rank snapshot data for the LP chart */
@@ -374,8 +374,8 @@ export function AnalyticsClient({
         events.push({
           index: i,
           type: curr.cumulativeLP > prev.cumulativeLP ? "promotion" : "demotion",
-          from: `${prev.tier} ${prev.division}`,
-          to: `${curr.tier} ${curr.division}`,
+          from: formatTierDivision(prev.tier, prev.division),
+          to: formatTierDivision(curr.tier, curr.division),
         });
       }
     }
@@ -532,7 +532,7 @@ export function AnalyticsClient({
                               </p>
                             )}
                             <p className="font-semibold text-gold">
-                              {d.tier} {d.division}
+                              {formatTierDivision(d.tier, d.division)}
                             </p>
                             <p className="text-sm">
                               <span className="text-gold/80">{d.lp} LP</span>
