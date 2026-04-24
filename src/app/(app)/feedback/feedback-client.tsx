@@ -1,8 +1,10 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 
 // Extend Window to include the Canny SDK
 declare global {
@@ -12,9 +14,10 @@ declare global {
 }
 
 const BOARD_TOKEN = process.env.NEXT_PUBLIC_CANNY_BOARD_TOKEN;
+const LOAD_TIMEOUT_MS = 10_000;
 
 function loadCannySDK(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (typeof window.Canny === "function") {
       resolve();
       return;
@@ -44,6 +47,7 @@ function loadCannySDK(): Promise<void> {
     e.id = i;
     e.src = "https://sdk.canny.io/sdk.js";
     e.onload = () => resolve();
+    e.onerror = () => reject(new Error("Failed to load Canny SDK"));
     f?.parentNode?.insertBefore(e, f);
   });
 }
@@ -51,11 +55,22 @@ function loadCannySDK(): Promise<void> {
 export function FeedbackClient() {
   const t = useTranslations("Feedback");
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const cannyContainerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const renderCannyWidget = useCallback(async () => {
     if (!BOARD_TOKEN) return;
+
+    setIsLoading(true);
+    setHasError(false);
+
+    // Start a timeout — if the widget hasn't loaded after LOAD_TIMEOUT_MS, show error
+    timeoutRef.current = setTimeout(() => {
+      setIsLoading(false);
+      setHasError(true);
+    }, LOAD_TIMEOUT_MS);
 
     try {
       // Load SDK if not already loaded
@@ -84,14 +99,30 @@ export function FeedbackClient() {
           ssoToken,
           theme: "dark",
           onLoadCallback: () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setIsLoading(false);
+            setHasError(false);
           },
         });
+      } else {
+        // Container not available or SDK not ready — clear loading
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setIsLoading(false);
+        setHasError(true);
       }
     } catch {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setIsLoading(false);
+      setHasError(true);
     }
   }, [sdkLoaded]);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   // Render Canny widget on mount
   useEffect(() => {
@@ -108,6 +139,24 @@ export function FeedbackClient() {
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="sr-only">{t("loading")}</span>
+        </div>
+      )}
+      {hasError && !isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+            <AlertTriangle className="h-10 w-10 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t("loadError")}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void renderCannyWidget();
+              }}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t("retry")}
+            </Button>
+          </div>
         </div>
       )}
       <div ref={cannyContainerRef} data-canny className="-mx-[20px]" />
