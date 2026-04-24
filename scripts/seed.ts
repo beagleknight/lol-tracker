@@ -1456,23 +1456,48 @@ async function seed() {
   });
 
   // ─── Achievements (pre-evaluated) ──────────────────────────────────────────
-  // Seed a subset so the achievements page isn't empty but also not fully
-  // unlocked. The client-side evaluation will pick up any new ones on visit.
+  // Pre-unlock almost all achievements so the page looks full. Leave only
+  // "speedrun" and "inting_is_an_art" locked — the on-visit evaluation will
+  // pick them up from the seeded match data and show the unlock pop-up.
   console.log("Creating achievements...");
 
   const achievementRows: { id: string; tier: number | null; date: string }[] = [
-    // General — unlocked early
+    // ── General ──
     { id: "summoner_connected", tier: null, date: "2026-03-15T10:00:00Z" },
     { id: "on_the_rift", tier: null, date: "2026-03-15T12:00:00Z" },
-    // Matches — tiered, moderate progress
-    { id: "matches_tracked", tier: 2, date: "2026-04-05T18:30:00Z" },
-    { id: "champions_played", tier: 1, date: "2026-03-25T20:00:00Z" },
-    // Combat — fun one-offs
+    { id: "smurf_detected", tier: null, date: "2026-03-16T09:00:00Z" },
+    { id: "weekly_warrior", tier: 6, date: "2026-03-22T08:00:00Z" },
+    // ── Matches ──
+    { id: "matches_tracked", tier: 6, date: "2026-04-05T18:30:00Z" },
+    { id: "champions_played", tier: 6, date: "2026-03-25T20:00:00Z" },
+    { id: "win_streak", tier: 6, date: "2026-03-28T21:00:00Z" },
+    { id: "one_trick", tier: 6, date: "2026-04-08T17:00:00Z" },
+    { id: "fill_main", tier: null, date: "2026-04-12T15:30:00Z" },
+    // ── Combat ──
     { id: "flawless", tier: null, date: "2026-03-20T16:45:00Z" },
     { id: "the_marathon", tier: null, date: "2026-04-01T22:10:00Z" },
-    // Highlights
+    { id: "walking_atm", tier: null, date: "2026-04-02T19:30:00Z" },
+    { id: "kda_player", tier: null, date: "2026-04-06T20:15:00Z" },
+    { id: "cs_whats_that", tier: null, date: "2026-04-07T14:00:00Z" },
+    { id: "ghost_player", tier: null, date: "2026-04-09T23:00:00Z" },
+    { id: "vision_never_heard", tier: null, date: "2026-04-10T13:45:00Z" },
+    // ── Reviews ──
+    { id: "reviews_written", tier: 6, date: "2026-04-03T10:00:00Z" },
+    { id: "review_streak", tier: 6, date: "2026-04-04T10:00:00Z" },
+    { id: "late_bloomer", tier: null, date: "2026-04-11T16:00:00Z" },
+    // ── Highlights ──
     { id: "spotlight_moment", tier: null, date: "2026-03-28T14:20:00Z" },
-    { id: "highlights_tagged", tier: 2, date: "2026-04-10T11:00:00Z" },
+    { id: "highlights_tagged", tier: 6, date: "2026-04-10T11:00:00Z" },
+    // ── Coaching ──
+    { id: "coaching_sessions", tier: 6, date: "2026-04-13T09:00:00Z" },
+    { id: "action_items_completed", tier: 6, date: "2026-04-13T09:30:00Z" },
+    // ── Challenges ──
+    { id: "challenges_completed", tier: 6, date: "2026-04-14T10:00:00Z" },
+    { id: "challenges_failed", tier: 6, date: "2026-04-14T11:00:00Z" },
+    { id: "challenge_streak", tier: 6, date: "2026-04-14T12:00:00Z" },
+    { id: "active_challenges", tier: 4, date: "2026-04-14T13:00:00Z" },
+    { id: "denial", tier: null, date: "2026-04-15T09:00:00Z" },
+    // ── Left locked for on-visit pop-up: speedrun, inting_is_an_art ──
   ];
 
   for (const a of achievementRows) {
