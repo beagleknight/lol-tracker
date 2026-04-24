@@ -130,6 +130,7 @@ export function MatchCard({
               <TooltipTrigger
                 className="cursor-default"
                 aria-label={positionTooltipText ?? undefined}
+                tabIndex={-1}
               >
                 <PositionIcon
                   position={match.position}
@@ -163,6 +164,7 @@ export function MatchCard({
                       iconSize={isCompact ? 16 : 20}
                       textClassName={`text-muted-foreground ${isCompact ? "text-xs" : "text-sm"}`}
                       stopPropagation
+                      tabIndex={-1}
                     />
                   ) : (
                     <span className="inline-flex items-center gap-1 text-sm">

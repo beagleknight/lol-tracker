@@ -27,6 +27,8 @@ interface ChampionLinkProps {
   textClassName?: string;
   /** Stop event propagation (useful when inside clickable parents) */
   stopPropagation?: boolean;
+  /** Override tabIndex (use -1 to remove from tab order) */
+  tabIndex?: number;
 }
 
 function buildHref({
@@ -63,6 +65,7 @@ export function ChampionLink({
   className = "",
   textClassName = "",
   stopPropagation = false,
+  tabIndex,
 }: ChampionLinkProps) {
   const href = buildHref({ champion, linkTo, yourChampion, enemyChampion });
 
@@ -72,6 +75,7 @@ export function ChampionLink({
       onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
       className={`-mx-0.5 inline-flex items-center gap-1 rounded px-0.5 transition-colors hover:bg-accent/50 ${className}`}
       title={`${linkTo === "matches" ? "View games as" : "Scout"} ${champion}`}
+      tabIndex={tabIndex}
     >
       {showIcon && <ChampionIcon championName={champion} size={iconSize} />}
       {showName && <span className={textClassName}>{champion}</span>}

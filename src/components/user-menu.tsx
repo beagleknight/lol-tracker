@@ -128,7 +128,7 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
         aria-label={t("accountSwitcherLabel")}
       >
         <Avatar className="h-8 w-8 shrink-0 ring-2 ring-gold/20">
-          <AvatarImage src={user.image || undefined} />
+          <AvatarImage src={user.image || undefined} alt={user.name ?? ""} />
           <AvatarFallback className="bg-gold/10 text-gold">
             {(user.name || "U").charAt(0).toUpperCase()}
           </AvatarFallback>
