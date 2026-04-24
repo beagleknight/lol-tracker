@@ -87,10 +87,12 @@ test.describe("Coaching flow", () => {
     // Click "Complete Session" link
     await page.getByRole("link", { name: "Complete Session" }).click();
     await page.waitForURL(/\/coaching\/\d+\/complete/, { timeout: 10_000 });
+    await page.waitForLoadState("networkidle", { timeout: 10_000 });
 
     // Wait for the complete page to fully load (the form title appears)
-    await expect(page.getByText("Complete Coaching Session").first()).toBeVisible({
-      timeout: 10_000,
+    // Note: i18n value is sentence case — "Complete coaching session"
+    await expect(page.getByText("Complete coaching session").first()).toBeVisible({
+      timeout: 15_000,
     });
 
     // Scope to main to avoid duplicate elements from streaming/hydration

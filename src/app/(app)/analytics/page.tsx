@@ -24,19 +24,7 @@ async function getCachedAnalyticsData(
 export default async function AnalyticsPage() {
   const user = await requireUser();
   const dateRange = await getSeasonDateRange();
-  const { allMatches, sessions, ranks, ddragonVersion, activeGoal } = await getCachedAnalyticsData(
-    user.id,
-    user.activeRiotAccountId,
-    dateRange,
-  );
+  const data = await getCachedAnalyticsData(user.id, user.activeRiotAccountId, dateRange);
 
-  return (
-    <AnalyticsClient
-      matches={allMatches}
-      coachingSessions={sessions}
-      rankSnapshots={ranks}
-      ddragonVersion={ddragonVersion}
-      activeGoal={activeGoal}
-    />
-  );
+  return <AnalyticsClient data={data} />;
 }
