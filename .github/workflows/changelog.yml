@@ -1,0 +1,43 @@
+name: Changelog
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: changelog-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for skip-changelog label
+        id: label-check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Fetch labels fresh from the API to avoid race condition where
+          # the event payload doesn't include labels added during PR creation.
+          LABELS=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.labels[].name')
+          if echo "$LABELS" | grep -q '^skip-changelog$'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v6
+        if: steps.label-check.outputs.skip == 'false'
+        with:
+          fetch-depth: 0
+      - name: Check for changelog entry
+        if: steps.label-check.outputs.skip == 'false'
+        run: |
+          CHANGED=$(git diff --name-only origin/main...HEAD -- 'changelog/')
+          if [ -z "$CHANGED" ]; then
+            echo "::error::No changelog entry found. Every PR must include a changelog file under changelog/. Add a 'skip-changelog' label to bypass this check."
+            exit 1
+          fi
+          echo "Changelog files changed:"
+          echo "$CHANGED"
