@@ -952,6 +952,7 @@
     "overdue": "La fecha límite pasó el {date}. El desafío sigue activo.",
     "deadline": "Fecha objetivo: {date}",
     "retire": "Retirar",
+    "retireTooltip": "Retirar elimina el desafío sin contar como un fracaso.",
     "retireConfirm": "¿Retirar este desafío? No se puede deshacer.",
     "deleteConfirm": "¿Eliminar este desafío? No se puede deshacer.",
     "completedOn": "Completado el {date}",
