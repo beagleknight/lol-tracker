@@ -952,6 +952,7 @@
     "overdue": "Deadline passed on {date}. Challenge is still active.",
     "deadline": "Target date: {date}",
     "retire": "Retire",
+    "retireTooltip": "Retiring removes the challenge without counting as a failure.",
     "retireConfirm": "Retire this challenge? This cannot be undone.",
     "deleteConfirm": "Delete this challenge? This cannot be undone.",
     "completedOn": "Completed on {date}",

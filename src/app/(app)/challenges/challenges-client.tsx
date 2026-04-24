@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
@@ -314,14 +315,28 @@ function ActiveChallengeCard({
         {/* Actions */}
         {!readOnly && (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleRetire} disabled={isRetiring}>
-              {isRetiring ? (
-                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-              ) : (
-                <Archive className="mr-2 h-3 w-3" />
-              )}
-              {t("retire")}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRetire}
+                      disabled={isRetiring}
+                    >
+                      {isRetiring ? (
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      ) : (
+                        <Archive className="mr-2 h-3 w-3" />
+                      )}
+                      {t("retire")}
+                    </Button>
+                  }
+                />
+                <TooltipContent>{t("retireTooltip")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </CardContent>
