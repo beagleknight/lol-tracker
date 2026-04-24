@@ -1,10 +1,17 @@
 "use client";
 
+import type { DateRange as RDPDateRange } from "react-day-picker";
+
 import { Calendar, ChevronDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { DayPicker, type DateRange as RDPDateRange } from "react-day-picker";
+
+const DayPicker = dynamic(() => import("react-day-picker").then((m) => m.DayPicker), {
+  ssr: false,
+  loading: () => <div className="h-[280px] w-full" />,
+});
 
 import { setSeasonFilter } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
