@@ -41,6 +41,8 @@ interface AnalyticsChartsProps {
   topMatchups: MatchupStat[];
   goalTargetLP: number | null;
   goalTargetLabel: string;
+  /** Slot for content rendered alongside the matchup chart in the 2-col grid */
+  children?: React.ReactNode;
 }
 
 export function AnalyticsCharts({
@@ -51,6 +53,7 @@ export function AnalyticsCharts({
   topMatchups,
   goalTargetLP,
   goalTargetLabel,
+  children,
 }: AnalyticsChartsProps) {
   const t = useTranslations("Analytics");
   const cc = useChartColors();
@@ -513,6 +516,7 @@ export function AnalyticsCharts({
             )}
           </CardContent>
         </Card>
+        {children}
       </div>
     </>
   );

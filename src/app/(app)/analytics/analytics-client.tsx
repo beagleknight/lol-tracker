@@ -177,11 +177,8 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
         topMatchups={topMatchups}
         goalTargetLP={goalTargetLP}
         goalTargetLabel={goalTargetLabel}
-      />
-
-      {/* Rune Keystones + Champion Stats (no recharts needed) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Rune Comparison — shares grid row with matchup chart above on lg */}
+      >
+        {/* Rune Comparison — rendered alongside matchup chart in 2-col grid */}
         <Card className="surface-glow">
           <CardHeader>
             <CardTitle>{t("runeKeystones")}</CardTitle>
@@ -265,7 +262,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnalyticsCharts>
 
       {/* Champion Stats */}
       <Card className="surface-glow">
