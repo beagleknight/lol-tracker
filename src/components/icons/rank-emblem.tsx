@@ -1,9 +1,7 @@
-import Image from "next/image";
-
 import { getLocalRankEmblemUrl } from "@/lib/ddragon-assets";
 
 /**
- * Shared rank emblem component. Renders a self-hosted, pre-optimized WebP
+ * Shared rank emblem component. Renders a self-hosted, pre-optimized
  * ranked emblem icon (iron through challenger).
  */
 export function RankEmblem({
@@ -18,7 +16,8 @@ export function RankEmblem({
   className?: string;
 }) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element -- pre-optimized local assets, no next/image needed
+    <img
       src={getLocalRankEmblemUrl(tier, size)}
       alt={alt}
       width={size}

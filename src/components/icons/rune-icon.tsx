@@ -1,10 +1,8 @@
-import Image from "next/image";
-
 import { getLocalRuneIconUrl, getLocalRuneIconUrlByName } from "@/lib/ddragon-assets";
 
 /**
  * Shared rune/keystone icon component. Renders a self-hosted, pre-optimized
- * WebP keystone rune icon.
+ * keystone rune icon.
  *
  * Accepts either `keystoneId` (preferred) or `keystoneName` for reverse-lookup.
  * Returns null if the name is unknown and no ID was provided.
@@ -31,5 +29,6 @@ export function RuneIcon({
 
   if (!src) return null;
 
-  return <Image src={src} alt={alt} width={size} height={size} className={className} />;
+  // eslint-disable-next-line @next/next/no-img-element -- pre-optimized local assets, no next/image needed
+  return <img src={src} alt={alt} width={size} height={size} className={className} />;
 }

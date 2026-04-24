@@ -116,20 +116,17 @@ async function optimizeImage(buffer: Buffer, size: number, outPath: string): Pro
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   if (sharpModule) {
-    // Use sharp (CI / when installed) — produces WebP
     const fn = sharpModule.default ?? sharpModule;
-    await fn(buffer).resize(size, size).webp({ quality: 85 }).toFile(outPath);
+    await fn(buffer).resize(size, size).png().toFile(outPath);
   } else if (os.platform() === "darwin") {
-    // macOS fallback: write temp PNG, resize with sips, output as PNG
-    // (sips WebP write is broken on some macOS versions)
-    const pngOutPath = outPath.replace(/\.webp$/, ".png");
+    // macOS fallback: write temp file, resize with sips
     const tmpPng = path.join(
       os.tmpdir(),
       `ddragon-${Date.now()}-${Math.random().toString(36).slice(2)}.png`,
     );
     fs.writeFileSync(tmpPng, buffer);
     try {
-      execSync(`sips -z ${size} ${size} "${tmpPng}" --out "${pngOutPath}"`, {
+      execSync(`sips -z ${size} ${size} "${tmpPng}" --out "${outPath}"`, {
         stdio: "pipe",
       });
     } finally {
@@ -150,7 +147,7 @@ interface AssetJob {
 async function processAsset(job: AssetJob): Promise<void> {
   const buffer = await downloadBuffer(job.url);
   for (const size of job.sizes) {
-    const outPath = path.join(OUT_DIR, job.type, String(size), `${job.name}.webp`);
+    const outPath = path.join(OUT_DIR, job.type, String(size), `${job.name}.png`);
     await optimizeImage(buffer, size, outPath);
   }
 }
@@ -256,9 +253,14 @@ async function main() {
   // 4. Rank emblems
   console.log("Processing rank emblems...");
   for (const tier of RANK_TIERS) {
+    // Most tiers use mini-crests PNGs; emerald only exists as a full emblem PNG
+    const url =
+      tier === "emerald"
+        ? `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-emerald.png`
+        : `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/${tier}.png`;
     jobs.push({
       name: tier,
-      url: `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/${tier}.png`,
+      url,
       type: "rank-emblem",
       sizes: RANK_EMBLEM_SIZES,
     });

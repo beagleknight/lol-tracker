@@ -1,10 +1,8 @@
-import Image from "next/image";
-
 import { getLocalItemIconUrl } from "@/lib/ddragon-assets";
 
 /**
- * Shared item icon component. Renders a self-hosted, pre-optimized WebP
- * item icon at the requested display size (currently only 24px is used).
+ * Shared item icon component. Renders a self-hosted, pre-optimized
+ * item icon at the requested display size.
  */
 export function ItemIcon({
   itemId,
@@ -18,7 +16,8 @@ export function ItemIcon({
   className?: string;
 }) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element -- pre-optimized local assets, no next/image needed
+    <img
       src={getLocalItemIconUrl(itemId, size)}
       alt={alt}
       width={size}

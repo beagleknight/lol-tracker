@@ -1,9 +1,7 @@
-import Image from "next/image";
-
 import { getLocalChampionIconUrl } from "@/lib/ddragon-assets";
 
 /**
- * Shared champion icon component. Renders a self-hosted, pre-optimized WebP
+ * Shared champion icon component. Renders a self-hosted, pre-optimized
  * champion icon at the exact requested display size.
  *
  * Used across match cards, scout, duo, coaching, and analytics pages —
@@ -19,7 +17,8 @@ export function ChampionIcon({
   className?: string;
 }) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element -- pre-optimized local assets, no next/image needed
+    <img
       src={getLocalChampionIconUrl(championName, size)}
       alt={championName}
       width={size}

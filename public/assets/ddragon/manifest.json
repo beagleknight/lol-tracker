@@ -1,0 +1,16 @@
+{
+  "version": "16.8.1",
+  "generatedAt": "2026-04-24T10:42:09.220Z",
+  "counts": {
+    "champions": 172,
+    "items": 695,
+    "runes": 17,
+    "rankEmblems": 10
+  },
+  "sizes": {
+    "champion": [16, 20, 24, 28, 32, 36, 40, 48, 56],
+    "item": [24],
+    "rune": [12, 14, 18, 20, 36],
+    "rankEmblem": [48]
+  }
+}

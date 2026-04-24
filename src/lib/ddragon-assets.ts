@@ -28,15 +28,15 @@ function normalizeChampionName(name: string): string {
 // ─── Local asset URL builders ───────────────────────────────────────────────
 
 export function getLocalChampionIconUrl(championName: string, size: number): string {
-  return `/assets/ddragon/champion/${size}/${normalizeChampionName(championName)}.webp`;
+  return `/assets/ddragon/champion/${size}/${normalizeChampionName(championName)}.png`;
 }
 
 export function getLocalItemIconUrl(itemId: number, size: number): string {
-  return `/assets/ddragon/item/${size}/${itemId}.webp`;
+  return `/assets/ddragon/item/${size}/${itemId}.png`;
 }
 
 export function getLocalRuneIconUrl(keystoneId: number, size: number): string {
-  return `/assets/ddragon/rune/${size}/${keystoneId}.webp`;
+  return `/assets/ddragon/rune/${size}/${keystoneId}.png`;
 }
 
 /**
@@ -50,7 +50,7 @@ export function getLocalRuneIconUrlByName(keystoneName: string, size: number): s
 }
 
 export function getLocalRankEmblemUrl(tier: string, size: number): string {
-  return `/assets/ddragon/rank-emblem/${size}/${tier.toLowerCase()}.webp`;
+  return `/assets/ddragon/rank-emblem/${size}/${tier.toLowerCase()}.png`;
 }
 
 // ─── Fallback URL builders (remote CDN) ─────────────────────────────────────
