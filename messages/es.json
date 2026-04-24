@@ -1474,5 +1474,10 @@
       "next": "Siguiente logro",
       "newTier": "Alcanzaste {tier}"
     }
+  },
+  "NotFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o ha sido movida.",
+    "backToDashboard": "Volver al inicio"
   }
 }
