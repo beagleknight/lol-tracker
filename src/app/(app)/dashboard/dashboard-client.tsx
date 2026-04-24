@@ -13,6 +13,7 @@ import {
   Crosshair,
   Globe,
   Gamepad2,
+  Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -25,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
@@ -304,7 +306,19 @@ export function DashboardClient({
         {/* Win Rate Card */}
         <Card className="surface-glow">
           <CardHeader className="pb-2">
-            <CardDescription>{t("sessionWinRate")}</CardDescription>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <CardDescription className="inline-flex cursor-default items-center gap-1">
+                      {t("sessionWinRate")}
+                      <Info className="h-3 w-3 text-muted-foreground/60" />
+                    </CardDescription>
+                  }
+                />
+                <TooltipContent>{t("sessionWinRateTooltip")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
