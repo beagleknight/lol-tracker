@@ -2,7 +2,6 @@
 
 import { BarChart3, TrendingUp, Trophy, ArrowUpDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
   LineChart,
@@ -25,6 +24,7 @@ import type { RankSnapshot } from "@/db/schema";
 
 import { ChampionLink } from "@/components/champion-link";
 import { EmptyState } from "@/components/empty-state";
+import { RuneIcon } from "@/components/icons/rune-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,10 +38,10 @@ import {
 } from "@/components/ui/table";
 import { useChartColors } from "@/hooks/use-chart-colors";
 import { useAuth } from "@/lib/auth-client";
+import { getLocalChampionIconUrl } from "@/lib/ddragon-assets";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { filterMeaningful } from "@/lib/match-result";
 import { toCumulativeLP, getTierBoundaries, formatRank, formatTierDivision } from "@/lib/rank";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 /** Prepare rank snapshot data for the LP chart */
 function prepareRankChartData(snapshots: RankSnapshot[], locale: string) {
@@ -868,7 +868,7 @@ export function AnalyticsClient({
                         <a href={`/scout?enemy=${encodeURIComponent(payload.value)}`}>
                           <g transform={`translate(${x},${y})`} style={{ cursor: "pointer" }}>
                             <image
-                              href={getChampionIconUrl(ddragonVersion, payload.value)}
+                              href={getLocalChampionIconUrl(payload.value, 20)}
                               x={-98}
                               y={-10}
                               width={20}
@@ -967,19 +967,7 @@ export function AnalyticsClient({
                     <TableRow key={rune.name}>
                       <TableCell className="text-sm font-medium">
                         <span className="flex items-center gap-1.5">
-                          {(() => {
-                            const url = getKeystoneIconUrlByName(rune.name);
-                            return url ? (
-                              <Image
-                                src={url}
-                                alt={rune.name}
-                                width={18}
-                                height={18}
-                                unoptimized
-                                className="rounded"
-                              />
-                            ) : null;
-                          })()}
+                          <RuneIcon keystoneName={rune.name} alt={rune.name} size={18} />
                           {rune.name}
                         </span>
                       </TableCell>

@@ -17,7 +17,6 @@ import {
   Globe,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, useCallback, useMemo, useRef, useEffect } from "react";
@@ -37,6 +36,8 @@ import {
   type HighlightItem,
   type TopicOption,
 } from "@/components/highlights-editor";
+import { ChampionIcon } from "@/components/icons/champion-icon";
+import { RuneIcon } from "@/components/icons/rune-icon";
 import { MarkdownTextarea } from "@/components/markdown-textarea";
 import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
@@ -57,7 +58,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 import { safeExternalUrl } from "@/lib/url";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ const PRIORITY_THRESHOLD = 4;
 
 function MatchCardHeaderInfo({
   match,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
   locale,
 }: {
   match: Match;
@@ -144,13 +144,7 @@ function MatchCardHeaderInfo({
           aria-label={getPositionLabel(match.position)}
         />
       )}
-      <Image
-        src={getChampionIconUrl(ddragonVersion, match.championName)}
-        alt={match.championName}
-        width={40}
-        height={40}
-        className="rounded"
-      />
+      <ChampionIcon championName={match.championName} size={40} />
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">{match.championName}</CardTitle>
@@ -165,14 +159,7 @@ function MatchCardHeaderInfo({
           &middot; {t("vs")}{" "}
           {match.matchupChampionName ? (
             <>
-              <Image
-                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                alt={match.matchupChampionName}
-                width={16}
-                height={16}
-                unoptimized
-                className="rounded"
-              />
+              <ChampionIcon championName={match.matchupChampionName} size={16} />
               <span className="text-xs">{match.matchupChampionName}</span>
             </>
           ) : (
@@ -182,19 +169,12 @@ function MatchCardHeaderInfo({
             <>
               {" "}
               &middot;{" "}
-              {(() => {
-                const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
-                return iconUrl ? (
-                  <Image
-                    src={iconUrl}
-                    alt=""
-                    width={14}
-                    height={14}
-                    unoptimized
-                    className="rounded-sm"
-                  />
-                ) : null;
-              })()}
+              <RuneIcon
+                keystoneName={match.runeKeystoneName}
+                alt=""
+                size={14}
+                className="rounded-sm"
+              />
               {match.runeKeystoneName}
             </>
           )}

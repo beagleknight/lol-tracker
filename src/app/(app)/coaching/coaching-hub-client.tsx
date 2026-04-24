@@ -15,7 +15,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -24,13 +23,13 @@ import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 
 import { updateActionItemStatus } from "@/app/actions/coaching";
 import { EmptyState } from "@/components/empty-state";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface VodMatchInfo {
   id: string;
@@ -114,7 +113,7 @@ export function CoachingHubClient({
   actionItemsBySession,
   vodMatchMap,
   intervalsData,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
   sessionTopics,
   topicNames,
   readOnly,
@@ -225,29 +224,15 @@ export function CoachingHubClient({
                         <div className="flex items-center gap-3">
                           {vodMatch && (
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Image
-                                src={getChampionIconUrl(ddragonVersion, vodMatch.championName)}
-                                alt={vodMatch.championName}
-                                width={16}
-                                height={16}
-                                unoptimized
-                                className="rounded"
-                              />
+                              <ChampionIcon championName={vodMatch.championName} size={16} />
                               {vodMatch.championName}
                               {vodMatch.matchupChampionName && (
                                 <>
                                   {" "}
                                   {t("vs")}{" "}
-                                  <Image
-                                    src={getChampionIconUrl(
-                                      ddragonVersion,
-                                      vodMatch.matchupChampionName,
-                                    )}
-                                    alt={vodMatch.matchupChampionName}
-                                    width={16}
-                                    height={16}
-                                    unoptimized
-                                    className="rounded"
+                                  <ChampionIcon
+                                    championName={vodMatch.matchupChampionName}
+                                    size={16}
                                   />
                                   {vodMatch.matchupChampionName}
                                 </>

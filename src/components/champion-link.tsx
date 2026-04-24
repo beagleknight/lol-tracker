@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
-import { getChampionIconUrl } from "@/lib/riot-api";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 
 interface ChampionLinkProps {
   /** The champion name (DDragon key, e.g. "Qiyana", "MonkeyKing") */
@@ -54,7 +53,7 @@ function buildHref({
 
 export function ChampionLink({
   champion,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
   linkTo,
   yourChampion,
   enemyChampion,
@@ -74,16 +73,7 @@ export function ChampionLink({
       className={`-mx-0.5 inline-flex items-center gap-1 rounded px-0.5 transition-colors hover:bg-accent/50 ${className}`}
       title={`${linkTo === "matches" ? "View games as" : "Scout"} ${champion}`}
     >
-      {showIcon && (
-        <Image
-          src={getChampionIconUrl(ddragonVersion, champion)}
-          alt={champion}
-          width={iconSize}
-          height={iconSize}
-          unoptimized={iconSize <= 32}
-          className="rounded"
-        />
-      )}
+      {showIcon && <ChampionIcon championName={champion} size={iconSize} />}
       {showName && <span className={textClassName}>{champion}</span>}
     </Link>
   );

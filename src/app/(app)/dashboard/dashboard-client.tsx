@@ -15,11 +15,11 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 
 import type { RankSnapshot, CoachingActionItem, Challenge, MatchResult } from "@/db/schema";
 
+import { RankEmblem } from "@/components/icons/rank-emblem";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,6 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
-import { getRankEmblemUrl } from "@/lib/rank-utils";
 
 interface DashboardMatch {
   id: string;
@@ -265,13 +264,7 @@ export function DashboardClient({
           <CardContent>
             {rankInfo ? (
               <div className="flex items-center gap-3">
-                <Image
-                  src={getRankEmblemUrl(rankInfo.rawTier)}
-                  alt={rankInfo.display}
-                  width={48}
-                  height={48}
-                  className="shrink-0 drop-shadow-md"
-                />
+                <RankEmblem tier={rankInfo.rawTier} alt={rankInfo.display} />
                 <div className="min-w-0">
                   <p className="text-2xl font-bold text-gold">{rankInfo.display}</p>
                   <p className="text-sm text-muted-foreground">

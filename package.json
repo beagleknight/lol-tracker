@@ -22,7 +22,8 @@
     "test:smoke": "playwright test --project=smoke",
     "test:e2e": "playwright test --project=e2e",
     "prepare": "lefthook install",
-    "scrape:seasons": "tsx scripts/scrape-seasons.ts"
+    "scrape:seasons": "tsx scripts/scrape-seasons.ts",
+    "ddragon:optimize": "tsx scripts/optimize-ddragon.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.58",

@@ -11,7 +11,6 @@ import {
   Globe,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useTransition, useCallback } from "react";
@@ -19,6 +18,7 @@ import { useState, useRef, useTransition, useCallback } from "react";
 import type { Match } from "@/db/schema";
 
 import { EmptyState } from "@/components/empty-state";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-client";
 import { DEFAULT_LOCALE } from "@/lib/format";
-import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -344,14 +343,7 @@ export function MatchesClient({
             {champions.map((c) => (
               <SelectItem key={c} value={c}>
                 <span className="inline-flex items-center gap-1.5">
-                  <Image
-                    src={getChampionIconUrl(ddragonVersion, c)}
-                    alt={c}
-                    width={16}
-                    height={16}
-                    unoptimized
-                    className="rounded"
-                  />
+                  <ChampionIcon championName={c} size={16} />
                   {c}
                 </span>
               </SelectItem>
