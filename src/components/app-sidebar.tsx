@@ -21,13 +21,23 @@ import {
   Trophy,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
-import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
-import { ChallengeResultModal } from "@/components/challenge-result-modal";
 import { Logo } from "@/components/logo";
+
+const AchievementUnlockModal = dynamic(
+  () => import("@/components/achievement-unlock-modal").then((m) => m.AchievementUnlockModal),
+  { ssr: false },
+);
+
+const ChallengeResultModal = dynamic(
+  () => import("@/components/challenge-result-modal").then((m) => m.ChallengeResultModal),
+  { ssr: false },
+);
+
 import { SeasonFilter } from "@/components/season-filter";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -336,7 +346,7 @@ function SidebarContent({
       </div>
 
       {/* Challenge result popup — rendered via portal (not for demo users) */}
-      {!isDemoUser && (
+      {!isDemoUser && challengeTransitions.length > 0 && (
         <ChallengeResultModal
           transitions={challengeTransitions}
           onDismiss={dismissChallengeTransitions}
@@ -344,7 +354,7 @@ function SidebarContent({
       )}
 
       {/* Achievement unlock popup — rendered via portal (not for demo users) */}
-      {!isDemoUser && (
+      {!isDemoUser && achievementTransitions.length > 0 && (
         <AchievementUnlockModal
           transitions={achievementTransitions}
           onDismiss={dismissAchievementTransitions}
