@@ -363,6 +363,7 @@ export function AppSidebar({
   seasonFilter,
 }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useTranslations("Sidebar");
 
   return (
     <>
@@ -372,7 +373,7 @@ export function AppSidebar({
         size="icon"
         className="fixed top-3 left-3 z-50 md:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label={mobileOpen ? "Close menu" : "Open menu"}
+        aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
@@ -382,7 +383,7 @@ export function AppSidebar({
         <button
           type="button"
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          aria-label="Close sidebar"
+          aria-label={t("closeSidebar")}
           onClick={() => setMobileOpen(false)}
         />
       )}
