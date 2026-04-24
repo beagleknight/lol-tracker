@@ -1162,7 +1162,9 @@
   "Feedback": {
     "pageTitle": "Feedback & suggestions",
     "pageSubtitle": "Share your ideas, report bugs, or vote on what we should build next.",
-    "loading": "Loading feedback widget…"
+    "loading": "Loading feedback widget…",
+    "loadError": "Unable to load the feedback widget. This can happen if an ad-blocker is active or the service is temporarily unavailable.",
+    "retry": "Try again"
   },
   "Premium": {
     "gateTitle": "Premium feature",

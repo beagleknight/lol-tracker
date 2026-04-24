@@ -1162,7 +1162,9 @@
   "Feedback": {
     "pageTitle": "Sugerencias y comentarios",
     "pageSubtitle": "Comparte tus ideas, reporta errores o vota por lo que deberíamos construir.",
-    "loading": "Cargando widget de sugerencias…"
+    "loading": "Cargando widget de sugerencias…",
+    "loadError": "No se pudo cargar el widget de sugerencias. Esto puede pasar si tienes un bloqueador de anuncios activo o el servicio no está disponible temporalmente.",
+    "retry": "Reintentar"
   },
   "Premium": {
     "gateTitle": "Función premium",
