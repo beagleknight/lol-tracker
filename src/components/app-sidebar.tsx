@@ -162,7 +162,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   }
 
   return (
-    <Link href={item.href} onClick={onClick} className={className}>
+    <Link href={item.href} prefetch={false} onClick={onClick} className={className}>
       {content}
     </Link>
   );
