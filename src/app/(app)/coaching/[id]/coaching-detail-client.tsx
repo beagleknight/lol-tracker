@@ -15,7 +15,6 @@ import {
   Pencil,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
@@ -26,6 +25,7 @@ import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 import { updateActionItemStatus, deleteCoachingSession } from "@/app/actions/coaching";
 import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { MatchCard, type MatchCardData, type MatchHighlightData } from "@/components/match-card";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
-import { getChampionIconUrl } from "@/lib/riot-api";
 import { safeExternalUrl } from "@/lib/url";
 
 interface LinkedMatch {
@@ -402,28 +401,14 @@ export function CoachingDetailClient({
                       className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-surface-elevated"
                     >
                       <ResultBar result={match.result} />
-                      <Image
-                        src={getChampionIconUrl(ddragonVersion, match.championName)}
-                        alt={match.championName}
-                        width={32}
-                        height={32}
-                        unoptimized
-                        className="rounded"
-                      />
+                      <ChampionIcon championName={match.championName} size={32} />
                       <div className="flex-1">
                         <span className="text-sm font-medium">{match.championName}</span>
                         <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
                           {t("vs")}
                           {match.matchupChampionName ? (
                             <>
-                              <Image
-                                src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                                alt={match.matchupChampionName}
-                                width={16}
-                                height={16}
-                                unoptimized
-                                className="rounded"
-                              />
+                              <ChampionIcon championName={match.matchupChampionName} size={16} />
                               {match.matchupChampionName}
                             </>
                           ) : (

@@ -11,7 +11,6 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
@@ -24,38 +23,16 @@ import { getMatchupNotes, type MatchupNoteData } from "@/app/actions/matchup-not
 import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { ChampionCombobox, type ChampionRecommendations } from "@/components/champion-combobox";
 import { EmptyState } from "@/components/empty-state";
+import { ChampionIcon } from "@/components/icons/champion-icon";
+import { RuneIcon } from "@/components/icons/rune-icon";
 import { MatchCard } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatNumber, DEFAULT_LOCALE } from "@/lib/format";
-import { getKeystoneIconUrlByName, getChampionIconUrl } from "@/lib/riot-api";
 
 import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function ChampionIcon({
-  championName,
-  version,
-  size = 36,
-}: {
-  championName: string;
-  version: string;
-  size?: number;
-}) {
-  return (
-    <Image
-      src={getChampionIconUrl(version, championName)}
-      alt={championName}
-      width={size}
-      height={size}
-      unoptimized={size <= 32}
-      className="rounded"
-    />
-  );
-}
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -121,20 +98,12 @@ function ScoutingReport({
         <div className="flex items-center gap-4">
           {yourChampionName ? (
             <div className="flex items-center gap-2">
-              <ChampionIcon championName={yourChampionName} version={ddragonVersion} size={48} />
+              <ChampionIcon championName={yourChampionName} size={48} />
               <span className="text-sm font-medium text-muted-foreground">{t("vs")}</span>
-              <ChampionIcon
-                championName={report.matchupChampionName}
-                version={ddragonVersion}
-                size={48}
-              />
+              <ChampionIcon championName={report.matchupChampionName} size={48} />
             </div>
           ) : (
-            <ChampionIcon
-              championName={report.matchupChampionName}
-              version={ddragonVersion}
-              size={56}
-            />
+            <ChampionIcon championName={report.matchupChampionName} size={56} />
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
@@ -217,19 +186,7 @@ function ScoutingReport({
               <div key={rune.keystoneName} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="flex items-center gap-1.5">
-                    {(() => {
-                      const url = getKeystoneIconUrlByName(rune.keystoneName);
-                      return url ? (
-                        <Image
-                          src={url}
-                          alt={rune.keystoneName}
-                          width={18}
-                          height={18}
-                          unoptimized
-                          className="rounded"
-                        />
-                      ) : null;
-                    })()}
+                    <RuneIcon keystoneName={rune.keystoneName} alt={rune.keystoneName} size={18} />
                     {rune.keystoneName}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
@@ -304,17 +261,9 @@ function ScoutingReport({
                   className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-2"
                 >
                   <div className="flex items-center gap-1">
-                    <ChampionIcon
-                      championName={pair.yourChampion}
-                      version={ddragonVersion}
-                      size={28}
-                    />
+                    <ChampionIcon championName={pair.yourChampion} size={28} />
                     <span className="mx-1 text-xs text-muted-foreground">+</span>
-                    <ChampionIcon
-                      championName={pair.duoChampion}
-                      version={ddragonVersion}
-                      size={28}
-                    />
+                    <ChampionIcon championName={pair.duoChampion} size={28} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-sm font-medium">

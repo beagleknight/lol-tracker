@@ -3,7 +3,6 @@
 import { Loader2, Plus, X, Video, GraduationCap, Clock, CheckCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -15,6 +14,7 @@ import type { CoachingSession } from "@/db/schema";
 import { completeCoachingSession } from "@/app/actions/coaching";
 import { BackButton } from "@/components/back-button";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { ResultBadge } from "@/components/result-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
-import { getChampionIconUrl } from "@/lib/riot-api";
 import { safeExternalUrl } from "@/lib/url";
 
 interface VodMatch {
@@ -58,7 +57,7 @@ export function CompleteSessionClient({
   session,
   vodMatch,
   vodHighlights,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
   topics: availableTopics,
   initialTopicIds,
 }: CompleteSessionClientProps) {
@@ -162,14 +161,7 @@ export function CompleteSessionClient({
             </div>
             {vodMatch && (
               <div className="flex items-center gap-2">
-                <Image
-                  src={getChampionIconUrl(ddragonVersion, vodMatch.championName)}
-                  alt={vodMatch.championName}
-                  width={24}
-                  height={24}
-                  unoptimized
-                  className="rounded"
-                />
+                <ChampionIcon championName={vodMatch.championName} size={24} />
                 <span className="text-sm">{vodMatch.championName}</span>
                 <span className="text-xs text-muted-foreground">
                   {t("vs")} {vodMatch.matchupChampionName || "?"}

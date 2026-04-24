@@ -12,7 +12,6 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
@@ -21,38 +20,15 @@ import type { DuoStats, DuoGameRow, ChampionSynergy } from "@/app/actions/duo";
 
 import { getDuoGames, backfillDuoGames } from "@/app/actions/duo";
 import { ChampionLink } from "@/components/champion-link";
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { Pagination } from "@/components/pagination";
 import { ResultBadge } from "@/components/result-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
-import { getChampionIconUrl } from "@/lib/riot-api";
 
 const PAGE_SIZE = 10;
-
-// ─── Shared helpers ──────────────────────────────────────────────────────────
-
-function ChampionIcon({
-  championName,
-  version,
-  size = 32,
-}: {
-  championName: string;
-  version: string;
-  size?: number;
-}) {
-  return (
-    <Image
-      src={getChampionIconUrl(version, championName)}
-      alt={championName}
-      width={size}
-      height={size}
-      unoptimized={size <= 32}
-      className="rounded"
-    />
-  );
-}
 
 // ─── DuoHeader ───────────────────────────────────────────────────────────────
 
@@ -333,13 +309,9 @@ export function DuoSynergyCard({
                 className="flex items-center gap-3 rounded-lg border border-border/50 bg-surface-elevated p-2"
               >
                 <div className="flex items-center gap-1">
-                  <ChampionIcon championName={s.yourChampion} version={ddragonVersion} size={28} />
+                  <ChampionIcon championName={s.yourChampion} size={28} />
                   <span className="mx-1 text-xs text-muted-foreground">+</span>
-                  <ChampionIcon
-                    championName={s.partnerChampion}
-                    version={ddragonVersion}
-                    size={28}
-                  />
+                  <ChampionIcon championName={s.partnerChampion} size={28} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-sm font-medium">
@@ -377,7 +349,7 @@ export function DuoRecentGames({
   initialGames,
   initialTotalPages,
   partnerName,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
 }: {
   initialGames: DuoGameRow[];
   initialTotalPages: number;
@@ -424,7 +396,7 @@ export function DuoRecentGames({
                 />
 
                 <div className="flex min-w-0 items-center gap-2">
-                  <ChampionIcon championName={game.championName} version={ddragonVersion} />
+                  <ChampionIcon championName={game.championName} />
                   <div>
                     <p className="text-sm font-medium">{game.championName}</p>
                     <p className="text-xs text-muted-foreground">
@@ -436,7 +408,7 @@ export function DuoRecentGames({
                 <span className="text-xs text-muted-foreground">+</span>
 
                 <div className="flex min-w-0 items-center gap-2">
-                  <ChampionIcon championName={game.partnerChampionName} version={ddragonVersion} />
+                  <ChampionIcon championName={game.partnerChampionName} />
                   <div>
                     <p className="text-sm font-medium">{game.partnerChampionName}</p>
                     <p className="text-xs text-muted-foreground">

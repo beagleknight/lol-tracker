@@ -2,18 +2,18 @@
 
 import { Eye, Users, ThumbsUp, ThumbsDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 
 import type { MatchResult } from "@/lib/match-result";
 
 import { ChampionLink } from "@/components/champion-link";
+import { ChampionIcon } from "@/components/icons/champion-icon";
+import { RuneIcon } from "@/components/icons/rune-icon";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
 import { resultBgTint } from "@/lib/match-result";
-import { getChampionIconUrl, getKeystoneIconUrlByName } from "@/lib/riot-api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -43,29 +43,6 @@ export interface MatchCardData {
   reviewed: boolean;
   duoPartnerPuuid: string | null;
   position?: string | null;
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function ChampionIcon({
-  championName,
-  version,
-  size = 28,
-}: {
-  championName: string;
-  version: string;
-  size?: number;
-}) {
-  return (
-    <Image
-      src={getChampionIconUrl(version, championName)}
-      alt={championName}
-      width={size}
-      height={size}
-      unoptimized={size <= 32}
-      className="rounded"
-    />
-  );
 }
 
 // ─── MatchCard ──────────────────────────────────────────────────────────────
@@ -165,11 +142,7 @@ export function MatchCard({
           )}
 
           {/* Champion */}
-          <ChampionIcon
-            championName={match.championName}
-            version={ddragonVersion}
-            size={isCompact ? 32 : 36}
-          />
+          <ChampionIcon championName={match.championName} size={isCompact ? 32 : 36} />
 
           {/* Main info */}
           <div className="min-w-0 flex-1">
@@ -193,13 +166,9 @@ export function MatchCard({
                     />
                   ) : (
                     <span className="inline-flex items-center gap-1 text-sm">
-                      <Image
-                        src={getChampionIconUrl(ddragonVersion, match.matchupChampionName)}
-                        alt={match.matchupChampionName}
-                        width={isCompact ? 16 : 20}
-                        height={isCompact ? 16 : 20}
-                        unoptimized
-                        className="rounded"
+                      <ChampionIcon
+                        championName={match.matchupChampionName}
+                        size={isCompact ? 16 : 20}
                       />
                       {match.matchupChampionName}
                     </span>
@@ -228,20 +197,14 @@ export function MatchCard({
             {/* Line 2 (compact): Rune · Duration · KDA · CS + lowlight pills */}
             {isCompact && (
               <div className="inline-flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                {match.runeKeystoneName &&
-                  (() => {
-                    const iconUrl = getKeystoneIconUrlByName(match.runeKeystoneName);
-                    return iconUrl ? (
-                      <Image
-                        src={iconUrl}
-                        alt=""
-                        width={12}
-                        height={12}
-                        unoptimized
-                        className="rounded-sm"
-                      />
-                    ) : null;
-                  })()}
+                {match.runeKeystoneName && (
+                  <RuneIcon
+                    keystoneName={match.runeKeystoneName}
+                    alt=""
+                    size={12}
+                    className="rounded-sm"
+                  />
+                )}
                 <span>
                   {match.runeKeystoneName || "\u2014"} &middot;{" "}
                   {formatDuration(match.gameDurationSeconds)} &middot;{" "}

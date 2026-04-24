@@ -1,0 +1,53 @@
+name: Update DDragon Assets
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Monday at 06:00 UTC — Riot patches usually land on Wednesday,
+    # so Monday catches last week's patch with margin.
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Install sharp
+        run: npm install --no-save sharp
+
+      - name: Run DDragon optimizer
+        run: npx tsx scripts/optimize-ddragon.ts
+
+      - name: Read manifest version
+        id: manifest
+        run: |
+          VERSION=$(jq -r .version public/assets/ddragon/manifest.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: update DDragon assets to ${{ steps.manifest.outputs.version }}"
+          title: "chore: update DDragon assets to ${{ steps.manifest.outputs.version }}"
+          body: |
+            ## Summary
+
+            Automated update of self-hosted DDragon assets to version **${{ steps.manifest.outputs.version }}**.
+
+            This PR was created by the `ddragon-assets` workflow. Review the diff to see which champions, items, or runes were added/changed.
+          branch: chore/ddragon-assets-${{ steps.manifest.outputs.version }}
+          labels: skip-changelog
+          delete-branch: true

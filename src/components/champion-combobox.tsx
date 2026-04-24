@@ -1,9 +1,9 @@
 "use client";
 
 import { ChevronsUpDown } from "lucide-react";
-import Image from "next/image";
 import * as React from "react";
 
+import { ChampionIcon } from "@/components/icons/champion-icon";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -15,7 +15,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { getChampionIconUrl } from "@/lib/riot-api";
 
 interface ChampionRecommendation {
   name: string;
@@ -44,7 +43,7 @@ export function ChampionCombobox({
   value,
   onValueChange,
   champions,
-  ddragonVersion,
+  ddragonVersion: _ddragonVersion,
   placeholder = "Select champion...",
   label,
   className,
@@ -86,14 +85,7 @@ export function ChampionCombobox({
         >
           {value ? (
             <span className="flex items-center gap-2">
-              <Image
-                src={getChampionIconUrl(ddragonVersion, value)}
-                alt={value}
-                width={20}
-                height={20}
-                unoptimized
-                className="rounded"
-              />
+              <ChampionIcon championName={value} size={20} />
               {value}
             </span>
           ) : (
@@ -123,14 +115,7 @@ export function ChampionCombobox({
                               setOpen(false);
                             }}
                           >
-                            <Image
-                              src={getChampionIconUrl(ddragonVersion, c.name)}
-                              alt={c.name}
-                              width={20}
-                              height={20}
-                              unoptimized
-                              className="rounded"
-                            />
+                            <ChampionIcon championName={c.name} size={20} />
                             {c.name}
                             <span className="ml-auto text-xs text-muted-foreground">
                               {c.games}G
@@ -157,14 +142,7 @@ export function ChampionCombobox({
                         setOpen(false);
                       }}
                     >
-                      <Image
-                        src={getChampionIconUrl(ddragonVersion, name)}
-                        alt={name}
-                        width={20}
-                        height={20}
-                        unoptimized
-                        className="rounded"
-                      />
+                      <ChampionIcon championName={name} size={20} />
                       {name}
                     </CommandItem>
                   ))}

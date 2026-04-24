@@ -9,7 +9,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 
 import type { MatchupNoteData } from "@/app/actions/matchup-notes";
@@ -22,6 +21,8 @@ import { AiInsightDrawer } from "@/components/ai-insight-card";
 import { BackButton } from "@/components/back-button";
 import { ChampionLink } from "@/components/champion-link";
 import { HighlightsDisplay, type HighlightItem } from "@/components/highlights-editor";
+import { ItemIcon } from "@/components/icons/item-icon";
+import { RuneIcon } from "@/components/icons/rune-icon";
 import { MarkdownDisplay } from "@/components/markdown-display";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge } from "@/components/result-badge";
@@ -39,7 +40,6 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
-import { getKeystoneIconUrl } from "@/lib/riot-api";
 import { safeExternalUrl } from "@/lib/url";
 
 /** Slim participant — only fields needed for the match detail view */
@@ -165,15 +165,7 @@ function ParticipantRow({
           ]
             .filter((id) => id > 0)
             .map((itemId, i) => (
-              <Image
-                key={i}
-                src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${itemId}.png`}
-                alt={t("itemAlt", { itemId })}
-                width={24}
-                height={24}
-                unoptimized
-                className="rounded"
-              />
+              <ItemIcon key={i} itemId={itemId} alt={t("itemAlt", { itemId })} />
             ))}
         </div>
       </TableCell>
@@ -294,21 +286,14 @@ export function MatchDetailClient({
                   <>
                     {" "}
                     &middot;{" "}
-                    {(() => {
-                      const url = match.runeKeystoneId
-                        ? getKeystoneIconUrl(match.runeKeystoneId)
-                        : null;
-                      return url ? (
-                        <Image
-                          src={url}
-                          alt={match.runeKeystoneName}
-                          width={20}
-                          height={20}
-                          unoptimized
-                          className="-my-0.5 inline"
-                        />
-                      ) : null;
-                    })()}{" "}
+                    {match.runeKeystoneId && (
+                      <RuneIcon
+                        keystoneId={match.runeKeystoneId}
+                        alt={match.runeKeystoneName}
+                        size={20}
+                        className="-my-0.5 inline"
+                      />
+                    )}{" "}
                     {match.runeKeystoneName}
                   </>
                 )}
@@ -409,14 +394,13 @@ export function MatchDetailClient({
             <p className="flex items-center justify-center gap-2 text-2xl font-bold">
               {match.runeKeystoneName ? (
                 <>
-                  {(() => {
-                    const url = match.runeKeystoneId
-                      ? getKeystoneIconUrl(match.runeKeystoneId)
-                      : null;
-                    return url ? (
-                      <Image src={url} alt={match.runeKeystoneName} width={36} height={36} />
-                    ) : null;
-                  })()}
+                  {match.runeKeystoneId && (
+                    <RuneIcon
+                      keystoneId={match.runeKeystoneId}
+                      alt={match.runeKeystoneName}
+                      size={36}
+                    />
+                  )}
                   {match.runeKeystoneName}
                 </>
               ) : (

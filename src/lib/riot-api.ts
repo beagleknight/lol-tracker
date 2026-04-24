@@ -540,6 +540,17 @@ export function getKeystoneName(keystoneId: number): string {
   return KEYSTONE_NAMES[keystoneId] || `Rune ${keystoneId}`;
 }
 
+/**
+ * Reverse-lookup: get keystone ID from name.
+ * Returns null if the name is unknown.
+ */
+export function getKeystoneIdByName(keystoneName: string): number | null {
+  for (const [idStr, name] of Object.entries(KEYSTONE_NAMES)) {
+    if (name === keystoneName) return Number(idStr);
+  }
+  return null;
+}
+
 // Rune keystone icon path mapping (DDragon perk-images)
 // NOTE: Rune icons are NOT versioned — use /cdn/img/ not /cdn/{version}/img/
 const KEYSTONE_ICONS: Record<number, string> = {
