@@ -27,9 +27,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Note: html lang is set dynamically by next-intl's plugin at request time.
-  // We hardcode "en" here to keep the root layout static for PPR compatibility.
-  // The actual locale is determined by the cookie/Accept-Language in i18n/request.ts.
+  // Note: html lang is hardcoded "en" to keep the root layout static for PPR.
+  // The actual lang attribute is updated client-side by HtmlLangSync (in the
+  // app layout) once the locale is resolved from the cookie/Accept-Language.
   return (
     <html
       lang="en"

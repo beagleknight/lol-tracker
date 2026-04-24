@@ -2,6 +2,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Suspense } from "react";
 
+import { HtmlLangSync } from "@/components/html-lang-sync";
+
 /**
  * Async server component that fetches i18n messages (reads cookies() internally)
  * and provides them to client components via NextIntlClientProvider.
@@ -10,7 +12,12 @@ import { Suspense } from "react";
  */
 async function LocalizedLoginContent({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
-  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
+  return (
+    <NextIntlClientProvider messages={messages}>
+      <HtmlLangSync />
+      {children}
+    </NextIntlClientProvider>
+  );
 }
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

@@ -7,6 +7,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { HtmlLangSync } from "@/components/html-lang-sync";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { db } from "@/db";
@@ -98,7 +99,12 @@ async function SidebarWithUser() {
  */
 async function LocalizedContent({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
-  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
+  return (
+    <NextIntlClientProvider messages={messages}>
+      <HtmlLangSync />
+      {children}
+    </NextIntlClientProvider>
+  );
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -117,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Suspense>
               <SidebarWithUser />
             </Suspense>
-            <main id="main-content" className="flex-1 md:ml-64">
+            <main id="main-content" tabIndex={-1} className="flex-1 outline-none md:ml-64">
               <div className="container mx-auto max-w-7xl p-6 md:p-8">{children}</div>
             </main>
           </div>
