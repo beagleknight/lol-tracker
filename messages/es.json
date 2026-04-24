@@ -402,7 +402,7 @@
     "peakLabel": "Máximo: {rank}",
     "lpOverall": "{value} LP en total",
     "notEnoughRankData": "No hay suficientes datos de rango aún. Juega más partidas ranked para ver tu progresión de LP.",
-    "winRateOverTime": "Win rate a lo largo del tiempo (media móvil de 10 partidas)",
+    "winRateOverTime": "Win rate a lo largo del tiempo (media móvil de 20 partidas)",
     "coachingBandsDescription": "Las áreas sombreadas muestran el tiempo entre sesiones de coaching.",
     "noCoachingSessions": "No hay sesiones de coaching para mostrar.",
     "matchupWinRates": "Win rate por matchup",
@@ -433,7 +433,9 @@
       "champion": "Campeón",
       "avgKda": "KDA prom."
     },
-    "perfectKda": "Perfecto"
+    "perfectKda": "Perfecto",
+    "showAll": "Mostrar todos ({count})",
+    "showLess": "Mostrar menos"
   },
   "Coaching": {
     "title": "Coaching",

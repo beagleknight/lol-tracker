@@ -402,7 +402,7 @@
     "peakLabel": "Peak: {rank}",
     "lpOverall": "{value} LP overall",
     "notEnoughRankData": "Not enough rank data yet. Play more ranked games to see your LP journey.",
-    "winRateOverTime": "Win rate over time (10-game rolling)",
+    "winRateOverTime": "Win rate over time (20-game rolling)",
     "coachingBandsDescription": "Shaded areas show the time between coaching sessions.",
     "noCoachingSessions": "No coaching sessions to show.",
     "matchupWinRates": "Matchup win rates",
@@ -433,7 +433,9 @@
       "champion": "Champion",
       "avgKda": "Avg KDA"
     },
-    "perfectKda": "Perfect"
+    "perfectKda": "Perfect",
+    "showAll": "Show all ({count})",
+    "showLess": "Show less"
   },
   "Coaching": {
     "title": "Coaching",
