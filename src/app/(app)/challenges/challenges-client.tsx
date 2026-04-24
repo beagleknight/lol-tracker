@@ -317,16 +317,23 @@ function ActiveChallengeCard({
           <div className="flex gap-2">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger>
-                  <Button variant="outline" size="sm" onClick={handleRetire} disabled={isRetiring}>
-                    {isRetiring ? (
-                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                    ) : (
-                      <Archive className="mr-2 h-3 w-3" />
-                    )}
-                    {t("retire")}
-                  </Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRetire}
+                      disabled={isRetiring}
+                    >
+                      {isRetiring ? (
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      ) : (
+                        <Archive className="mr-2 h-3 w-3" />
+                      )}
+                      {t("retire")}
+                    </Button>
+                  }
+                />
                 <TooltipContent>{t("retireTooltip")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
