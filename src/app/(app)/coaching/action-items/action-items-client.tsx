@@ -187,6 +187,14 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
     } else {
       result.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     }
+    // When showing all, group active items before completed
+    if (statusFilter === "all") {
+      result.sort((a, b) => {
+        const aCompleted = a.status === "completed" ? 1 : 0;
+        const bCompleted = b.status === "completed" ? 1 : 0;
+        return aCompleted - bCompleted;
+      });
+    }
     return result;
   }, [items, statusFilter, topicFilter, sortOrder]);
 
@@ -365,15 +373,51 @@ export function ActionItemsClient({ items, topicNames, outcomeStats }: ActionIte
       ) : (
         <>
           <div className="space-y-2">
-            {paginatedItems.map((item) => (
-              <ActionItemRow
-                key={item.id}
-                item={item}
-                locale={locale}
-                topicNames={topicNames}
-                stats={outcomeStats[item.id]}
-              />
-            ))}
+            {statusFilter === "all"
+              ? (() => {
+                  const active = paginatedItems.filter((i) => i.status !== "completed");
+                  const completed = paginatedItems.filter((i) => i.status === "completed");
+                  return (
+                    <>
+                      {active.map((item) => (
+                        <ActionItemRow
+                          key={item.id}
+                          item={item}
+                          locale={locale}
+                          topicNames={topicNames}
+                          stats={outcomeStats[item.id]}
+                        />
+                      ))}
+                      {active.length > 0 && completed.length > 0 && (
+                        <div className="flex items-center gap-3 py-2">
+                          <div className="h-px flex-1 bg-border/50" />
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {t("completed")}
+                          </span>
+                          <div className="h-px flex-1 bg-border/50" />
+                        </div>
+                      )}
+                      {completed.map((item) => (
+                        <ActionItemRow
+                          key={item.id}
+                          item={item}
+                          locale={locale}
+                          topicNames={topicNames}
+                          stats={outcomeStats[item.id]}
+                        />
+                      ))}
+                    </>
+                  );
+                })()
+              : paginatedItems.map((item) => (
+                  <ActionItemRow
+                    key={item.id}
+                    item={item}
+                    locale={locale}
+                    topicNames={topicNames}
+                    stats={outcomeStats[item.id]}
+                  />
+                ))}
           </div>
           <Pagination currentPage={safePage} totalItems={filtered.length} onPageChange={setPage} />
         </>

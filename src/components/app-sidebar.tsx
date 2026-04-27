@@ -283,6 +283,12 @@ function SidebarContent({
       </div>
       <Separator />
 
+      {/* Season filter — prominent position below logo */}
+      <div className="px-3 pt-2 pb-1">
+        <SeasonFilter currentFilter={seasonFilter ?? "all"} />
+      </div>
+      <Separator />
+
       {/* Main nav */}
       <ScrollArea className="flex-1 px-3 py-4">
         <div className="space-y-1">
@@ -329,11 +335,6 @@ function SidebarContent({
           ))}
         </div>
       </ScrollArea>
-
-      {/* Season filter */}
-      <div className="px-3 pb-1">
-        <SeasonFilter currentFilter={seasonFilter ?? "all"} />
-      </div>
 
       {/* User section */}
       <Separator />
