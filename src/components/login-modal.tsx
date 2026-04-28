@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -9,9 +9,18 @@ import { cn } from "@/lib/utils";
 /**
  * A modal wrapper for the intercepted login route.
  * Always renders open and navigates back on close (dismissing the overlay).
+ * Automatically hides when the pathname changes away from /login
+ * (e.g. after successful login redirects to /dashboard).
  */
 export function LoginModal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Hide the modal if the user has navigated away from /login
+  // (parallel slot preserves state during soft navigation)
+  if (pathname !== "/login") {
+    return null;
+  }
 
   function handleOpenChange(open: boolean) {
     if (!open) {
