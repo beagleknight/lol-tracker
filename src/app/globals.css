@@ -442,6 +442,12 @@
       0 0 20px oklch(from var(--gold) l c h / 0.08);
   }
 
+  .glow-teal-sm {
+    box-shadow:
+      0 0 8px oklch(from var(--teal) l c h / 0.25),
+      0 0 20px oklch(from var(--teal) l c h / 0.08);
+  }
+
   /* Electric blue glow */
   .glow-electric {
     box-shadow:

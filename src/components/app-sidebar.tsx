@@ -131,7 +131,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   const className = cn(
     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
     isActive
-      ? "glow-gold-sm border-l-2 border-gold bg-gold/10 font-medium text-gold"
+      ? "glow-teal-sm border-l-2 border-teal bg-teal/10 font-medium text-teal"
       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
   );
 
