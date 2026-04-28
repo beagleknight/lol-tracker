@@ -24,8 +24,10 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
+  auth,
 }: Readonly<{
   children: React.ReactNode;
+  auth: React.ReactNode;
 }>) {
   // Note: html lang is hardcoded "en" to keep the root layout static for PPR.
   // The actual lang attribute is updated client-side by HtmlLangSync (in the
@@ -39,6 +41,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
+          {auth}
         </ThemeProvider>
       </body>
     </html>

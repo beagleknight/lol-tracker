@@ -86,7 +86,8 @@
     "demoRolePremium": "Premium",
     "demoRoleFree": "Gratuito",
     "demoNoRiotAccount": "Sin cuenta de Riot vinculada",
-    "demoNeedsSetup": "Necesita configuración"
+    "demoNeedsSetup": "Necesita configuración",
+    "backToHome": "Volver al inicio"
   },
   "Dashboard": {
     "heading": "Panel",

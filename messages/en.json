@@ -86,7 +86,8 @@
     "demoRolePremium": "Premium",
     "demoRoleFree": "Free",
     "demoNoRiotAccount": "No Riot account linked",
-    "demoNeedsSetup": "Needs setup"
+    "demoNeedsSetup": "Needs setup",
+    "backToHome": "Back to home"
   },
   "Dashboard": {
     "heading": "Dashboard",
