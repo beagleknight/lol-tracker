@@ -12,7 +12,7 @@ export function LandingHero() {
   return (
     <section className="bg-mesh relative overflow-hidden px-4 py-20 sm:px-6 sm:py-28 lg:py-36">
       <div className="mx-auto max-w-6xl">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-gradient-gold text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
             {t("hero.tagline")}
           </h1>
