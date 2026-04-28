@@ -224,10 +224,7 @@ export function UserMenu({ user, accounts, activeAccountId }: UserMenuProps) {
         <DropdownMenuSeparator />
 
         {/* Logout */}
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={() => void logout({ callbackUrl: "/login" })}
-        >
+        <DropdownMenuItem variant="destructive" onClick={() => void logout({ callbackUrl: "/" })}>
           <LogOut className="h-4 w-4" />
           {t("logout")}
         </DropdownMenuItem>
