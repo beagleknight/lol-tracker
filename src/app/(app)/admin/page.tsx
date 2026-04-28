@@ -591,7 +591,7 @@ export default function AdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-gradient-gold text-3xl font-bold tracking-tight">{t("heading")}</h1>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
       </div>
       <UsersSection />
       <InvitesSection />

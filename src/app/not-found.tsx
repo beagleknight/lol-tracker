@@ -23,7 +23,7 @@ export default function NotFound() {
     <div className="bg-mesh flex min-h-screen items-center justify-center">
       <div className="mx-auto max-w-md space-y-6 px-6 text-center">
         <p className="text-gradient-gold text-8xl font-bold tracking-tighter">404</p>
-        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{title}</h1>
         <p className="text-muted-foreground">{description}</p>
         <Link
           href="/"

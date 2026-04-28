@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Title */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("pageTitle")}</h1>
+          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("lastUpdated", { date: "2026-04-23" })}
           </p>

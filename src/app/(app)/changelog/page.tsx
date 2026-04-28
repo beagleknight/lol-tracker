@@ -62,7 +62,7 @@ export default async function ChangelogRoute({
       )}
 
       <div>
-        <h1 className="text-gradient-gold text-3xl font-bold tracking-tight">{t("title")}</h1>
+        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
