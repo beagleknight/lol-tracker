@@ -1503,7 +1503,7 @@ async function seed() {
   for (const a of achievementRows) {
     const unlockedAt = ts(new Date(a.date));
     await client.execute({
-      sql: `INSERT INTO user_achievements (achievement_id, user_id, tier, unlocked_at, updated_at)
+      sql: `INSERT OR REPLACE INTO user_achievements (achievement_id, user_id, tier, unlocked_at, updated_at)
             VALUES (?, ?, ?, ?, ?)`,
       args: [a.id, MAIN_USER_ID, a.tier, unlockedAt, unlockedAt],
     });
