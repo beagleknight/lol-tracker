@@ -1,6 +1,6 @@
 ---
 name: e2e-testing
-description: Write and debug Playwright E2E tests for lol-tracker. Covers test structure, selector strategies, server action testing patterns, seed data reference, and CI-specific gotchas.
+description: Write and debug Playwright E2E tests for levelrise. Covers test structure, selector strategies, server action testing patterns, seed data reference, and CI-specific gotchas.
 ---
 
 ## What I do
@@ -198,13 +198,13 @@ After `npm run db:seed`, the database contains:
 
 ## CI vs local differences
 
-| Aspect  | Local (dev)                  | CI (production build)                                    |
-| ------- | ---------------------------- | -------------------------------------------------------- |
-| Build   | `next build && next start`   | Build is a separate CI step, test just runs `next start` |
-| DOM     | Single render pass           | Streaming may produce duplicate DOM nodes                |
-| Speed   | Fast revalidation            | Slower — needs reload fallbacks                          |
-| SQLite  | `file:./data/lol-tracker.db` | Same                                                     |
-| Browser | Chromium (may need install)  | Chromium (installed in CI step)                          |
+| Aspect  | Local (dev)                 | CI (production build)                                    |
+| ------- | --------------------------- | -------------------------------------------------------- |
+| Build   | `next build && next start`  | Build is a separate CI step, test just runs `next start` |
+| DOM     | Single render pass          | Streaming may produce duplicate DOM nodes                |
+| Speed   | Fast revalidation           | Slower — needs reload fallbacks                          |
+| SQLite  | `file:./data/levelrise.db`  | Same                                                     |
+| Browser | Chromium (may need install) | Chromium (installed in CI step)                          |
 
 ### CI workflow
 

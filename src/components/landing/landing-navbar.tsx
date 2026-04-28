@@ -25,7 +25,7 @@ export function LandingNavbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2.5">
           <Logo className="h-7 w-7 text-gold" />
-          <span className="text-gradient-gold text-lg font-bold">LoL Tracker</span>
+          <span className="text-gradient-gold text-lg font-bold">LevelRise</span>
         </div>
         <div className="flex items-center gap-3">
           <button

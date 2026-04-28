@@ -35,7 +35,7 @@ interface SeasonsJson {
 /** Fetch a page's HTML as text. */
 async function fetchPage(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: { "User-Agent": "lol-tracker-scraper/1.0 (season-dates)" },
+    headers: { "User-Agent": "levelrise-scraper/1.0 (season-dates)" },
   });
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   return res.text();

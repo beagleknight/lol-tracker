@@ -4,7 +4,7 @@
  * Usage:  npm run db:push
  *
  * Requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in .env.local
- * Local database path: ./data/lol-tracker.db
+ * Local database path: ./data/levelrise.db
  *
  * Safety: UPSERT only — inserts new rows, updates existing ones.
  *         Never deletes production data.
@@ -138,7 +138,7 @@ async function main() {
   }
 
   console.log("Connecting to local SQLite...");
-  const local = createClient({ url: "file:./data/lol-tracker.db" });
+  const local = createClient({ url: "file:./data/levelrise.db" });
 
   console.log("Connecting to production (Turso)...");
   const remote = createClient({ url: tursoUrl, authToken: tursoToken });

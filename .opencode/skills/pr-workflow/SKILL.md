@@ -1,6 +1,6 @@
 ---
 name: pr-workflow
-description: PR-based development workflow for lol-tracker. Use when implementing features, fixing bugs, or making any code changes. Covers branch creation, CI checks, changelog entries, and PR creation.
+description: PR-based development workflow for levelrise. Use when implementing features, fixing bugs, or making any code changes. Covers branch creation, CI checks, changelog entries, and PR creation.
 ---
 
 ## What I do

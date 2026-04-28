@@ -174,7 +174,7 @@ Image styling is handled by `changelog-prose img` in `globals.css` (max-width, b
 Use GitHub raw image URLs pointing to the **commit SHA** (NOT the branch name):
 
 ```markdown
-![Before](https://github.com/beagleknight/lol-tracker/blob/<commit-sha>/public/changelog/<slug>/before-review.png?raw=true)
+![Before](https://github.com/beagleknight/levelrise/blob/<commit-sha>/public/changelog/<slug>/before-review.png?raw=true)
 ```
 
 **How to get the commit SHA**: After committing the screenshot files, run:
@@ -208,7 +208,7 @@ NEXT_PUBLIC_DEMO_MODE=true npm run build
 NEXT_PUBLIC_DEMO_MODE=true \
   AUTH_SECRET=smoke-test-secret-at-least-32-characters \
   AUTH_TRUST_HOST=true \
-  TURSO_DATABASE_URL=file:./data/lol-tracker.db \
+  TURSO_DATABASE_URL=file:./data/levelrise.db \
   npx next start -p 3777 > /tmp/next-server.log 2>&1 & disown
 sleep 4
 cat /tmp/next-server.log

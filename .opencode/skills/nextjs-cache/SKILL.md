@@ -2,7 +2,7 @@
 
 ## Overview
 
-This skill documents the `"use cache: remote"` caching pattern used in the LoL Tracker app. It applies to Next.js 16+ deployed on Vercel serverless, using Drizzle ORM with Turso (remote SQLite over HTTP).
+This skill documents the `"use cache: remote"` caching pattern used in the LevelRise app. It applies to Next.js 16+ deployed on Vercel serverless, using Drizzle ORM with Turso (remote SQLite over HTTP).
 
 ## Why "use cache: remote"
 

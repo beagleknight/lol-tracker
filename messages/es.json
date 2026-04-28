@@ -1,6 +1,6 @@
 {
   "Sidebar": {
-    "appName": "LoL Tracker",
+    "appName": "LevelRise",
     "updateGamesTooltip": "Actualizar partidas",
     "linkRiotAccountTooltip": "Vincula tu cuenta de Riot en Ajustes primero",
     "navDashboard": "Panel",
@@ -66,7 +66,7 @@
     "lowlightTopicLabel": "Tema del error"
   },
   "Login": {
-    "title": "LoL Tracker",
+    "title": "LevelRise",
     "description": "Registra tus partidas de League of Legends, sesiones de coaching y mejora tu juego.",
     "errorInviteRequired": "Se necesita un código de invitación para crear una cuenta nueva.",
     "errorInviteInvalid": "Ese código de invitación es inválido o ya fue utilizado.",
@@ -861,7 +861,7 @@
   },
   "Changelog": {
     "title": "Novedades",
-    "subtitle": "Últimas actualizaciones y mejoras de LoL Tracker",
+    "subtitle": "Últimas actualizaciones y mejoras de LevelRise",
     "empty": "Aún no hay actualizaciones. ¡Vuelve pronto!",
     "noFilterResults": "No hay entradas que coincidan con este filtro.",
     "filterAll": "Todas",
@@ -1038,7 +1038,7 @@
     }
   },
   "Onboarding": {
-    "title": "Bienvenido a lol-tracker",
+    "title": "Bienvenido a LevelRise",
     "subtitle": "Vamos a configurar tu cuenta en unos pocos pasos.",
     "step": "Paso {current} de {total}",
     "next": "Siguiente",
@@ -1182,9 +1182,9 @@
   "Legal": {
     "pageTitle": "Legal",
     "riotDisclaimerHeading": "Aviso de Riot Games",
-    "riotDisclaimer": "LoL Tracker no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.",
+    "riotDisclaimer": "LevelRise no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.",
     "openSourceHeading": "Código abierto",
-    "openSourceText": "LoL Tracker es software de código abierto licenciado bajo la GNU Affero General Public License v3.0 (AGPL-3.0). Puedes ver, modificar y redistribuir el código fuente bajo los términos de esta licencia.",
+    "openSourceText": "LevelRise es software de código abierto licenciado bajo la GNU Affero General Public License v3.0 (AGPL-3.0). Puedes ver, modificar y redistribuir el código fuente bajo los términos de esta licencia.",
     "openSourceLink": "Ver código fuente en GitHub",
     "backToApp": "Volver a la aplicación",
     "privacyPolicyLink": "Política de privacidad"
@@ -1193,7 +1193,7 @@
     "pageTitle": "Política de privacidad",
     "lastUpdated": "Última actualización: {date}",
     "introHeading": "Introducción",
-    "introText": "LoL Tracker es una aplicación de código abierto complementaria para League of Legends. Esta política de privacidad explica qué datos recopilamos, cómo los usamos y tus derechos respecto a esos datos.",
+    "introText": "LevelRise es una aplicación de código abierto complementaria para League of Legends. Esta política de privacidad explica qué datos recopilamos, cómo los usamos y tus derechos respecto a esos datos.",
     "dataCollectionHeading": "Qué datos recopilamos",
     "discordDataHeading": "Cuenta de Discord",
     "discordDataText": "Cuando inicias sesión con Discord, recibimos tu ID de usuario de Discord, nombre de usuario, dirección de correo electrónico y avatar. Esto se usa únicamente para autenticación y mostrar tu perfil.",
@@ -1208,7 +1208,7 @@
     "storageHeading": "Cómo almacenamos tus datos",
     "storageText": "Tus datos se almacenan en una base de datos Turso (libSQL). La aplicación está alojada en Vercel. Ambos servicios procesan datos en tu nombre como parte del funcionamiento de esta app.",
     "thirdPartyHeading": "Servicios de terceros",
-    "thirdPartyText": "LoL Tracker se integra con los siguientes servicios de terceros:",
+    "thirdPartyText": "LevelRise se integra con los siguientes servicios de terceros:",
     "thirdPartyDiscord": "Discord — autenticación (OAuth2)",
     "thirdPartyRiot": "API de Riot Games — historial de partidas y datos de clasificatoria",
     "thirdPartyGemini": "Google Gemini — análisis de coaching con IA (opcional)",
@@ -1299,7 +1299,7 @@
     "footer": {
       "legal": "Legal",
       "sourceCode": "Código fuente",
-      "riotDisclaimer": "LoL Tracker no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc."
+      "riotDisclaimer": "LevelRise no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie involucrado oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc."
     }
   },
   "ChallengeResult": {

@@ -1,11 +1,11 @@
 ---
 name: security
-description: Security patterns for lol-tracker — CSP, cookie flags, error sanitization, auth checks, URL validation, and supply-chain monitoring
+description: Security patterns for levelrise — CSP, cookie flags, error sanitization, auth checks, URL validation, and supply-chain monitoring
 ---
 
 ## What I do
 
-Guide secure coding patterns for the lol-tracker Next.js application, covering HTTP security headers, authentication/authorization checks, input validation, error handling, and supply-chain security.
+Guide secure coding patterns for the levelrise Next.js application, covering HTTP security headers, authentication/authorization checks, input validation, error handling, and supply-chain security.
 
 ## When to use me
 

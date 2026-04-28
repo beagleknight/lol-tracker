@@ -42,7 +42,7 @@ export function LandingHero() {
         <div className="mt-16 sm:mt-20">
           <BrowserFrame
             src="/landing/dashboard.png"
-            alt="LoL Tracker dashboard"
+            alt="LevelRise dashboard"
             width={1280}
             height={720}
             className="mx-auto max-w-5xl"

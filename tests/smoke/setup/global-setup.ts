@@ -22,14 +22,14 @@ export default async function globalSetup(_config: FullConfig) {
   const projectRoot = path.resolve(__dirname, "../../..");
   const dbEnv = {
     ...process.env,
-    TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
+    TURSO_DATABASE_URL: "file:./data/levelrise.db",
     TURSO_AUTH_TOKEN: "",
   };
 
   // ─── 1. Ensure data directory + remove stale DB ──────────────────────────
   const dataDir = path.join(projectRoot, "data");
   fs.mkdirSync(dataDir, { recursive: true });
-  const dbPath = path.join(dataDir, "lol-tracker.db");
+  const dbPath = path.join(dataDir, "levelrise.db");
   for (const suffix of ["", "-wal", "-shm"]) {
     const file = dbPath + suffix;
     if (fs.existsSync(file)) fs.unlinkSync(file);

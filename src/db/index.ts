@@ -9,7 +9,7 @@ let database: LibSQLDatabase<typeof schema> | undefined;
 function getClient(): Client {
   if (!client) {
     client = createClient({
-      url: process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db",
+      url: process.env.TURSO_DATABASE_URL ?? "file:./data/levelrise.db",
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
   }

@@ -28,7 +28,7 @@ export function BrowserFrame({ src, alt, width, height, className, priority }: B
         </div>
         <div className="mx-auto flex-1 text-center">
           <div className="mx-auto max-w-xs rounded-md bg-background/50 px-3 py-1 text-xs text-muted-foreground">
-            lol-tracker-sigma.vercel.app
+            levelrise.vercel.app
           </div>
         </div>
       </div>

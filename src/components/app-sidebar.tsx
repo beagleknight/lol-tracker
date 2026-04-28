@@ -261,7 +261,7 @@ function SidebarContent({
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2 font-semibold">
           <Logo className="h-5 w-5 text-gold" />
-          <span className="text-gradient-gold">LoL Tracker</span>
+          <span className="text-gradient-gold">LevelRise</span>
         </div>
         {!isDemoUser && (
           <Button

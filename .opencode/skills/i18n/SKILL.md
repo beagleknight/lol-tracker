@@ -1,6 +1,6 @@
 # i18n — Internationalization Skill
 
-Multi-language support for LoL Tracker using `next-intl`.
+Multi-language support for LevelRise using `next-intl`.
 
 ## Architecture
 
@@ -11,7 +11,7 @@ Multi-language support for LoL Tracker using `next-intl`.
   - **Formatting Locale** (`locale` column) — controls date/number formatting (en-GB, en-US, es-ES)
 - **Locale delivery**: Cookie (`language`) set on login + language change; `src/i18n/request.ts` reads it
 - **Login page**: Uses `Accept-Language` header fallback (no cookie exists yet)
-- **Metadata stays English** — "LoL Tracker" is a brand name
+- **Metadata stays English** — "LevelRise" is a brand name
 
 ## Key Files
 
@@ -72,7 +72,7 @@ All user-facing text **MUST** use sentence case. Only the first word of a phrase
 
 ### Proper nouns to preserve (always capitalized)
 
-LoL Tracker, Riot, Discord, Ascent, League of Legends, Settings (when referring to the page name in navigation context, e.g. sidebar label)
+LevelRise, Riot, Discord, Ascent, League of Legends, Settings (when referring to the page name in navigation context, e.g. sidebar label)
 
 ### Acronyms to preserve (always uppercase)
 

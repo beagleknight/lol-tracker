@@ -30,7 +30,7 @@ if (isProduction && !process.argv.includes("--force-remote")) {
 }
 
 const db = createClient({
-  url: TURSO_URL ?? "file:./data/lol-tracker.db",
+  url: TURSO_URL ?? "file:./data/levelrise.db",
   authToken: TURSO_TOKEN,
 });
 

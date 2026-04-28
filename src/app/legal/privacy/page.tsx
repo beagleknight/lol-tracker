@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Logo className="h-6 w-6 text-gold" />
-          <span className="text-gradient-gold text-lg font-semibold">LoL Tracker</span>
+          <span className="text-gradient-gold text-lg font-semibold">LevelRise</span>
         </div>
 
         {/* Title */}
