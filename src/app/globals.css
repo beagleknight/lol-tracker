@@ -220,7 +220,7 @@
   --chart-1: oklch(0.55 0.03 250);
   --chart-2: oklch(0.62 0.18 250);
   --chart-3: oklch(0.6 0.16 85);
-  --chart-4: oklch(0.72 0.15 150);
+  --chart-4: oklch(0.72 0.15 170);
   --chart-5: oklch(0.6 0.22 27);
   --radius: 0.375rem;
 
@@ -246,15 +246,15 @@
   --sidebar-ring: oklch(0.6 0.16 85);
 
   /* Semantic gameplay colors - light mode (darker for contrast on 0.96 bg) */
-  --win: oklch(0.5 0.16 150);
+  --win: oklch(0.5 0.14 170);
   --loss: oklch(0.5 0.22 27);
-  --win-muted: oklch(0.55 0.12 150);
+  --win-muted: oklch(0.55 0.12 170);
   --loss-muted: oklch(0.55 0.16 27);
   --warning: oklch(0.55 0.16 65);
   --status-progress: oklch(0.55 0.16 85);
   --streak-hot: oklch(0.52 0.2 45);
   --streak-cold: oklch(0.5 0.14 250);
-  --kills: oklch(0.5 0.16 150);
+  --kills: oklch(0.5 0.14 170);
   --deaths: oklch(0.5 0.22 27);
 
   /* Chart colors - light mode */
@@ -263,7 +263,7 @@
   --chart-tooltip-bg: oklch(0.99 0.005 260);
   --chart-tooltip-border: oklch(0.87 0.01 260);
   --chart-reference: oklch(0.78 0.01 260);
-  --chart-promotion: oklch(0.5 0.16 150);
+  --chart-promotion: oklch(0.5 0.14 170);
   --chart-demotion: oklch(0.55 0.22 27);
 
   /* Rank tier colors — light mode (darker for WCAG AA on light bg) */
@@ -318,7 +318,7 @@
   --chart-1: oklch(0.55 0.03 250);
   --chart-2: oklch(0.65 0.17 250);
   --chart-3: oklch(0.84 0.15 85);
-  --chart-4: oklch(0.72 0.15 150);
+  --chart-4: oklch(0.72 0.15 165);
   --chart-5: oklch(0.6 0.22 27);
 
   --radius: 0.375rem;
@@ -346,15 +346,15 @@
   --sidebar-ring: oklch(0.84 0.15 85);
 
   /* Semantic gameplay colors - dark mode */
-  --win: oklch(0.72 0.17 150);
+  --win: oklch(0.78 0.17 165);
   --loss: oklch(0.68 0.22 27);
-  --win-muted: oklch(0.72 0.12 150);
+  --win-muted: oklch(0.78 0.12 165);
   --loss-muted: oklch(0.72 0.16 27);
   --warning: oklch(0.78 0.14 65);
   --status-progress: oklch(0.8 0.14 85);
   --streak-hot: oklch(0.7 0.18 45);
   --streak-cold: oklch(0.68 0.14 250);
-  --kills: oklch(0.72 0.17 150);
+  --kills: oklch(0.78 0.17 165);
   --deaths: oklch(0.68 0.22 27);
 
   /* Chart colors - dark mode */
@@ -363,7 +363,7 @@
   --chart-tooltip-bg: oklch(0.2 0.03 260);
   --chart-tooltip-border: oklch(0.28 0.03 260);
   --chart-reference: oklch(0.35 0.02 260);
-  --chart-promotion: oklch(0.72 0.15 150);
+  --chart-promotion: oklch(0.72 0.15 165);
   --chart-demotion: oklch(0.65 0.22 27);
 
   /* Rank tier colors */
