@@ -523,7 +523,7 @@ export function OnboardingWizard({
         <CardContent className="space-y-6 p-6 sm:p-8">
           {/* Header */}
           <div className="space-y-1 text-center">
-            <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
             <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
           </div>
 

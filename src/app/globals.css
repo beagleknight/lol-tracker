@@ -490,7 +490,7 @@
 
   /* Text gradient utility */
   .text-gradient-gold {
-    background: linear-gradient(90deg, var(--gold) 0%, var(--teal) 50%);
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--teal) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

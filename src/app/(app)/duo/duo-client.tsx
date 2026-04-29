@@ -36,7 +36,7 @@ export function DuoHeader({ partnerName }: { partnerName: string | null }) {
   const t = useTranslations("Duo");
   return (
     <div>
-      <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
       <p className="text-muted-foreground">
         {partnerName ? (
           <>

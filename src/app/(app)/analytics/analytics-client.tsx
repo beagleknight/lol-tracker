@@ -149,7 +149,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
           <p className="text-muted-foreground">{t("importGamesFirst")}</p>
         </div>
         <EmptyState
@@ -164,7 +164,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
   return (
     <div className="space-y-6">
       <div className="animate-in-up">
-        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">{t("gamesAnalyzed", { count: meaningfulCount })}</p>
       </div>
 

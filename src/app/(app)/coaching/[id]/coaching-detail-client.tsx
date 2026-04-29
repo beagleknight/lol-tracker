@@ -260,7 +260,7 @@ export function CoachingDetailClient({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-gold" />
-            <h1 className="text-gradient-gold text-xl font-bold">{session.coachName}</h1>
+            <h1 className="text-xl font-bold text-teal">{session.coachName}</h1>
             <Badge variant={isScheduled ? "secondary" : "default"} className="text-xs">
               {isScheduled ? t("badgeScheduled") : t("badgeCompleted")}
             </Badge>

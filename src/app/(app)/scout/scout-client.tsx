@@ -561,7 +561,7 @@ export function ScoutClient({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">{t("pageDescription")}</p>
       </div>
 

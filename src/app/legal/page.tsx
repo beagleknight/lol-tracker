@@ -19,7 +19,7 @@ export default function LegalPage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
 
         {/* Riot Games disclaimer */}
         <section className="space-y-3">

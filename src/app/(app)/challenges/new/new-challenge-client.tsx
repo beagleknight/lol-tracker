@@ -244,9 +244,7 @@ export function NewChallengeClient({
       <div className="flex items-center gap-4">
         <BackButton />
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">
-            {t("newChallengeTitle")}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("newChallengeTitle")}</h1>
           <p className="text-muted-foreground">{t("newChallengeSubtitle")}</p>
         </div>
       </div>
