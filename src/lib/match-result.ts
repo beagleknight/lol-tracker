@@ -35,8 +35,8 @@ export function filterMeaningful<T extends { result: string }>(items: T[]): T[] 
 // ─── UI Mappers ──────────────────────────────────────────────────────────────
 
 /** Badge variant for match result badges (maps to Badge component variants). */
-export function resultBadgeVariant(result: string): "default" | "secondary" | "destructive" {
-  if (isWin(result)) return "default";
+export function resultBadgeVariant(result: string): "success" | "secondary" | "destructive" {
+  if (isWin(result)) return "success";
   if (isRemake(result)) return "secondary";
   return "destructive";
 }
