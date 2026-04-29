@@ -232,7 +232,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge
-                            variant={rune.winRate >= 50 ? "default" : "destructive"}
+                            variant={rune.winRate >= 50 ? "success" : "destructive"}
                             className="font-mono text-xs"
                           >
                             {rune.winRate}%
@@ -330,7 +330,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
                       <TableCell className="text-center font-mono text-sm">{champ.games}</TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          variant={champ.winRate >= 50 ? "default" : "destructive"}
+                          variant={champ.winRate >= 50 ? "success" : "destructive"}
                           className="font-mono text-xs"
                         >
                           {champ.winRate}%

@@ -141,7 +141,7 @@ function ScoutingReport({
                 <span className="text-loss">{record.losses}L</span>
               </span>
               <Badge
-                variant={record.winRate >= 50 ? "default" : "destructive"}
+                variant={record.winRate >= 50 ? "success" : "destructive"}
                 className="font-mono text-sm"
               >
                 {record.winRate}%

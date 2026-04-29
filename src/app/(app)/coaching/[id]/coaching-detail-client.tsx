@@ -504,7 +504,11 @@ export function CoachingDetailClient({
               {/* Summary stats */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-lg border border-border/50 bg-surface-elevated p-3 text-center">
-                  <p className="font-mono text-lg font-bold text-gold">{progressStats.winRate}%</p>
+                  <p
+                    className={`font-mono text-lg font-bold ${progressStats.winRate >= 50 ? "text-win" : "text-loss"}`}
+                  >
+                    {progressStats.winRate}%
+                  </p>
                   <p className="text-xs text-muted-foreground">{t("winRate")}</p>
                   <p className="font-mono text-xs text-muted-foreground">
                     {progressStats.wins}W {progressStats.total - progressStats.wins}L
