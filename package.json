@@ -31,6 +31,7 @@
     "@libsql/client": "^0.17.2",
     "@swc/helpers": "^0.5.21",
     "@types/jsonwebtoken": "^9.0.10",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.146",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",

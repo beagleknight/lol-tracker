@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
           {auth}
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
