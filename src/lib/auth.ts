@@ -4,7 +4,7 @@ import Discord from "next-auth/providers/discord";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { users, invites, riotAccounts } from "@/db/schema";
+import { users, riotAccounts } from "@/db/schema";
 import { demoCredentialsProvider, isDemoUserId } from "@/lib/fake-auth";
 
 // Duplicated from session.ts to avoid circular import (session.ts imports auth.ts)
@@ -121,29 +121,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return true;
         }
 
-        // Not the first user — require a valid invite code
-        const cookieStore = await cookies();
-        const inviteCode = cookieStore.get("invite-code")?.value;
-
-        if (!inviteCode) {
-          return "/login?error=invite-required";
-        }
-
-        // Look up unused invite
-        const invite = await db.query.invites.findFirst({
-          where: eq(invites.code, inviteCode),
-        });
-
-        if (!invite || invite.usedBy) {
-          return "/login?error=invite-invalid";
-        }
-
-        // Check if invite has expired
-        if (invite.expiresAt && invite.expiresAt < new Date()) {
-          return "/login?error=invite-expired";
-        }
-
-        // Valid invite — create user and mark invite as used
+        // Not the first user — create with free role (open registration)
         const id = crypto.randomUUID();
         await db.insert(users).values({
           id,
@@ -153,17 +131,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           role: "free",
         });
-
-        await db
-          .update(invites)
-          .set({
-            usedBy: id,
-            usedAt: new Date(),
-          })
-          .where(eq(invites.id, invite.id));
-
-        // Clear the invite cookie
-        cookieStore.delete("invite-code");
 
         return true;
       }
