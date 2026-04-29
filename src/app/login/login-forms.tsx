@@ -1,17 +1,16 @@
 "use client";
 
-import { Ticket, User, Shield, UserPlus, Crown } from "lucide-react";
+import { User, Shield, UserPlus, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { demoLogin, getDemoUsers, type DemoUserInfo } from "@/app/actions/demo-login";
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { login } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -129,15 +128,7 @@ function DiscordLoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
-  const inviteParam = searchParams.get("invite") ?? "";
-  const [showInvite, setShowInvite] = useState(!!error || !!inviteParam);
-  const [inviteCode, setInviteCode] = useState(inviteParam);
-
   function handleSignIn() {
-    // If invite code is provided, store it in a cookie before redirecting
-    if (inviteCode.trim()) {
-      document.cookie = `invite-code=${encodeURIComponent(inviteCode.trim())}; path=/; max-age=300; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
-    }
     void login("discord", { callbackUrl: "/dashboard" });
   }
 
@@ -151,41 +142,9 @@ function DiscordLoginForm() {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error === "invite-required" && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            {t("errorInviteRequired")}
-          </div>
-        )}
-        {error === "invite-invalid" && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            {t("errorInviteInvalid")}
-          </div>
-        )}
-        {error === "invite-expired" && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            {t("errorInviteExpired")}
-          </div>
-        )}
         {error === "account-deactivated" && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
             {t("errorAccountDeactivated")}
-          </div>
-        )}
-
-        {showInvite && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Ticket className="h-4 w-4" />
-              <span>{t("inviteCodeLabel")}</span>
-            </div>
-            <Input
-              placeholder={t("inviteCodePlaceholder")}
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSignIn();
-              }}
-            />
           </div>
         )}
 
@@ -195,18 +154,6 @@ function DiscordLoginForm() {
           </svg>
           {t("signInWithDiscord")}
         </Button>
-
-        {!showInvite && (
-          <button
-            onClick={() => setShowInvite(true)}
-            className="w-full text-center text-sm text-muted-foreground transition-colors hover:text-gold"
-          >
-            {t("haveInviteCode")}
-          </button>
-        )}
-        {showInvite && (
-          <p className="text-center text-xs text-muted-foreground">{t("alreadyHaveAccount")}</p>
-        )}
       </CardContent>
     </Card>
   );
