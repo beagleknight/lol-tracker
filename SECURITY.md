@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-If you discover a security vulnerability in LoL Tracker, please report it responsibly by emailing **david.morcillo@gmail.com**. Do **not** open a public GitHub issue for security vulnerabilities.
+If you discover a security vulnerability in LevelRise, please report it responsibly by emailing **david.morcillo@gmail.com**. Do **not** open a public GitHub issue for security vulnerabilities.
 
 ### What to include in your report
 

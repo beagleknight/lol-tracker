@@ -36,7 +36,7 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "turso",
   dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db",
+    url: process.env.TURSO_DATABASE_URL ?? "file:./data/levelrise.db",
     authToken: process.env.TURSO_AUTH_TOKEN,
   },
 });

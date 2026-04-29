@@ -131,7 +131,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   const className = cn(
     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
     isActive
-      ? "glow-gold-sm border-l-2 border-gold bg-gold/10 font-medium text-gold"
+      ? "glow-teal-sm border-l-2 border-teal bg-teal/10 font-medium text-teal"
       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
   );
 
@@ -261,7 +261,7 @@ function SidebarContent({
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2 font-semibold">
           <Logo className="h-5 w-5 text-gold" />
-          <span className="text-gradient-gold">LoL Tracker</span>
+          <span className="text-gradient-gold">LevelRise</span>
         </div>
         {!isDemoUser && (
           <Button

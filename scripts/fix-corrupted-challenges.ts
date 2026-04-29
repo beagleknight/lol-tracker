@@ -33,7 +33,7 @@ const dryRun = process.argv.includes("--dry-run");
 const forceRemote = process.argv.includes("--force-remote");
 
 async function main() {
-  const dbUrl = cleanEnv("TURSO_DATABASE_URL") ?? "file:./data/lol-tracker.db";
+  const dbUrl = cleanEnv("TURSO_DATABASE_URL") ?? "file:./data/levelrise.db";
   const authToken = cleanEnv("TURSO_AUTH_TOKEN");
   const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
 

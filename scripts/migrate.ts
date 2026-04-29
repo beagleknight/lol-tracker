@@ -38,7 +38,7 @@ interface Journal {
 }
 
 async function migrate() {
-  const dbUrl = cleanEnv("TURSO_DATABASE_URL") ?? "file:./data/lol-tracker.db";
+  const dbUrl = cleanEnv("TURSO_DATABASE_URL") ?? "file:./data/levelrise.db";
   const authToken = cleanEnv("TURSO_AUTH_TOKEN");
   const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
 

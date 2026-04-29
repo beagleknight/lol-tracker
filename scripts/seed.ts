@@ -454,7 +454,7 @@ function ts(date: Date): number {
 // ─── Seed Script ─────────────────────────────────────────────────────────────
 
 async function seed() {
-  const dbUrl = process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db";
+  const dbUrl = process.env.TURSO_DATABASE_URL ?? "file:./data/levelrise.db";
   const dbToken = process.env.TURSO_AUTH_TOKEN;
   const isRemote = dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://");
   const forceRemote = process.argv.includes("--force-remote");
@@ -532,7 +532,7 @@ async function seed() {
 
   for (const u of [ADMIN_USER, MAIN_USER, DUO_USER, NEW_PLAYER]) {
     await client.execute({
-      sql: `INSERT INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, active_riot_account_id, created_at, updated_at)
+      sql: `INSERT OR REPLACE INTO users (id, discord_id, name, image, email, riot_game_name, riot_tag_line, puuid, summoner_id, duo_partner_user_id, region, onboarding_completed, locale, language, role, primary_role, secondary_role, active_riot_account_id, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         u.id,
@@ -562,12 +562,12 @@ async function seed() {
   // ─── Invites ─────────────────────────────────────────────────────────────
   console.log("Creating invites...");
   await client.execute({
-    sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
+    sql: `INSERT OR REPLACE INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
     args: ["SEED-INVITE-001", MAIN_USER_ID, DUO_USER_ID, ts(now), ts(now)],
   });
   await client.execute({
-    sql: `INSERT INTO invites (code, created_by, used_by, used_at, created_at)
+    sql: `INSERT OR REPLACE INTO invites (code, created_by, used_by, used_at, created_at)
           VALUES (?, ?, ?, ?, ?)`,
     args: ["SEED-INVITE-002", MAIN_USER_ID, NEW_PLAYER_ID, ts(now), ts(now)],
   });
@@ -576,7 +576,7 @@ async function seed() {
   console.log("Creating riot accounts...");
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+    sql: `INSERT OR REPLACE INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_RIOT_ACCOUNT_ID,
@@ -597,7 +597,7 @@ async function seed() {
 
   // Smurf account for main user (to show account switcher in preview)
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+    sql: `INSERT OR REPLACE INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_SMURF_ACCOUNT_ID,
@@ -617,7 +617,7 @@ async function seed() {
   });
 
   await client.execute({
-    sql: `INSERT INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
+    sql: `INSERT OR REPLACE INTO riot_accounts (id, user_id, puuid, riot_game_name, riot_tag_line, summoner_id, region, is_primary, discoverable, label, primary_role, secondary_role, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       DUO_RIOT_ACCOUNT_ID,
@@ -804,7 +804,7 @@ async function seed() {
 
   for (const m of seedMatches) {
     await client.execute({
-      sql: `INSERT INTO matches (
+      sql: `INSERT OR REPLACE INTO matches (
               id, odometer, user_id, riot_account_id, game_date, result,
               champion_id, champion_name, rune_keystone_id, rune_keystone_name,
               matchup_champion_id, matchup_champion_name,
@@ -994,7 +994,7 @@ async function seed() {
 
   for (const m of duoMatches) {
     await client.execute({
-      sql: `INSERT INTO matches (
+      sql: `INSERT OR REPLACE INTO matches (
               id, odometer, user_id, riot_account_id, game_date, result,
               champion_id, champion_name, rune_keystone_id, rune_keystone_name,
               matchup_champion_id, matchup_champion_name,
@@ -1064,7 +1064,7 @@ async function seed() {
 
   for (const snap of rankProgression) {
     await client.execute({
-      sql: `INSERT INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
+      sql: `INSERT OR REPLACE INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         MAIN_USER_ID,
@@ -1099,7 +1099,7 @@ async function seed() {
 
   for (const snap of duoRankProgression) {
     await client.execute({
-      sql: `INSERT INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
+      sql: `INSERT OR REPLACE INTO rank_snapshots (user_id, riot_account_id, captured_at, tier, division, lp, wins, losses)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         DUO_USER_ID,
@@ -1153,7 +1153,7 @@ async function seed() {
     const sessionId = i + 1;
 
     await client.execute({
-      sql: `INSERT INTO coaching_sessions (id, user_id, coach_name, date, status, duration_minutes, notes, created_at, updated_at)
+      sql: `INSERT OR REPLACE INTO coaching_sessions (id, user_id, coach_name, date, status, duration_minutes, notes, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         sessionId,
@@ -1171,14 +1171,14 @@ async function seed() {
     // Insert session topics into join table
     for (const tName of s.topicNames) {
       await client.execute({
-        sql: `INSERT INTO coaching_session_topics (session_id, topic_id) VALUES (?, ?)`,
+        sql: `INSERT OR REPLACE INTO coaching_session_topics (session_id, topic_id) VALUES (?, ?)`,
         args: [sessionId, topicId(tName)],
       });
     }
 
     for (const matchId of s.matchIds) {
       await client.execute({
-        sql: `INSERT INTO coaching_session_matches (session_id, match_id, user_id) VALUES (?, ?, ?)`,
+        sql: `INSERT OR REPLACE INTO coaching_session_matches (session_id, match_id, user_id) VALUES (?, ?, ?)`,
         args: [sessionId, matchId, MAIN_USER_ID],
       });
     }
@@ -1236,7 +1236,7 @@ async function seed() {
 
   for (const item of actionItems) {
     await client.execute({
-      sql: `INSERT INTO coaching_action_items (session_id, user_id, description, topic_id, status, completed_at, created_at)
+      sql: `INSERT OR REPLACE INTO coaching_action_items (session_id, user_id, description, topic_id, status, completed_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
       args: [
         item.sessionId,
@@ -1269,7 +1269,7 @@ async function seed() {
     const highlightCount = randInt(1, 3);
     for (let j = 0; j < highlightCount; j++) {
       await client.execute({
-        sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
+        sql: `INSERT OR REPLACE INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
         args: [
           m.matchId,
@@ -1286,7 +1286,7 @@ async function seed() {
     const lowlightCount = randInt(0, 2);
     for (let j = 0; j < lowlightCount; j++) {
       await client.execute({
-        sql: `INSERT INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
+        sql: `INSERT OR REPLACE INTO match_highlights (match_id, user_id, riot_account_id, type, text, topic_id, created_at)
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
         args: [
           m.matchId,
@@ -1351,7 +1351,7 @@ async function seed() {
 
     for (const o of outcomes) {
       await client.execute({
-        sql: `INSERT INTO match_action_item_outcomes (match_id, action_item_id, user_id, outcome, created_at)
+        sql: `INSERT OR REPLACE INTO match_action_item_outcomes (match_id, action_item_id, user_id, outcome, created_at)
               VALUES (?, ?, ?, ?, ?)`,
         args: [o.matchId, o.actionItemId, MAIN_USER_ID, o.outcome, ts(now)],
       });
@@ -1363,7 +1363,7 @@ async function seed() {
 
   // Challenge 1: Completed by-date — "Reach Gold IV" (started in Silver I, completed ~Feb 7)
   await client.execute({
-    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
+    sql: `INSERT OR REPLACE INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
@@ -1386,7 +1386,7 @@ async function seed() {
 
   // Challenge 2: Active by-date — "Reach Platinum IV" (started in Gold III)
   await client.execute({
-    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
+    sql: `INSERT OR REPLACE INTO challenges (user_id, riot_account_id, title, type, target_tier, target_division, start_tier, start_division, start_lp, status, deadline, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
@@ -1410,7 +1410,7 @@ async function seed() {
   // Challenge 3: Active by-games — "Keep CS/min above 7 for 10 games"
   // At 9/10 games with 9 successful — next match with cspm ≥ 7 completes it!
   await client.execute({
-    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
+    sql: `INSERT OR REPLACE INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
@@ -1434,7 +1434,7 @@ async function seed() {
   // Challenge 4: Active by-games — "Less than 5 deaths for 15 games"
   // At 14/15 games with 14 successful — next match with deaths > 5 fails it!
   await client.execute({
-    sql: `INSERT INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
+    sql: `INSERT OR REPLACE INTO challenges (user_id, riot_account_id, title, type, metric, metric_condition, metric_threshold, target_games, current_games, successful_games, status, created_at, completed_at, failed_at, retired_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       MAIN_USER_ID,
@@ -1503,7 +1503,7 @@ async function seed() {
   for (const a of achievementRows) {
     const unlockedAt = ts(new Date(a.date));
     await client.execute({
-      sql: `INSERT INTO user_achievements (achievement_id, user_id, tier, unlocked_at, updated_at)
+      sql: `INSERT OR REPLACE INTO user_achievements (achievement_id, user_id, tier, unlocked_at, updated_at)
             VALUES (?, ?, ?, ?, ?)`,
       args: [a.id, MAIN_USER_ID, a.tier, unlockedAt, unlockedAt],
     });

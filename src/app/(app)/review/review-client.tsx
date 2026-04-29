@@ -757,7 +757,7 @@ export function ReviewClient({
       {/* Header */}
       <div className="animate-in-up flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
           {pendingMatches.length === 0 ? (
             <p className="text-muted-foreground">{t("allCaughtUp")}</p>
           ) : (

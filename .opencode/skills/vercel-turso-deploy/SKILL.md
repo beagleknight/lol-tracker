@@ -68,7 +68,7 @@ export const db = new Proxy({} as LibSQLDatabase, {
   get(_target, prop, receiver) {
     if (!database) {
       const client = createClient({
-        url: process.env.TURSO_DATABASE_URL ?? "file:./data/lol-tracker.db",
+        url: process.env.TURSO_DATABASE_URL ?? "file:./data/levelrise.db",
         authToken: process.env.TURSO_AUTH_TOKEN,
       });
       database = drizzle(client, { schema });
@@ -145,7 +145,7 @@ Migrations are **auto-applied on every Vercel deploy**. The `vercel.json` `build
 
 1. Generate migration: `npx drizzle-kit generate`
 2. Review the generated SQL in `drizzle/XXXX_*.sql`
-3. Apply locally: `sqlite3 ./data/lol-tracker.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
+3. Apply locally: `sqlite3 ./data/levelrise.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
 4. Commit the migration files alongside your code
 5. Push / merge — the migration will be applied to production Turso automatically during the Vercel build
 
@@ -156,7 +156,7 @@ Migrations are **auto-applied on every Vercel deploy**. The `vercel.json` `build
 - Reads the Drizzle journal, splits each `.sql` file by `"--> statement-breakpoint"`, and executes statements sequentially
 - Skips "already exists" errors for idempotency
 - Records each applied migration in the tracking table
-- Falls back to local SQLite (`file:./data/lol-tracker.db`) if no `TURSO_DATABASE_URL` is set
+- Falls back to local SQLite (`file:./data/levelrise.db`) if no `TURSO_DATABASE_URL` is set
 - Has a `cleanEnv()` helper to strip dotenvx banners from env vars
 
 ### `drizzle-kit migrate` fails or hangs with dotenvx
@@ -169,6 +169,6 @@ The `scripts/apply-migration-*.ts` files are one-off scripts from before the aut
 
 ### Config
 
-- `drizzle.config.ts` reads `TURSO_DATABASE_URL` (defaults to local `file:./data/lol-tracker.db` if unset) and `TURSO_AUTH_TOKEN`
+- `drizzle.config.ts` reads `TURSO_DATABASE_URL` (defaults to local `file:./data/levelrise.db` if unset) and `TURSO_AUTH_TOKEN`
 - Migrations live in `drizzle/` directory
 - Schema is at `src/db/schema.ts`

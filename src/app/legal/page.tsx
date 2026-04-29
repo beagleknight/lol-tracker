@@ -15,11 +15,11 @@ export default function LegalPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Logo className="h-6 w-6 text-gold" />
-          <span className="text-gradient-gold text-lg font-semibold">LoL Tracker</span>
+          <span className="text-gradient-gold text-lg font-semibold">LevelRise</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-foreground">{t("pageTitle")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
 
         {/* Riot Games disclaimer */}
         <section className="space-y-3">
@@ -32,7 +32,7 @@ export default function LegalPage() {
           <h2 className="text-lg font-semibold text-foreground">{t("openSourceHeading")}</h2>
           <p className="leading-relaxed text-muted-foreground">{t("openSourceText")}</p>
           <a
-            href="https://github.com/beagleknight/lol-tracker"
+            href="https://github.com/beagleknight/levelrise"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-gold transition-colors hover:text-gold/80"

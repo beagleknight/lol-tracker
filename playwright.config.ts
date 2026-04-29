@@ -36,7 +36,7 @@ export default defineConfig({
       NEXT_PUBLIC_DEMO_MODE: "true",
       AUTH_SECRET: "smoke-test-secret-at-least-32-characters",
       AUTH_TRUST_HOST: "true",
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
+      TURSO_DATABASE_URL: "file:./data/levelrise.db",
       TURSO_AUTH_TOKEN: "",
       NEXT_PUBLIC_CANNY_BOARD_TOKEN: "test-board-token",
     },

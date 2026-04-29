@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 import { ThemeProvider } from "next-themes";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -18,8 +18,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LoL Tracker",
-  description: "Track your League of Legends games, coaching sessions, and improve your gameplay.",
+  title: "LevelRise",
+  description:
+    "Clarity for your climb. Track your League of Legends games, coaching sessions, and improve your gameplay.",
 };
 
 export default async function RootLayout({
@@ -35,7 +36,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">

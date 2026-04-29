@@ -15,12 +15,12 @@ export default function PrivacyPolicyPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Logo className="h-6 w-6 text-gold" />
-          <span className="text-gradient-gold text-lg font-semibold">LoL Tracker</span>
+          <span className="text-gradient-gold text-lg font-semibold">LevelRise</span>
         </div>
 
         {/* Title */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("pageTitle")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("lastUpdated", { date: "2026-04-23" })}
           </p>

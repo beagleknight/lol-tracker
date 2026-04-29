@@ -5,7 +5,7 @@
  *         npm run db:pull -- --yes   (skip confirmation)
  *
  * Requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in .env.local
- * Local database path: ./data/lol-tracker.db
+ * Local database path: ./data/levelrise.db
  *
  * WARNING: This replaces ALL local data with production data.
  */
@@ -53,7 +53,7 @@ async function main() {
   const remote = createClient({ url: tursoUrl, authToken: tursoToken });
 
   console.log("Connecting to local SQLite...");
-  const local = createClient({ url: "file:./data/lol-tracker.db" });
+  const local = createClient({ url: "file:./data/levelrise.db" });
 
   // Read all data from production
   console.log("\n── Production data ──");

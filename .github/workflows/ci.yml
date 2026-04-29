@@ -135,7 +135,7 @@ jobs:
       AUTH_SECRET: smoke-test-secret-at-least-32-characters
       AUTH_TRUST_HOST: "true"
       NEXT_PUBLIC_DEMO_MODE: "true"
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
+      TURSO_DATABASE_URL: "file:./data/levelrise.db"
       NEXT_PUBLIC_CANNY_BOARD_TOKEN: test-board-token
     steps:
       - uses: actions/checkout@v6
@@ -168,7 +168,7 @@ jobs:
       AUTH_SECRET: smoke-test-secret-at-least-32-characters
       AUTH_TRUST_HOST: "true"
       NEXT_PUBLIC_DEMO_MODE: "true"
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db"
+      TURSO_DATABASE_URL: "file:./data/levelrise.db"
       NEXT_PUBLIC_CANNY_BOARD_TOKEN: test-board-token
     steps:
       - uses: actions/checkout@v6

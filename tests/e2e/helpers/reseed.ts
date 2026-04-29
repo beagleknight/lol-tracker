@@ -20,7 +20,7 @@ export async function reseedDatabase() {
     stdio: "inherit",
     env: {
       ...process.env,
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
+      TURSO_DATABASE_URL: "file:./data/levelrise.db",
       TURSO_AUTH_TOKEN: "",
     },
   });
@@ -31,7 +31,7 @@ export async function reseedDatabase() {
     stdio: "inherit",
     env: {
       ...process.env,
-      TURSO_DATABASE_URL: "file:./data/lol-tracker.db",
+      TURSO_DATABASE_URL: "file:./data/levelrise.db",
       TURSO_AUTH_TOKEN: "",
     },
   });

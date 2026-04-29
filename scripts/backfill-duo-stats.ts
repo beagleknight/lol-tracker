@@ -24,7 +24,7 @@ const TURSO_TOKEN = cleanEnv("TURSO_AUTH_TOKEN");
 const isProduction = !!TURSO_URL && !TURSO_URL.startsWith("file:");
 
 const db = createClient({
-  url: TURSO_URL ?? "file:./data/lol-tracker.db",
+  url: TURSO_URL ?? "file:./data/levelrise.db",
   authToken: TURSO_TOKEN,
 });
 

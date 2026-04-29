@@ -1,4 +1,4 @@
-# Contributing to LoL Tracker
+# Contributing to LevelRise
 
 ## Getting started
 
@@ -29,7 +29,7 @@ Copy `.env.example` to `.env.local` and fill in the required values:
 | `AUTH_DISCORD_SECRET`          | Yes      | Discord Developer Portal                                                          |
 | `RIOT_API_KEY`                 | Yes      | [developer.riotgames.com](https://developer.riotgames.com)                        |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | No       | [Google AI Studio](https://aistudio.google.com/apikey) (for AI coaching features) |
-| `TURSO_DATABASE_URL`           | No       | Defaults to local SQLite file (`file:./data/lol-tracker.db`)                      |
+| `TURSO_DATABASE_URL`           | No       | Defaults to local SQLite file (`file:./data/levelrise.db`)                        |
 | `TURSO_AUTH_TOKEN`             | No       | Only needed for remote Turso databases                                            |
 
 See `.env.example` for the full list with documentation.

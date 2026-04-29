@@ -255,11 +255,11 @@ Format as a task list:
 
 ## What NOT to put in issues — examples
 
-| Bad (don't write this)                         | Good (write this instead)                                 |
-| ---------------------------------------------- | --------------------------------------------------------- |
-| `RIOT_API_KEY=RGAPI-xxxx-...`                  | `the RIOT_API_KEY env var`                                |
-| `https://vercel.com/team/lol-tracker/settings` | `the Vercel project settings`                             |
-| `Database is in dub1 region`                   | `the database region` (or omit if irrelevant)             |
-| `User david.morcillo@gmail.com reported...`    | `a user reported...`                                      |
-| `The admin panel at /admin/users shows...`     | (use a private security advisory if it's a vulnerability) |
-| `We have 47 registered users`                  | (omit — internal metric)                                  |
+| Bad (don't write this)                       | Good (write this instead)                                 |
+| -------------------------------------------- | --------------------------------------------------------- |
+| `RIOT_API_KEY=RGAPI-xxxx-...`                | `the RIOT_API_KEY env var`                                |
+| `https://vercel.com/team/levelrise/settings` | `the Vercel project settings`                             |
+| `Database is in dub1 region`                 | `the database region` (or omit if irrelevant)             |
+| `User david.morcillo@gmail.com reported...`  | `a user reported...`                                      |
+| `The admin panel at /admin/users shows...`   | (use a private security advisory if it's a vulnerability) |
+| `We have 47 registered users`                | (omit — internal metric)                                  |

@@ -33,7 +33,7 @@ function cleanEnv(key: string): string | undefined {
   return val.replace(/^\[dotenv@[^\]]+\][^\n]*\n/, "");
 }
 
-const url = cleanEnv("TURSO_DATABASE_URL") || "file:./data/lol-tracker.db";
+const url = cleanEnv("TURSO_DATABASE_URL") || "file:./data/levelrise.db";
 const authToken = cleanEnv("TURSO_AUTH_TOKEN");
 
 console.log(`\n🔍 Review Migration Audit`);

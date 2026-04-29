@@ -142,7 +142,7 @@ export function ScheduleSessionClient({
       <div className="flex items-center gap-3">
         <BackButton />
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>

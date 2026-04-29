@@ -363,7 +363,7 @@ export function AnalyticsCharts({
                           <p className="text-sm font-semibold text-foreground">{d.date}</p>
                           <p className="text-sm">
                             {t("tooltips.winRate")}{" "}
-                            <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
+                            <span className={d.winRate >= 50 ? "text-win" : "text-loss"}>
                               {d.winRate}%
                             </span>
                           </p>
@@ -410,7 +410,7 @@ export function AnalyticsCharts({
                   <Line
                     type="monotone"
                     dataKey="winRate"
-                    stroke={cc.gold}
+                    stroke={cc.win}
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 4 }}
@@ -493,7 +493,7 @@ export function AnalyticsCharts({
                             <p className="font-semibold text-foreground">{d.name}</p>
                             <p className="text-sm">
                               Win Rate:{" "}
-                              <span className={d.winRate >= 50 ? "text-gold" : "text-loss"}>
+                              <span className={d.winRate >= 50 ? "text-win" : "text-loss"}>
                                 {d.winRate}%
                               </span>{" "}
                               <span className="text-muted-foreground">
@@ -507,7 +507,7 @@ export function AnalyticsCharts({
                     <ReferenceLine x={50} stroke={cc.chartReference} strokeDasharray="3 3" />
                     <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
                       {topMatchups.map((entry, index) => (
-                        <Cell key={index} fill={entry.winRate >= 50 ? cc.gold : cc.loss} />
+                        <Cell key={index} fill={entry.winRate >= 50 ? cc.win : cc.loss} />
                       ))}
                     </Bar>
                   </BarChart>

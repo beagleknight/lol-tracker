@@ -141,7 +141,7 @@ function ScoutingReport({
                 <span className="text-loss">{record.losses}L</span>
               </span>
               <Badge
-                variant={record.winRate >= 50 ? "default" : "destructive"}
+                variant={record.winRate >= 50 ? "success" : "destructive"}
                 className="font-mono text-sm"
               >
                 {record.winRate}%
@@ -561,10 +561,7 @@ export function ScoutClient({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-gradient-gold flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Crosshair className="h-6 w-6" />
-          {t("pageTitle")}
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">{t("pageDescription")}</p>
       </div>
 

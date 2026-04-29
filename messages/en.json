@@ -1,6 +1,6 @@
 {
   "Sidebar": {
-    "appName": "LoL Tracker",
+    "appName": "LevelRise",
     "updateGamesTooltip": "Update games",
     "linkRiotAccountTooltip": "Link Riot account in Settings first",
     "navDashboard": "Dashboard",
@@ -66,7 +66,7 @@
     "lowlightTopicLabel": "Lowlight topic"
   },
   "Login": {
-    "title": "LoL Tracker",
+    "title": "LevelRise",
     "description": "Track your League of Legends games, coaching sessions, and improve your gameplay.",
     "errorInviteRequired": "An invite code is required to create a new account.",
     "errorInviteInvalid": "That invite code is invalid or has already been used.",
@@ -861,7 +861,7 @@
   },
   "Changelog": {
     "title": "What's new",
-    "subtitle": "Latest updates and improvements to LoL Tracker",
+    "subtitle": "Latest updates and improvements to LevelRise",
     "empty": "No updates yet. Check back soon!",
     "noFilterResults": "No entries match this filter.",
     "filterAll": "All",
@@ -1038,7 +1038,7 @@
     }
   },
   "Onboarding": {
-    "title": "Welcome to lol-tracker",
+    "title": "Welcome to LevelRise",
     "subtitle": "Let's get your account set up in a few quick steps.",
     "step": "Step {current} of {total}",
     "next": "Next",
@@ -1182,9 +1182,9 @@
   "Legal": {
     "pageTitle": "Legal",
     "riotDisclaimerHeading": "Riot Games disclaimer",
-    "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+    "riotDisclaimer": "LevelRise isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
     "openSourceHeading": "Open source",
-    "openSourceText": "LoL Tracker is open-source software licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). You can view, modify, and redistribute the source code under the terms of this license.",
+    "openSourceText": "LevelRise is open-source software licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). You can view, modify, and redistribute the source code under the terms of this license.",
     "openSourceLink": "View source code on GitHub",
     "backToApp": "Back to app",
     "privacyPolicyLink": "Privacy policy"
@@ -1193,7 +1193,7 @@
     "pageTitle": "Privacy policy",
     "lastUpdated": "Last updated: {date}",
     "introHeading": "Introduction",
-    "introText": "LoL Tracker is an open-source League of Legends companion app. This privacy policy explains what data we collect, how we use it, and your rights regarding that data.",
+    "introText": "LevelRise is an open-source League of Legends companion app. This privacy policy explains what data we collect, how we use it, and your rights regarding that data.",
     "dataCollectionHeading": "What data we collect",
     "discordDataHeading": "Discord account",
     "discordDataText": "When you sign in with Discord, we receive your Discord user ID, username, email address, and avatar. This is used solely for authentication and displaying your profile.",
@@ -1208,7 +1208,7 @@
     "storageHeading": "How we store your data",
     "storageText": "Your data is stored in a Turso (libSQL) database. The application is hosted on Vercel. Both services process data on your behalf as part of running this app.",
     "thirdPartyHeading": "Third-party services",
-    "thirdPartyText": "LoL Tracker integrates with the following third-party services:",
+    "thirdPartyText": "LevelRise integrates with the following third-party services:",
     "thirdPartyDiscord": "Discord — authentication (OAuth2)",
     "thirdPartyRiot": "Riot Games API — match history and ranked data",
     "thirdPartyGemini": "Google Gemini — AI coaching insights (optional)",
@@ -1299,7 +1299,7 @@
     "footer": {
       "legal": "Legal",
       "sourceCode": "Source code",
-      "riotDisclaimer": "LoL Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
+      "riotDisclaimer": "LevelRise isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
     }
   },
   "ChallengeResult": {

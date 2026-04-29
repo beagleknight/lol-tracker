@@ -222,14 +222,14 @@ export function MatchDetailClient({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-gradient-gold text-xl font-bold">
+                <h1 className="text-xl font-bold text-teal">
                   <ChampionLink
                     champion={match.championName}
                     ddragonVersion={ddragonVersion}
                     linkTo="scout-your"
                     enemyChampion={match.matchupChampionName || undefined}
                     showIcon={false}
-                    textClassName="text-xl font-bold text-gradient-gold"
+                    textClassName="text-xl font-bold text-teal"
                     className="hover:bg-accent/30"
                   />
                 </h1>

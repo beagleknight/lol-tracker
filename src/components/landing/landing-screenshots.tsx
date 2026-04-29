@@ -27,7 +27,7 @@ export function LandingScreenshots() {
               }`}
             >
               <div className="flex-1">
-                <BrowserFrame src={src} alt={`LoL Tracker ${key}`} width={1280} height={720} />
+                <BrowserFrame src={src} alt={`LevelRise ${key}`} width={1280} height={720} />
               </div>
               <div className="max-w-md flex-shrink-0 text-center lg:text-left">
                 <p className="text-lg leading-relaxed text-muted-foreground">

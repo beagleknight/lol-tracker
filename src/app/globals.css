@@ -106,9 +106,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-plus-jakarta-sans);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-inter);
+  --font-heading: var(--font-plus-jakarta-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -143,6 +143,8 @@
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
   --color-electric: var(--electric);
   --color-electric-light: var(--electric-light);
   --color-neon-purple: var(--neon-purple);
@@ -196,60 +198,63 @@
 /* Surface hierarchy: bg 0.96 → surface 0.97 → sidebar 0.98 → card 0.99 */
 /* White cards on light grey background for clear card separation */
 :root {
-  --background: oklch(0.96 0.008 260);
-  --foreground: oklch(0.15 0.02 260);
-  --card: oklch(0.99 0.005 260);
-  --card-foreground: oklch(0.15 0.02 260);
-  --popover: oklch(0.99 0.005 260);
-  --popover-foreground: oklch(0.15 0.02 260);
-  --primary: oklch(0.55 0.15 80);
+  /* Brand kit light neutrals: BG #F8FAFC, Surface #FFFFFF, Elevated #F1F5F9, Border #E2EBF0, Text #0F172A */
+  --background: oklch(0.98 0.005 260);
+  --foreground: oklch(0.15 0.03 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.03 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.03 260);
+  --primary: oklch(0.6 0.16 85);
   --primary-foreground: oklch(0.99 0.005 260);
-  --secondary: oklch(0.92 0.01 260);
-  --secondary-foreground: oklch(0.2 0.02 260);
-  --muted: oklch(0.92 0.01 260);
+  --secondary: oklch(0.93 0.008 260);
+  --secondary-foreground: oklch(0.2 0.025 260);
+  --muted: oklch(0.93 0.008 260);
   --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.65 0.17 250);
+  --accent: oklch(0.62 0.18 250);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.87 0.01 260);
-  --input: oklch(0.87 0.01 260);
-  --ring: oklch(0.55 0.15 80);
+  --border: oklch(0.9 0.008 260);
+  --input: oklch(0.9 0.008 260);
+  --ring: oklch(0.6 0.16 85);
   --chart-1: oklch(0.55 0.03 250);
-  --chart-2: oklch(0.65 0.17 250);
-  --chart-3: oklch(0.55 0.15 80);
-  --chart-4: oklch(0.72 0.15 150);
+  --chart-2: oklch(0.62 0.18 250);
+  --chart-3: oklch(0.6 0.16 85);
+  --chart-4: oklch(0.72 0.15 170);
   --chart-5: oklch(0.6 0.22 27);
   --radius: 0.375rem;
 
-  /* Gaming colors — darkened for WCAG AA contrast on light backgrounds */
-  --gold: oklch(0.55 0.15 80);
-  --gold-light: oklch(0.65 0.13 80);
-  --gold-dark: oklch(0.45 0.15 75);
-  --electric: oklch(0.65 0.17 250);
-  --electric-light: oklch(0.75 0.15 250);
-  --neon-purple: oklch(0.6 0.2 300);
-  --surface: oklch(0.97 0.005 260);
-  --surface-elevated: oklch(0.99 0.005 260);
+  /* Gaming colors — brand kit accents, darkened for WCAG AA on light bg */
+  --gold: oklch(0.6 0.16 85);
+  --gold-light: oklch(0.68 0.14 85);
+  --gold-dark: oklch(0.5 0.16 80);
+  --teal: oklch(0.55 0.14 170);
+  --teal-light: oklch(0.65 0.14 170);
+  --electric: oklch(0.62 0.18 250);
+  --electric-light: oklch(0.72 0.16 250);
+  --neon-purple: oklch(0.55 0.24 295);
+  --surface: oklch(1 0 0);
+  --surface-elevated: oklch(0.97 0.005 260);
 
-  --sidebar: oklch(0.98 0.005 260);
-  --sidebar-foreground: oklch(0.15 0.02 260);
-  --sidebar-primary: oklch(0.55 0.15 80);
+  --sidebar: oklch(0.99 0.003 260);
+  --sidebar-foreground: oklch(0.15 0.03 260);
+  --sidebar-primary: oklch(0.6 0.16 85);
   --sidebar-primary-foreground: oklch(0.99 0.005 260);
-  --sidebar-accent: oklch(0.92 0.01 260);
-  --sidebar-accent-foreground: oklch(0.2 0.02 260);
-  --sidebar-border: oklch(0.87 0.01 260);
-  --sidebar-ring: oklch(0.55 0.15 80);
+  --sidebar-accent: oklch(0.93 0.008 260);
+  --sidebar-accent-foreground: oklch(0.2 0.025 260);
+  --sidebar-border: oklch(0.9 0.008 260);
+  --sidebar-ring: oklch(0.6 0.16 85);
 
   /* Semantic gameplay colors - light mode (darker for contrast on 0.96 bg) */
-  --win: oklch(0.5 0.16 150);
+  --win: oklch(0.5 0.14 170);
   --loss: oklch(0.5 0.22 27);
-  --win-muted: oklch(0.55 0.12 150);
+  --win-muted: oklch(0.55 0.12 170);
   --loss-muted: oklch(0.55 0.16 27);
   --warning: oklch(0.55 0.16 65);
   --status-progress: oklch(0.55 0.16 85);
   --streak-hot: oklch(0.52 0.2 45);
   --streak-cold: oklch(0.5 0.14 250);
-  --kills: oklch(0.5 0.16 150);
+  --kills: oklch(0.5 0.14 170);
   --deaths: oklch(0.5 0.22 27);
 
   /* Chart colors - light mode */
@@ -258,7 +263,7 @@
   --chart-tooltip-bg: oklch(0.99 0.005 260);
   --chart-tooltip-border: oklch(0.87 0.01 260);
   --chart-reference: oklch(0.78 0.01 260);
-  --chart-promotion: oklch(0.5 0.16 150);
+  --chart-promotion: oklch(0.5 0.14 170);
   --chart-demotion: oklch(0.55 0.22 27);
 
   /* Rank tier colors — light mode (darker for WCAG AA on light bg) */
@@ -278,76 +283,78 @@
 /* Surface hierarchy: sidebar 0.14 → bg 0.16 → card/surface 0.20 → elevated 0.23 */
 /* Reference model: GitHub Dark Dimmed lightness levels */
 .dark {
-  /* Raised background — better surface separation */
-  --background: oklch(0.16 0.02 260);
-  --foreground: oklch(0.93 0.01 250);
+  /* Brand kit neutrals: BG #0B0F17, Surface #121826, Elevated #1A2233, Border #2A3447 */
+  --background: oklch(0.13 0.02 260);
+  --foreground: oklch(0.93 0.005 260);
 
-  /* Cards: clearly elevated dark surfaces (+0.04 from bg) */
-  --card: oklch(0.2 0.02 260);
-  --card-foreground: oklch(0.93 0.01 250);
-  --popover: oklch(0.2 0.02 260);
-  --popover-foreground: oklch(0.93 0.01 250);
+  /* Cards: elevated dark surfaces */
+  --card: oklch(0.17 0.025 260);
+  --card-foreground: oklch(0.93 0.005 260);
+  --popover: oklch(0.17 0.025 260);
+  --popover-foreground: oklch(0.93 0.005 260);
 
-  /* Primary: League of Legends gold */
-  --primary: oklch(0.78 0.14 80);
-  --primary-foreground: oklch(0.16 0.02 260);
+  /* Primary: brand gold #F2C94C */
+  --primary: oklch(0.84 0.15 85);
+  --primary-foreground: oklch(0.13 0.02 260);
 
   /* Secondary: dark blue-grey surfaces */
-  --secondary: oklch(0.24 0.025 260);
-  --secondary-foreground: oklch(0.88 0.01 250);
+  --secondary: oklch(0.21 0.03 260);
+  --secondary-foreground: oklch(0.88 0.005 260);
 
   /* Muted: subdued dark surfaces */
-  --muted: oklch(0.22 0.02 260);
-  --muted-foreground: oklch(0.7 0.02 250);
+  --muted: oklch(0.19 0.025 260);
+  --muted-foreground: oklch(0.7 0.015 260);
 
   /* Accent: subtle dark blue surface for hover states */
-  --accent: oklch(0.26 0.04 260);
-  --accent-foreground: oklch(0.93 0.01 250);
+  --accent: oklch(0.23 0.035 260);
+  --accent-foreground: oklch(0.93 0.005 260);
 
-  --destructive: oklch(0.78 0.22 27);
-  --border: oklch(0.28 0.03 260);
-  --input: oklch(0.24 0.025 260);
-  --ring: oklch(0.78 0.14 80);
+  --destructive: oklch(0.7 0.24 27);
+  --border: oklch(0.28 0.035 260);
+  --input: oklch(0.21 0.03 260);
+  --ring: oklch(0.84 0.15 85);
 
   /* Chart colors: rank-inspired palette */
   --chart-1: oklch(0.55 0.03 250);
   --chart-2: oklch(0.65 0.17 250);
-  --chart-3: oklch(0.78 0.14 80);
-  --chart-4: oklch(0.72 0.15 150);
+  --chart-3: oklch(0.84 0.15 85);
+  --chart-4: oklch(0.72 0.15 165);
   --chart-5: oklch(0.6 0.22 27);
 
   --radius: 0.375rem;
 
-  /* Gaming accent colors */
-  --gold: oklch(0.78 0.14 80);
-  --gold-light: oklch(0.85 0.12 80);
-  --gold-dark: oklch(0.65 0.15 75);
-  --electric: oklch(0.65 0.17 250);
-  --electric-light: oklch(0.75 0.15 250);
-  --neon-purple: oklch(0.6 0.2 300);
-  --surface: oklch(0.2 0.025 260);
-  --surface-elevated: oklch(0.23 0.03 260);
+  /* Gaming accent colors — brand kit: Gold #F2C94C, Teal #17D9A3, Blue #3B82F6, Purple #8B5CF6 */
+  --gold: oklch(0.84 0.15 85);
+  --gold-light: oklch(0.9 0.12 85);
+  --gold-dark: oklch(0.7 0.15 80);
+  --teal: oklch(0.78 0.17 165);
+  --teal-light: oklch(0.85 0.14 165);
+  --electric: oklch(0.62 0.18 250);
+  --electric-light: oklch(0.72 0.16 250);
+  --neon-purple: oklch(0.55 0.24 295);
+  --surface: oklch(0.17 0.025 260);
+  --surface-elevated: oklch(0.21 0.03 260);
 
   /* Sidebar: darker than content bg for clear visual separation */
-  --sidebar: oklch(0.14 0.02 260);
-  --sidebar-foreground: oklch(0.93 0.01 250);
-  --sidebar-primary: oklch(0.78 0.14 80);
-  --sidebar-primary-foreground: oklch(0.16 0.02 260);
-  --sidebar-accent: oklch(0.2 0.025 260);
-  --sidebar-accent-foreground: oklch(0.88 0.01 250);
-  --sidebar-border: oklch(0.24 0.03 260);
-  --sidebar-ring: oklch(0.78 0.14 80);
+  --sidebar: oklch(0.11 0.02 260);
+  --sidebar-foreground: oklch(0.93 0.005 260);
+  --sidebar-primary: oklch(0.84 0.15 85);
+  --sidebar-primary-foreground: oklch(0.13 0.02 260);
+  --sidebar-accent: oklch(0.17 0.025 260);
+  --sidebar-accent-foreground: oklch(0.88 0.005 260);
+  --sidebar-border: oklch(0.21 0.03 260);
+  --sidebar-ring: oklch(0.84 0.15 85);
 
   /* Semantic gameplay colors - dark mode */
-  --win: oklch(0.72 0.17 150);
+  --win: oklch(0.78 0.17 165);
   --loss: oklch(0.68 0.22 27);
-  --win-muted: oklch(0.72 0.12 150);
+  --win-muted: oklch(0.78 0.12 165);
   --loss-muted: oklch(0.72 0.16 27);
   --warning: oklch(0.78 0.14 65);
   --status-progress: oklch(0.8 0.14 85);
   --streak-hot: oklch(0.7 0.18 45);
   --streak-cold: oklch(0.68 0.14 250);
-  --kills: oklch(0.72 0.17 150);
+  --kills: oklch(0.78 0.17 165);
   --deaths: oklch(0.68 0.22 27);
 
   /* Chart colors - dark mode */
@@ -356,7 +363,7 @@
   --chart-tooltip-bg: oklch(0.2 0.03 260);
   --chart-tooltip-border: oklch(0.28 0.03 260);
   --chart-reference: oklch(0.35 0.02 260);
-  --chart-promotion: oklch(0.72 0.15 150);
+  --chart-promotion: oklch(0.72 0.15 165);
   --chart-demotion: oklch(0.65 0.22 27);
 
   /* Rank tier colors */
@@ -435,6 +442,12 @@
       0 0 20px oklch(from var(--gold) l c h / 0.08);
   }
 
+  .glow-teal-sm {
+    box-shadow:
+      0 0 8px oklch(from var(--teal) l c h / 0.25),
+      0 0 20px oklch(from var(--teal) l c h / 0.08);
+  }
+
   /* Electric blue glow */
   .glow-electric {
     box-shadow:
@@ -477,7 +490,7 @@
 
   /* Text gradient utility */
   .text-gradient-gold {
-    background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold-dark));
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--teal) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

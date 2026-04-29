@@ -202,7 +202,7 @@ export function DashboardClient({
       {/* Header */}
       <div className="animate-in-up flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("heading")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("heading")}</h1>
           {user.riotGameName && (
             <p className="text-muted-foreground">
               {user.riotGameName}#{user.riotTagLine}

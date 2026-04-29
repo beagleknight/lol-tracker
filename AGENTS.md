@@ -50,7 +50,7 @@ Steps after any schema change:
 
 1. `npx drizzle-kit generate` — generates SQL in `drizzle/`
 2. Review the generated SQL
-3. Apply locally: `sqlite3 ./data/lol-tracker.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
+3. Apply locally: `sqlite3 ./data/levelrise.db < drizzle/XXXX_*.sql` (or `npx drizzle-kit push` if it works)
 4. Commit the migration files alongside your code — they will be applied to production automatically on deploy
 
 Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
@@ -82,7 +82,7 @@ Full workflow details are in the `vercel-turso-deploy` OpenCode skill.
 Rules:
 
 1. **NEVER run `vercel env pull` into `.env.local`** — it dumps production secrets. If you need remote credentials for a one-off task, pull into a temporary file (e.g., `.env.tmp`), use it, and delete it immediately.
-2. **NEVER set `TURSO_DATABASE_URL` in `.env.local`** — local dev defaults to `file:./data/lol-tracker.db` (SQLite). This is intentional.
+2. **NEVER set `TURSO_DATABASE_URL` in `.env.local`** — local dev defaults to `file:./data/levelrise.db` (SQLite). This is intentional.
 3. **To target a remote DB**, pass env vars explicitly inline: `TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... npm run db:seed -- --force-remote`
 4. **Before running ANY script that writes to a database**, verify the target URL. If it contains `turso.io` or any remote host, STOP and confirm with the user.
 5. **The seed script (`npm run db:seed`) refuses to run against remote databases** unless `--force-remote` is passed. This is a safety net — respect it.

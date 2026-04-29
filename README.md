@@ -1,15 +1,17 @@
-# LoL Tracker
+# LevelRise
 
-[![CI](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/beagleknight/lol-tracker/actions/workflows/ci.yml)
+> Formerly known as lol-tracker
+
+[![CI](https://github.com/beagleknight/levelrise/actions/workflows/ci.yml/badge.svg)](https://github.com/beagleknight/levelrise/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![Try it](https://img.shields.io/badge/Try_it-lol--tracker.vercel.app-brightgreen)](https://lol-tracker-sigma.vercel.app)
+[![Try it](https://img.shields.io/badge/Try_it-levelrise.app-brightgreen)](https://levelrise.app)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support_this_project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/beagleknight)
 
 An open-source League of Legends companion app that syncs your match history, tracks your performance over time, and gives you AI-powered coaching to help you improve. Built for players who want to take their game seriously.
 
-**[Try it at lol-tracker-sigma.vercel.app →](https://lol-tracker-sigma.vercel.app)**
+**[Try it at levelrise.app →](https://levelrise.app)**
 
-![LoL Tracker Dashboard](public/landing/dashboard.png)
+![LevelRise Dashboard](public/landing/dashboard.png)
 
 ## Features
 
@@ -43,8 +45,8 @@ Review your recent matches with categorized highlights — things you did well a
 ## Quick start
 
 ```bash
-git clone https://github.com/beagleknight/lol-tracker.git
-cd lol-tracker
+git clone https://github.com/beagleknight/levelrise.git
+cd levelrise
 npm install
 cp .env.example .env.local    # Fill in your API keys
 mkdir data && npx drizzle-kit push
@@ -55,7 +57,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions, includin
 
 ## Self-hosting
 
-LoL Tracker is designed to run on [Vercel](https://vercel.com) with [Turso](https://turso.tech) as the production database, but you can adapt it to other platforms.
+LevelRise is designed to run on [Vercel](https://vercel.com) with [Turso](https://turso.tech) as the production database, but you can adapt it to other platforms.
 
 Each instance requires its own credentials:
 
@@ -84,7 +86,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup inst
 
 ## Support the project
 
-If you find LoL Tracker useful, consider supporting its development:
+If you find LevelRise useful, consider supporting its development:
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/beagleknight)
 
@@ -94,7 +96,7 @@ To report a security vulnerability, please email david.morcillo@gmail.com. Do **
 
 ## Legal
 
-LoL Tracker is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+LevelRise is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 
 ## License
 

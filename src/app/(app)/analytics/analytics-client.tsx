@@ -149,7 +149,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
           <p className="text-muted-foreground">{t("importGamesFirst")}</p>
         </div>
         <EmptyState
@@ -164,7 +164,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
   return (
     <div className="space-y-6">
       <div className="animate-in-up">
-        <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
         <p className="text-muted-foreground">{t("gamesAnalyzed", { count: meaningfulCount })}</p>
       </div>
 
@@ -232,7 +232,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge
-                            variant={rune.winRate >= 50 ? "default" : "destructive"}
+                            variant={rune.winRate >= 50 ? "success" : "destructive"}
                             className="font-mono text-xs"
                           >
                             {rune.winRate}%
@@ -330,7 +330,7 @@ export function AnalyticsClient({ data }: AnalyticsClientProps) {
                       <TableCell className="text-center font-mono text-sm">{champ.games}</TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          variant={champ.winRate >= 50 ? "default" : "destructive"}
+                          variant={champ.winRate >= 50 ? "success" : "destructive"}
                           className="font-mono text-xs"
                         >
                           {champ.winRate}%

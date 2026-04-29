@@ -1,11 +1,11 @@
 ---
 name: accessibility
-description: WCAG 2.1 AA accessibility patterns for lol-tracker — color contrast, ARIA, keyboard navigation, reduced motion, and component checklist
+description: WCAG 2.1 AA accessibility patterns for levelrise — color contrast, ARIA, keyboard navigation, reduced motion, and component checklist
 ---
 
 ## What I do
 
-Guide writing accessible UI components and fixing accessibility violations in the lol-tracker codebase. This skill covers WCAG 2.1 AA compliance patterns specific to our dark-themed gaming UI with OKLCH colors, @base-ui/react components, and Tailwind CSS v4.
+Guide writing accessible UI components and fixing accessibility violations in the levelrise codebase. This skill covers WCAG 2.1 AA compliance patterns specific to our dark-themed gaming UI with OKLCH colors, @base-ui/react components, and Tailwind CSS v4.
 
 ## When to use me
 

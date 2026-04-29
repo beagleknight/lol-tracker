@@ -12,7 +12,7 @@ export function LandingFooter() {
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-2">
             <Logo className="h-5 w-5 text-gold" />
-            <span className="text-sm font-medium text-foreground">LoL Tracker</span>
+            <span className="text-sm font-medium text-foreground">LevelRise</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -22,7 +22,7 @@ export function LandingFooter() {
               {t("footer.legal")}
             </Link>
             <a
-              href="https://github.com/beagleknight/lol-tracker"
+              href="https://github.com/beagleknight/levelrise"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"

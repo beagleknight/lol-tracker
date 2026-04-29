@@ -48,7 +48,7 @@ function DemoLoginForm() {
         <div className="glow-gold-sm mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
           <Logo className="h-8 w-8 text-gold" />
         </div>
-        <CardTitle className="text-gradient-gold text-2xl">{t("fakeAuthTitle")}</CardTitle>
+        <CardTitle className="text-2xl text-teal">{t("fakeAuthTitle")}</CardTitle>
         <CardDescription>{t("fakeAuthDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -147,7 +147,7 @@ function DiscordLoginForm() {
         <div className="glow-gold-sm mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
           <Logo className="h-8 w-8 text-gold" />
         </div>
-        <CardTitle className="text-gradient-gold text-2xl">{t("title")}</CardTitle>
+        <CardTitle className="text-2xl text-teal">{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

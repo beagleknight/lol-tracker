@@ -92,9 +92,7 @@ export function NewGoalClient({ currentRank }: NewGoalClientProps) {
       <div className="flex items-center gap-4">
         <BackButton />
         <div>
-          <h1 className="text-gradient-gold text-2xl font-bold tracking-tight">
-            {t("newGoalTitle")}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("newGoalTitle")}</h1>
           <p className="text-muted-foreground">{t("newGoalSubtitle")}</p>
         </div>
       </div>
