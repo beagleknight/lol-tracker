@@ -1,6 +1,6 @@
 ---
 name: security
-description: Security patterns for levelrise — CSP, cookie flags, error sanitization, auth checks, URL validation, and supply-chain monitoring
+description: Security patterns for levelrise — CSP, cookie flags, error sanitization, auth checks, URL validation, and supply-chain monitoring. Use when adding external scripts, third-party analytics, tracking pixels, or any new <Script> / <script> tag.
 ---
 
 ## What I do
@@ -34,7 +34,16 @@ When adding a new external CDN, image host, or script source:
 
 1. Update the CSP in `next.config.ts`
 2. Add only the specific domain needed (never use `*`)
-3. Test with browser DevTools console — CSP violations appear there
+3. Match the directive to the resource type:
+   - `<script src="...">` → add to `script-src`
+   - `<link>` / inline styles from CDN → add to `style-src`
+   - `<img src="...">` → add to `img-src`
+   - `fetch()` / XHR / beacon → add to `connect-src`
+   - `<iframe>` → add to `frame-src`
+4. Analytics/tracking scripts typically need BOTH `script-src` (to load the JS) AND `connect-src` (to send beacons/events back)
+5. Test with browser DevTools console — CSP violations appear there
+
+**MANDATORY**: Whenever you add a `<script>` tag, `next/script`, or any external script reference, you MUST update the CSP in the same PR. Forgetting this causes a runtime block with zero functionality — the script silently fails.
 
 ### Why `'unsafe-inline'` is needed
 
