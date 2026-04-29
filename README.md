@@ -4,12 +4,12 @@
 
 [![CI](https://github.com/beagleknight/levelrise/actions/workflows/ci.yml/badge.svg)](https://github.com/beagleknight/levelrise/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![Try it](https://img.shields.io/badge/Try_it-levelrise.vercel.app-brightgreen)](https://levelrise-sigma.vercel.app)
+[![Try it](https://img.shields.io/badge/Try_it-levelrise.app-brightgreen)](https://levelrise.app)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support_this_project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/beagleknight)
 
 An open-source League of Legends companion app that syncs your match history, tracks your performance over time, and gives you AI-powered coaching to help you improve. Built for players who want to take their game seriously.
 
-**[Try it at levelrise-sigma.vercel.app →](https://levelrise-sigma.vercel.app)**
+**[Try it at levelrise.app →](https://levelrise.app)**
 
 ![LevelRise Dashboard](public/landing/dashboard.png)
 
