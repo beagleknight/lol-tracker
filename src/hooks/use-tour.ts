@@ -5,67 +5,40 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-const TOUR_COMPLETED_KEY = "tour-completed";
+function tourKey(id: string) {
+  return `tour-${id}-completed`;
+}
+
+interface UseTourOptions {
+  /** Unique identifier for this tour (used as localStorage key) */
+  id: string;
+  /** Tour steps — when omitted, the global sidebar steps are used */
+  steps: DriveStep[];
+  /** Auto-start on first mount if not yet completed */
+  autoStart?: boolean;
+  /** i18n namespace for toast messages (defaults to "Tour") */
+  toastCompleted?: string;
+  toastSkipped?: string;
+}
 
 /**
  * Guided tour hook powered by Driver.js.
  *
- * - On first call after onboarding, auto-starts the tour (unless already completed).
- * - Exposes `startTour()` so the Settings page can re-trigger it.
+ * Supports named tours so each page can have its own independent tour
+ * with separate completion state in localStorage.
  */
-export function useTour({ autoStart = false }: { autoStart?: boolean } = {}) {
+export function useTour({
+  id,
+  steps,
+  autoStart = false,
+  toastCompleted: toastCompletedOverride,
+  toastSkipped: toastSkippedOverride,
+}: UseTourOptions) {
   const t = useTranslations("Tour");
   const started = useRef(false);
 
-  const buildSteps = useCallback((): DriveStep[] => {
-    return [
-      {
-        element: "[data-tour='sync-button']",
-        popover: {
-          title: t("stepSyncTitle"),
-          description: t("stepSyncDescription"),
-          side: "bottom" as const,
-          align: "end" as const,
-        },
-      },
-      {
-        element: "[data-tour='section-tracker']",
-        popover: {
-          title: t("stepTrackerTitle"),
-          description: t("stepTrackerDescription"),
-          side: "right" as const,
-          align: "start" as const,
-        },
-      },
-      {
-        element: "[data-tour='section-insights']",
-        popover: {
-          title: t("stepInsightsTitle"),
-          description: t("stepInsightsDescription"),
-          side: "right" as const,
-          align: "start" as const,
-        },
-      },
-      {
-        element: "[data-tour='section-coaching']",
-        popover: {
-          title: t("stepCoachingTitle"),
-          description: t("stepCoachingDescription"),
-          side: "right" as const,
-          align: "start" as const,
-        },
-      },
-      {
-        element: "[data-tour='season-filter']",
-        popover: {
-          title: t("stepSeasonFilterTitle"),
-          description: t("stepSeasonFilterDescription"),
-          side: "bottom" as const,
-          align: "start" as const,
-        },
-      },
-    ];
-  }, [t]);
+  const completedMsg = toastCompletedOverride ?? t("toastCompleted");
+  const skippedMsg = toastSkippedOverride ?? t("toastSkipped");
 
   const startTour = useCallback(() => {
     const driverInstance = driver({
@@ -77,42 +50,39 @@ export function useTour({ autoStart = false }: { autoStart?: boolean } = {}) {
       prevBtnText: t("prevButton"),
       doneBtnText: t("doneButton"),
       progressText: "{{current}} / {{total}}",
-      steps: buildSteps(),
+      steps,
       onDestroyStarted: () => {
-        // User clicked the X or clicked outside — treat as skip
         if (!driverInstance.hasNextStep()) {
-          // Last step — completed
-          localStorage.setItem(TOUR_COMPLETED_KEY, "true");
-          toast.success(t("toastCompleted"));
+          localStorage.setItem(tourKey(id), "true");
+          toast.success(completedMsg);
         } else {
-          localStorage.setItem(TOUR_COMPLETED_KEY, "true");
-          toast.info(t("toastSkipped"));
+          localStorage.setItem(tourKey(id), "true");
+          toast.info(skippedMsg);
         }
         driverInstance.destroy();
       },
     });
 
     driverInstance.drive();
-  }, [buildSteps, t]);
+  }, [steps, t, id, completedMsg, skippedMsg]);
 
   // Auto-start on mount if requested and not yet completed
   useEffect(() => {
     if (!autoStart || started.current) return;
-    const completed = localStorage.getItem(TOUR_COMPLETED_KEY);
+    const completed = localStorage.getItem(tourKey(id));
     if (completed) return;
 
     started.current = true;
-    // Small delay to let the sidebar render fully
     const timer = setTimeout(() => {
       startTour();
     }, 500);
     return () => clearTimeout(timer);
-  }, [autoStart, startTour]);
+  }, [autoStart, startTour, id]);
 
   const resetTour = useCallback(() => {
-    localStorage.removeItem(TOUR_COMPLETED_KEY);
+    localStorage.removeItem(tourKey(id));
     startTour();
-  }, [startTour]);
+  }, [startTour, id]);
 
   return { startTour, resetTour };
 }

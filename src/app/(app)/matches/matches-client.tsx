@@ -20,6 +20,7 @@ import type { Match } from "@/db/schema";
 import { EmptyState } from "@/components/empty-state";
 import { ChampionIcon } from "@/components/icons/champion-icon";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
+import { TourHelpButton } from "@/components/tour-help-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-client";
 import { DEFAULT_LOCALE } from "@/lib/format";
+import { useMatchesTourSteps } from "@/lib/tour-steps";
 
 interface MatchesClientProps {
   matches: Match[];
@@ -179,6 +181,8 @@ export function MatchesClient({
   const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Matches");
+  const tourT = useTranslations("Tour");
+  const matchesTourSteps = useMatchesTourSteps(tourT);
   const [isNavigating, startTransition] = useTransition();
 
   const meaningfulGames = wins + losses;
@@ -231,16 +235,20 @@ export function MatchesClient({
             {t("summary", { totalMatches, wins, losses, winRate })}
           </p>
         </div>
-        {!isReadOnly && totalMatches > 0 && (
-          <a
-            href={buildExportUrl(filters)}
-            download
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {t("exportCsv")}
-          </a>
-        )}
+        <div className="flex items-center gap-2">
+          <TourHelpButton tourId="matches" steps={matchesTourSteps} />
+          {!isReadOnly && totalMatches > 0 && (
+            <a
+              href={buildExportUrl(filters)}
+              download
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+              data-tour="matches-export"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {t("exportCsv")}
+            </a>
+          )}
+        </div>
       </div>
 
       {!isReadOnly && !isRiotLinked && (
@@ -289,7 +297,7 @@ export function MatchesClient({
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3" data-tour="matches-filters">
         <div className="relative min-w-[200px] flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -399,6 +407,7 @@ export function MatchesClient({
             )}
             <div
               className={`space-y-2 transition-opacity duration-150 ${isNavigating ? "opacity-40" : ""}`}
+              data-tour="matches-list"
             >
               {pageMatches.map((match) => (
                 <MatchCard

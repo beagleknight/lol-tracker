@@ -24,12 +24,14 @@ import type { CoachingSession, CoachingActionItem } from "@/db/schema";
 import { updateActionItemStatus } from "@/app/actions/coaching";
 import { EmptyState } from "@/components/empty-state";
 import { ChampionIcon } from "@/components/icons/champion-icon";
+import { TourHelpButton } from "@/components/tour-help-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
+import { useCoachingTourSteps } from "@/lib/tour-steps";
 
 interface VodMatchInfo {
   id: string;
@@ -122,6 +124,8 @@ export function CoachingHubClient({
   const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Coaching");
+  const tourT = useTranslations("Tour");
+  const coachingTourSteps = useCoachingTourSteps(tourT);
   const totalSessions = scheduledSessions.length + completedSessions.length;
 
   return (
@@ -136,14 +140,17 @@ export function CoachingHubClient({
               : t("subtitleSummary", { totalSessions, activeCount: activeActionItems.length })}
           </p>
         </div>
-        {!isReadOnly && (
-          <Link href={"/coaching/new"}>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("scheduleSessionButton")}
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <TourHelpButton tourId="coaching" steps={coachingTourSteps} />
+          {!isReadOnly && (
+            <Link href={"/coaching/new"}>
+              <Button data-tour="coaching-new-session">
+                <Plus className="mr-2 h-4 w-4" />
+                {t("scheduleSessionButton")}
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Empty state */}
@@ -167,7 +174,7 @@ export function CoachingHubClient({
 
       {/* Upcoming Sessions */}
       {scheduledSessions.length > 0 && (
-        <section>
+        <section data-tour="coaching-upcoming">
           <div className="mb-3 flex items-center gap-2">
             <CalendarCheck className="h-4 w-4 text-gold" />
             <h2 className="text-lg font-semibold">{t("upcomingSessions")}</h2>
@@ -286,7 +293,7 @@ export function CoachingHubClient({
 
       {/* Active Action Items */}
       {activeActionItems.length > 0 && (
-        <section>
+        <section data-tour="coaching-action-items">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-gold" />

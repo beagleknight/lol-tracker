@@ -26,11 +26,13 @@ import { EmptyState } from "@/components/empty-state";
 import { ChampionIcon } from "@/components/icons/champion-icon";
 import { RuneIcon } from "@/components/icons/rune-icon";
 import { MatchCard } from "@/components/match-card";
+import { TourHelpButton } from "@/components/tour-help-button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatNumber, DEFAULT_LOCALE } from "@/lib/format";
+import { useScoutTourSteps } from "@/lib/tour-steps";
 
 import { MatchupNotesTrigger, MatchupNotesPanel, pickActiveNote } from "./matchup-notes";
 
@@ -438,6 +440,8 @@ export function ScoutClient({
   const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Scout");
+  const tourT = useTranslations("Tour");
+  const scoutTourSteps = useScoutTourSteps(tourT);
   const [yourChampion, setYourChampion] = useState<string>(initialYourChampion);
   const [enemyChampion, setEnemyChampion] = useState<string>(initialEnemyChampion);
   const [report, setReport] = useState<MatchupReport | null>(null);
@@ -560,9 +564,12 @@ export function ScoutClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
-        <p className="text-muted-foreground">{t("pageDescription")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("pageTitle")}</h1>
+          <p className="text-muted-foreground">{t("pageDescription")}</p>
+        </div>
+        <TourHelpButton tourId="scout" steps={scoutTourSteps} />
       </div>
 
       {/* Controls: two champion pickers */}
@@ -576,6 +583,7 @@ export function ScoutClient({
           label={t("yourChampionLabel")}
           className="flex-1 sm:max-w-xs"
           recommendations={yourChampionRecs}
+          data-tour="scout-your-champion"
         />
         <span className="flex items-center justify-center text-sm font-medium text-muted-foreground sm:items-end sm:pb-2">
           {t("vs")}
@@ -589,6 +597,7 @@ export function ScoutClient({
           label={t("enemyChampionLabel")}
           className="flex-1 sm:max-w-xs"
           recommendations={enemyChampionRecs}
+          data-tour="scout-enemy-champion"
         />
       </div>
 
@@ -602,16 +611,18 @@ export function ScoutClient({
 
       {/* Scouting report */}
       {!isLoadingReport && report && (
-        <ScoutingReport
-          report={report}
-          ddragonVersion={ddragonVersion}
-          locale={locale}
-          matchupNotes={matchupNotesList}
-          yourChampionName={yourChampion || undefined}
-          isAiConfigured={isAiConfigured}
-          onNotesChanged={refreshNotes}
-          readOnly={isReadOnly}
-        />
+        <div data-tour="scout-report">
+          <ScoutingReport
+            report={report}
+            ddragonVersion={ddragonVersion}
+            locale={locale}
+            matchupNotes={matchupNotesList}
+            yourChampionName={yourChampion || undefined}
+            isAiConfigured={isAiConfigured}
+            onNotesChanged={refreshNotes}
+            readOnly={isReadOnly}
+          />
+        </div>
       )}
 
       {/* No historical data state */}

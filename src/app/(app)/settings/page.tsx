@@ -75,6 +75,7 @@ import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@
 import { logout, useAuth } from "@/lib/auth-client";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
 import { PLATFORM_IDS, PLATFORM_LABELS } from "@/lib/riot-api";
+import { useSidebarTourSteps } from "@/lib/tour-steps";
 
 const CADENCE_OPTIONS = [
   { days: 7, key: "weekly" as const },
@@ -88,7 +89,9 @@ const VALID_TABS = ["account", "preferences", "duo"] as const;
 export default function SettingsPage() {
   const { user, updateSession } = useAuth();
   const t = useTranslations("Settings");
-  const { resetTour } = useTour();
+  const tourT = useTranslations("Tour");
+  const sidebarSteps = useSidebarTourSteps(tourT);
+  const { resetTour } = useTour({ id: "sidebar", steps: sidebarSteps });
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
