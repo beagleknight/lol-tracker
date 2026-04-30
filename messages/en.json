@@ -678,6 +678,7 @@
   "Settings": {
     "title": "Settings",
     "description": "Manage your account and Riot Games integration.",
+    "tourButton": "Take the tour",
     "tabs": {
       "account": "Account",
       "preferences": "Preferences",
@@ -1482,5 +1483,24 @@
     "title": "Page not found",
     "description": "The page you're looking for doesn't exist or has been moved.",
     "backToDashboard": "Back to dashboard"
+  },
+  "Tour": {
+    "stepSyncTitle": "Sync your matches",
+    "stepSyncDescription": "Press this button to fetch your latest ranked games from Riot. Your data stays up to date automatically, but you can sync manually anytime.",
+    "stepTrackerTitle": "Track your progress",
+    "stepTrackerDescription": "View your match history, review games to identify mistakes, track duo performance, and set personal challenges.",
+    "stepInsightsTitle": "Analyze your gameplay",
+    "stepInsightsDescription": "Dive into analytics about your performance trends and scout matchup data for any champion.",
+    "stepCoachingTitle": "Coaching tools",
+    "stepCoachingDescription": "Plan coaching sessions, log action items, and track your improvement over time.",
+    "stepSeasonFilterTitle": "Filter by season",
+    "stepSeasonFilterDescription": "Use this filter to focus on a specific season across all pages — matches, analytics, and more.",
+    "nextButton": "Next",
+    "prevButton": "Back",
+    "doneButton": "Done",
+    "skipButton": "Skip tour",
+    "toastCompleted": "Tour complete! You can replay it anytime from Settings.",
+    "toastSkipped": "Tour skipped. You can replay it anytime from Settings.",
+    "settingsButton": "Take the tour"
   }
 }

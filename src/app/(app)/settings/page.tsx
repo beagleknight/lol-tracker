@@ -18,6 +18,7 @@ import {
   EyeOff,
   Crown,
   AlertTriangle,
+  Compass,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -69,6 +70,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTour } from "@/hooks/use-tour";
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/languages";
 import { logout, useAuth } from "@/lib/auth-client";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, formatDate, type SupportedLocale } from "@/lib/format";
@@ -86,6 +88,7 @@ const VALID_TABS = ["account", "preferences", "duo"] as const;
 export default function SettingsPage() {
   const { user, updateSession } = useAuth();
   const t = useTranslations("Settings");
+  const { resetTour } = useTour();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -436,9 +439,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("description")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("description")}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={resetTour} className="gap-2">
+          <Compass className="h-4 w-4" />
+          {t("tourButton")}
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>

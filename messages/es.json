@@ -678,6 +678,7 @@
   "Settings": {
     "title": "Ajustes",
     "description": "Administra tu cuenta e integración con Riot Games.",
+    "tourButton": "Hacer el tour",
     "tabs": {
       "account": "Cuenta",
       "preferences": "Preferencias",
@@ -1482,5 +1483,24 @@
     "title": "Página no encontrada",
     "description": "La página que buscas no existe o ha sido movida.",
     "backToDashboard": "Volver al inicio"
+  },
+  "Tour": {
+    "stepSyncTitle": "Sincroniza tus partidas",
+    "stepSyncDescription": "Pulsa este botón para obtener tus últimas partidas clasificatorias de Riot. Tus datos se mantienen actualizados automáticamente, pero puedes sincronizar manualmente en cualquier momento.",
+    "stepTrackerTitle": "Sigue tu progreso",
+    "stepTrackerDescription": "Consulta tu historial de partidas, revisa partidas para identificar errores, analiza tu rendimiento en dúo y establece retos personales.",
+    "stepInsightsTitle": "Analiza tu juego",
+    "stepInsightsDescription": "Profundiza en las estadísticas de tu rendimiento y consulta datos de emparejamientos para cualquier campeón.",
+    "stepCoachingTitle": "Herramientas de coaching",
+    "stepCoachingDescription": "Planifica sesiones de coaching, registra tareas pendientes y haz seguimiento de tu mejora a lo largo del tiempo.",
+    "stepSeasonFilterTitle": "Filtra por temporada",
+    "stepSeasonFilterDescription": "Usa este filtro para centrarte en una temporada específica en todas las páginas: partidas, estadísticas y más.",
+    "nextButton": "Siguiente",
+    "prevButton": "Atrás",
+    "doneButton": "Hecho",
+    "skipButton": "Saltar tour",
+    "toastCompleted": "¡Tour completado! Puedes repetirlo en cualquier momento desde Ajustes.",
+    "toastSkipped": "Tour omitido. Puedes repetirlo en cualquier momento desde Ajustes.",
+    "settingsButton": "Hacer el tour"
   }
 }
