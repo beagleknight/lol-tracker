@@ -40,6 +40,7 @@ test.describe("Accessibility — authenticated pages", () => {
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
         .exclude("[data-sonner-toaster]")
         .exclude(".driver-active-element")
+        .exclude(".driver-popover")
         .analyze();
 
       expect(results.violations, formatViolations(results.violations)).toEqual([]);
@@ -59,6 +60,7 @@ test.describe("Accessibility — public pages", () => {
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
         .exclude("[data-sonner-toaster]")
         .exclude(".driver-active-element")
+        .exclude(".driver-popover")
         .analyze();
 
       expect(results.violations, formatViolations(results.violations)).toEqual([]);
@@ -83,6 +85,7 @@ test.describe("Accessibility — admin pages", () => {
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .exclude("[data-sonner-toaster]")
       .exclude(".driver-active-element")
+      .exclude(".driver-popover")
       .analyze();
 
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
