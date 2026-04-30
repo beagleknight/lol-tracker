@@ -7,6 +7,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebarSkeleton } from "@/components/app-sidebar-skeleton";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { Toaster } from "@/components/ui/sonner";
@@ -120,7 +121,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               Skip to main content
             </a>
             <ImpersonationBanner />
-            <Suspense>
+            <Suspense fallback={<AppSidebarSkeleton />}>
               <SidebarWithUser />
             </Suspense>
             <main id="main-content" tabIndex={-1} className="flex-1 outline-none md:ml-64">
