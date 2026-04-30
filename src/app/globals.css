@@ -789,7 +789,7 @@
 }
 
 .levelrise-tour-popover .driver-popover-title {
-  color: hsl(174 60% 56%) !important; /* teal */
+  color: var(--teal) !important;
   font-size: 0.95rem !important;
   font-weight: 600 !important;
 }
@@ -813,13 +813,13 @@
 }
 
 .levelrise-tour-popover .driver-popover-next-btn {
-  background: hsl(174 60% 56%) !important;
+  background: var(--teal) !important;
   color: hsl(228 10% 5%) !important;
   text-shadow: none !important;
 }
 
 .levelrise-tour-popover .driver-popover-next-btn:hover {
-  background: hsl(174 60% 46%) !important;
+  background: var(--teal-light) !important;
 }
 
 .levelrise-tour-popover .driver-popover-prev-btn {
