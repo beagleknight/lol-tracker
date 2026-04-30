@@ -23,6 +23,7 @@ import type { Challenge } from "@/db/schema";
 import { retireChallenge, deleteChallenge, retryChallenge } from "@/app/actions/challenges";
 import { EmptyState } from "@/components/empty-state";
 import { Pagination, paginate } from "@/components/pagination";
+import { TourHelpButton } from "@/components/tour-help-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, DEFAULT_LOCALE } from "@/lib/format";
 import { formatTierDivision, calculateProgress } from "@/lib/rank";
+import { useChallengesTourSteps } from "@/lib/tour-steps";
 
 interface ChallengesClientProps {
   challenges: Challenge[];
@@ -59,6 +61,8 @@ export function ChallengesClient({
   readOnly,
 }: ChallengesClientProps) {
   const t = useTranslations("Challenges");
+  const tourT = useTranslations("Tour");
+  const challengesTourSteps = useChallengesTourSteps(tourT);
   const { user } = useAuth();
   const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
@@ -85,20 +89,24 @@ export function ChallengesClient({
           <h1 className="text-2xl font-bold tracking-tight text-teal">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        {!isReadOnly && (
-          <Link href="/challenges/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("newChallenge")}
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <TourHelpButton tourId="challenges" steps={challengesTourSteps} />
+          {!isReadOnly && (
+            <Link href="/challenges/new">
+              <Button data-tour="challenges-new">
+                <Plus className="mr-2 h-4 w-4" />
+                {t("newChallenge")}
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Tabbed layout */}
       <Tabs
         value={currentTab}
         onValueChange={(v) => router.replace(`/challenges?tab=${v}`, { scroll: false })}
+        data-tour="challenges-tabs"
       >
         <TabsList>
           <TabsTrigger value="active">
@@ -112,7 +120,7 @@ export function ChallengesClient({
         {/* Active tab */}
         <TabsContent value="active">
           {activeChallenges.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="challenges-active-card">
               {paginatedActive.map((challenge) => (
                 <ActiveChallengeCard
                   key={challenge.id}

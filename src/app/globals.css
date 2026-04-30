@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "driver.js/dist/driver.css";
 
 /* Inlined from shadcn/tailwind.css (avoids shadcn dep + dotenv v17 banner issue) */
 @theme inline {
@@ -776,4 +777,62 @@
   .hover-lift:hover {
     transform: none;
   }
+}
+
+/* ─── Driver.js dark-theme overrides ─────────────────────────── */
+.levelrise-tour-popover {
+  background: hsl(228 10% 10%) !important;
+  border: 1px solid hsl(228 10% 20%) !important;
+  color: hsl(210 20% 90%) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 8px 32px hsl(228 10% 5% / 0.6) !important;
+}
+
+.levelrise-tour-popover .driver-popover-title {
+  color: var(--teal) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+}
+
+.levelrise-tour-popover .driver-popover-description {
+  color: hsl(210 10% 70%) !important;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+}
+
+.levelrise-tour-popover .driver-popover-progress-text {
+  color: hsl(210 10% 50%) !important;
+  font-size: 0.75rem !important;
+}
+
+.levelrise-tour-popover .driver-popover-navigation-btns button {
+  border-radius: 0.5rem !important;
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.85rem !important;
+  font-weight: 500 !important;
+}
+
+.levelrise-tour-popover .driver-popover-next-btn {
+  background: var(--teal) !important;
+  color: white !important;
+  text-shadow: none !important;
+}
+
+.levelrise-tour-popover .driver-popover-next-btn:hover {
+  background: var(--teal-light) !important;
+}
+
+.levelrise-tour-popover .driver-popover-prev-btn {
+  background: transparent !important;
+  border: 1px solid hsl(228 10% 25%) !important;
+  color: hsl(210 10% 70%) !important;
+  text-shadow: none !important;
+}
+
+.levelrise-tour-popover .driver-popover-close-btn {
+  color: hsl(210 10% 50%) !important;
+}
+
+.levelrise-tour-popover .driver-popover-close-btn:hover {
+  color: hsl(210 10% 80%) !important;
 }

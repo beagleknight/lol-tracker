@@ -43,6 +43,7 @@ import { Pagination, paginate, PAGE_SIZE } from "@/components/pagination";
 import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/position-icon";
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { TopicClickGrid, type TopicToggle } from "@/components/topic-click-grid";
+import { TourHelpButton } from "@/components/tour-help-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-client";
 import { formatDate, formatDuration, DEFAULT_LOCALE } from "@/lib/format";
+import { useReviewTourSteps } from "@/lib/tour-steps";
 import { safeExternalUrl } from "@/lib/url";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -617,6 +619,8 @@ export function ReviewClient({
   const isReadOnly = readOnly || user?.isDemoUser;
   const locale = user?.locale ?? DEFAULT_LOCALE;
   const t = useTranslations("Review");
+  const tourT = useTranslations("Tour");
+  const reviewTourSteps = useReviewTourSteps(tourT);
 
   // Track which matches have been actioned this session (optimistic removal)
   const [actionedIds, setActionedIds] = useState<Set<string>>(new Set());
@@ -774,6 +778,7 @@ export function ReviewClient({
             </p>
           )}
         </div>
+        <TourHelpButton tourId="review" steps={reviewTourSteps} />
       </div>
 
       {!isReadOnly && !user?.primaryRole && (
@@ -807,7 +812,7 @@ export function ReviewClient({
       )}
 
       {/* Tabs */}
-      <Tabs value={tabValue} onValueChange={handleTabChange}>
+      <Tabs value={tabValue} onValueChange={handleTabChange} data-tour="review-tabs">
         <TabsList>
           {!isReadOnly && (
             <TabsTrigger value={0}>
@@ -842,7 +847,7 @@ export function ReviewClient({
               />
             ) : (
               <>
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2" data-tour="review-sort">
                   <p className="text-xs text-muted-foreground">{t("pendingHint")}</p>
                   <div className="flex items-center gap-1.5">
                     <Select

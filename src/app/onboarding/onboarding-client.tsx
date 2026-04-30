@@ -84,16 +84,17 @@ function RegionStep({
       <div className="space-y-2">
         <Label htmlFor="onboarding-region">{t("region.label")}</Label>
         <Select
-          value={region}
+          value={region ?? undefined}
           onValueChange={(v) => {
             if (v) onRegionChange(v);
           }}
         >
           <SelectTrigger id="onboarding-region" className="w-full" aria-label={t("region.label")}>
             <SelectValue placeholder={t("region.placeholder")}>
-              {(value: string) =>
-                `${PLATFORM_LABELS[value as keyof typeof PLATFORM_LABELS]} (${value})`
-              }
+              {(value: string) => {
+                const label = PLATFORM_LABELS[value];
+                return label ? `${label} (${value})` : value;
+              }}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>

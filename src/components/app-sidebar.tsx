@@ -267,6 +267,7 @@ function SidebarContent({
           <Button
             variant="ghost"
             size="icon"
+            data-tour="sync-button"
             className={cn(
               "h-8 w-8",
               isLinked
@@ -284,7 +285,7 @@ function SidebarContent({
       <Separator />
 
       {/* Season filter — prominent position below logo */}
-      <div className="px-3 pt-2 pb-1">
+      <div className="px-3 pt-2 pb-1" data-tour="season-filter">
         <SeasonFilter currentFilter={seasonFilter ?? "all"} />
       </div>
       <Separator />
@@ -297,31 +298,37 @@ function SidebarContent({
           ))}
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
-          {t("sectionTracker")}
-        </div>
-        <div className="space-y-1">
-          {trackerNavWithBadges.map((item) => (
-            <NavLink key={item.href} item={item} onClick={onNavClick} />
-          ))}
-        </div>
-
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
-          {t("sectionInsights")}
-        </div>
-        <div className="space-y-1">
-          {insightsNav.map((item) => (
-            <NavLink key={item.href} item={item} onClick={onNavClick} />
-          ))}
+        <div data-tour="section-tracker">
+          <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
+            {t("sectionTracker")}
+          </div>
+          <div className="space-y-1">
+            {trackerNavWithBadges.map((item) => (
+              <NavLink key={item.href} item={item} onClick={onNavClick} />
+            ))}
+          </div>
         </div>
 
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
-          {t("sectionCoaching")}
+        <div data-tour="section-insights">
+          <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
+            {t("sectionInsights")}
+          </div>
+          <div className="space-y-1">
+            {insightsNav.map((item) => (
+              <NavLink key={item.href} item={item} onClick={onNavClick} />
+            ))}
+          </div>
         </div>
-        <div className="space-y-1">
-          {coachingNav.map((item) => (
-            <NavLink key={item.href} item={item} onClick={onNavClick} />
-          ))}
+
+        <div data-tour="section-coaching">
+          <div className="mt-6 mb-2 px-3 text-xs font-semibold tracking-wider text-gold/70 uppercase">
+            {t("sectionCoaching")}
+          </div>
+          <div className="space-y-1">
+            {coachingNav.map((item) => (
+              <NavLink key={item.href} item={item} onClick={onNavClick} />
+            ))}
+          </div>
         </div>
 
         <Separator className="my-4" />

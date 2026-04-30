@@ -22,6 +22,7 @@ import type { RankSnapshot, CoachingActionItem, Challenge, MatchResult } from "@
 
 import { RankEmblem } from "@/components/icons/rank-emblem";
 import { MatchCard, type MatchHighlightData } from "@/components/match-card";
+import { TourAutoStart } from "@/components/tour-auto-start";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,6 +200,7 @@ export function DashboardClient({
 
   return (
     <div className="space-y-6">
+      <TourAutoStart />
       {/* Header */}
       <div className="animate-in-up flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
