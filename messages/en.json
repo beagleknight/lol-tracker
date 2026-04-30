@@ -1501,6 +1501,8 @@
     "skipButton": "Skip tour",
     "toastCompleted": "Tour complete! You can replay it anytime from Settings.",
     "toastSkipped": "Tour skipped. You can replay it anytime from Settings.",
+    "pageToastCompleted": "Tour complete! You can replay it anytime using the ? button.",
+    "pageToastSkipped": "Tour skipped. You can replay it anytime using the ? button.",
     "settingsButton": "Take the tour",
     "helpButton": "Page tour",
     "reviewTabsTitle": "Pending and reviewed",

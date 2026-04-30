@@ -13,17 +13,23 @@ interface TourHelpButtonProps {
   tourId: string;
   /** Tour steps for this page */
   steps: DriveStep[];
-  /** Auto-start on first visit (defaults to false) */
+  /** Auto-start on first visit (defaults to true) */
   autoStart?: boolean;
 }
 
 /**
  * Small contextual help button for page headers.
- * Shows the tour on click. Set autoStart=true to also trigger on first visit.
+ * Auto-starts the tour on first visit and allows replay on click.
  */
-export function TourHelpButton({ tourId, steps, autoStart = false }: TourHelpButtonProps) {
+export function TourHelpButton({ tourId, steps, autoStart = true }: TourHelpButtonProps) {
   const t = useTranslations("Tour");
-  const { resetTour } = useTour({ id: tourId, steps, autoStart });
+  const { resetTour } = useTour({
+    id: tourId,
+    steps,
+    autoStart,
+    toastCompleted: t("pageToastCompleted"),
+    toastSkipped: t("pageToastSkipped"),
+  });
 
   return (
     <Button

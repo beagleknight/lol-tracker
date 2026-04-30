@@ -1501,6 +1501,8 @@
     "skipButton": "Saltar tour",
     "toastCompleted": "¡Tour completado! Puedes repetirlo en cualquier momento desde Ajustes.",
     "toastSkipped": "Tour omitido. Puedes repetirlo en cualquier momento desde Ajustes.",
+    "pageToastCompleted": "¡Tour completado! Puedes repetirlo en cualquier momento usando el botón ?.",
+    "pageToastSkipped": "Tour omitido. Puedes repetirlo en cualquier momento usando el botón ?.",
     "settingsButton": "Hacer el tour",
     "helpButton": "Tour de la página",
     "reviewTabsTitle": "Pendientes y revisadas",
