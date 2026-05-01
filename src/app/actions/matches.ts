@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
@@ -101,4 +101,33 @@ export async function saveReview(
   void evaluateAchievements(user.id);
 
   return { success: true };
+}
+
+/**
+ * Mark multiple matches as reviewed in bulk (with empty review data).
+ * Used for the "mark all as reviewed" action on the pending review tab.
+ */
+export async function bulkMarkReviewed(matchIds: string[]) {
+  const user = await requireUser();
+  await blockIfImpersonating();
+  await blockDemoWrites();
+
+  if (matchIds.length === 0) return { success: true, count: 0 };
+
+  // Mark all matches as reviewed with empty data
+  await db
+    .update(matches)
+    .set({ reviewed: true })
+    .where(and(eq(matches.userId, user.id), inArray(matches.id, matchIds)));
+
+  revalidatePath("/matches");
+  revalidatePath("/review");
+  revalidatePath("/scout");
+  revalidatePath("/coaching");
+  invalidateReviewCaches(user.id);
+
+  // Evaluate achievements
+  void evaluateAchievements(user.id);
+
+  return { success: true, count: matchIds.length };
 }

@@ -272,10 +272,12 @@
     "notesOptional": "Notas (opcional)",
     "notes": "Notas",
     "saveReview": "Guardar y marcar revisada",
+    "skipReview": "Omitir",
     "editReview": "Editar revisión",
     "reviewed": "Revisada",
     "toasts": {
       "reviewSaved": "¡Revisión guardada!",
+      "reviewSkipped": "Partida omitida — marcada como revisada.",
       "reviewSavedAndSkipped": "Revisión guardada y VOD omitido.",
       "postGameReviewSaved": "¡Revisión post-partida guardada!",
       "failedToSaveReview": "Error al guardar la revisión.",

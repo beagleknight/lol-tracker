@@ -15,6 +15,7 @@ import {
   Sparkles,
   Crosshair,
   Globe,
+  SkipForward,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -24,7 +25,7 @@ import { toast } from "sonner";
 
 import type { Match } from "@/db/schema";
 
-import { saveReview } from "@/app/actions/matches";
+import { saveReview, bulkMarkReviewed } from "@/app/actions/matches";
 import {
   ActionItemCheckin,
   type ActionItemOutcome,
@@ -44,6 +45,16 @@ import { PositionIcon, getRoleRelevance, getPositionLabel } from "@/components/p
 import { ResultBadge, ResultBar } from "@/components/result-badge";
 import { TopicClickGrid, type TopicToggle } from "@/components/topic-click-grid";
 import { TourHelpButton } from "@/components/tour-help-button";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -194,6 +205,7 @@ function PendingReviewCard({
   existingHighlights,
   ddragonVersion,
   onReviewed,
+  onSkipped,
   locale,
   isExpanded,
   onToggleExpand,
@@ -205,6 +217,7 @@ function PendingReviewCard({
   existingHighlights: HighlightItem[];
   ddragonVersion: string;
   onReviewed: (matchId: string) => void;
+  onSkipped: (matchId: string) => void;
   locale: string;
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -243,6 +256,24 @@ function PendingReviewCard({
   );
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("Review");
+
+  const handleSkip = useCallback(() => {
+    startTransition(async () => {
+      try {
+        const result = await saveReview(match.id, {
+          highlights: [],
+        });
+        if (result && "error" in result) {
+          toast.error(result.error);
+        } else {
+          toast.success(t("toasts.reviewSkipped"));
+          onSkipped(match.id);
+        }
+      } catch {
+        toast.error(t("toasts.failedToSaveReview"));
+      }
+    });
+  }, [match.id, onSkipped, t]);
 
   const handleSave = useCallback(() => {
     startTransition(async () => {
@@ -342,8 +373,16 @@ function PendingReviewCard({
           {/* Action item check-in */}
           <ActionItemCheckin items={outcomes} onChange={setOutcomes} />
 
-          {/* Save button */}
-          <div className="flex items-center justify-end">
+          {/* Save / Skip buttons */}
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={handleSkip} disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <SkipForward className="mr-2 h-3 w-3" />
+              )}
+              {t("skipReview")}
+            </Button>
             <Button size="sm" onClick={handleSave} disabled={isPending}>
               {isPending ? (
                 <Loader2 className="mr-2 h-3 w-3 animate-spin" />
@@ -738,6 +777,32 @@ export function ReviewClient({
     router.refresh();
   }, [router]);
 
+  const [isBulkPending, startBulkTransition] = useTransition();
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+
+  const handleBulkMarkReviewed = useCallback(() => {
+    startBulkTransition(async () => {
+      try {
+        const ids = pendingMatches.map((m) => m.id);
+        const result = await bulkMarkReviewed(ids);
+        if (result && "error" in result) {
+          toast.error(t("toasts.failedToMarkReviewed"));
+        } else {
+          toast.success(t("toasts.bulkMarkReviewed", { count: ids.length }));
+          setActionedIds((prev) => {
+            const next = new Set(prev);
+            for (const id of ids) next.add(id);
+            return next;
+          });
+          setExpandedId(null);
+        }
+      } catch {
+        toast.error(t("toasts.failedToMarkReviewed"));
+      }
+      setBulkDialogOpen(false);
+    });
+  }, [pendingMatches, t]);
+
   const originalUnreviewedCount = unreviewedMatches.length;
   const paginatedPending = paginate(pendingMatches, pendingPage);
 
@@ -850,6 +915,43 @@ export function ReviewClient({
                 <div className="flex items-center justify-between gap-2" data-tour="review-sort">
                   <p className="text-xs text-muted-foreground">{t("pendingHint")}</p>
                   <div className="flex items-center gap-1.5">
+                    <AlertDialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+                      <AlertDialogTrigger
+                        render={
+                          <Button variant="ghost" size="sm" disabled={isBulkPending}>
+                            <CheckCircle2 className="mr-2 h-3 w-3" />
+                            {t("markAllReviewed")}
+                          </Button>
+                        }
+                      />
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {t("markAllReviewedConfirmTitle", {
+                              count: pendingMatches.length,
+                            })}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t("markAllReviewedConfirmDescription")}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                          <Button
+                            size="sm"
+                            onClick={handleBulkMarkReviewed}
+                            disabled={isBulkPending}
+                          >
+                            {isBulkPending ? (
+                              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="mr-2 h-3 w-3" />
+                            )}
+                            {t("markAllReviewed")}
+                          </Button>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Select
                       value={pendingSortMode}
                       onValueChange={(v) =>
@@ -883,6 +985,7 @@ export function ReviewClient({
                     existingHighlights={getHighlightItems(match.id)}
                     ddragonVersion={ddragonVersion}
                     onReviewed={handleReviewed}
+                    onSkipped={handleReviewed}
                     locale={locale}
                     isExpanded={expandedId === match.id}
                     onToggleExpand={() =>
