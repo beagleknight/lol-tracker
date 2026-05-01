@@ -450,9 +450,15 @@ export function ScoutClient({
 
   // Sync URL params -> local state when browser back/forward navigation occurs
   const isUpdatingUrl = useRef(false);
+  const isInitialMount = useRef(true);
   useEffect(() => {
     if (isUpdatingUrl.current) {
       isUpdatingUrl.current = false;
+      return;
+    }
+    // Skip the initial mount — state is already initialized from server props
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
     const urlYour = searchParams.get("your") || "";
