@@ -154,40 +154,60 @@ export function DuoStatsCards({ stats }: { stats: DuoStats }) {
             <TrendingUp className="h-4 w-4" />
             {t("stats.soloWinRateLabel")}
           </div>
-          <p className={`text-2xl font-bold ${stats.soloWinRate >= 50 ? "text-win" : "text-loss"}`}>
-            {stats.soloWinRate}%
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("stats.soloGamesCount", { soloGames: stats.soloGames })}
-          </p>
+          {stats.soloWinRate !== null ? (
+            <>
+              <p
+                className={`text-2xl font-bold ${stats.soloWinRate >= 50 ? "text-win" : "text-loss"}`}
+              >
+                {stats.soloWinRate}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("stats.soloGamesCount", { soloGames: stats.soloGames })}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-muted-foreground">{t("stats.notAvailable")}</p>
+              <p className="text-xs text-muted-foreground">{t("stats.noSoloGames")}</p>
+            </>
+          )}
         </CardContent>
       </Card>
 
       <Card className="surface-glow">
         <CardContent className="pt-6">
           <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
-            {stats.winRate > stats.soloWinRate ? (
+            {stats.soloWinRate !== null && stats.winRate > stats.soloWinRate ? (
               <TrendingUp className="h-4 w-4 text-win" />
-            ) : stats.winRate < stats.soloWinRate ? (
+            ) : stats.soloWinRate !== null && stats.winRate < stats.soloWinRate ? (
               <TrendingDown className="h-4 w-4 text-loss" />
             ) : (
               <Swords className="h-4 w-4" />
             )}
             {t("stats.duoDiffLabel")}
           </div>
-          <p
-            className={`text-2xl font-bold ${
-              stats.winRate - stats.soloWinRate > 0
-                ? "text-win"
-                : stats.winRate - stats.soloWinRate < 0
-                  ? "text-loss"
-                  : ""
-            }`}
-          >
-            {stats.winRate - stats.soloWinRate > 0 ? "+" : ""}
-            {stats.winRate - stats.soloWinRate}%
-          </p>
-          <p className="text-xs text-muted-foreground">{t("stats.vsSolo")}</p>
+          {stats.soloWinRate !== null ? (
+            <>
+              <p
+                className={`text-2xl font-bold ${
+                  stats.winRate - stats.soloWinRate > 0
+                    ? "text-win"
+                    : stats.winRate - stats.soloWinRate < 0
+                      ? "text-loss"
+                      : ""
+                }`}
+              >
+                {stats.winRate - stats.soloWinRate > 0 ? "+" : ""}
+                {stats.winRate - stats.soloWinRate}%
+              </p>
+              <p className="text-xs text-muted-foreground">{t("stats.vsSolo")}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-muted-foreground">—</p>
+              <p className="text-xs text-muted-foreground">{t("stats.noSoloComparison")}</p>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
