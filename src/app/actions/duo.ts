@@ -38,7 +38,7 @@ export interface DuoStats {
   partnerAvgAssists: number;
   soloGames: number;
   soloWins: number;
-  soloWinRate: number;
+  soloWinRate: number | null;
 }
 
 export interface DuoGameRow {
@@ -163,7 +163,7 @@ async function getCachedDuoStats(
     soloGames: solo?.totalGames ?? 0,
     soloWins: solo?.wins ?? 0,
     soloWinRate:
-      solo && solo.totalGames > 0 ? Math.round(((solo.wins ?? 0) / solo.totalGames) * 100) : 0,
+      solo && solo.totalGames > 0 ? Math.round(((solo.wins ?? 0) / solo.totalGames) * 100) : null,
   };
 }
 

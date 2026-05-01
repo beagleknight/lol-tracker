@@ -649,7 +649,10 @@
       "soloWinRateLabel": "Win rate en solitario",
       "soloGamesCount": "{soloGames} partidas solo",
       "duoDiffLabel": "Diferencia dúo",
-      "vsSolo": "vs solo"
+      "vsSolo": "vs solo",
+      "notAvailable": "N/D",
+      "noSoloGames": "Juega partidas en solo para comparar",
+      "noSoloComparison": "Se necesitan partidas en solo para comparar"
     },
     "kda": {
       "yourAvgKdaTitle": "Tu KDA promedio (dúo)",
