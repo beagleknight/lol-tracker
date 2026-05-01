@@ -151,6 +151,9 @@ test.describe("Challenges flow", () => {
       timeout: 10_000,
     });
 
+    // After deletion revalidation, the tab may reset to Active — re-click Past
+    await main.getByRole("tab", { name: /Past challenges/ }).click();
+
     // "Reach Platinum IV" (retired from earlier test) should still be there
     await expect(main.getByText("Reach Platinum IV")).toBeVisible();
   });

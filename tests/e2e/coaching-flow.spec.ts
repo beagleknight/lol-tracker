@@ -77,15 +77,15 @@ test.describe("Coaching flow", () => {
     await expect(page.getByText("Wave management").first()).toBeVisible();
     await expect(page.getByText("Vision control").first()).toBeVisible();
     // Should show "Complete Session" CTA
-    await expect(page.getByRole("link", { name: "Complete Session" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Complete session" })).toBeVisible();
   });
 
   test("complete the new coaching session with action items", async ({ page }) => {
     test.skip(!newSessionUrl, "Skipped — scheduling test did not pass");
     await page.goto(newSessionUrl!);
 
-    // Click "Complete Session" link
-    await page.getByRole("link", { name: "Complete Session" }).click();
+    // Click "Complete session" link (sentence case per i18n)
+    await page.getByRole("link", { name: "Complete session" }).click();
     await page.waitForURL(/\/coaching\/\d+\/complete/, { timeout: 10_000 });
     await page.waitForLoadState("networkidle", { timeout: 10_000 });
 

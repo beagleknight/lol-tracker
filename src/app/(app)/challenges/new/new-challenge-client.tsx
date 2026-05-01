@@ -204,6 +204,7 @@ export function NewChallengeClient({
           } else {
             toast.success(t("toasts.challengeCreated"));
             resetWizard();
+            router.refresh();
             router.push("/challenges");
           }
         } catch {
@@ -227,6 +228,7 @@ export function NewChallengeClient({
           } else {
             toast.success(t("toasts.challengeCreated"));
             resetWizard();
+            router.refresh();
             router.push("/challenges");
           }
         } catch {
