@@ -272,10 +272,12 @@
     "notesOptional": "Notes (optional)",
     "notes": "Notes",
     "saveReview": "Save & mark reviewed",
+    "skipReview": "Skip",
     "editReview": "Edit review",
     "reviewed": "Reviewed",
     "toasts": {
       "reviewSaved": "Review saved!",
+      "reviewSkipped": "Game skipped — marked as reviewed.",
       "reviewSavedAndSkipped": "Review saved & VOD review skipped.",
       "postGameReviewSaved": "Post-game review saved!",
       "failedToSaveReview": "Failed to save review.",

@@ -6,7 +6,8 @@ import { reseedDatabase } from "./helpers/reseed";
  * E2E: Review lifecycle (2-tab system)
  *
  * Covers: viewing pending matches, clicking topic toggles,
- * adding notes, saving a review, and verifying the reviewed tab.
+ * adding notes, saving a review, skipping a review,
+ * bulk mark all as reviewed, and verifying the reviewed tab.
  * Tests run serially — order matters.
  */
 
@@ -59,6 +60,53 @@ test.describe("Review flow", () => {
 
     // Wait for toast confirmation
     await expect(page.getByText("Review saved!")).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+
+  test("skip a pending review without adding any data", async ({ page }) => {
+    await page.goto("/review");
+
+    // Wait for a pending card to be visible
+    const firstCard = page.locator('[class*="surface-glow"]').first();
+    await expect(firstCard).toBeVisible();
+
+    // Click the Skip button on the first expanded card
+    const skipButton = firstCard.getByText("Skip");
+    await expect(skipButton).toBeVisible();
+    await skipButton.click();
+
+    // Wait for toast confirmation
+    await expect(page.getByText("Game skipped")).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+
+  test("bulk mark all pending reviews as reviewed", async ({ page }) => {
+    await page.goto("/review");
+
+    // Wait for pending matches to load
+    await expect(page.getByText("waiting for review").first()).toBeVisible();
+
+    // Click "Mark all reviewed" button
+    const markAllButton = page.getByRole("button", { name: /Mark all reviewed/i }).first();
+    await expect(markAllButton).toBeVisible();
+    await markAllButton.click();
+
+    // Confirmation dialog should appear
+    await expect(page.getByText("This will skip VOD review")).toBeVisible({ timeout: 5_000 });
+
+    // Confirm the action by clicking the confirm button in the dialog
+    const confirmButton = page.getByRole("button", { name: /Mark all reviewed/i }).last();
+    await confirmButton.click();
+
+    // Wait for toast confirmation (e.g., "Marked 33 games as reviewed.")
+    await expect(page.getByText(/games? as reviewed/i)).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Should now show "All caught up!" empty state
+    await expect(page.getByText("All caught up!").first()).toBeVisible({
       timeout: 10_000,
     });
   });
