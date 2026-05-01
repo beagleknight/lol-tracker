@@ -88,7 +88,7 @@ export async function getScoutData(
     ddragonVersion,
     allChampions,
     isRiotLinked,
-    initialYourChampion: params.your || "",
+    initialYourChampion: params.your || mostPlayed[0]?.name || "",
     initialEnemyChampion: params.enemy || "",
     mostPlayed,
     mostFaced,
