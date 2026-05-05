@@ -31,6 +31,9 @@ jobs:
       - name: Run DDragon optimizer
         run: npx tsx scripts/optimize-ddragon.ts
 
+      - name: Format generated files
+        run: npx oxfmt public/assets/ddragon/manifest.json
+
       - name: Read manifest version
         id: manifest
         run: |
